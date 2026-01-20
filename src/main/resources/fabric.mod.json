@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "blackaddons",
+  "version": "${version}",
+  "name": "BlackAddons",
+  "description": "Adds some neat features for Hypixel Skyblock",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/blackaddons/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-datagen": [
+      "org.blackum.blackaddons.client.BlackaddonsDataGenerator"
+    ],
+    "client": [
+      "org.blackum.blackaddons.client.BlackaddonsClient"
+    ],
+    "main": [
+      "org.blackum.blackaddons.Blackaddons"
+    ]
+  },
+  "mixins": [
+    "blackaddons.mixins.json",
+    {
+      "config": "blackaddons.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
