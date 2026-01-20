@@ -13,11 +13,11 @@
     "fabric-datagen": [
       "org.blackum.blackaddons.client.BlackaddonsDataGenerator"
     ],
-    "client": [
-      "org.blackum.blackaddons.client.BlackaddonsClient"
-    ],
     "main": [
       "org.blackum.blackaddons.Blackaddons"
+    ],
+    "client": [
+      "org.blackum.blackaddons.BlackaddonsClient"
     ]
   },
   "mixins": [
