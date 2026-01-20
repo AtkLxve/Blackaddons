@@ -15,10 +15,18 @@ public abstract class BaseScreen extends Screen {
     protected final List<Widget> widgets = new ArrayList<>();
     private Widget focusedWidget = null;
 
+    public static boolean showHitboxes = false;
+    public static boolean showDebugOverlay = false;
+
     protected int containerX;
     protected int containerY;
     protected int containerWidth;
     protected int containerHeight;
+
+    protected double scrollOffset = 0;
+    protected int contentHeight = 0;
+    protected double maxScroll = 0;
+    protected boolean canScroll = false;
 
     protected BaseScreen(Component title) {
         super(title);
@@ -35,6 +43,15 @@ public abstract class BaseScreen extends Screen {
 
         widgets.clear();
         initWidgets();
+
+        int maxWidgetY = 0;
+        for (Widget w : widgets) {
+            int relativeBottom = (w.getY() + w.getHeight()) - this.containerY;
+            if (relativeBottom > maxWidgetY) {
+                maxWidgetY = relativeBottom;
+            }
+        }
+        this.contentHeight = Math.max(this.contentHeight, maxWidgetY + 20);
     }
 
     protected abstract void initWidgets();
@@ -50,19 +67,75 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        double windowWidth = mc.getWindow().getScreenWidth();
+        double windowHeight = mc.getWindow().getScreenHeight();
+        double scaledWidth = this.width;
+        double scaledHeight = this.height;
+
+        int finalMouseX = (int) (mc.mouseHandler.xpos() * (scaledWidth / windowWidth));
+        int finalMouseY = (int) (mc.mouseHandler.ypos() * (scaledHeight / windowHeight));
+
         super.render(graphics, mouseX, mouseY, partialTick);
 
         org.blackum.blackaddons.gui.util.RenderHelper.renderSurface(
                 graphics, containerX, containerY, containerWidth, containerHeight,
                 Theme.BORDER_RADIUS_LARGE, false);
 
+        maxScroll = Math.max(0, contentHeight - (containerHeight - 40));
+        canScroll = maxScroll > 0;
+
+        if (scrollOffset < 0)
+            scrollOffset = 0;
+        if (scrollOffset > maxScroll)
+            scrollOffset = maxScroll;
+
+        graphics.enableScissor(containerX, containerY, containerX + containerWidth, containerY + containerHeight);
+
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(0f, (float) -scrollOffset);
+
+        renderScrolledContent(graphics, mouseX, (int) (mouseY + scrollOffset), partialTick);
+
         for (Widget widget : widgets) {
             if (widget.isVisible()) {
-                widget.updateHoverState(mouseX, mouseY);
-                widget.render(graphics, mouseX, mouseY, partialTick);
+                widget.updateHoverState(mouseX, (int) (mouseY + scrollOffset));
+                widget.render(graphics, finalMouseX, finalMouseY, partialTick);
+
+                if (showHitboxes) {
+                    graphics.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(), widget.getY() + 1,
+                            0xFFFF0000); // Top
+                    graphics.fill(widget.getX(), widget.getY() + widget.getHeight() - 1,
+                            widget.getX() + widget.getWidth(), widget.getY() + widget.getHeight(), 0xFFFF0000); // Bottom
+                    graphics.fill(widget.getX(), widget.getY(), widget.getX() + 1, widget.getY() + widget.getHeight(),
+                            0xFFFF0000); // Left
+                    graphics.fill(widget.getX() + widget.getWidth() - 1, widget.getY(),
+                            widget.getX() + widget.getWidth(), widget.getY() + widget.getHeight(), 0xFFFF0000); // Right
+                }
             }
         }
 
+        graphics.pose().popMatrix();
+        graphics.disableScissor();
+
+        if (canScroll) {
+            int scrollBarHeight = (int) ((containerHeight / (double) contentHeight) * containerHeight);
+            if (scrollBarHeight < 30)
+                scrollBarHeight = 30;
+
+            double progress = scrollOffset / maxScroll;
+            int scrollBarY = (int) (containerY + (progress * (containerHeight - scrollBarHeight)));
+            int scrollBarX = containerX + containerWidth - 6;
+
+            // Track
+            graphics.fill(scrollBarX, containerY, scrollBarX + 4, containerY + containerHeight, 0x80000000);
+
+            // Thumb
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 4, scrollBarY + scrollBarHeight, 0xFFFFFFFF);
+        }
+    }
+
+    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
     }
 
     @Override
@@ -84,7 +157,8 @@ public abstract class BaseScreen extends Screen {
         double scaledHeight = this.height;
 
         double mouseX = mc.mouseHandler.xpos() * (scaledWidth / windowWidth);
-        double mouseY = mc.mouseHandler.ypos() * (scaledHeight / windowHeight);
+        double rawMouseY = (mc.mouseHandler.ypos() * (scaledHeight / windowHeight));
+        double mouseY = rawMouseY + scrollOffset;
         int button = event.button();
 
         if (mc.player != null) {
@@ -93,11 +167,16 @@ public abstract class BaseScreen extends Screen {
             mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);
         }
 
-        for (Widget widget : widgets) {
-            if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY)) {
-                if (widget.mouseClicked(mouseX, mouseY, button)) {
-                    setFocusedWidget(widget);
-                    return true;
+        boolean insideContainer = mouseX >= containerX && mouseX <= containerX + containerWidth &&
+                rawMouseY >= containerY && rawMouseY <= containerY + containerHeight;
+
+        if (insideContainer) {
+            for (Widget widget : widgets) {
+                if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY)) {
+                    if (widget.mouseClicked(mouseX, mouseY, button)) {
+                        setFocusedWidget(widget);
+                        return true;
+                    }
                 }
             }
         }
@@ -110,7 +189,8 @@ public abstract class BaseScreen extends Screen {
     public boolean mouseReleased(MouseButtonEvent event) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         double mouseX = mc.mouseHandler.xpos() * ((double) this.width / mc.getWindow().getScreenWidth());
-        double mouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
+        double rawMouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
+        double mouseY = rawMouseY + scrollOffset;
         int button = event.button();
 
         for (Widget widget : widgets) {
@@ -125,7 +205,8 @@ public abstract class BaseScreen extends Screen {
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         double mouseX = mc.mouseHandler.xpos() * ((double) this.width / mc.getWindow().getScreenWidth());
-        double mouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
+        double rawMouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
+        double mouseY = rawMouseY + scrollOffset;
         int button = event.button();
 
         if (getFocusedWidget() != null && getFocusedWidget().mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
@@ -136,6 +217,14 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (canScroll) {
+            scrollOffset -= scrollY * 20; // Scroll speed
+            if (scrollOffset < 0)
+                scrollOffset = 0;
+            if (scrollOffset > maxScroll)
+                scrollOffset = maxScroll;
+            return true;
+        }
 
         for (Widget widget : widgets) {
             if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY)) {
@@ -181,24 +270,10 @@ public abstract class BaseScreen extends Screen {
                 } catch (Exception e) {
                 }
 
-                if (mc.player != null) {
-                    mc.player.displayClientMessage(net.minecraft.network.chat.Component
-                            .literal("§e[Key] Key: " + key + " Scan: " + scancode + " Mod: " + modifiers), false);
-                }
-
                 if (getFocusedWidget().keyPressed(key, scancode, modifiers)) {
                     return true;
                 }
             } catch (Exception e) {
-                if (mc.player != null) {
-                    mc.player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("§c[Key] Error: " + e.getMessage()), false);
-                }
-            }
-        } else {
-            if (mc.player != null) {
-                mc.player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§7[Key] No focused widget"), false);
             }
         }
         return super.keyPressed(event);
@@ -232,21 +307,10 @@ public abstract class BaseScreen extends Screen {
                 } catch (Exception e) {
                 }
 
-                if (mc.player != null) {
-                    mc.player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal(
-                                    "§e[Char] Char: " + character + " (" + (int) character + ") Mod: " + modifiers),
-                            false);
-                }
-
                 if (getFocusedWidget().charTyped(character, modifiers)) {
                     return true;
                 }
             } catch (Exception e) {
-                if (mc.player != null) {
-                    mc.player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("§c[Char] Error: " + e.getMessage()), false);
-                }
             }
         }
         return super.charTyped(event);

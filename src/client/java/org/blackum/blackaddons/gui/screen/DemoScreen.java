@@ -72,15 +72,42 @@ public class DemoScreen extends BaseScreen {
                                 }));
 
                 addWidget(new Button(
-                                containerX + (containerWidth - 100) / 2, containerY + containerHeight - 40, 100,
+                                contentX, contentY + 230, (contentWidth - 20) / 2, "Toggle Hitboxes",
+                                () -> {
+                                        BaseScreen.showHitboxes = !BaseScreen.showHitboxes;
+                                        sendMessage("Hitboxes: " + BaseScreen.showHitboxes);
+                                }));
+
+                addWidget(new Button(
+                                contentX + (contentWidth + 20) / 2, contentY + 230, (contentWidth - 20) / 2,
+                                "Toggle Overlay",
+                                () -> {
+                                        BaseScreen.showDebugOverlay = !BaseScreen.showDebugOverlay;
+                                        sendMessage("Overlay: " + BaseScreen.showDebugOverlay);
+                                }));
+
+                int startY = contentY + 310;
+                for (int i = 0; i < 15; i++) {
+                        int yPos = startY + (i * 40);
+                        final int idx = i + 1;
+                        addWidget(new Button(contentX, yPos, 120, "Scroll Test Item " + idx,
+                                        () -> sendMessage("Clicked Item " + idx)));
+                }
+
+                addWidget(new Button(
+                                containerX + (containerWidth - 100) / 2, containerY + containerHeight, 100,
                                 "Close",
                                 () -> this.onClose()));
+
         }
 
         @Override
         public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
                 super.render(graphics, mouseX, mouseY, partialTick);
+        }
 
+        @Override
+        protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
                 int contentX = containerX + 30;
                 int contentY = containerY + 60;
 

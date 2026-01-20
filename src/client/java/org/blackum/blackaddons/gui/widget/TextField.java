@@ -49,15 +49,6 @@ public class TextField extends Widget {
             int placeholderColor = Theme.withAlpha(Theme.TEXT_SECONDARY, 0.6f);
             graphics.drawString(Minecraft.getInstance().font, placeholder, textX, textY, placeholderColor);
         } else {
-            // DEBUG LOG
-            if (focused && !text.isEmpty()) {
-                Minecraft.getInstance().player
-                        .displayClientMessage(
-                                net.minecraft.network.chat.Component.literal("§b[Render] Drawing '" + text + "' at "
-                                        + textX + "," + textY + " Color: " + Integer.toHexString(Theme.TEXT_PRIMARY)),
-                                true);
-            }
-
             graphics.drawString(Minecraft.getInstance().font, text, textX, textY, Theme.TEXT_PRIMARY);
 
             if (focused && cursorVisible) {
@@ -146,21 +137,7 @@ public class TextField extends Widget {
         if (text.length() < maxLength && character >= 32) {
             text = text.substring(0, cursorPosition) + character + text.substring(cursorPosition);
             cursorPosition++;
-
-            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.player.displayClientMessage(net.minecraft.network.chat.Component
-                        .literal("§d[TextField] Updated Text: '" + text + "' Cursor: " + cursorPosition), false);
-            }
             return true;
-        } else {
-            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§c[TextField] Rejected: Len=" + text.length()
-                                + "/" + maxLength + " CharCode=" + (int) character),
-                        false);
-            }
         }
 
         return false;

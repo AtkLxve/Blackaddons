@@ -27,10 +27,10 @@ public class Animation {
     }
 
     public float getValue() {
-        if (!running)
-            return startValue;
         if (finished)
             return endValue;
+        if (!running)
+            return startValue;
 
         long elapsed = System.currentTimeMillis() - startTime;
         if (elapsed >= duration) {
@@ -58,10 +58,10 @@ public class Animation {
     }
 
     public float getProgress() {
-        if (!running)
-            return 0;
         if (finished)
             return 1;
+        if (!running)
+            return 0;
 
         long elapsed = System.currentTimeMillis() - startTime;
         return Math.min(1.0f, (float) elapsed / duration);
