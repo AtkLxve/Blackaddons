@@ -8,6 +8,7 @@ import net.minecraft.commands.CommandSourceStack;
 public class Blackaddons implements ModInitializer {
     public static Runnable guiOpener;
     public static Runnable testMenuOpener;
+    public static Runnable mainGuiOpener;
 
     @Override
     public void onInitialize() {
@@ -16,14 +17,21 @@ public class Blackaddons implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(
                     LiteralArgumentBuilder.<CommandSourceStack>literal("ba")
-                            .executes(ctx -> executeStatus(ctx))
+                            .executes(ctx -> executeOpenMainGui(ctx))
                             .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
                                     .executes(ctx -> executeOpenGui(ctx)))
                             .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
                                     .executes(ctx -> executeOpenTestMenu(ctx))));
 
+            dispatcher.register(LiteralArgumentBuilder.<CommandSourceStack>literal("black")
+                    .executes(ctx -> executeOpenMainGui(ctx))
+                    .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
+                            .executes(ctx -> executeOpenGui(ctx)))
+                    .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
+                            .executes(ctx -> executeOpenTestMenu(ctx))));
+
             dispatcher.register(LiteralArgumentBuilder.<CommandSourceStack>literal("blackaddons")
-                    .executes(ctx -> executeStatus(ctx))
+                    .executes(ctx -> executeOpenMainGui(ctx))
                     .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
                             .executes(ctx -> executeOpenGui(ctx)))
                     .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
@@ -34,6 +42,13 @@ public class Blackaddons implements ModInitializer {
     private int executeStatus(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         context.getSource().sendSystemMessage(
                 net.minecraft.network.chat.Component.literal("§0Black§7Addons is §arunning!"));
+        return 1;
+    }
+
+    private int executeOpenMainGui(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+        if (mainGuiOpener != null) {
+            mainGuiOpener.run();
+        }
         return 1;
     }
 

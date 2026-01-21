@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.screen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.Button;
 
 public class OverlayEditorScreen extends BaseScreen {
@@ -89,7 +90,11 @@ public class OverlayEditorScreen extends BaseScreen {
 
     @Override
     protected void initWidgets() {
-        addWidget(new Button(this.width / 2 - 50, this.height - 30, 100, "Done", () -> {
+        int buttonWidth = 100;
+        int buttonX = (this.width - buttonWidth) / 2;
+        int buttonY = this.height - Theme.BUTTON_HEIGHT - Theme.MARGIN;
+
+        addWidget(new Button(buttonX, buttonY, buttonWidth, "Done", () -> {
             this.onClose();
         }));
     }

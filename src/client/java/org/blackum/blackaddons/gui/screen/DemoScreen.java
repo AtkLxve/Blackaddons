@@ -9,7 +9,8 @@ import org.blackum.blackaddons.gui.widget.*;
 public class DemoScreen extends BaseScreen {
 
         public DemoScreen() {
-                super(Component.literal("GUI Demo"));
+                super(Component.literal("Demo Screen"));
+                this.showClickDebug = true;
         }
 
         private void sendMessage(String message) {
@@ -21,11 +22,11 @@ public class DemoScreen extends BaseScreen {
 
         @Override
         protected void initWidgets() {
-                int contentX = containerX + 30;
-                int contentY = containerY + 60;
-                int contentWidth = containerWidth - 60;
+                int contentX = containerX + Theme.SPACING_LARGE;
+                int contentY = containerY + Theme.SPACING_LARGE * 2;
+                int contentWidth = containerWidth - Theme.SPACING_LARGE * 2;
 
-                initGrid(contentX, contentY, contentWidth, 2, 40, 10);
+                initGrid(contentX, contentY, contentWidth, Theme.GRID_COLUMNS, Theme.BUTTON_HEIGHT, Theme.GRID_GAP);
 
                 addToGrid(new Button(0, 0, 0, "Primary Button",
                                 () -> sendMessage("Primary clicked!")), 1);
@@ -58,26 +59,16 @@ public class DemoScreen extends BaseScreen {
 
                 int currentGridBottom = gridStartY + (currentGridRow) * (gridRowHeight + gridGap) + gridRowHeight + 20;
 
-                addWidget(new RadioButton(
-                                contentX, currentGridBottom, "Option 1", "grp1", false,
-                                selected -> {
-                                        if (selected)
-                                                sendMessage("Option 1 selected");
-                                }));
-
-                addWidget(new RadioButton(
-                                contentX + 100, currentGridBottom, "Option 2", "grp1", false,
-                                selected -> {
-                                        if (selected)
-                                                sendMessage("Option 2 selected");
-                                }));
-
-                addWidget(new RadioButton(
-                                contentX + 200, currentGridBottom, "Option 3", "grp1", false,
-                                selected -> {
-                                        if (selected)
-                                                sendMessage("Option 3 selected");
-                                }));
+                int radioWidth = (contentWidth - Theme.GRID_GAP * 2) / 3;
+                for (int i = 0; i < 3; i++) {
+                        int x = contentX + i * (radioWidth + Theme.GRID_GAP);
+                        final String option = "Option " + (i + 1);
+                        addWidget(new RadioButton(x, currentGridBottom, option, "grp1", false,
+                                        selected -> {
+                                                if (selected)
+                                                        sendMessage(option + " selected");
+                                        }));
+                }
 
                 int controlY = currentGridBottom + 40;
 
@@ -89,7 +80,8 @@ public class DemoScreen extends BaseScreen {
                                 }));
 
                 addWidget(new Button(
-                                contentX + (contentWidth + 20) / 2, controlY, (contentWidth - 20) / 2,
+                                contentX + (contentWidth + Theme.GRID_GAP) / 2, controlY,
+                                (contentWidth - Theme.GRID_GAP) / 2,
                                 "Toggle Overlay",
                                 () -> {
                                         BaseScreen.showDebugOverlay = !BaseScreen.showDebugOverlay;
@@ -109,7 +101,7 @@ public class DemoScreen extends BaseScreen {
 
                 int startY = controlY + 90;
                 for (int i = 0; i < 10; i++) {
-                        int yPos = startY + (i * 40);
+                        int yPos = startY + (i * (Theme.BUTTON_HEIGHT + Theme.SPACING_SMALL));
                         final int idx = i + 1;
                         addWidget(new Button(contentX, yPos, 120, "Scroll Test Item " + idx,
                                         () -> sendMessage("Clicked Item " + idx)));

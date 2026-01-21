@@ -5,7 +5,11 @@
   "name": "BlackAddons",
   "description": "Adds some neat features for Hypixel Skyblock",
   "authors": [],
-  "contact": {},
+  "contact": {
+    "homepage": "https://github.com/BLACKUM/BlackAddons",
+    "sources": "https://github.com/BLACKUM/BlackAddons",
+    "issues": "https://github.com/BLACKUM/BlackAddons/issues"
+  },
   "license": "All-Rights-Reserved",
   "icon": "assets/blackaddons/icon.png",
   "environment": "client",
@@ -18,6 +22,9 @@
     ],
     "client": [
       "org.blackum.blackaddons.BlackaddonsClient"
+    ],
+    "modmenu": [
+      "org.blackum.blackaddons.compatibility.ModMenuIntegration"
     ]
   },
   "mixins": [

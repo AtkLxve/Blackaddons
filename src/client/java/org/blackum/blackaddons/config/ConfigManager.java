@@ -3,6 +3,7 @@ package org.blackum.blackaddons.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.blackum.blackaddons.gui.screen.BaseScreen;
+import org.blackum.blackaddons.gui.theme.Theme;
 
 import java.io.File;
 import java.io.FileReader;
@@ -20,6 +21,7 @@ public class ConfigManager {
         public float overlayScale = 1.0f;
         public boolean showHitboxes = false;
         public boolean showDebugOverlay = false;
+        public int accentColor = Theme.ACCENT;
     }
 
     public static void save() {
@@ -29,6 +31,7 @@ public class ConfigManager {
         data.overlayScale = BaseScreen.overlayScale;
         data.showHitboxes = BaseScreen.showHitboxes;
         data.showDebugOverlay = BaseScreen.showDebugOverlay;
+        data.accentColor = Theme.ACCENT;
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -50,6 +53,10 @@ public class ConfigManager {
                 BaseScreen.overlayScale = data.overlayScale;
                 BaseScreen.showHitboxes = data.showHitboxes;
                 BaseScreen.showDebugOverlay = data.showDebugOverlay;
+
+                if (data.accentColor != 0) {
+                    Theme.ACCENT = data.accentColor;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

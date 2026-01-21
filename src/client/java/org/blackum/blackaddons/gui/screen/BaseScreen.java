@@ -42,8 +42,29 @@ public abstract class BaseScreen extends Screen {
     protected double maxScroll = 0;
     protected boolean canScroll = false;
 
+    protected Screen parent;
+
     protected BaseScreen(Component title) {
+        this(title, null);
+    }
+
+    protected BaseScreen(Component title, Screen parent) {
         super(title);
+        this.parent = parent;
+    }
+
+    @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    @Override
+    public void onClose() {
+        if (parent != null) {
+            net.minecraft.client.Minecraft.getInstance().setScreen(parent);
+        } else {
+            super.onClose();
+        }
     }
 
     protected void initGrid(int x, int y, int width, int columns, int rowHeight, int gap) {
@@ -57,7 +78,17 @@ public abstract class BaseScreen extends Screen {
         this.currentGridRow = 0;
     }
 
+    protected void initStandardGrid(int x, int y, int width) {
+        initGrid(x, y, width, Theme.GRID_COLUMNS, Theme.CARD_HEIGHT_SMALL, Theme.GRID_GAP);
+    }
+
     protected <T extends Widget> T addToGrid(T widget, int colSpan) {
+        placeInGrid(widget, colSpan);
+        widgets.add(widget);
+        return widget;
+    }
+
+    protected <T extends Widget> T placeInGrid(T widget, int colSpan) {
         if (currentGridColumn + colSpan > gridColumns) {
             currentGridColumn = 0;
             currentGridRow++;
@@ -72,8 +103,6 @@ public abstract class BaseScreen extends Screen {
         widget.setX(widgetX);
         widget.setY(widgetY);
         widget.setWidth(widgetWidth);
-
-        widgets.add(widget);
 
         currentGridColumn += colSpan;
         if (currentGridColumn >= gridColumns) {
@@ -203,6 +232,8 @@ public abstract class BaseScreen extends Screen {
 
     private boolean isDraggingScrollbar = false;
 
+    protected boolean showClickDebug = false;
+
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean pressed) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
@@ -216,7 +247,7 @@ public abstract class BaseScreen extends Screen {
         double mouseY = rawMouseY + scrollOffset;
         int button = event.button();
 
-        if (mc.player != null) {
+        if (showClickDebug && mc.player != null) {
             String msg = String.format("§e[Click] Scaled: %.1f,%.1f (Raw: %.1f,%.1f)", mouseX, mouseY,
                     mc.mouseHandler.xpos(), mc.mouseHandler.ypos());
             mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);

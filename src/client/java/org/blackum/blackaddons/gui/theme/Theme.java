@@ -2,16 +2,21 @@ package org.blackum.blackaddons.gui.theme;
 
 public class Theme {
 
-    public static final int BACKGROUND = 0xFF121212;
-    public static final int SURFACE = 0xFF2A2A2A;
-    public static final int SURFACE_LIGHT = 0xFF3A3A3A;
-    public static final int ACCENT = 0xFF50C8FF;
-    public static final int TEXT_PRIMARY = 0xFFFFFFFF;
-    public static final int TEXT_SECONDARY = 0xFFAAAAAA;
+    // Colors
+    public static int BACKGROUND = 0xAA000000;
+    public static int SURFACE = 0xCC1A1A1A;
+    public static int SURFACE_LIGHT = 0xCC2D2D2D;
+    public static int SURFACE_PRESSED = 0xCC151515;
+    public static int ACCENT = 0xFF00A8FF;
+    public static int ACCENT_HOVER = 0xFF0090D9;
+    public static int TEXT_PRIMARY = 0xFFFFFFFF;
+    public static int TEXT_SECONDARY = 0xFFBBBBBB;
+    public static int BORDER = 0x44FFFFFF;
 
-    public static final int GLASS_FILL = 0x801A1A1A;
-    public static final int GLASS_BORDER = 0x40FFFFFF;
-    public static final int GLASS_HIGHLIGHT = 0x60FFFFFF;
+    public static int GLASS_FILL = 0x801A1A1A;
+    public static int GLASS_BORDER = 0x40FFFFFF;
+    public static int GLASS_HIGHLIGHT = 0x22FFFFFF;
+    public static int SHADOW = 0x44000000;
 
     public static final int BORDER_RADIUS = 12;
     public static final int BORDER_RADIUS_SMALL = 8;
@@ -37,6 +42,18 @@ public class Theme {
     public static final int PADDING_LARGE = 16;
     public static final int PADDING = PADDING_MEDIUM; // TODO: replace all paddings with this
     public static final int MARGIN = 8;
+
+    public static final int GRID_GAP = 20;
+    public static final int GRID_COLUMNS = 2;
+    public static final int GRID_MARGIN = 20;
+
+    public static final int CARD_HEIGHT_SMALL = 100;
+    public static final int CARD_HEIGHT_MEDIUM = 150;
+    public static final int CARD_HEIGHT_LARGE = 200;
+
+    public static final int SPACING_SMALL = 8;
+    public static final int SPACING_NORMAL = 20;
+    public static final int SPACING_LARGE = 30;
 
     public static int withAlpha(int rgb, float alpha) {
         int a = (int) (alpha * 255) << 24;

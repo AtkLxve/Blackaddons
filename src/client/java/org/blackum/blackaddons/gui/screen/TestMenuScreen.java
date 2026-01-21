@@ -18,6 +18,7 @@ public class TestMenuScreen extends BaseScreen {
 
         public TestMenuScreen() {
                 super(Component.literal("Test Menu"));
+                this.showClickDebug = true;
         }
 
         private void sendMessage(String message) {
@@ -50,22 +51,26 @@ public class TestMenuScreen extends BaseScreen {
                 int contentX = tabPanel.getContentX();
                 int contentY = tabPanel.getContentY();
                 int contentWidth = tabPanel.getContentWidth();
+                int contentHeight = tabPanel.getContentHeight();
 
                 switchesTab.addWidget(new Label(contentX, contentY, "Toggle Switches", Label.Style.TITLE));
 
-                int switchY = contentY + 30;
+                ListView switchList = new ListView(contentX, contentY + 30, contentWidth - Theme.GRID_MARGIN,
+                                contentHeight - 40);
+
                 for (int i = 1; i <= 5; i++) {
                         String label = "Feature " + i;
                         String desc = "This is a description for feature " + i
                                         + ". It can be expanded by clicking the arrow.";
 
-                        ToggleSwitch toggle = new ToggleSwitch(contentX, switchY, contentWidth - 20,
+                        ToggleSwitch toggle = new ToggleSwitch(0, 0, contentWidth - Theme.GRID_MARGIN,
                                         label, desc, i % 2 == 0,
                                         value -> sendMessage(label + ": " + (value ? "ON" : "OFF")));
 
-                        switchesTab.addWidget(toggle);
-                        switchY += toggle.getHeight() + 15;
+                        switchList.addItem(toggle);
                 }
+
+                switchesTab.addWidget(switchList);
         }
 
         private void initSearchListTab() {
@@ -78,11 +83,11 @@ public class TestMenuScreen extends BaseScreen {
 
                 searchTab.addWidget(new Label(contentX, contentY, "Searchable List", Label.Style.TITLE));
 
-                searchField = new SearchField(contentX, contentY + 30, contentWidth - 20,
+                searchField = new SearchField(contentX, contentY + 30, contentWidth - Theme.GRID_MARGIN,
                                 this::onSearch);
                 searchTab.addWidget(searchField);
 
-                listView = new ListView(contentX, contentY + 70, contentWidth - 20,
+                listView = new ListView(contentX, contentY + 70, contentWidth - Theme.GRID_MARGIN,
                                 tabPanel.getContentHeight() - 80);
 
                 for (int i = 1; i <= 20; i++) {
@@ -134,13 +139,13 @@ public class TestMenuScreen extends BaseScreen {
 
                 cardsTab.addWidget(new Label(contentX, contentY, "Card Examples", Label.Style.TITLE));
 
-                final int gap = 20;
-                final int columns = 2;
-                final int gridWidth = contentWidth - 20;
+                final int gap = Theme.GRID_GAP;
+                final int columns = Theme.GRID_COLUMNS;
+                final int gridWidth = contentWidth - Theme.GRID_MARGIN;
                 final int colWidth = (gridWidth - (columns - 1) * gap) / columns;
 
                 int row1Y = contentY + 30;
-                int row1Height = 100;
+                int row1Height = Theme.CARD_HEIGHT_SMALL;
 
                 Card simpleCard = new Card(contentX, row1Y, colWidth, row1Height, "Simple Card");
                 Label simpleLabel = new Label(simpleCard.getContentX(), simpleCard.getContentY(),
@@ -157,7 +162,7 @@ public class TestMenuScreen extends BaseScreen {
                 cardsTab.addWidget(interactiveCard);
 
                 int row2Y = row1Y + row1Height + gap;
-                Card complexCard = new Card(contentX, row2Y, gridWidth, 150, "Complex Card");
+                Card complexCard = new Card(contentX, row2Y, gridWidth, Theme.CARD_HEIGHT_MEDIUM, "Complex Card");
 
                 Label complexDesc = new Label(complexCard.getContentX(), complexCard.getContentY(),
                                 "A card with multiple widgets", Label.Style.BODY);
@@ -187,7 +192,7 @@ public class TestMenuScreen extends BaseScreen {
                 graphics.drawString(this.font, titleText, containerX + (containerWidth - titleWidth) / 2,
                                 containerY + 20, -1);
 
-                graphics.drawString(this.font, "Test all new widgets:", containerX + 30, containerY + 40,
+                graphics.drawString(this.font, "Test all widgets:", containerX + 30, containerY + 40,
                                 Theme.TEXT_SECONDARY);
         }
 

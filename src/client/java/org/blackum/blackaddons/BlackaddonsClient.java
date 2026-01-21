@@ -25,6 +25,13 @@ public class BlackaddonsClient implements ClientModInitializer {
             });
         };
 
+        Blackaddons.mainGuiOpener = () -> {
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> {
+                client.setScreen(new org.blackum.blackaddons.gui.screen.BlackAddonsGUI());
+            });
+        };
+
         net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, partialTick) -> {
             if (org.blackum.blackaddons.gui.screen.BaseScreen.showDebugOverlay) {
                 net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
