@@ -2,11 +2,14 @@ package org.blackum.blackaddons;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
+
 import org.blackum.blackaddons.gui.screen.DemoScreen;
 
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        System.out.println("blackaddons: Initializing client...");
+        org.blackum.blackaddons.config.ConfigManager.load();
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
             client.execute(() -> {
@@ -20,8 +23,9 @@ public class BlackaddonsClient implements ClientModInitializer {
                 if (mc.options.hideGui)
                     return;
 
-                int x = 5;
-                int y = 5;
+                int x = org.blackum.blackaddons.gui.screen.BaseScreen.overlayX;
+                int y = org.blackum.blackaddons.gui.screen.BaseScreen.overlayY;
+                float scale = org.blackum.blackaddons.gui.screen.BaseScreen.overlayScale;
                 int color = 0xFFFFFFFF;
 
                 double windowWidth = mc.getWindow().getScreenWidth();
@@ -38,10 +42,16 @@ public class BlackaddonsClient implements ClientModInitializer {
                 debugInfo.add("Mouse: " + finalMouseX + ", " + finalMouseY);
                 debugInfo.add("Screen: " + (mc.screen != null ? mc.screen.getClass().getSimpleName() : "None"));
 
+                graphics.pose().pushMatrix();
+                graphics.pose().translate((float) x, (float) y);
+                graphics.pose().scale(scale, scale);
+
+                int lineY = 0;
                 for (String line : debugInfo) {
-                    graphics.drawString(mc.font, line, x, y, color);
-                    y += 10;
+                    graphics.drawString(mc.font, line, 0, lineY, color);
+                    lineY += 10;
                 }
+                graphics.pose().popMatrix();
             }
         });
 

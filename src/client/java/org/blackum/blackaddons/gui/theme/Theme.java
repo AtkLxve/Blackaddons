@@ -24,7 +24,7 @@ public class Theme {
 
     public static final int BUTTON_HEIGHT = 36;
     public static final int TEXTFIELD_HEIGHT = 32;
-    public static final int CHECKBOX_SIZE = 20;
+    public static final int CHECKBOX_SIZE = 18;
     public static final int RADIO_SIZE = 18;
     public static final int SLIDER_HEIGHT = 6;
     public static final int SLIDER_THUMB_SIZE = 16;

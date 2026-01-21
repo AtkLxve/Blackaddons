@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
+import org.blackum.blackaddons.gui.widget.Dropdown;
 
 public class DemoScreen extends BaseScreen {
 
@@ -25,69 +26,82 @@ public class DemoScreen extends BaseScreen {
                 int contentY = containerY + 60;
                 int contentWidth = containerWidth - 60;
 
-                addWidget(new Button(
-                                contentX, contentY, (contentWidth - 20) / 2, "Primary Button",
-                                () -> sendMessage("Primary clicked!")));
+                initGrid(contentX, contentY, contentWidth, 2, 40, 10);
 
-                addWidget(new Button(
-                                contentX + (contentWidth + 20) / 2, contentY, (contentWidth - 20) / 2,
-                                "Secondary Button",
-                                () -> sendMessage("Secondary clicked!")));
+                addToGrid(new Button(0, 0, 0, "Primary Button",
+                                () -> sendMessage("Primary clicked!")), 1);
 
-                addWidget(new TextField(
-                                contentX, contentY + 50, contentWidth, "Enter text here..."));
+                addToGrid(new Button(0, 0, 0, "Secondary Button",
+                                () -> sendMessage("Secondary clicked!")), 1);
 
-                addWidget(new Slider(
-                                contentX, contentY + 100, contentWidth, 0f, 100f, 50f,
-                                value -> sendMessage("Slider value: " + String.format("%.1f", value))));
+                addToGrid(new TextField(0, 0, 0, "Enter text here..."), 2);
 
-                addWidget(new Checkbox(
-                                contentX, contentY + 150, "Enable feature A", false,
-                                checked -> sendMessage("Feature A: " + (checked ? "Enabled" : "Disabled"))));
+                addToGrid(new Slider(0, 0, 0, 0f, 100f, 50f,
+                                value -> sendMessage("Slider value: " + String.format("%.1f", value))), 2);
 
-                addWidget(new Checkbox(
-                                contentX + 150, contentY + 150, "Enable feature B", false,
-                                checked -> sendMessage("Feature B: " + (checked ? "Enabled" : "Disabled"))));
+                addToGrid(new Checkbox(0, 0, "Enable feature A", false,
+                                checked -> sendMessage("Feature A: " + (checked ? "Enabled" : "Disabled"))), 1);
 
-                int radioY = contentY + 190;
+                addToGrid(new Checkbox(0, 0, "Enable feature B", false,
+                                checked -> sendMessage("Feature B: " + (checked ? "Enabled" : "Disabled"))), 1);
+
+                addToGrid(new Dropdown(0, 0, 0, "Select Option",
+                                java.util.Arrays.asList("Option 1", "Option 2", "Option 3"),
+                                selected -> sendMessage("Selected: " + selected)), 2);
+
+                int currentGridBottom = gridStartY + (currentGridRow) * (gridRowHeight + gridGap) + gridRowHeight + 20;
+
                 addWidget(new RadioButton(
-                                contentX, radioY, "Option 1", "grp1", false,
+                                contentX, currentGridBottom, "Option 1", "grp1", false,
                                 selected -> {
                                         if (selected)
                                                 sendMessage("Option 1 selected");
                                 }));
 
                 addWidget(new RadioButton(
-                                contentX + 100, radioY, "Option 2", "grp1", false,
+                                contentX + 100, currentGridBottom, "Option 2", "grp1", false,
                                 selected -> {
                                         if (selected)
                                                 sendMessage("Option 2 selected");
                                 }));
 
                 addWidget(new RadioButton(
-                                contentX + 200, radioY, "Option 3", "grp1", false,
+                                contentX + 200, currentGridBottom, "Option 3", "grp1", false,
                                 selected -> {
                                         if (selected)
                                                 sendMessage("Option 3 selected");
                                 }));
 
+                int controlY = currentGridBottom + 40;
+
                 addWidget(new Button(
-                                contentX, contentY + 230, (contentWidth - 20) / 2, "Toggle Hitboxes",
+                                contentX, controlY, (contentWidth - 20) / 2, "Toggle Hitboxes",
                                 () -> {
                                         BaseScreen.showHitboxes = !BaseScreen.showHitboxes;
                                         sendMessage("Hitboxes: " + BaseScreen.showHitboxes);
                                 }));
 
                 addWidget(new Button(
-                                contentX + (contentWidth + 20) / 2, contentY + 230, (contentWidth - 20) / 2,
+                                contentX + (contentWidth + 20) / 2, controlY, (contentWidth - 20) / 2,
                                 "Toggle Overlay",
                                 () -> {
                                         BaseScreen.showDebugOverlay = !BaseScreen.showDebugOverlay;
                                         sendMessage("Overlay: " + BaseScreen.showDebugOverlay);
                                 }));
 
-                int startY = contentY + 310;
-                for (int i = 0; i < 15; i++) {
+                addWidget(new Button(
+                                contentX, controlY + 45, contentWidth,
+                                "Open Overlay Editor",
+                                () -> {
+                                        if (!BaseScreen.showDebugOverlay) {
+                                                BaseScreen.showDebugOverlay = true;
+                                                sendMessage("Overlay auto-enabled for editing");
+                                        }
+                                        Minecraft.getInstance().setScreen(new OverlayEditorScreen(this));
+                                }));
+
+                int startY = controlY + 90;
+                for (int i = 0; i < 10; i++) {
                         int yPos = startY + (i * 40);
                         final int idx = i + 1;
                         addWidget(new Button(contentX, yPos, 120, "Scroll Test Item " + idx,

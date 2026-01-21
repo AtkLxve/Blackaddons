@@ -17,6 +17,20 @@ public abstract class BaseScreen extends Screen {
 
     public static boolean showHitboxes = false;
     public static boolean showDebugOverlay = false;
+    public static int overlayX = 5;
+    public static int overlayY = 5;
+    public static float overlayScale = 1.0f;
+
+    protected boolean isMovingOverlay = false;
+
+    protected int gridStartX;
+    protected int gridStartY;
+    protected int gridWidth;
+    protected int gridColumns;
+    protected int gridRowHeight;
+    protected int gridGap;
+    protected int currentGridColumn = 0;
+    protected int currentGridRow = 0;
 
     protected int containerX;
     protected int containerY;
@@ -32,6 +46,44 @@ public abstract class BaseScreen extends Screen {
         super(title);
     }
 
+    protected void initGrid(int x, int y, int width, int columns, int rowHeight, int gap) {
+        this.gridStartX = x;
+        this.gridStartY = y;
+        this.gridWidth = width;
+        this.gridColumns = columns;
+        this.gridRowHeight = rowHeight;
+        this.gridGap = gap;
+        this.currentGridColumn = 0;
+        this.currentGridRow = 0;
+    }
+
+    protected <T extends Widget> T addToGrid(T widget, int colSpan) {
+        if (currentGridColumn + colSpan > gridColumns) {
+            currentGridColumn = 0;
+            currentGridRow++;
+        }
+
+        int cellWidth = (gridWidth - (gridColumns - 1) * gridGap) / gridColumns;
+        int widgetWidth = cellWidth * colSpan + (colSpan - 1) * gridGap;
+
+        int widgetX = gridStartX + currentGridColumn * (cellWidth + gridGap);
+        int widgetY = gridStartY + currentGridRow * (gridRowHeight + gridGap);
+
+        widget.setX(widgetX);
+        widget.setY(widgetY);
+        widget.setWidth(widgetWidth);
+
+        widgets.add(widget);
+
+        currentGridColumn += colSpan;
+        if (currentGridColumn >= gridColumns) {
+            currentGridColumn = 0;
+            currentGridRow++;
+        }
+
+        return widget;
+    }
+
     @Override
     protected void init() {
         super.init();
@@ -42,6 +94,7 @@ public abstract class BaseScreen extends Screen {
         this.containerY = (this.height - this.containerHeight) / 2;
 
         widgets.clear();
+        isMovingOverlay = false;
         initWidgets();
 
         int maxWidgetY = 0;
@@ -148,6 +201,8 @@ public abstract class BaseScreen extends Screen {
         }
     }
 
+    private boolean isDraggingScrollbar = false;
+
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean pressed) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
@@ -167,11 +222,21 @@ public abstract class BaseScreen extends Screen {
             mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);
         }
 
+        if (canScroll) {
+            int scrollBarX = containerX + containerWidth - 6;
+            if (mouseX >= scrollBarX && mouseX <= scrollBarX + 4 &&
+                    rawMouseY >= containerY && rawMouseY <= containerY + containerHeight) {
+                isDraggingScrollbar = true;
+                return true;
+            }
+        }
+
         boolean insideContainer = mouseX >= containerX && mouseX <= containerX + containerWidth &&
                 rawMouseY >= containerY && rawMouseY <= containerY + containerHeight;
 
         if (insideContainer) {
-            for (Widget widget : widgets) {
+            for (int i = widgets.size() - 1; i >= 0; i--) {
+                Widget widget = widgets.get(i);
                 if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY)) {
                     if (widget.mouseClicked(mouseX, mouseY, button)) {
                         setFocusedWidget(widget);
@@ -187,6 +252,7 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
+        isDraggingScrollbar = false;
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         double mouseX = mc.mouseHandler.xpos() * ((double) this.width / mc.getWindow().getScreenWidth());
         double rawMouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
@@ -208,6 +274,22 @@ public abstract class BaseScreen extends Screen {
         double rawMouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
         double mouseY = rawMouseY + scrollOffset;
         int button = event.button();
+
+        if (isDraggingScrollbar && canScroll) {
+            int scrollBarHeight = (int) ((containerHeight / (double) contentHeight) * containerHeight);
+            if (scrollBarHeight < 30)
+                scrollBarHeight = 30;
+
+            double trackHeight = containerHeight - scrollBarHeight;
+            double movement = dragY * ((double) maxScroll / trackHeight);
+
+            scrollOffset += movement;
+            if (scrollOffset < 0)
+                scrollOffset = 0;
+            if (scrollOffset > maxScroll)
+                scrollOffset = maxScroll;
+            return true;
+        }
 
         if (getFocusedWidget() != null && getFocusedWidget().mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
             return true;
@@ -317,6 +399,8 @@ public abstract class BaseScreen extends Screen {
     }
 
     protected void setFocusedWidget(Widget widget) {
+        if (focusedWidget == widget)
+            return;
         if (focusedWidget != null) {
             focusedWidget.setFocused(false);
         }
