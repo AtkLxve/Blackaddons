@@ -214,6 +214,7 @@ public class ColorPicker extends Widget {
         }
 
         if (rgbaField.isMouseOver(mouseX, mouseY)) {
+            rgbaField.mouseClicked(mouseX, mouseY, button);
             rgbaField.setFocused(true);
             return true;
         }
@@ -227,6 +228,9 @@ public class ColorPicker extends Widget {
         draggingHue = false;
         draggingSB = false;
         draggingAlpha = false;
+        if (rgbaField.isFocused()) {
+            return rgbaField.mouseReleased(mouseX, mouseY, button);
+        }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
@@ -243,6 +247,9 @@ public class ColorPicker extends Widget {
         if (draggingAlpha) {
             updateAlpha(mouseX);
             return true;
+        }
+        if (rgbaField.isFocused()) {
+            return rgbaField.mouseDragged(mouseX, mouseY, button, dragX, dragY);
         }
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }

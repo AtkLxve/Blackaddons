@@ -15,6 +15,7 @@ public class TextField extends Widget {
     private int cursorPosition = 0;
     private int selectionStart = -1;
     private int selectionEnd = -1;
+    private boolean dragging = false;
     private long lastCursorBlink = 0;
     private boolean cursorVisible = true;
     private Animation focusAnimation;
@@ -56,9 +57,17 @@ public class TextField extends Widget {
             int placeholderColor = Theme.withAlpha(Theme.TEXT_SECONDARY, 0.6f);
             graphics.drawString(Minecraft.getInstance().font, placeholder, textX, textY, placeholderColor);
         } else {
+            if (hasSelection()) {
+                int start = Math.min(selectionStart, selectionEnd);
+                int end = Math.max(selectionStart, selectionEnd);
+                int selStartX = textX + Minecraft.getInstance().font.width(text.substring(0, start));
+                int selEndX = textX + Minecraft.getInstance().font.width(text.substring(0, end));
+                graphics.fill(selStartX, textY - 1, selEndX, textY + 9, Theme.withAlpha(Theme.ACCENT, 0.4f));
+            }
+
             graphics.drawString(Minecraft.getInstance().font, text, textX, textY, Theme.TEXT_PRIMARY);
 
-            if (focused && cursorVisible) {
+            if (focused && cursorVisible && !hasSelection()) {
                 int cursorX = textX + Minecraft.getInstance().font.width(text.substring(0, cursorPosition));
                 graphics.fill(cursorX, textY, cursorX + 1, textY + 8, Theme.TEXT_PRIMARY);
             }
@@ -96,7 +105,43 @@ public class TextField extends Widget {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!enabled || !visible)
             return false;
-        return isMouseOver(mouseX, mouseY);
+
+        if (isMouseOver(mouseX, mouseY)) {
+            if (button == 0) {
+                int relativeX = (int) mouseX - (x + Theme.PADDING_SMALL);
+                cursorPosition = getCursorPositionFromX(relativeX);
+                clearSelection();
+                dragging = true;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (!focused || !enabled || !dragging)
+            return false;
+
+        int relativeX = (int) mouseX - (x + Theme.PADDING_SMALL);
+        int newPosition = getCursorPositionFromX(relativeX);
+
+        if (selectionStart == -1) {
+            selectionStart = cursorPosition;
+        }
+
+        cursorPosition = newPosition;
+        selectionEnd = newPosition;
+
+        return true;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) {
+            dragging = false;
+        }
+        return false;
     }
 
     @Override
@@ -104,32 +149,96 @@ public class TextField extends Widget {
         if (!focused || !enabled)
             return false;
 
-        if (keyCode == 259 && cursorPosition > 0) {
-            text = text.substring(0, cursorPosition - 1) + text.substring(cursorPosition);
-            cursorPosition--;
+        boolean isCtrlPressed = (modifiers & 2) != 0;
+
+        // Ctrl+A - Select All
+        if (isCtrlPressed && keyCode == 65) {
+            selectAll();
             return true;
         }
 
-        if (keyCode == 261 && cursorPosition < text.length()) {
-            text = text.substring(0, cursorPosition) + text.substring(cursorPosition + 1);
+        // Ctrl+C - Copy
+        if (isCtrlPressed && keyCode == 67) {
+            if (hasSelection()) {
+                Minecraft.getInstance().keyboardHandler.setClipboard(getSelectedText());
+            }
             return true;
         }
 
-        if (keyCode == 263 && cursorPosition > 0) {
-            cursorPosition--;
+        // Ctrl+V - Paste
+        if (isCtrlPressed && keyCode == 86) {
+            String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
+            if (clipboard != null && !clipboard.isEmpty()) {
+                if (hasSelection()) {
+                    deleteSelection();
+                }
+                StringBuilder filtered = new StringBuilder();
+                for (char c : clipboard.toCharArray()) {
+                    if (c >= 32 && charFilter.test(c) && text.length() + filtered.length() < maxLength) {
+                        filtered.append(c);
+                    }
+                }
+                if (filtered.length() > 0) {
+                    text = text.substring(0, cursorPosition) + filtered + text.substring(cursorPosition);
+                    cursorPosition += filtered.length();
+                }
+            }
             return true;
         }
-        if (keyCode == 262 && cursorPosition < text.length()) {
+
+        // Ctrl+X - Cut
+        if (isCtrlPressed && keyCode == 88) {
+            if (hasSelection()) {
+                Minecraft.getInstance().keyboardHandler.setClipboard(getSelectedText());
+                deleteSelection();
+            }
+            return true;
+        }
+
+        // Backspace
+        if (keyCode == 259) {
+            if (hasSelection()) {
+                deleteSelection();
+            } else if (cursorPosition > 0) {
+                text = text.substring(0, cursorPosition - 1) + text.substring(cursorPosition);
+                cursorPosition--;
+            }
+            return true;
+        }
+
+        // Delete
+        if (keyCode == 261) {
+            if (hasSelection()) {
+                deleteSelection();
+            } else if (cursorPosition < text.length()) {
+                text = text.substring(0, cursorPosition) + text.substring(cursorPosition + 1);
+            }
+            return true;
+        }
+
+        // Arrow keys
+        if (keyCode == 263 && cursorPosition > 0) { // Left
+            cursorPosition--;
+            clearSelection();
+            return true;
+        }
+        if (keyCode == 262 && cursorPosition < text.length()) { // Right
             cursorPosition++;
+            clearSelection();
             return true;
         }
 
+        // Home ??? idk maybe someone uses it
         if (keyCode == 268) {
             cursorPosition = 0;
+            clearSelection();
             return true;
         }
+
+        // End ??? idk too, like who is even using it?
         if (keyCode == 269) {
             cursorPosition = text.length();
+            clearSelection();
             return true;
         }
 
@@ -141,10 +250,15 @@ public class TextField extends Widget {
         if (!focused || !enabled)
             return false;
 
-        if (text.length() < maxLength && character >= 32 && charFilter.test(character)) {
-            text = text.substring(0, cursorPosition) + character + text.substring(cursorPosition);
-            cursorPosition++;
-            return true;
+        if (character >= 32 && charFilter.test(character)) {
+            if (hasSelection()) {
+                deleteSelection();
+            }
+            if (text.length() < maxLength) {
+                text = text.substring(0, cursorPosition) + character + text.substring(cursorPosition);
+                cursorPosition++;
+                return true;
+            }
         }
 
         return false;
@@ -186,5 +300,58 @@ public class TextField extends Widget {
 
     public void setCharFilter(Predicate<Character> charFilter) {
         this.charFilter = charFilter;
+    }
+
+    private boolean hasSelection() {
+        return selectionStart != -1 && selectionEnd != -1 && selectionStart != selectionEnd;
+    }
+
+    private String getSelectedText() {
+        if (!hasSelection())
+            return "";
+        int start = Math.min(selectionStart, selectionEnd);
+        int end = Math.max(selectionStart, selectionEnd);
+        return text.substring(start, end);
+    }
+
+    private void deleteSelection() {
+        if (!hasSelection())
+            return;
+        int start = Math.min(selectionStart, selectionEnd);
+        int end = Math.max(selectionStart, selectionEnd);
+        text = text.substring(0, start) + text.substring(end);
+        cursorPosition = start;
+        clearSelection();
+    }
+
+    private void clearSelection() {
+        selectionStart = -1;
+        selectionEnd = -1;
+    }
+
+    private void selectAll() {
+        selectionStart = 0;
+        selectionEnd = text.length();
+        cursorPosition = text.length();
+    }
+
+    private int getCursorPositionFromX(int relativeX) {
+        if (text.isEmpty())
+            return 0;
+
+        int lastWidth = 0;
+
+        for (int i = 0; i <= text.length(); i++) {
+            int width = Minecraft.getInstance().font.width(text.substring(0, i));
+            if (relativeX < width) {
+                if (i > 0 && relativeX - lastWidth < width - relativeX) {
+                    return i - 1;
+                }
+                return i;
+            }
+            lastWidth = width;
+        }
+
+        return text.length();
     }
 }

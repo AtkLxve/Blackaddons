@@ -49,7 +49,9 @@ public class DemoScreen extends BaseScreen {
                                 selected -> sendMessage("Selected: " + selected)), 2);
 
                 addToGrid(new ColorPicker(0, 0,
-                                color -> sendMessage("Color changed: " + String.format("#%08X", color))), 1);
+                                color -> sendMessage("Color changed: "
+                                                + org.blackum.blackaddons.gui.util.ColorUtils.toRGBA(color))),
+                                1);
 
                 currentGridRow += 4;
                 currentGridColumn = 0;
