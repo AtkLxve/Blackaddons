@@ -17,9 +17,13 @@ public class Checkbox extends Widget {
     private Animation hoverAnimation;
 
     public Checkbox(int x, int y, String label, boolean initialState, Consumer<Boolean> onToggle) {
+        this(x, y, Theme.CHECKBOX_SIZE, label, initialState, onToggle);
+    }
+
+    public Checkbox(int x, int y, int height, String label, boolean initialState, Consumer<Boolean> onToggle) {
         super(x, y,
-                Theme.CHECKBOX_SIZE + (label.isEmpty() ? 0 : Minecraft.getInstance().font.width(label) + 8),
-                Theme.CHECKBOX_SIZE);
+                height + (label.isEmpty() ? 0 : Minecraft.getInstance().font.width(label) + 8),
+                height);
         this.label = label;
         this.checked = initialState;
         this.onToggle = onToggle;
@@ -36,28 +40,27 @@ public class Checkbox extends Widget {
         float checkProgress = checkAnimation.getValue();
         float hoverProgress = hoverAnimation.getValue();
 
-        RenderHelper.renderSurface(graphics, x, y, Theme.CHECKBOX_SIZE,
-                Theme.CHECKBOX_SIZE,
+        RenderHelper.renderSurface(graphics, x, y, height, height,
                 Theme.BORDER_RADIUS_SMALL, checked);
 
         if (checkProgress > 0) {
             int checkColor = Theme.withAlpha(Theme.ACCENT, checkProgress * 0.8f);
-            int padding = 4;
-            int checkSize = (int) ((Theme.CHECKBOX_SIZE - padding * 2) * checkProgress);
-            int checkX = x + padding + (Theme.CHECKBOX_SIZE - padding * 2 - checkSize) / 2;
-            int checkY = y + padding + (Theme.CHECKBOX_SIZE - padding * 2 - checkSize) / 2;
+            int padding = height / 5;
+            int checkSize = (int) ((height - padding * 2) * checkProgress);
+            int checkX = x + padding + (height - padding * 2 - checkSize) / 2;
+            int checkY = y + padding + (height - padding * 2 - checkSize) / 2;
             graphics.fill(checkX, checkY, checkX + checkSize, checkY + checkSize, checkColor);
         }
 
         if (hoverProgress > 0) {
             int highlightColor = Theme.withAlpha(Theme.GLASS_HIGHLIGHT, hoverProgress * 0.3f);
-            RenderHelper.renderRoundedRect(graphics, x, y, Theme.CHECKBOX_SIZE, Theme.CHECKBOX_SIZE,
+            RenderHelper.renderRoundedRect(graphics, x, y, height, height,
                     Theme.BORDER_RADIUS_SMALL, highlightColor);
         }
 
         if (!label.isEmpty()) {
-            int labelX = x + Theme.CHECKBOX_SIZE + 8;
-            int labelY = y + (Theme.CHECKBOX_SIZE - 10) / 2;
+            int labelX = x + height + 8;
+            int labelY = y + (height - 8) / 2;
             int labelColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
             graphics.drawString(Minecraft.getInstance().font, label, labelX, labelY, labelColor);
         }

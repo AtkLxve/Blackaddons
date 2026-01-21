@@ -5,7 +5,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.gui.widget.Dropdown;
 
 public class DemoScreen extends BaseScreen {
 
@@ -14,9 +13,9 @@ public class DemoScreen extends BaseScreen {
         }
 
         private void sendMessage(String message) {
-                if (Minecraft.getInstance().player != null) {
-                        Minecraft.getInstance().player.displayClientMessage(Component.literal("§b[GUI] §f" + message),
-                                        false);
+                var player = Minecraft.getInstance().player;
+                if (player != null) {
+                        player.displayClientMessage(Component.literal("§b[GUI] §f" + message), false);
                 }
         }
 
@@ -34,20 +33,26 @@ public class DemoScreen extends BaseScreen {
                 addToGrid(new Button(0, 0, 0, "Secondary Button",
                                 () -> sendMessage("Secondary clicked!")), 1);
 
-                addToGrid(new TextField(0, 0, 0, "Enter text here..."), 2);
+                addToGrid(new TextField(0, 0, 0, 40, "Tall text field..."), 2);
 
-                addToGrid(new Slider(0, 0, 0, 0f, 100f, 50f,
+                addToGrid(new Slider(0, 0, 0, 16, 0f, 100f, 50f,
                                 value -> sendMessage("Slider value: " + String.format("%.1f", value))), 2);
 
-                addToGrid(new Checkbox(0, 0, "Enable feature A", false,
-                                checked -> sendMessage("Feature A: " + (checked ? "Enabled" : "Disabled"))), 1);
+                addToGrid(new Checkbox(0, 0, 32, "Custom Height Checkbox", false,
+                                checked -> sendMessage("Checkbox: " + (checked ? "Enabled" : "Disabled"))), 1);
 
-                addToGrid(new Checkbox(0, 0, "Enable feature B", false,
+                addToGrid(new Checkbox(0, 0, "Default Checkbox", false,
                                 checked -> sendMessage("Feature B: " + (checked ? "Enabled" : "Disabled"))), 1);
 
                 addToGrid(new Dropdown(0, 0, 0, "Select Option",
                                 java.util.Arrays.asList("Option 1", "Option 2", "Option 3"),
                                 selected -> sendMessage("Selected: " + selected)), 2);
+
+                addToGrid(new ColorPicker(0, 0,
+                                color -> sendMessage("Color changed: " + String.format("#%08X", color))), 1);
+
+                currentGridRow += 4;
+                currentGridColumn = 0;
 
                 int currentGridBottom = gridStartY + (currentGridRow) * (gridRowHeight + gridGap) + gridRowHeight + 20;
 
@@ -112,7 +117,6 @@ public class DemoScreen extends BaseScreen {
                                 containerX + (containerWidth - 100) / 2, containerY + containerHeight, 100,
                                 "Close",
                                 () -> this.onClose()));
-
         }
 
         @Override

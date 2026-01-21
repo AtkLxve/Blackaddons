@@ -15,7 +15,11 @@ public class Button extends Widget {
     private boolean pressed = false;
 
     public Button(int x, int y, int width, String text, Runnable onClick) {
-        super(x, y, width, Theme.BUTTON_HEIGHT);
+        this(x, y, width, Theme.BUTTON_HEIGHT, text, onClick);
+    }
+
+    public Button(int x, int y, int width, int height, String text, Runnable onClick) {
+        super(x, y, width, height);
         this.text = text;
         this.onClick = onClick;
         this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);

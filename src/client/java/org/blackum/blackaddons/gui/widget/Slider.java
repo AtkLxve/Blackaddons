@@ -19,7 +19,13 @@ public class Slider extends Widget {
 
     public Slider(int x, int y, int width, float minValue, float maxValue, float initialValue,
             Consumer<Float> onValueChange) {
-        super(x, y, width, Theme.SLIDER_HEIGHT + Theme.SLIDER_THUMB_SIZE);
+        this(x, y, width, Theme.SLIDER_HEIGHT + Theme.SLIDER_THUMB_SIZE, minValue, maxValue, initialValue,
+                onValueChange);
+    }
+
+    public Slider(int x, int y, int width, int height, float minValue, float maxValue, float initialValue,
+            Consumer<Float> onValueChange) {
+        super(x, y, width, height);
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.value = initialValue;
@@ -34,10 +40,10 @@ public class Slider extends Widget {
 
         float hoverProgress = hoverAnimation.getValue();
 
-        int trackY = y + Theme.SLIDER_THUMB_SIZE / 2 - Theme.SLIDER_HEIGHT / 2;
+        int trackY = y + (height - Theme.SLIDER_HEIGHT) / 2;
         int thumbX = x
                 + (int) ((value - minValue) / (maxValue - minValue) * (width - Theme.SLIDER_THUMB_SIZE));
-        int thumbY = y;
+        int thumbY = y + (height - Theme.SLIDER_THUMB_SIZE) / 2;
 
         RenderHelper.renderSurface(graphics, x, trackY, width, Theme.SLIDER_HEIGHT,
                 Theme.SLIDER_HEIGHT / 2, true);

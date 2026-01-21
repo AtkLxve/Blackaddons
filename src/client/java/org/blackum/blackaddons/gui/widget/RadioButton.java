@@ -20,8 +20,13 @@ public class RadioButton extends Widget {
 
     public RadioButton(int x, int y, String label, String groupName, boolean initialState,
             Consumer<Boolean> onSelect) {
-        super(x, y, Theme.RADIO_SIZE + (label.isEmpty() ? 0 : Minecraft.getInstance().font.width(label) + 8),
-                Theme.RADIO_SIZE);
+        this(x, y, Theme.RADIO_SIZE, label, groupName, initialState, onSelect);
+    }
+
+    public RadioButton(int x, int y, int height, String label, String groupName, boolean initialState,
+            Consumer<Boolean> onSelect) {
+        super(x, y, height + (label.isEmpty() ? 0 : Minecraft.getInstance().font.width(label) + 8),
+                height);
         this.label = label;
         this.groupName = groupName;
         this.selected = initialState;
@@ -39,14 +44,14 @@ public class RadioButton extends Widget {
         float selectProgress = selectAnimation.getValue();
         float hoverProgress = hoverAnimation.getValue();
 
-        int radioRadius = Theme.RADIO_SIZE / 2;
-        RenderHelper.renderSurface(graphics, x, y, Theme.RADIO_SIZE, Theme.RADIO_SIZE,
+        int radioRadius = height / 2;
+        RenderHelper.renderSurface(graphics, x, y, height, height,
                 radioRadius, selected);
 
         if (selectProgress > 0) {
-            int innerSize = (int) ((Theme.RADIO_SIZE - 10) * selectProgress);
-            int innerX = x + (Theme.RADIO_SIZE - innerSize) / 2;
-            int innerY = y + (Theme.RADIO_SIZE - innerSize) / 2;
+            int innerSize = (int) ((height - 10) * selectProgress);
+            int innerX = x + (height - innerSize) / 2;
+            int innerY = y + (height - innerSize) / 2;
             int innerColor = Theme.withAlpha(Theme.ACCENT, selectProgress * 0.9f);
 
             graphics.fill(innerX, innerY, innerX + innerSize, innerY + innerSize, innerColor);
@@ -54,13 +59,13 @@ public class RadioButton extends Widget {
 
         if (hoverProgress > 0) {
             int highlightColor = Theme.withAlpha(Theme.GLASS_HIGHLIGHT, hoverProgress * 0.3f);
-            RenderHelper.renderRoundedRect(graphics, x, y, Theme.RADIO_SIZE, Theme.RADIO_SIZE,
+            RenderHelper.renderRoundedRect(graphics, x, y, height, height,
                     radioRadius, highlightColor);
         }
 
         if (!label.isEmpty()) {
-            int labelX = x + Theme.RADIO_SIZE + 8;
-            int labelY = y + (Theme.RADIO_SIZE - 8) / 2;
+            int labelX = x + height + 8;
+            int labelY = y + (height - 8) / 2;
             int labelColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
             graphics.drawString(Minecraft.getInstance().font, label, labelX, labelY, labelColor);
         }

@@ -7,6 +7,8 @@ import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 
+import java.util.function.Predicate;
+
 public class TextField extends Widget {
     private String text = "";
     private String placeholder = "";
@@ -18,9 +20,14 @@ public class TextField extends Widget {
     private Animation focusAnimation;
     private Animation hoverAnimation;
     private int maxLength = 32;
+    private Predicate<Character> charFilter = c -> true;
 
     public TextField(int x, int y, int width, String placeholder) {
-        super(x, y, width, Theme.TEXTFIELD_HEIGHT);
+        this(x, y, width, Theme.TEXTFIELD_HEIGHT, placeholder);
+    }
+
+    public TextField(int x, int y, int width, int height, String placeholder) {
+        super(x, y, width, height);
         this.placeholder = placeholder;
         this.focusAnimation = new Animation(0, 1, Theme.ANIM_FOCUS, Easing::easeOut);
         this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
@@ -134,7 +141,7 @@ public class TextField extends Widget {
         if (!focused || !enabled)
             return false;
 
-        if (text.length() < maxLength && character >= 32) {
+        if (text.length() < maxLength && character >= 32 && charFilter.test(character)) {
             text = text.substring(0, cursorPosition) + character + text.substring(cursorPosition);
             cursorPosition++;
             return true;
@@ -175,5 +182,9 @@ public class TextField extends Widget {
 
     public void setMaxLength(int maxLength) {
         this.maxLength = maxLength;
+    }
+
+    public void setCharFilter(Predicate<Character> charFilter) {
+        this.charFilter = charFilter;
     }
 }
