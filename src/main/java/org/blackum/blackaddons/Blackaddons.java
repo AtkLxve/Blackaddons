@@ -7,6 +7,7 @@ import net.minecraft.commands.CommandSourceStack;
 
 public class Blackaddons implements ModInitializer {
     public static Runnable guiOpener;
+    public static Runnable testMenuOpener;
 
     @Override
     public void onInitialize() {
@@ -17,12 +18,16 @@ public class Blackaddons implements ModInitializer {
                     LiteralArgumentBuilder.<CommandSourceStack>literal("ba")
                             .executes(ctx -> executeStatus(ctx))
                             .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
-                                    .executes(ctx -> executeOpenGui(ctx))));
+                                    .executes(ctx -> executeOpenGui(ctx)))
+                            .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
+                                    .executes(ctx -> executeOpenTestMenu(ctx))));
 
             dispatcher.register(LiteralArgumentBuilder.<CommandSourceStack>literal("blackaddons")
                     .executes(ctx -> executeStatus(ctx))
                     .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
-                            .executes(ctx -> executeOpenGui(ctx))));
+                            .executes(ctx -> executeOpenGui(ctx)))
+                    .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
+                            .executes(ctx -> executeOpenTestMenu(ctx))));
         });
     }
 
@@ -35,6 +40,13 @@ public class Blackaddons implements ModInitializer {
     private int executeOpenGui(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         if (guiOpener != null) {
             guiOpener.run();
+        }
+        return 1;
+    }
+
+    private int executeOpenTestMenu(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+        if (testMenuOpener != null) {
+            testMenuOpener.run();
         }
         return 1;
     }

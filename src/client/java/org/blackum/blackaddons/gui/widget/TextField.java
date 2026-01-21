@@ -107,6 +107,7 @@ public class TextField extends Widget {
             return false;
 
         if (isMouseOver(mouseX, mouseY)) {
+            focused = true;
             if (button == 0) {
                 int relativeX = (int) mouseX - (x + Theme.PADDING_SMALL);
                 cursorPosition = getCursorPositionFromX(relativeX);
@@ -114,6 +115,8 @@ public class TextField extends Widget {
                 dragging = true;
             }
             return true;
+        } else {
+            focused = false;
         }
         return false;
     }

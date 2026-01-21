@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
 
 import org.blackum.blackaddons.gui.screen.DemoScreen;
+import org.blackum.blackaddons.gui.screen.TestMenuScreen;
 
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
@@ -14,6 +15,13 @@ public class BlackaddonsClient implements ClientModInitializer {
             Minecraft client = Minecraft.getInstance();
             client.execute(() -> {
                 client.setScreen(new DemoScreen());
+            });
+        };
+
+        Blackaddons.testMenuOpener = () -> {
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> {
+                client.setScreen(new TestMenuScreen());
             });
         };
 

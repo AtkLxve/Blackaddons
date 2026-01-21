@@ -47,3 +47,4 @@ Thumbs.db
 # Cache/Logs
 .cache/
 logs/
+/docs

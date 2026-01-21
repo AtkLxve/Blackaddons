@@ -4,6 +4,7 @@ public class Theme {
 
     public static final int BACKGROUND = 0xFF121212;
     public static final int SURFACE = 0xFF2A2A2A;
+    public static final int SURFACE_LIGHT = 0xFF3A3A3A;
     public static final int ACCENT = 0xFF50C8FF;
     public static final int TEXT_PRIMARY = 0xFFFFFFFF;
     public static final int TEXT_SECONDARY = 0xFFAAAAAA;
@@ -21,6 +22,7 @@ public class Theme {
     public static final int ANIM_FOCUS = 150;
     public static final int ANIM_DIALOG = 300;
     public static final int ANIM_SCROLL = 250;
+    public static final int ANIM_NORMAL = 200;
 
     public static final int BUTTON_HEIGHT = 36;
     public static final int TEXTFIELD_HEIGHT = 32;
@@ -33,6 +35,7 @@ public class Theme {
     public static final int PADDING_SMALL = 8;
     public static final int PADDING_MEDIUM = 12;
     public static final int PADDING_LARGE = 16;
+    public static final int PADDING = PADDING_MEDIUM; // TODO: replace all paddings with this
     public static final int MARGIN = 8;
 
     public static int withAlpha(int rgb, float alpha) {

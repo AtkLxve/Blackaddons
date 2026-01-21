@@ -153,7 +153,7 @@ public abstract class BaseScreen extends Screen {
         for (Widget widget : widgets) {
             if (widget.isVisible()) {
                 widget.updateHoverState(mouseX, (int) (mouseY + scrollOffset));
-                widget.render(graphics, finalMouseX, finalMouseY, partialTick);
+                widget.render(graphics, mouseX, (int) (mouseY + scrollOffset), partialTick);
 
                 if (showHitboxes) {
                     graphics.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(), widget.getY() + 1,
@@ -299,8 +299,16 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        for (Widget widget : widgets) {
+            if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY + scrollOffset)) {
+                if (widget.mouseScrolled(mouseX, mouseY + scrollOffset, scrollX, scrollY)) {
+                    return true;
+                }
+            }
+        }
+
         if (canScroll) {
-            scrollOffset -= scrollY * 20; // Scroll speed
+            scrollOffset -= scrollY * 20;
             if (scrollOffset < 0)
                 scrollOffset = 0;
             if (scrollOffset > maxScroll)
@@ -308,13 +316,6 @@ public abstract class BaseScreen extends Screen {
             return true;
         }
 
-        for (Widget widget : widgets) {
-            if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY)) {
-                if (widget.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
-                    return true;
-                }
-            }
-        }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
