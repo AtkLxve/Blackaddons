@@ -352,42 +352,9 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-
         if (getFocusedWidget() != null && getFocusedWidget().isVisible() && getFocusedWidget().isEnabled()) {
-            try {
-                int key = 0, scancode = 0, modifiers = 0;
-                try {
-                    java.lang.reflect.Field f = event.getClass().getDeclaredField("key");
-                    f.setAccessible(true);
-                    key = f.getInt(event);
-                } catch (NoSuchFieldException e1) {
-                    try {
-                        java.lang.reflect.Field f = event.getClass().getDeclaredField("keyCode");
-                        f.setAccessible(true);
-                        key = f.getInt(event);
-                    } catch (Exception e2) {
-                    }
-                }
-
-                try {
-                    java.lang.reflect.Field f = event.getClass().getDeclaredField("scancode");
-                    f.setAccessible(true);
-                    scancode = f.getInt(event);
-                } catch (Exception e) {
-                }
-
-                try {
-                    java.lang.reflect.Field f = event.getClass().getDeclaredField("modifiers");
-                    f.setAccessible(true);
-                    modifiers = f.getInt(event);
-                } catch (Exception e) {
-                }
-
-                if (getFocusedWidget().keyPressed(key, scancode, modifiers)) {
-                    return true;
-                }
-            } catch (Exception e) {
+            if (getFocusedWidget().keyPressed(event.key(), event.scancode(), event.modifiers())) {
+                return true;
             }
         }
         return super.keyPressed(event);
@@ -395,36 +362,10 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean charTyped(CharacterEvent event) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         if (getFocusedWidget() != null && getFocusedWidget().isVisible() && getFocusedWidget().isEnabled()) {
-            try {
-                char character = 0;
-                int modifiers = 0;
-
-                try {
-                    java.lang.reflect.Field f = event.getClass().getDeclaredField("character");
-                    f.setAccessible(true);
-                    character = f.getChar(event);
-                } catch (NoSuchFieldException e1) {
-                    try {
-                        java.lang.reflect.Field f = event.getClass().getDeclaredField("codepoint");
-                        f.setAccessible(true);
-                        character = (char) f.getInt(event);
-                    } catch (Exception e2) {
-                    }
-                }
-
-                try {
-                    java.lang.reflect.Field f = event.getClass().getDeclaredField("modifiers");
-                    f.setAccessible(true);
-                    modifiers = f.getInt(event);
-                } catch (Exception e) {
-                }
-
-                if (getFocusedWidget().charTyped(character, modifiers)) {
-                    return true;
-                }
-            } catch (Exception e) {
+            char character = (char) event.codepoint();
+            if (getFocusedWidget().charTyped(character, event.modifiers())) {
+                return true;
             }
         }
         return super.charTyped(event);
