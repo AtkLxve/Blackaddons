@@ -12,12 +12,33 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 public class ConfigManager {
 
     private static final File CONFIG_FILE = new File("blackaddons_config.json");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    public static class CardState {
+        public int x;
+        public int y;
+        public int width;
+        public int height;
+
+        public CardState() {
+        }
+
+        public CardState(int x, int y, int width, int height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    public static boolean useCardLayout = true;
 
     public static class ConfigData {
         public int overlayX = 5;
@@ -26,6 +47,8 @@ public class ConfigManager {
         public boolean showHitboxes = false;
         public boolean showDebugOverlay = false;
         public int accentColor = Theme.ACCENT;
+        public boolean useCardLayout = true;
+        public Map<String, CardState> cardStates = new HashMap<>();
 
         // Mod Hider (ported from ClientSpoofer)
         public String modHiderSpoofMode = SpoofMode.VANILLA.name();
@@ -44,6 +67,32 @@ public class ConfigManager {
         data.showHitboxes = BaseScreen.showHitboxes;
         data.showDebugOverlay = BaseScreen.showDebugOverlay;
         data.accentColor = Theme.ACCENT;
+        data.useCardLayout = ConfigManager.useCardLayout;
+
+        data.modHiderSpoofMode = ModHiderOptions.SPOOF_MODE.name();
+        data.modHiderCustomClient = ModHiderOptions.CUSTOM_CLIENT;
+        data.modHiderHideMods = ModHiderOptions.HIDE_MODS;
+        data.modHiderDisableCustomPayloads = ModHiderOptions.DISABLE_CUSTOM_PAYLOADS;
+        data.modHiderAllowedMods = new ArrayList<>(ModHiderOptions.ALLOWED_MODS);
+        data.modHiderAllowedCustomPayloadChannels = new ArrayList<>(ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS);
+
+        try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
+            GSON.toJson(data, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void save(Map<String, CardState> cardStates) {
+        ConfigData data = new ConfigData();
+        data.overlayX = BaseScreen.overlayX;
+        data.overlayY = BaseScreen.overlayY;
+        data.overlayScale = BaseScreen.overlayScale;
+        data.showHitboxes = BaseScreen.showHitboxes;
+        data.showDebugOverlay = BaseScreen.showDebugOverlay;
+        data.accentColor = Theme.ACCENT;
+        data.useCardLayout = ConfigManager.useCardLayout;
+        data.cardStates = cardStates != null ? cardStates : new HashMap<>();
 
         data.modHiderSpoofMode = ModHiderOptions.SPOOF_MODE.name();
         data.modHiderCustomClient = ModHiderOptions.CUSTOM_CLIENT;
@@ -76,6 +125,7 @@ public class ConfigManager {
                 if (data.accentColor != 0) {
                     Theme.ACCENT = data.accentColor;
                 }
+                ConfigManager.useCardLayout = data.useCardLayout;
 
                 try {
                     ModHiderOptions.SPOOF_MODE = SpoofMode.valueOf(
@@ -93,9 +143,13 @@ public class ConfigManager {
                 ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS = new HashSet<>(
                         data.modHiderAllowedCustomPayloadChannels == null ? java.util.List.of()
                                 : data.modHiderAllowedCustomPayloadChannels);
+
+                lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    public static Map<String, CardState> lastLoadedCardStates = new HashMap<>();
 }
