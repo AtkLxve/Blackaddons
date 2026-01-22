@@ -4,6 +4,12 @@
   "package": "org.blackum.blackaddons.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ClientBrandRetrieverMixin",
+    "ConnectionMixin",
+    "KnownPacksManagerMixin",
+    "AnvilScreenMixin",
+    "AbstractSignEditScreenMixin",
+    "LanguageManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

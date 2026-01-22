@@ -33,12 +33,37 @@ public class Dropdown extends Widget {
         this.expandAnimation = new Animation(0, 1, Theme.ANIM_CLICK, Easing::easeOutBack);
     }
 
+    public int getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    public void setSelectedIndex(int selectedIndex) {
+        if (selectedIndex < -1 || selectedIndex >= options.size()) {
+            return;
+        }
+        this.selectedIndex = selectedIndex;
+    }
+
+    public void setSelectedOption(String option) {
+        if (option == null) return;
+        for (int i = 0; i < options.size(); i++) {
+            if (option.equalsIgnoreCase(options.get(i))) {
+                setSelectedIndex(i);
+                return;
+            }
+        }
+    }
+
+    public boolean isExpanded() {
+        return expanded;
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
-        // Render the main button surface
+
         RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, false);
 
         int textColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
@@ -57,14 +82,13 @@ public class Dropdown extends Widget {
                 Theme.TEXT_SECONDARY);
 
         if (expanded) {
-            graphics.pose().pushMatrix();
-            graphics.pose().translate(0f, 0f);
-
             int optionHeight = 25;
             int totalHeight = options.size() * optionHeight;
             int menuY = y + height + 2;
 
+            graphics.fill(x - 3, menuY - 3, x + width + 3, menuY + totalHeight + 3, 0xFF000000);
             RenderHelper.renderSurface(graphics, x, menuY, width, totalHeight, Theme.BORDER_RADIUS_SMALL, false);
+            RenderHelper.renderRoundedOutline(graphics, x, menuY, width, totalHeight, Theme.BORDER_RADIUS_SMALL, Theme.withAlpha(Theme.BORDER, 0.5f));
 
             for (int i = 0; i < options.size(); i++) {
                 String option = options.get(i);
@@ -75,7 +99,7 @@ public class Dropdown extends Widget {
 
                 if (isOptHovered) {
                     graphics.fill(x + 2, optY, x + width - 2, optY + optionHeight,
-                            Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.1f));
+                            Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.2f));
                 }
 
                 if (i == selectedIndex) {
@@ -83,11 +107,9 @@ public class Dropdown extends Widget {
                             optY + (optionHeight - 8) / 2, Theme.ACCENT);
                 } else {
                     graphics.drawString(Minecraft.getInstance().font, option, x + 10, optY + (optionHeight - 8) / 2,
-                            Theme.TEXT_SECONDARY);
+                            Theme.TEXT_PRIMARY);
                 }
             }
-
-            graphics.pose().popMatrix();
         }
     }
 

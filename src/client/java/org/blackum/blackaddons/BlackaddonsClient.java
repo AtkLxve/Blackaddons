@@ -57,6 +57,103 @@ public class BlackaddonsClient implements ClientModInitializer {
                 debugInfo.add("Mouse: " + finalMouseX + ", " + finalMouseY);
                 debugInfo.add("Screen: " + (mc.screen != null ? mc.screen.getClass().getSimpleName() : "None"));
 
+                debugInfo.add("");
+                debugInfo.add("§6[Mod Hider Real Info]");
+                String realBrand = "fabric";
+                debugInfo.add("Real Brand: " + realBrand);
+
+                int modCount = 0;
+                int libCount = 0;
+                for (net.fabricmc.loader.api.ModContainer mod : net.fabricmc.loader.api.FabricLoader.getInstance()
+                        .getAllMods()) {
+                    if ("builtin".equals(mod.getMetadata().getType()))
+                        continue;
+                    String type = mod.getMetadata().getType();
+                    if (type.contains("library") || type.contains("api") ||
+                            mod.getMetadata().getId().contains("library") ||
+                            mod.getMetadata().getId().contains("api")) {
+                        libCount++;
+                    } else {
+                        modCount++;
+                    }
+                }
+                debugInfo.add("Real Mods: " + modCount);
+                debugInfo.add("Real Libraries: " + libCount);
+
+                debugInfo.add("");
+                debugInfo.add("§6[Mod Hider Status]");
+                debugInfo.add("Spoof Mode: " + org.blackum.blackaddons.modhider.ModHiderOptions.SPOOF_MODE.name());
+                debugInfo.add("Hide Mods: " + org.blackum.blackaddons.modhider.ModHiderOptions.hideMods());
+                debugInfo.add("Custom Client: " + org.blackum.blackaddons.modhider.ModHiderOptions.CUSTOM_CLIENT);
+                debugInfo.add("Disable Payloads: "
+                        + org.blackum.blackaddons.modhider.ModHiderOptions.DISABLE_CUSTOM_PAYLOADS);
+
+                java.util.List<String> allowedModIds = new java.util.ArrayList<>();
+                java.util.List<String> allowedLibIds = new java.util.ArrayList<>();
+                java.util.List<String> hiddenModIds = new java.util.ArrayList<>();
+                java.util.List<String> hiddenLibIds = new java.util.ArrayList<>();
+
+                for (net.fabricmc.loader.api.ModContainer mod : net.fabricmc.loader.api.FabricLoader.getInstance()
+                        .getAllMods()) {
+                    if ("builtin".equals(mod.getMetadata().getType()))
+                        continue;
+                    String modId = mod.getMetadata().getId();
+                    String type = mod.getMetadata().getType();
+                    boolean isLibrary = type.contains("library") || type.contains("api") ||
+                            modId.contains("library") || modId.contains("api");
+                    boolean isAllowed = org.blackum.blackaddons.modhider.ModHiderOptions.ALLOWED_MODS.contains(modId);
+
+                    if (isLibrary) {
+                        if (isAllowed) {
+                            allowedLibIds.add(modId);
+                        } else {
+                            hiddenLibIds.add(modId);
+                        }
+                    } else {
+                        if (isAllowed) {
+                            allowedModIds.add(modId);
+                        } else {
+                            hiddenModIds.add(modId);
+                        }
+                    }
+                }
+
+                debugInfo.add("Allowed Mods: " + allowedModIds.size());
+                debugInfo.add("Allowed Libraries: " + allowedLibIds.size());
+
+                if (!hiddenModIds.isEmpty()) {
+                    debugInfo.add("");
+                    debugInfo.add("§cHidden Mods:");
+                    int count = 0;
+                    for (String modId : hiddenModIds) {
+                        if (count >= 5)
+                            break;
+                        debugInfo.add("  " + modId);
+                        count++;
+                    }
+                    if (hiddenModIds.size() > 5) {
+                        debugInfo.add("  §7and " + (hiddenModIds.size() - 5) + " more mods");
+                    }
+                }
+
+                if (!hiddenLibIds.isEmpty()) {
+                    debugInfo.add("");
+                    debugInfo.add("§cHidden Libraries:");
+                    int count = 0;
+                    for (String libId : hiddenLibIds) {
+                        if (count >= 5)
+                            break;
+                        debugInfo.add("  " + libId);
+                        count++;
+                    }
+                    if (hiddenLibIds.size() > 5) {
+                        debugInfo.add("  §7and " + (hiddenLibIds.size() - 5) + " more libraries");
+                    }
+                }
+
+                debugInfo.add("Allowed Channels: "
+                        + org.blackum.blackaddons.modhider.ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size());
+
                 graphics.pose().pushMatrix();
                 graphics.pose().translate((float) x, (float) y);
                 graphics.pose().scale(scale, scale);

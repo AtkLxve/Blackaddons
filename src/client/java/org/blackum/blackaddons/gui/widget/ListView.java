@@ -34,29 +34,6 @@ public class ListView extends Widget {
                 if (currentY + item.getHeight() >= y && currentY <= y + height) {
                     item.updateHoverState(mouseX, mouseY);
                 } else {
-                    // Start of fix for "hover sticking" on scrolled out items.
-                    // If we don't update hover state, it might remain true from previous frame?
-                    // Widget.updateHoverState(x, y) sets hovered = isMouseOver.
-                    // So we SHOULD call it even if outside, but isMouseOver will be false if we
-                    // pass a mouse outside?
-                    // No, if the item is physically moved to match mouse, it triggers.
-                    // But here we place it.
-                    // If it is outside the clip rect (y to y+height), it should NOT be hovered.
-                    // But updateHoverState logic is just checking rect.
-                    // We must force false if clipped out?
-                    // Or just let it update.
-                    // If we just loop, isMouseOver will be true if mouse is over the item's virtual
-                    // position.
-                    // But the item is hidden by scissor.
-                    // So we should probably NOT call updateHoverState OR call it with coordinates
-                    // that force false?
-                    // Actually, if I just don't call it, 'hovered' field keeps old value.
-                    // So I MUST call it or manually set hovered = false.
-                    // Widget doesn't expose setHovered(false) easily (it's protected usually, but
-                    // here we are in same package maybe?).
-                    // Widget class shows 'protected boolean hovered'.
-                    // ListView is in same package 'org.blackum.blackaddons.gui.widget'. So I can
-                    // access it.
                     item.hovered = false;
                 }
 
@@ -243,7 +220,6 @@ public class ListView extends Widget {
 
     public void clearItems() {
         items.clear();
-        scrollOffset = 0;
     }
 
     public List<Widget> getItems() {

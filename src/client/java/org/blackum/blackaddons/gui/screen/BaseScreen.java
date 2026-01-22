@@ -215,9 +215,14 @@ public abstract class BaseScreen extends Screen {
             // Thumb
             graphics.fill(scrollBarX, scrollBarY, scrollBarX + 4, scrollBarY + scrollBarHeight, 0xFFFFFFFF);
         }
+
+        renderTooltips(graphics, mouseX, mouseY);
     }
 
     protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    }
+
+    protected void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
     }
 
     @Override

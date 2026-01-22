@@ -46,6 +46,22 @@ public class TabPanel extends Widget {
     }
 
     @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        if (super.isMouseOver(mouseX, mouseY))
+            return true;
+
+        if (selectedTabIndex >= 0 && selectedTabIndex < tabs.size()) {
+            Tab currentTab = tabs.get(selectedTabIndex);
+            for (Widget widget : currentTab.widgets) {
+                if (widget.isVisible() && widget.isMouseOver(mouseX, mouseY)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void updateHoverState(int mouseX, int mouseY) {
         super.updateHoverState(mouseX, mouseY);
 
@@ -113,21 +129,43 @@ public class TabPanel extends Widget {
         if (selectedTabIndex < 0 || selectedTabIndex >= tabs.size())
             return;
 
-        int contentX = x + tabWidth + contentPadding;
-        int contentY = y;
-        int contentWidth = width - tabWidth - contentPadding;
-        int contentHeight = height;
-
-        graphics.enableScissor(contentX, contentY, contentX + contentWidth, contentY + contentHeight);
-
         Tab currentTab = tabs.get(selectedTabIndex);
+        List<Widget> expandedDropdowns = new ArrayList<>();
         for (Widget widget : currentTab.widgets) {
+            if (widget.isVisible()) {
+                if (widget instanceof Dropdown && ((Dropdown) widget).isExpanded()) {
+                    expandedDropdowns.add(widget);
+                } else {
+                    widget.render(graphics, mouseX, mouseY, partialTick);
+                }
+            }
+        }
+
+        for (Widget widget : expandedDropdowns) {
             if (widget.isVisible()) {
                 widget.render(graphics, mouseX, mouseY, partialTick);
             }
         }
+    }
 
-        graphics.disableScissor();
+    public int getMaxContentHeight() {
+        if (selectedTabIndex < 0 || selectedTabIndex >= tabs.size())
+            return height;
+
+        Tab currentTab = tabs.get(selectedTabIndex);
+        int maxY = 0;
+        int contentY = y;
+
+        for (Widget widget : currentTab.widgets) {
+            if (widget.isVisible()) {
+                int relativeY = widget.getY() - contentY;
+                int widgetBottom = relativeY + widget.getHeight();
+                if (widgetBottom > maxY) {
+                    maxY = widgetBottom;
+                }
+            }
+        }
+        return Math.max(height, maxY + 40);
     }
 
     @Override
