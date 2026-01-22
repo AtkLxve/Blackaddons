@@ -23,21 +23,23 @@ public class ConnectionMixin {
             if (!(payload instanceof DiscardedPayload) && !(payload instanceof BrandPayload)) {
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.OFF) {
                     return;
-                } else if (ModHiderOptions.SPOOF_MODE == SpoofMode.MODDED) {
-                    for (String mod : ModHiderOptions.ALLOWED_MODS) {
-                        if (payload.type().id().toString().toLowerCase().startsWith(mod.toLowerCase())) {
-                            return;
-                        }
-                    }
-                } else if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM &&
+                }
+                if (ModHiderOptions.SPOOF_MODE == SpoofMode.VANILLA) {
+                    ci.cancel();
+                    return;
+                }
+                if (ModHiderOptions.SPOOF_MODE == SpoofMode.MODDED) {
+                    return;
+                }
+                if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM &&
                         ModHiderOptions.DISABLE_CUSTOM_PAYLOADS) {
                     for (String channel : ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS) {
                         if (payload.type().id().toString().toLowerCase().startsWith(channel.toLowerCase())) {
                             return;
                         }
                     }
+                    ci.cancel();
                 }
-                ci.cancel();
             }
         }
     }

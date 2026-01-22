@@ -20,8 +20,13 @@ public class KnownPacksManagerMixin {
                 ModHiderOptions.SPOOF_MODE == SpoofMode.OFF) {
             return instance.get(pack);
         }
-        if (ModHiderOptions.SPOOF_MODE == SpoofMode.MODDED ||
-                ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM) {
+        if (ModHiderOptions.SPOOF_MODE == SpoofMode.VANILLA) {
+            return null;
+        }
+        if (ModHiderOptions.SPOOF_MODE == SpoofMode.MODDED) {
+            return instance.get(pack);
+        }
+        if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM) {
             for (String mod : ModHiderOptions.ALLOWED_MODS) {
                 if (pack.id().toLowerCase().startsWith(mod.toLowerCase())) {
                     return instance.get(pack);

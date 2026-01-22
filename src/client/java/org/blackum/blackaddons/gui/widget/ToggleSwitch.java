@@ -26,7 +26,6 @@ public class ToggleSwitch extends Widget {
     private Animation hoverAnimation;
     private Animation expandAnimation;
 
-    private int switchX;
     private int labelWidth;
     private int descriptionHeight = 0;
 
@@ -48,7 +47,6 @@ public class ToggleSwitch extends Widget {
         this.expandAnimation = new Animation(0, 0, Theme.ANIM_NORMAL, Easing::easeOut);
 
         this.labelWidth = Minecraft.getInstance().font.width(label);
-        this.switchX = x + width - SWITCH_WIDTH;
 
         updateHeight();
     }
@@ -110,6 +108,7 @@ public class ToggleSwitch extends Widget {
         float toggleProgress = toggleAnimation.getValue();
         float hoverProgress = hoverAnimation.getValue();
 
+        int switchX = x + width - SWITCH_WIDTH;
         int switchY = y;
         int bgColor = value ? Theme.withAlpha(Theme.ACCENT, 0.3f + hoverProgress * 0.2f)
                 : Theme.withAlpha(Theme.SURFACE_LIGHT, 1.0f);
@@ -157,6 +156,7 @@ public class ToggleSwitch extends Widget {
             }
         }
 
+        int switchX = x + width - SWITCH_WIDTH;
         if (mouseX >= switchX && mouseX <= switchX + SWITCH_WIDTH &&
                 mouseY >= y && mouseY <= y + SWITCH_HEIGHT) {
             toggle();

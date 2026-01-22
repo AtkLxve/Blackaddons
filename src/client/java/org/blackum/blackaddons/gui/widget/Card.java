@@ -115,6 +115,16 @@ public class Card extends Widget {
         return super.charTyped(character, modifiers);
     }
 
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        for (Widget child : children) {
+            if (child.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
+                return true;
+            }
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
     public void addChild(Widget widget) {
         children.add(widget);
     }

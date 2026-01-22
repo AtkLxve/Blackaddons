@@ -3,16 +3,7 @@ package org.blackum.blackaddons.gui.screen;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.theme.Theme;
-import org.blackum.blackaddons.gui.widget.ColorPicker;
-import org.blackum.blackaddons.gui.widget.Label;
-import org.blackum.blackaddons.gui.widget.ToggleSwitch;
-import org.blackum.blackaddons.gui.widget.Dropdown;
-import org.blackum.blackaddons.gui.widget.TextField;
-import org.blackum.blackaddons.gui.widget.Button;
-import org.blackum.blackaddons.gui.widget.ListView;
-import org.blackum.blackaddons.gui.widget.Checkbox;
-import org.blackum.blackaddons.gui.widget.TabPanel;
-import org.blackum.blackaddons.gui.widget.Widget;
+import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
 import org.blackum.blackaddons.modhider.SpoofMode;
 
@@ -27,6 +18,14 @@ public class BlackAddonsGUI extends BaseScreen {
     private int tooltipX = 0;
     private int tooltipY = 0;
     private java.util.Map<String, Boolean> collapsedGroups = new java.util.HashMap<>();
+
+    private CardContainer modHiderCardContainer;
+    private ResizableCard spoofModeCard;
+    private ResizableCard customClientCard;
+    private ResizableCard hideModsCard;
+    private ResizableCard disablePayloadsCard;
+    private ResizableCard allowedChannelsCard;
+    private ResizableCard allowedModsCard;
 
     public BlackAddonsGUI() {
         this(null);
@@ -56,6 +55,7 @@ public class BlackAddonsGUI extends BaseScreen {
             int tabContentHeight = tabPanel.getMaxContentHeight();
             this.contentHeight = Math.max(this.contentHeight, tabContentHeight + 40);
         }
+        updateCardVisibility();
     }
 
     private void initSettingsTab() {
@@ -92,19 +92,37 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentX = tabPanel.getContentX();
         int contentY = tabPanel.getContentY();
         int contentWidth = tabPanel.getContentWidth();
-        int currentY = contentY;
 
-        modHiderTab.addWidget(new Label(contentX, currentY, "Mod Hider", Label.Style.TITLE));
-        modHiderTab.addWidget(new Label(contentX, currentY + 25,
-                "Hide/spoof client & mod info sent to servers (ported from ClientSpoofer).", Label.Style.BODY));
-        currentY += 50;
+        modHiderCardContainer = new CardContainer(contentX, contentY, contentWidth, 600);
+        modHiderTab.addWidget(modHiderCardContainer);
 
-        Label spoofModeLabel = new Label(contentX, currentY, "Spoof Mode", Label.Style.BODY);
-        modHiderTab.addWidget(spoofModeLabel);
-        currentY += 20;
+        createSpoofModeCard(contentX + 20, contentY + 20);
+        createCustomClientCard(contentX + 20, contentY + 200);
+        createHideModsCard(contentX + 340, contentY + 20);
+        createDisablePayloadsCard(contentX + 340, contentY + 140);
+        createAllowedChannelsCard(contentX + 20, contentY + 340);
+        createAllowedModsCard(contentX + 340, contentY + 280);
+
+        modHiderCardContainer.addCard(spoofModeCard);
+        modHiderCardContainer.addCard(customClientCard);
+        modHiderCardContainer.addCard(hideModsCard);
+        modHiderCardContainer.addCard(disablePayloadsCard);
+        modHiderCardContainer.addCard(allowedChannelsCard);
+        modHiderCardContainer.addCard(allowedModsCard);
+    }
+
+    private void createSpoofModeCard(int x, int y) {
+        spoofModeCard = new ResizableCard(x, y, 300, 150, "Spoof Mode");
+
+        int contentX = spoofModeCard.getContentX();
+        int contentY = spoofModeCard.getContentY();
+
+        Label description = new Label(contentX, contentY,
+                "Control how your client appears to servers", Label.Style.BODY);
+        spoofModeCard.addChild(description);
 
         List<String> spoofModes = List.of("VANILLA", "MODDED", "CUSTOM", "OFF");
-        Dropdown spoofModeDropdown = new Dropdown(contentX, currentY, 200,
+        Dropdown spoofModeDropdown = new Dropdown(contentX, contentY + 30, 260,
                 "Spoof Mode", spoofModes, selected -> {
                     try {
                         ModHiderOptions.SPOOF_MODE = SpoofMode.valueOf(selected.toUpperCase(Locale.ROOT));
@@ -115,49 +133,76 @@ public class BlackAddonsGUI extends BaseScreen {
                 });
         spoofModeDropdown.setHeight(24);
         spoofModeDropdown.setSelectedOption(ModHiderOptions.SPOOF_MODE.name());
-        modHiderTab.addWidget(spoofModeDropdown);
-        currentY += 50;
+        spoofModeCard.addChild(spoofModeDropdown);
+    }
 
-        Label customClientLabel = new Label(contentX, currentY, "Custom Client Brand (CUSTOM mode)", Label.Style.BODY);
-        modHiderTab.addWidget(customClientLabel);
-        TextField customClient = new TextField(contentX, currentY + 20, 200, "fabric");
+    private void createCustomClientCard(int x, int y) {
+        customClientCard = new ResizableCard(x, y, 300, 120, "Custom Client Brand");
+
+        int contentX = customClientCard.getContentX();
+        int contentY = customClientCard.getContentY();
+
+        Label description = new Label(contentX, contentY,
+                "Set custom client brand (CUSTOM mode only)", Label.Style.BODY);
+        customClientCard.addChild(description);
+
+        TextField customClient = new TextField(contentX, contentY + 30, 180, "fabric");
         customClient.setText(ModHiderOptions.CUSTOM_CLIENT == null ? "fabric" : ModHiderOptions.CUSTOM_CLIENT);
-        modHiderTab.addWidget(customClient);
-        Button applyCustomClient = new Button(contentX + 210, currentY + 20, 120, "Apply", () -> {
+        customClientCard.addChild(customClient);
+
+        Button applyCustomClient = new Button(contentX + 190, contentY + 30, 70, "Apply", () -> {
             ModHiderOptions.CUSTOM_CLIENT = customClient.getText().isBlank() ? "fabric" : customClient.getText();
             ConfigManager.save();
         });
-        modHiderTab.addWidget(applyCustomClient);
-        currentY += 60;
+        customClientCard.addChild(applyCustomClient);
+    }
 
-        ToggleSwitch hideModsToggle = new ToggleSwitch(contentX, currentY, contentWidth - 10,
+    private void createHideModsCard(int x, int y) {
+        hideModsCard = new ResizableCard(x, y, 300, 110, "Hide Mods");
+
+        int contentX = hideModsCard.getContentX();
+        int contentY = hideModsCard.getContentY();
+
+        ToggleSwitch hideModsToggle = new ToggleSwitch(contentX, contentY, 260,
                 "Hide Mods",
-                "When enabled, servers can't read your modded translations and mod list-related info.",
+                "Prevent servers from reading mod info",
                 ModHiderOptions.HIDE_MODS, value -> {
                     ModHiderOptions.HIDE_MODS = value;
                     ConfigManager.save();
                 });
-        modHiderTab.addWidget(hideModsToggle);
-        currentY += 50;
+        hideModsCard.addChild(hideModsToggle);
+    }
 
-        ToggleSwitch disablePayloadsToggle = new ToggleSwitch(contentX, currentY, contentWidth - 10,
+    private void createDisablePayloadsCard(int x, int y) {
+        disablePayloadsCard = new ResizableCard(x, y, 300, 120, "Disable Custom Payloads");
+
+        int contentX = disablePayloadsCard.getContentX();
+        int contentY = disablePayloadsCard.getContentY();
+
+        ToggleSwitch disablePayloadsToggle = new ToggleSwitch(contentX, contentY, 260,
                 "Disable Custom Payloads",
-                "Blocks most custom payload channels unless explicitly allowed below. When enabled, only channels in the allowed list below will be permitted.",
+                "Block custom payload channels unless allowed",
                 ModHiderOptions.DISABLE_CUSTOM_PAYLOADS, value -> {
                     ModHiderOptions.DISABLE_CUSTOM_PAYLOADS = value;
                     ConfigManager.save();
                 });
-        modHiderTab.addWidget(disablePayloadsToggle);
-        currentY += 60;
+        disablePayloadsCard.addChild(disablePayloadsToggle);
+    }
 
-        Label channelsLabel = new Label(contentX, currentY, "Allowed Custom Payload Channels (CUSTOM)",
-                Label.Style.BODY);
-        modHiderTab.addWidget(channelsLabel);
-        currentY += 20;
+    private void createAllowedChannelsCard(int x, int y) {
+        allowedChannelsCard = new ResizableCard(x, y, 380, 220, "Allowed Payload Channels");
 
-        TextField channelField = new TextField(contentX, currentY, 260, "example: hypixel");
-        modHiderTab.addWidget(channelField);
-        Button addChannel = new Button(contentX + 270, currentY, 90, "Add", () -> {
+        int contentX = allowedChannelsCard.getContentX();
+        int contentY = allowedChannelsCard.getContentY();
+
+        Label description = new Label(contentX, contentY,
+                "Whitelist custom payload channels (CUSTOM mode)", Label.Style.BODY);
+        allowedChannelsCard.addChild(description);
+
+        TextField channelField = new TextField(contentX, contentY + 30, 260, "example: hypixel");
+        allowedChannelsCard.addChild(channelField);
+
+        Button addChannel = new Button(contentX + 270, contentY + 30, 90, "Add", () -> {
             String val = channelField.getText() == null ? "" : channelField.getText().trim();
             if (!val.isBlank()) {
                 ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.add(val);
@@ -165,11 +210,10 @@ public class BlackAddonsGUI extends BaseScreen {
                 ConfigManager.save();
             }
         });
-        modHiderTab.addWidget(addChannel);
-        currentY += 35;
+        allowedChannelsCard.addChild(addChannel);
 
-        ListView channelsList = new ListView(contentX, currentY, Math.min(360, contentWidth), 110);
-        modHiderTab.addWidget(channelsList);
+        ListView channelsList = new ListView(contentX, contentY + 70, 340, 110);
+        allowedChannelsCard.addChild(channelsList);
 
         final Runnable[] rebuildChannelsRef = new Runnable[1];
         rebuildChannelsRef[0] = () -> {
@@ -187,7 +231,7 @@ public class BlackAddonsGUI extends BaseScreen {
             }
         };
 
-        modHiderTab.addWidget(new Widget(0, 0, 0, 0) {
+        allowedChannelsCard.addChild(new Widget(0, 0, 0, 0) {
             private int lastSize = -1;
 
             @Override
@@ -202,28 +246,27 @@ public class BlackAddonsGUI extends BaseScreen {
                     if (rebuildChannelsRef[0] != null)
                         rebuildChannelsRef[0].run();
                 }
-
-                boolean isCustom = ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM;
-                channelsLabel.setVisible(isCustom);
-                channelField.setVisible(isCustom);
-                addChannel.setVisible(isCustom);
-                channelsList.setVisible(isCustom);
             }
         });
 
         rebuildChannelsRef[0].run();
-        currentY += 130;
+    }
 
-        Label allowedModsLabel = new Label(contentX, currentY, "Allowed Mods (MODDED/CUSTOM)", Label.Style.BODY);
-        modHiderTab.addWidget(allowedModsLabel);
-        currentY += 20;
+    private void createAllowedModsCard(int x, int y) {
+        allowedModsCard = new ResizableCard(x, y, 380, 300, "Allowed Mods");
 
-        TextField modSearch = new TextField(contentX, currentY, 200, "Search mods...");
-        modHiderTab.addWidget(modSearch);
-        currentY += 40;
+        int contentX = allowedModsCard.getContentX();
+        int contentY = allowedModsCard.getContentY();
 
-        ListView allowedModsList = new ListView(contentX, currentY, contentWidth - 20, 180);
-        modHiderTab.addWidget(allowedModsList);
+        Label description = new Label(contentX, contentY,
+                "Select mods to allow (MODDED/CUSTOM modes)", Label.Style.BODY);
+        allowedModsCard.addChild(description);
+
+        TextField modSearch = new TextField(contentX, contentY + 30, 340, "Search mods...");
+        allowedModsCard.addChild(modSearch);
+
+        ListView allowedModsList = new ListView(contentX, contentY + 70, 340, 200);
+        allowedModsCard.addChild(allowedModsList);
 
         ModOrganizer.OrganizedMods organizedMods = ModOrganizer.organizeMods();
 
@@ -673,7 +716,7 @@ public class BlackAddonsGUI extends BaseScreen {
             }
         };
 
-        modHiderTab.addWidget(new Widget(0, 0, 0, 0) {
+        allowedModsCard.addChild(new Widget(0, 0, 0, 0) {
             private String last = "";
 
             @Override
@@ -689,17 +732,20 @@ public class BlackAddonsGUI extends BaseScreen {
                     if (rebuildAllowedModsRef[0] != null)
                         rebuildAllowedModsRef[0].run();
                 }
-
-                SpoofMode mode = ModHiderOptions.SPOOF_MODE;
-                boolean isModdedOrCustom = mode == SpoofMode.MODDED || mode == SpoofMode.CUSTOM;
-
-                allowedModsLabel.setVisible(isModdedOrCustom);
-                modSearch.setVisible(isModdedOrCustom);
-                allowedModsList.setVisible(isModdedOrCustom);
             }
         });
 
         rebuildAllowedModsRef[0].run();
+    }
+
+    private void updateCardVisibility() {
+        SpoofMode mode = ModHiderOptions.SPOOF_MODE;
+        boolean isCustom = mode == SpoofMode.CUSTOM;
+        boolean isModdedOrCustom = mode == SpoofMode.MODDED || mode == SpoofMode.CUSTOM;
+
+        customClientCard.setVisible(isCustom);
+        allowedChannelsCard.setVisible(isCustom);
+        allowedModsCard.setVisible(isModdedOrCustom);
     }
 
     @Override
@@ -729,7 +775,6 @@ public class BlackAddonsGUI extends BaseScreen {
 
             graphics.fill(tooltipXPos - 2, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2, tooltipYPos + 10 + 2,
                     0xE0000000);
-            // Border (top, bottom, left, right)
             graphics.fill(tooltipXPos - 2, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2, tooltipYPos - 1,
                     Theme.ACCENT);
             graphics.fill(tooltipXPos - 2, tooltipYPos + 11, tooltipXPos + tooltipWidth + 2, tooltipYPos + 12,
