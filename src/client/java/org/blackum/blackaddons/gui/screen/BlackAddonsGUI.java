@@ -109,7 +109,7 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentY = tabPanel.getContentY();
         int contentWidth = tabPanel.getContentWidth();
 
-        Button resetLayout = new Button(contentX, contentY, 100, "Reset Layout", () -> {
+        Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
             ConfigManager.lastLoadedCardStates.clear();
             ConfigManager.save();
             this.init(this.width, this.height);
@@ -120,12 +120,25 @@ public class BlackAddonsGUI extends BaseScreen {
         modHiderTab.addWidget(modHiderCardContainer);
 
         int containerY = contentY + 30;
-        createSpoofModeCard(contentX + 20, containerY + 20);
-        createCustomClientCard(contentX + 20, containerY + 60);
-        createHideModsCard(contentX + 340, containerY + 20);
-        createDisablePayloadsCard(contentX + 340, containerY + 60);
-        createAllowedChannelsCard(contentX + 20, containerY + 100);
-        createAllowedModsCard(contentX + 340, containerY + 100);
+        boolean isSingleColumn = contentWidth < 680;
+        int col1X = contentX + 20;
+        int col2X = contentX + 340;
+
+        if (isSingleColumn) {
+            createSpoofModeCard(col1X, containerY + 20);
+            createCustomClientCard(col1X, containerY + 60);
+            createHideModsCard(col1X, containerY + 100);
+            createDisablePayloadsCard(col1X, containerY + 140);
+            createAllowedChannelsCard(col1X, containerY + 180);
+            createAllowedModsCard(col1X, containerY + 220);
+        } else {
+            createSpoofModeCard(col1X, containerY + 20);
+            createCustomClientCard(col1X, containerY + 60);
+            createHideModsCard(col2X, containerY + 20);
+            createDisablePayloadsCard(col2X, containerY + 60);
+            createAllowedChannelsCard(col1X, containerY + 100);
+            createAllowedModsCard(col2X, containerY + 100);
+        }
 
         modHiderCardContainer.addCard(spoofModeCard);
         modHiderCardContainer.addCard(customClientCard);

@@ -142,15 +142,17 @@ public class ResizableCard extends Card {
             return false;
 
         if (button == 0) {
-            ResizeHandle handle = isOverResizeHandle((int) mouseX, (int) mouseY);
-            if (handle != ResizeHandle.NONE) {
-                resizing = true;
-                activeHandle = handle;
-                dragStartX = (int) mouseX;
-                dragStartY = (int) mouseY;
-                dragStartWidth = width;
-                dragStartHeight = height;
-                return true;
+            if (!collapsed) {
+                ResizeHandle handle = isOverResizeHandle((int) mouseX, (int) mouseY);
+                if (handle != ResizeHandle.NONE) {
+                    resizing = true;
+                    activeHandle = handle;
+                    dragStartX = (int) mouseX;
+                    dragStartY = (int) mouseY;
+                    dragStartWidth = width;
+                    dragStartHeight = height;
+                    return true;
+                }
             }
 
             if (isOverTitleBar((int) mouseX, (int) mouseY)) {
