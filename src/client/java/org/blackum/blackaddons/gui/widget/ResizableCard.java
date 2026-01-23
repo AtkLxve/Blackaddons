@@ -7,7 +7,6 @@ import org.blackum.blackaddons.gui.util.RenderHelper;
 public class ResizableCard extends Card {
 
     private static final int MIN_WIDTH = 200;
-    private static final int MIN_HEIGHT = 100;
     private static final int RESIZE_HANDLE_SIZE = 12;
     private static final int TITLE_BAR_HEIGHT = 24;
 
@@ -23,15 +22,46 @@ public class ResizableCard extends Card {
 
     private int initialWidth;
     private int initialHeight;
+    private boolean collapsed = true;
+    private int expandedHeight;
 
     private enum ResizeHandle {
         NONE, BOTTOM_RIGHT, BOTTOM, RIGHT
+    }
+
+    private Runnable onLayoutChange;
+
+    public void setOnLayoutChange(Runnable onLayoutChange) {
+        this.onLayoutChange = onLayoutChange;
     }
 
     public ResizableCard(int x, int y, int width, int height, String title) {
         super(x, y, width, height, title);
         this.initialWidth = width;
         this.initialHeight = height;
+        this.initialWidth = width;
+        this.initialHeight = height;
+        this.expandedHeight = height;
+
+        if (collapsed) {
+            this.height = TITLE_BAR_HEIGHT;
+        }
+    }
+
+    public boolean isCollapsed() {
+        return collapsed;
+    }
+
+    public void setCollapsed(boolean collapsed) {
+        if (this.collapsed == collapsed)
+            return;
+        this.collapsed = collapsed;
+        if (collapsed) {
+            this.expandedHeight = this.height;
+            this.height = TITLE_BAR_HEIGHT;
+        } else {
+            this.height = this.expandedHeight;
+        }
     }
 
     @Override
@@ -67,9 +97,18 @@ public class ResizableCard extends Card {
             graphics.fill(x, y, x + width, y + TITLE_BAR_HEIGHT, Theme.withAlpha(Theme.SURFACE_LIGHT, 0.5f));
 
             int titleColor = dragging ? Theme.ACCENT : Theme.TEXT_PRIMARY;
+            String arrow = collapsed ? "◀" : "▼";
+
             graphics.drawString(net.minecraft.client.Minecraft.getInstance().font,
                     getTitle(), x + getPadding(), y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
+
+            int arrowWidth = net.minecraft.client.Minecraft.getInstance().font.width(arrow);
+            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font,
+                    arrow, x + width - getPadding() - arrowWidth, y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
         }
+
+        if (collapsed)
+            return;
 
         float scale = Math.min(1.0f, (float) width / MIN_WIDTH);
 
@@ -90,7 +129,7 @@ public class ResizableCard extends Card {
 
         graphics.pose().popMatrix();
 
-        if (resizing || isOverResizeHandle(mouseX, mouseY) != ResizeHandle.NONE) {
+        if (resizing || (!collapsed && isOverResizeHandle(mouseX, mouseY) != ResizeHandle.NONE)) {
             int handleColor = resizing ? Theme.ACCENT : Theme.withAlpha(Theme.ACCENT, 0.5f);
             graphics.fill(x + width - RESIZE_HANDLE_SIZE, y + height - RESIZE_HANDLE_SIZE,
                     x + width, y + height, handleColor);
@@ -115,6 +154,13 @@ public class ResizableCard extends Card {
             }
 
             if (isOverTitleBar((int) mouseX, (int) mouseY)) {
+                if (mouseX >= x + width - getPadding() - 15) {
+                    setCollapsed(!collapsed);
+                    if (onLayoutChange != null)
+                        onLayoutChange.run();
+                    return true;
+                }
+
                 dragging = true;
                 dragStartX = (int) mouseX;
                 dragStartY = (int) mouseY;
@@ -144,11 +190,15 @@ public class ResizableCard extends Card {
         if (button == 0) {
             if (dragging) {
                 dragging = false;
+                if (onLayoutChange != null)
+                    onLayoutChange.run();
                 return true;
             }
             if (resizing) {
                 resizing = false;
                 activeHandle = ResizeHandle.NONE;
+                if (onLayoutChange != null)
+                    onLayoutChange.run();
                 return true;
             }
         }
@@ -174,7 +224,10 @@ public class ResizableCard extends Card {
                 width = Math.max(initialWidth, dragStartWidth + deltaX);
             }
             if (activeHandle == ResizeHandle.BOTTOM_RIGHT || activeHandle == ResizeHandle.BOTTOM) {
-                height = Math.max(initialHeight, dragStartHeight + deltaY);
+                if (!collapsed) {
+                    height = Math.max(initialHeight, dragStartHeight + deltaY);
+                    expandedHeight = height;
+                }
             }
 
             updateChildPositions();

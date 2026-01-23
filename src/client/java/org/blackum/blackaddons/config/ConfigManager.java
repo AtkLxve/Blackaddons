@@ -27,15 +27,17 @@ public class ConfigManager {
         public int y;
         public int width;
         public int height;
+        public boolean collapsed;
 
         public CardState() {
         }
 
-        public CardState(int x, int y, int width, int height) {
+        public CardState(int x, int y, int width, int height, boolean collapsed) {
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
+            this.collapsed = collapsed;
         }
     }
 

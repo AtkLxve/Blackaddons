@@ -109,15 +109,23 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentY = tabPanel.getContentY();
         int contentWidth = tabPanel.getContentWidth();
 
-        CardContainer modHiderCardContainer = new CardContainer(contentX, contentY, contentWidth, 600);
+        Button resetLayout = new Button(contentX, contentY, 100, "Reset Layout", () -> {
+            ConfigManager.lastLoadedCardStates.clear();
+            ConfigManager.save();
+            this.init(this.width, this.height);
+        });
+        modHiderTab.addWidget(resetLayout);
+
+        CardContainer modHiderCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
         modHiderTab.addWidget(modHiderCardContainer);
 
-        createSpoofModeCard(contentX + 20, contentY + 20);
-        createCustomClientCard(contentX + 20, contentY + 200);
-        createHideModsCard(contentX + 340, contentY + 20);
-        createDisablePayloadsCard(contentX + 340, contentY + 140);
-        createAllowedChannelsCard(contentX + 20, contentY + 340);
-        createAllowedModsCard(contentX + 340, contentY + 280);
+        int containerY = contentY + 30;
+        createSpoofModeCard(contentX + 20, containerY + 20);
+        createCustomClientCard(contentX + 20, containerY + 60);
+        createHideModsCard(contentX + 340, containerY + 20);
+        createDisablePayloadsCard(contentX + 340, containerY + 60);
+        createAllowedChannelsCard(contentX + 20, containerY + 100);
+        createAllowedModsCard(contentX + 340, containerY + 100);
 
         modHiderCardContainer.addCard(spoofModeCard);
         modHiderCardContainer.addCard(customClientCard);
@@ -301,7 +309,7 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private void createCustomClientCard(int x, int y) {
-        customClientCard = createResizableCard("customClient", x, y, 300, 120, "Custom Client Brand");
+        customClientCard = createResizableCard("customClient", x, y, 300, 140, "Custom Client Brand");
 
         int contentX = customClientCard.getContentX();
         int contentY = customClientCard.getContentY();
@@ -660,14 +668,7 @@ public class BlackAddonsGUI extends BaseScreen {
     @Override
     public void onClose() {
         if (ConfigManager.useCardLayout) {
-            java.util.Map<String, ConfigManager.CardState> states = new java.util.HashMap<>();
-            addCardToMap(states, "spoofMode", spoofModeCard);
-            addCardToMap(states, "customClient", customClientCard);
-            addCardToMap(states, "hideMods", hideModsCard);
-            addCardToMap(states, "disablePayloads", disablePayloadsCard);
-            addCardToMap(states, "allowedChannels", allowedChannelsCard);
-            addCardToMap(states, "allowedMods", allowedModsCard);
-            ConfigManager.save(states);
+            saveCardLayout();
         } else {
             ConfigManager.save();
         }
@@ -676,14 +677,33 @@ public class BlackAddonsGUI extends BaseScreen {
 
     private void addCardToMap(java.util.Map<String, ConfigManager.CardState> map, String id, ResizableCard card) {
         if (card != null)
-            map.put(id, new ConfigManager.CardState(card.getX(), card.getY(), card.getWidth(), card.getHeight()));
+            map.put(id, new ConfigManager.CardState(card.getX(), card.getY(), card.getWidth(), card.getHeight(),
+                    card.isCollapsed()));
+    }
+
+    private void saveCardLayout() {
+        java.util.Map<String, ConfigManager.CardState> states = new java.util.HashMap<>();
+        addCardToMap(states, "spoofMode", spoofModeCard);
+        addCardToMap(states, "customClient", customClientCard);
+        addCardToMap(states, "hideMods", hideModsCard);
+        addCardToMap(states, "disablePayloads", disablePayloadsCard);
+        addCardToMap(states, "allowedChannels", allowedChannelsCard);
+        addCardToMap(states, "allowedMods", allowedModsCard);
+        ConfigManager.save(states);
+        ConfigManager.lastLoadedCardStates = states;
     }
 
     private ResizableCard createResizableCard(String id, int defaultX, int defaultY, int defaultW, int defaultH,
             String title) {
         ConfigManager.CardState state = ConfigManager.lastLoadedCardStates.get(id);
-        if (state != null)
-            return new ResizableCard(state.x, state.y, state.width, state.height, title);
-        return new ResizableCard(defaultX, defaultY, defaultW, defaultH, title);
+        if (state != null) {
+            ResizableCard card = new ResizableCard(state.x, state.y, state.width, state.height, title);
+            card.setCollapsed(state.collapsed);
+            card.setOnLayoutChange(this::saveCardLayout);
+            return card;
+        }
+        ResizableCard card = new ResizableCard(defaultX, defaultY, defaultW, defaultH, title);
+        card.setOnLayoutChange(this::saveCardLayout);
+        return card;
     }
 }
