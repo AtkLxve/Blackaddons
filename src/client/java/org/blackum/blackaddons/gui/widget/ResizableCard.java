@@ -184,6 +184,15 @@ public class ResizableCard extends Card {
             }
         }
 
+        if (button == 1) {
+            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                setCollapsed(!collapsed);
+                if (onLayoutChange != null)
+                    onLayoutChange.run();
+                return true;
+            }
+        }
+
         return false;
     }
 
