@@ -17,6 +17,9 @@ public class Theme {
     public static int GLASS_BORDER = 0x40FFFFFF;
     public static int GLASS_HIGHLIGHT = 0x22FFFFFF;
     public static int SHADOW = 0x44000000;
+    public static int SCROLLBAR_BG = 0x80000000;
+    public static int SCROLLBAR_THUMB = 0xFFFFFFFF;
+    public static int TOOLTIP_BG = 0xE0000000;
 
     public static final int BORDER_RADIUS = 12;
     public static final int BORDER_RADIUS_SMALL = 8;

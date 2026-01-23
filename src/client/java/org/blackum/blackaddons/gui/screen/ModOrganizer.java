@@ -37,14 +37,16 @@ public class ModOrganizer {
             this.name = mod.getMetadata().getName();
 
             String type = mod.getMetadata().getType();
+            String lowerId = id.toLowerCase();
+            String lowerName = name.toLowerCase();
             boolean basicLibCheck = "builtin".equals(type) ||
-                    id.contains("library") ||
-                    id.contains("api") ||
-                    id.contains("lib") ||
-                    name.toLowerCase().contains("library") ||
-                    name.toLowerCase().contains("api") ||
-                    id.contains("kotlin") ||
-                    name.toLowerCase().contains("kotlin");
+                    lowerId.contains("library") ||
+                    lowerId.contains("api") ||
+                    lowerId.contains("lib") ||
+                    lowerName.contains("library") ||
+                    lowerName.contains("api") ||
+                    lowerId.contains("kotlin") ||
+                    lowerName.contains("kotlin");
 
             this.isLibrary = basicLibCheck;
 

@@ -18,9 +18,8 @@ public class BlackAddonsGUI extends BaseScreen {
     private String currentTooltip = null;
     private int tooltipX = 0;
     private int tooltipY = 0;
-    private java.util.Map<String, Boolean> collapsedGroups = new java.util.HashMap<>();
+    private final java.util.Map<String, Boolean> collapsedGroups = new java.util.HashMap<>();
 
-    private CardContainer modHiderCardContainer;
     private ResizableCard spoofModeCard;
     private ResizableCard customClientCard;
     private ResizableCard hideModsCard;
@@ -72,9 +71,7 @@ public class BlackAddonsGUI extends BaseScreen {
 
         settingsTab.addWidget(new Label(contentX, contentY + 30, "Accent Color (Main Theme)", Label.Style.BODY));
 
-        ColorPicker accentPicker = new ColorPicker(contentX, contentY + 50, color -> {
-            Theme.ACCENT = color;
-        });
+        ColorPicker accentPicker = new ColorPicker(contentX, contentY + 50, color -> Theme.ACCENT = color);
 
         settingsTab.addWidget(accentPicker);
 
@@ -112,7 +109,7 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentY = tabPanel.getContentY();
         int contentWidth = tabPanel.getContentWidth();
 
-        modHiderCardContainer = new CardContainer(contentX, contentY, contentWidth, 600);
+        CardContainer modHiderCardContainer = new CardContainer(contentX, contentY, contentWidth, 600);
         modHiderTab.addWidget(modHiderCardContainer);
 
         createSpoofModeCard(contentX + 20, contentY + 20);
@@ -207,7 +204,7 @@ public class BlackAddonsGUI extends BaseScreen {
             modHiderTab.addWidget(channelsLabel);
             currentY += 25;
 
-            TextField channelField = new TextField(contentX, currentY, contentWidth - 100, "example: hypixel");
+            TextField channelField = new TextField(contentX, currentY, contentWidth - 100, "example: Hypixel");
             modHiderTab.addWidget(channelField);
 
             ListView finalChannelsList = new ListView(contentX, currentY + 40, contentWidth, 100);
@@ -357,7 +354,7 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private void createAllowedChannelsCard(int x, int y) {
-        allowedChannelsCard = createResizableCard("allowedChannels", x, y, 380, 220, "Allowed Payload Channels");
+        allowedChannelsCard = createResizableCard("allowedChannels", x, y, 300, 220, "Allowed Payload Channels");
 
         int contentX = allowedChannelsCard.getContentX();
         int contentY = allowedChannelsCard.getContentY();
@@ -366,10 +363,10 @@ public class BlackAddonsGUI extends BaseScreen {
                 "Whitelist custom payload channels (CUSTOM mode)", Label.Style.BODY);
         allowedChannelsCard.addChild(description);
 
-        TextField channelField = new TextField(contentX, contentY + 30, 260, "example: hypixel");
+        TextField channelField = new TextField(contentX, contentY + 30, 180, "example: Hypixel");
         allowedChannelsCard.addChild(channelField);
 
-        Button addChannel = new Button(contentX + 270, contentY + 30, 90, "Add", () -> {
+        Button addChannel = new Button(contentX + 190, contentY + 30, 90, "Add", () -> {
             String val = channelField.getText() == null ? "" : channelField.getText().trim();
             if (!val.isBlank()) {
                 ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.add(val);
@@ -379,7 +376,7 @@ public class BlackAddonsGUI extends BaseScreen {
         });
         allowedChannelsCard.addChild(addChannel);
 
-        ListView channelsList = new ListView(contentX, contentY + 70, 340, 110);
+        ListView channelsList = new ListView(contentX, contentY + 70, 260, 110);
         allowedChannelsCard.addChild(channelsList);
 
         rebuildChannelsList(channelsList);
@@ -402,7 +399,7 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private void createAllowedModsCard(int x, int y) {
-        allowedModsCard = createResizableCard("allowedMods", x, y, 380, 300, "Allowed Mods");
+        allowedModsCard = createResizableCard("allowedMods", x, y, 300, 320, "Allowed Mods");
 
         int contentX = allowedModsCard.getContentX();
         int contentY = allowedModsCard.getContentY();
@@ -411,10 +408,10 @@ public class BlackAddonsGUI extends BaseScreen {
                 "Select mods to allow (MODDED/CUSTOM modes)", Label.Style.BODY);
         allowedModsCard.addChild(description);
 
-        TextField modSearch = new TextField(contentX, contentY + 30, 340, "Search mods...");
+        TextField modSearch = new TextField(contentX, contentY + 30, 260, "Search mods...");
         allowedModsCard.addChild(modSearch);
 
-        ListView allowedModsList = new ListView(contentX, contentY + 70, 340, 200);
+        ListView allowedModsList = new ListView(contentX, contentY + 70, 260, 210);
         allowedModsCard.addChild(allowedModsList);
 
         rebuildAllowedModsList(allowedModsList, modSearch);
@@ -461,9 +458,7 @@ public class BlackAddonsGUI extends BaseScreen {
             ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
             if (info != null) {
                 for (String depId : info.dependencies) {
-                    if (!ModHiderOptions.ALLOWED_MODS.contains(depId)) {
-                        ModHiderOptions.ALLOWED_MODS.add(depId);
-                    }
+                    ModHiderOptions.ALLOWED_MODS.add(depId);
                 }
             }
         };
@@ -472,9 +467,7 @@ public class BlackAddonsGUI extends BaseScreen {
             ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
             if (info != null) {
                 for (String dependentId : info.dependents) {
-                    if (ModHiderOptions.ALLOWED_MODS.contains(dependentId)) {
-                        ModHiderOptions.ALLOWED_MODS.remove(dependentId);
-                    }
+                    ModHiderOptions.ALLOWED_MODS.remove(dependentId);
                 }
             }
         };
@@ -497,8 +490,8 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private void addModGroupToList(ListView list, ModOrganizer.ModGroup group, String query,
-            java.util.function.Consumer<String> enableDeps,
-            java.util.function.Consumer<String> disableDeps,
+            java.util.function.Consumer<String> enableDependencies,
+            java.util.function.Consumer<String> disableDependencies,
             TextField searchField) {
         List<ModOrganizer.ModInfo> matchingMods = new ArrayList<>();
         for (ModOrganizer.ModInfo info : group.mods) {
@@ -538,10 +531,10 @@ public class BlackAddonsGUI extends BaseScreen {
                     for (ModOrganizer.ModInfo info : matchingMods) {
                         if (value) {
                             ModHiderOptions.ALLOWED_MODS.add(info.id);
-                            enableDeps.accept(info.id);
+                            enableDependencies.accept(info.id);
                         } else {
                             ModHiderOptions.ALLOWED_MODS.remove(info.id);
-                            disableDeps.accept(info.id);
+                            disableDependencies.accept(info.id);
                         }
                     }
                     ConfigManager.save();
@@ -550,19 +543,19 @@ public class BlackAddonsGUI extends BaseScreen {
                 list.addItem(selectAll);
 
                 for (ModOrganizer.ModInfo info : matchingMods) {
-                    addModCheckboxToList(list, info, enableDeps, disableDeps, searchField);
+                    addModCheckboxToList(list, info, enableDependencies, disableDependencies, searchField);
                 }
             }
         } else {
             for (ModOrganizer.ModInfo info : matchingMods) {
-                addModCheckboxToList(list, info, enableDeps, disableDeps, searchField);
+                addModCheckboxToList(list, info, enableDependencies, disableDependencies, searchField);
             }
         }
     }
 
     private void addModCheckboxToList(ListView list, ModOrganizer.ModInfo info,
-            java.util.function.Consumer<String> enableDeps,
-            java.util.function.Consumer<String> disableDeps,
+            java.util.function.Consumer<String> enableDependencies,
+            java.util.function.Consumer<String> disableDependencies,
             TextField searchField) {
         boolean checked = ModHiderOptions.ALLOWED_MODS.contains(info.id);
         String displayName = info.name + " (" + info.id + ")";
@@ -572,10 +565,10 @@ public class BlackAddonsGUI extends BaseScreen {
         Checkbox cb = new Checkbox(0, 0, displayName, checked, value -> {
             if (value) {
                 ModHiderOptions.ALLOWED_MODS.add(info.id);
-                enableDeps.accept(info.id);
+                enableDependencies.accept(info.id);
             } else {
                 ModHiderOptions.ALLOWED_MODS.remove(info.id);
-                disableDeps.accept(info.id);
+                disableDependencies.accept(info.id);
             }
             ConfigManager.save();
             rebuildAllowedModsList(list, searchField);
@@ -643,7 +636,7 @@ public class BlackAddonsGUI extends BaseScreen {
 
     @Override
     protected void renderTooltips(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY) {
-        if (currentTooltip != null && currentTooltip.length() > 0) {
+        if (currentTooltip != null && !currentTooltip.isEmpty()) {
             int tooltipWidth = font.width(currentTooltip) + 8;
             int tooltipXPos = this.tooltipX + 10;
             int tooltipYPos = (int) (this.tooltipY - scrollOffset) - 20;
@@ -652,7 +645,7 @@ public class BlackAddonsGUI extends BaseScreen {
             if (tooltipYPos < containerY)
                 tooltipYPos = (int) (this.tooltipY - scrollOffset) + 10;
             graphics.fill(tooltipXPos - 2, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2, tooltipYPos + 10 + 2,
-                    0xE0000000);
+                    Theme.TOOLTIP_BG);
             graphics.fill(tooltipXPos - 2, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2, tooltipYPos - 1,
                     Theme.ACCENT);
             graphics.fill(tooltipXPos - 2, tooltipYPos + 11, tooltipXPos + tooltipWidth + 2, tooltipYPos + 12,
@@ -660,7 +653,7 @@ public class BlackAddonsGUI extends BaseScreen {
             graphics.fill(tooltipXPos - 2, tooltipYPos - 2, tooltipXPos - 1, tooltipYPos + 12, Theme.ACCENT);
             graphics.fill(tooltipXPos + tooltipWidth + 1, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2,
                     tooltipYPos + 12, Theme.ACCENT);
-            graphics.drawString(font, currentTooltip, tooltipXPos, tooltipYPos, 0xFFFFFFFF);
+            graphics.drawString(font, currentTooltip, tooltipXPos, tooltipYPos, Theme.TEXT_PRIMARY);
         }
     }
 

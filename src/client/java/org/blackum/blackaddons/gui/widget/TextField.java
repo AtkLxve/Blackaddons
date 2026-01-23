@@ -181,7 +181,7 @@ public class TextField extends Widget {
                         filtered.append(c);
                     }
                 }
-                if (filtered.length() > 0) {
+                if (!filtered.isEmpty()) {
                     text = text.substring(0, cursorPosition) + filtered + text.substring(cursorPosition);
                     cursorPosition += filtered.length();
                 }

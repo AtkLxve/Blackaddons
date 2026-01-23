@@ -210,10 +210,10 @@ public abstract class BaseScreen extends Screen {
             int scrollBarX = containerX + containerWidth - 6;
 
             // Track
-            graphics.fill(scrollBarX, containerY, scrollBarX + 4, containerY + containerHeight, 0x80000000);
+            graphics.fill(scrollBarX, containerY, scrollBarX + 4, containerY + containerHeight, Theme.SCROLLBAR_BG);
 
             // Thumb
-            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 4, scrollBarY + scrollBarHeight, 0xFFFFFFFF);
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 4, scrollBarY + scrollBarHeight, Theme.SCROLLBAR_THUMB);
         }
 
         renderTooltips(graphics, mouseX, mouseY);

@@ -4,15 +4,18 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Blackaddons implements ModInitializer {
+    public static final Logger LOGGER = LoggerFactory.getLogger("blackaddons");
     public static Runnable guiOpener;
     public static Runnable testMenuOpener;
     public static Runnable mainGuiOpener;
 
     @Override
     public void onInitialize() {
-        System.out.println("blackaddons: Initialization completed");
+        LOGGER.info("Initialization completed");
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(

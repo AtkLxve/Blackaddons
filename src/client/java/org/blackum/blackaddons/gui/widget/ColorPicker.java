@@ -134,7 +134,7 @@ public class ColorPicker extends Widget {
         int cursorX = x + (int) (saturation * width);
         int cursorY = y + (int) ((1f - brightness) * height);
 
-        graphics.renderOutline(cursorX - 4, cursorY - 4, 8, 8, 0xFFFFFFFF);
+        graphics.renderOutline(cursorX - 4, cursorY - 4, 8, 8, Theme.TEXT_PRIMARY);
     }
 
     private void renderHueSlider(GuiGraphics graphics, int x, int y, int width, int height) {
@@ -145,13 +145,13 @@ public class ColorPicker extends Widget {
         }
 
         int selectorX = x + (int) (hull * width);
-        graphics.fill(selectorX - 2, y - 2, selectorX + 2, y + height + 2, 0xFFFFFFFF);
+        graphics.fill(selectorX - 2, y - 2, selectorX + 2, y + height + 2, Theme.TEXT_PRIMARY);
     }
 
     private void renderAlphaSlider(GuiGraphics graphics, int x, int y, int width, int height) {
         int baseColor = ColorUtils.hsvToRgb(hull, saturation, brightness) & 0xFFFFFF;
 
-        graphics.fill(x, y, x + width, y + height, 0xFF333333);
+        graphics.fill(x, y, x + width, y + height, Theme.SURFACE_LIGHT);
 
         for (int i = 0; i < width; i++) {
             float a = (float) i / width;
@@ -160,7 +160,7 @@ public class ColorPicker extends Widget {
         }
 
         int selectorX = x + (int) (alpha * width);
-        graphics.fill(selectorX - 2, y - 2, selectorX + 2, y + height + 2, 0xFFFFFFFF);
+        graphics.fill(selectorX - 2, y - 2, selectorX + 2, y + height + 2, Theme.TEXT_PRIMARY);
     }
 
     private void renderValues(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, int x, int y,

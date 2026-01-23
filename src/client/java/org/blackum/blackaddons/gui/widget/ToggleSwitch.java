@@ -89,7 +89,7 @@ public class ToggleSwitch extends Widget {
             StringBuilder line = new StringBuilder();
 
             for (String word : words) {
-                if (Minecraft.getInstance().font.width(line + word) > width - 20 && line.length() > 0) {
+                if (Minecraft.getInstance().font.width(line + word) > width - 20 && !line.isEmpty()) {
                     graphics.drawString(Minecraft.getInstance().font, line.toString().trim(),
                             x + 10, descY, descColor);
                     descY += 10;
@@ -97,7 +97,7 @@ public class ToggleSwitch extends Widget {
                 }
                 line.append(word).append(" ");
             }
-            if (line.length() > 0) {
+            if (!line.isEmpty()) {
                 graphics.drawString(Minecraft.getInstance().font, line.toString().trim(),
                         x + 10, descY, descColor);
             }

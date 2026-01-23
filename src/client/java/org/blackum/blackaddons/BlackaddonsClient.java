@@ -9,7 +9,7 @@ import org.blackum.blackaddons.gui.screen.TestMenuScreen;
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        System.out.println("blackaddons: Initializing client...");
+        Blackaddons.LOGGER.info("Initializing client...");
         org.blackum.blackaddons.config.ConfigManager.load();
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
@@ -167,6 +167,6 @@ public class BlackaddonsClient implements ClientModInitializer {
             }
         });
 
-        System.out.println("blackaddons: Client initialization completed");
+        Blackaddons.LOGGER.info("Client initialization completed");
     }
 }

@@ -2,6 +2,7 @@ package org.blackum.blackaddons.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.screen.BaseScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
@@ -79,7 +80,7 @@ public class ConfigManager {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            Blackaddons.LOGGER.error("Failed to save config", e);
         }
     }
 
@@ -104,7 +105,7 @@ public class ConfigManager {
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            Blackaddons.LOGGER.error("Failed to save config with card states", e);
         }
     }
 
@@ -147,7 +148,7 @@ public class ConfigManager {
                 lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Blackaddons.LOGGER.error("Failed to load config", e);
         }
     }
 
