@@ -62,10 +62,8 @@ public class ConfigManager {
         public ArrayList<String> modHiderAllowedMods = new ArrayList<>();
         public ArrayList<String> modHiderAllowedCustomPayloadChannels = new ArrayList<>();
 
-        //cheats
-
-
-        //AutoTNT
+        // cheats
+        // AutoTNT
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 5;
     }
@@ -86,6 +84,9 @@ public class ConfigManager {
         data.modHiderDisableCustomPayloads = ModHiderOptions.DISABLE_CUSTOM_PAYLOADS;
         data.modHiderAllowedMods = new ArrayList<>(ModHiderOptions.ALLOWED_MODS);
         data.modHiderAllowedCustomPayloadChannels = new ArrayList<>(ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS);
+
+        data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
+        data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -111,6 +112,9 @@ public class ConfigManager {
         data.modHiderDisableCustomPayloads = ModHiderOptions.DISABLE_CUSTOM_PAYLOADS;
         data.modHiderAllowedMods = new ArrayList<>(ModHiderOptions.ALLOWED_MODS);
         data.modHiderAllowedCustomPayloadChannels = new ArrayList<>(ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS);
+
+        data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
+        data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -154,6 +158,9 @@ public class ConfigManager {
                 ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS = new HashSet<>(
                         data.modHiderAllowedCustomPayloadChannels == null ? java.util.List.of()
                                 : data.modHiderAllowedCustomPayloadChannels);
+
+                CheatsOptions.AutoTNTEnabled = data.AutoTNTEnabled;
+                CheatsOptions.AutoTNTDelay = data.AutoTNTDelay;
 
                 lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();
             }

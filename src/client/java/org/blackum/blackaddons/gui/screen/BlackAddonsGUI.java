@@ -27,7 +27,7 @@ public class BlackAddonsGUI extends BaseScreen {
     private ResizableCard disablePayloadsCard;
     private ResizableCard allowedChannelsCard;
     private ResizableCard allowedModsCard;
-    private ResizableCard autoTNTCard;
+    private ResizableCard autoTntCard;
 
     public BlackAddonsGUI() {
         this(null);
@@ -47,7 +47,6 @@ public class BlackAddonsGUI extends BaseScreen {
         initModHiderTab();
         initCheatsTab();
         initAboutTab();
-
 
         tabPanel.selectTab(lastTabIndex);
 
@@ -151,6 +150,7 @@ public class BlackAddonsGUI extends BaseScreen {
         modHiderCardContainer.addCard(allowedChannelsCard);
         modHiderCardContainer.addCard(allowedModsCard);
     }
+
     private void initModHiderTabLegacy() {
         TabPanel.Tab modHiderTab = tabPanel.addTab("Mod Hider");
 
@@ -459,14 +459,40 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private void initCheatsTab() {
-        TabPanel.Tab cheatsTab = tabPanel.addTab("Auto TNT");
-        if (!ConfigManager.useCardLayout){
-            cheatsTab.addWidget(new Label(tabPanel.getContentX(), tabPanel.getContentY(),"Toggle", Label.Style.TITLE));
-            return;
-        }
+        TabPanel.Tab cheatsTab = tabPanel.addTab("Cheats");
+
         int contentX = tabPanel.getContentX();
         int contentY = tabPanel.getContentY();
         int contentWidth = tabPanel.getContentWidth();
+
+        if (!ConfigManager.useCardLayout) {
+            cheatsTab.addWidget(new Label(contentX, contentY, "AutoTnt", Label.Style.TITLE));
+
+            ToggleSwitch enableToggle = new ToggleSwitch(contentX, contentY + 30, contentWidth,
+                    "Enable AutoTnt",
+                    "Automatically places TNT",
+                    CheatsOptions.AutoTNTEnabled, value -> {
+                        CheatsOptions.AutoTNTEnabled = value;
+                        ConfigManager.save();
+                    });
+            cheatsTab.addWidget(enableToggle);
+
+            Label tickLabel = new Label(contentX, contentY + 80,
+                    "Tick Delay: " + CheatsOptions.AutoTNTDelay + " ticks", Label.Style.BODY);
+            cheatsTab.addWidget(tickLabel);
+
+            Slider tickSlider = new Slider(contentX, contentY + 100, contentWidth, 5, 10,
+                    CheatsOptions.AutoTNTDelay, val -> {
+                        int ticks = Math.round(val);
+                        if (ticks != CheatsOptions.AutoTNTDelay) {
+                            CheatsOptions.AutoTNTDelay = ticks;
+                            tickLabel.setText("Tick Delay: " + ticks + " ticks");
+                            ConfigManager.save();
+                        }
+                    });
+            cheatsTab.addWidget(tickSlider);
+            return;
+        }
 
         Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
             ConfigManager.lastLoadedCardStates.clear();
@@ -474,35 +500,42 @@ public class BlackAddonsGUI extends BaseScreen {
             this.init(this.width, this.height);
         });
         cheatsTab.addWidget(resetLayout);
-        CardContainer cheatsCardContainer = new CardContainer(contentX, contentY, contentWidth, 676);
+
+        CardContainer cheatsCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
         cheatsTab.addWidget(cheatsCardContainer);
-        createAutoTNTCard(contentX, contentY);
-        cheatsCardContainer.addCard(autoTNTCard);
+
+        createAutoTntCard(contentX + 20, contentY + 50);
+        cheatsCardContainer.addCard(autoTntCard);
     }
 
-    private void createAutoTNTCard(int x, int y){
-        autoTNTCard = createResizableCard("autotnt", x, y, 300, 150, "AutoTNT");
-        int contentX = autoTNTCard.getContentX();
-        int contentY = autoTNTCard.getContentY();
-        ToggleSwitch enableToggle = new ToggleSwitch(contentX, contentY, 250,
-                 "Toggle AutoTNT", "this goes boom boom when block id 92",
+    private void createAutoTntCard(int x, int y) {
+        autoTntCard = createResizableCard("autoTnt", x, y, 300, 150, "AutoTnt");
+
+        int contentX = autoTntCard.getContentX();
+        int contentY = autoTntCard.getContentY();
+
+        ToggleSwitch enableToggle = new ToggleSwitch(contentX, contentY, 260,
+                "Enable AutoTnt",
+                "Automatically places TNT",
                 CheatsOptions.AutoTNTEnabled, value -> {
-            CheatsOptions.AutoTNTEnabled = value;
-            ConfigManager.save();
-        });
-        autoTNTCard.addChild(enableToggle);
-        Label ticklabel = new Label(contentX, contentY, "Tick Delay: " + CheatsOptions.AutoTNTDelay + " ticks", Label.Style.BODY);
-        autoTNTCard.addChild(ticklabel);
-        Slider tickSlider = new Slider(contentX, contentY, 250, 5, 10, CheatsOptions.AutoTNTDelay, val -> {
+                    CheatsOptions.AutoTNTEnabled = value;
+                    ConfigManager.save();
+                });
+        autoTntCard.addChild(enableToggle);
+
+        Label tickLabel = new Label(contentX, contentY + 50,
+                "Tick Delay: " + CheatsOptions.AutoTNTDelay + " ticks", Label.Style.BODY);
+        autoTntCard.addChild(tickLabel);
+
+        Slider tickSlider = new Slider(contentX, contentY + 70, 260, 5, 10, CheatsOptions.AutoTNTDelay, val -> {
             int ticks = Math.round(val);
-            if (ticks != CheatsOptions.AutoTNTDelay)
-            {
+            if (ticks != CheatsOptions.AutoTNTDelay) {
                 CheatsOptions.AutoTNTDelay = ticks;
-                ticklabel.setText("Tick Delay" + ticks + " ticks");
+                tickLabel.setText("Tick Delay: " + ticks + " ticks");
                 ConfigManager.save();
             }
         });
-        autoTNTCard.addChild(tickSlider);
+        autoTntCard.addChild(tickSlider);
     }
 
     private void rebuildChannelsList(ListView channelsList) {
@@ -752,6 +785,7 @@ public class BlackAddonsGUI extends BaseScreen {
         addCardToMap(states, "disablePayloads", disablePayloadsCard);
         addCardToMap(states, "allowedChannels", allowedChannelsCard);
         addCardToMap(states, "allowedMods", allowedModsCard);
+        addCardToMap(states, "autoTnt", autoTntCard);
         ConfigManager.save(states);
         ConfigManager.lastLoadedCardStates = states;
     }
