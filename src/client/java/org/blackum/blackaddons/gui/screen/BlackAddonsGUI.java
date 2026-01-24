@@ -468,7 +468,7 @@ public class BlackAddonsGUI extends BaseScreen {
         if (!ConfigManager.useCardLayout) {
             cheatsTab.addWidget(new Label(contentX, contentY, "AutoTnt", Label.Style.TITLE));
 
-            ToggleSwitch enableToggle = new ToggleSwitch(contentX, contentY + 30, contentWidth,
+            ToggleSwitch enableToggle = new ToggleSwitch(contentX, contentY + 30, contentWidth - 20,
                     "Enable AutoTnt",
                     "Automatically places TNT",
                     CheatsOptions.AutoTNTEnabled, value -> {
@@ -481,7 +481,7 @@ public class BlackAddonsGUI extends BaseScreen {
                     "Tick Delay: " + CheatsOptions.AutoTNTDelay + " ticks", Label.Style.BODY);
             cheatsTab.addWidget(tickLabel);
 
-            Slider tickSlider = new Slider(contentX, contentY + 100, contentWidth, 5, 10,
+            Slider tickSlider = new Slider(contentX, contentY + 100, contentWidth - 20, 5, 10,
                     CheatsOptions.AutoTNTDelay, val -> {
                         int ticks = Math.round(val);
                         if (ticks != CheatsOptions.AutoTNTDelay) {
