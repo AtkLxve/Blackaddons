@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen;
 
 import net.minecraft.network.chat.Component;
+import org.blackum.blackaddons.cheats.CheatsOptions;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
@@ -26,6 +27,7 @@ public class BlackAddonsGUI extends BaseScreen {
     private ResizableCard disablePayloadsCard;
     private ResizableCard allowedChannelsCard;
     private ResizableCard allowedModsCard;
+    private ResizableCard autoTNTCard;
 
     public BlackAddonsGUI() {
         this(null);
@@ -43,7 +45,9 @@ public class BlackAddonsGUI extends BaseScreen {
 
         initSettingsTab();
         initModHiderTab();
+        initCheatsTab();
         initAboutTab();
+
 
         tabPanel.selectTab(lastTabIndex);
 
@@ -147,7 +151,6 @@ public class BlackAddonsGUI extends BaseScreen {
         modHiderCardContainer.addCard(allowedChannelsCard);
         modHiderCardContainer.addCard(allowedModsCard);
     }
-
     private void initModHiderTabLegacy() {
         TabPanel.Tab modHiderTab = tabPanel.addTab("Mod Hider");
 
@@ -453,6 +456,53 @@ public class BlackAddonsGUI extends BaseScreen {
             public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
             }
         });
+    }
+
+    private void initCheatsTab() {
+        TabPanel.Tab cheatsTab = tabPanel.addTab("Auto TNT");
+        if (!ConfigManager.useCardLayout){
+            cheatsTab.addWidget(new Label(tabPanel.getContentX(), tabPanel.getContentY(),"Toggle", Label.Style.TITLE));
+            return;
+        }
+        int contentX = tabPanel.getContentX();
+        int contentY = tabPanel.getContentY();
+        int contentWidth = tabPanel.getContentWidth();
+
+        Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
+            ConfigManager.lastLoadedCardStates.clear();
+            ConfigManager.save();
+            this.init(this.width, this.height);
+        });
+        cheatsTab.addWidget(resetLayout);
+        CardContainer cheatsCardContainer = new CardContainer(contentX, contentY, contentWidth, 676);
+        cheatsTab.addWidget(cheatsCardContainer);
+        createAutoTNTCard(contentX, contentY);
+        cheatsCardContainer.addCard(autoTNTCard);
+    }
+
+    private void createAutoTNTCard(int x, int y){
+        autoTNTCard = createResizableCard("autotnt", x, y, 300, 150, "AutoTNT");
+        int contentX = autoTNTCard.getContentX();
+        int contentY = autoTNTCard.getContentY();
+        ToggleSwitch enableToggle = new ToggleSwitch(contentX, contentY, 250,
+                 "Toggle AutoTNT", "this goes boom boom when block id 92",
+                CheatsOptions.AutoTNTEnabled, value -> {
+            CheatsOptions.AutoTNTEnabled = value;
+            ConfigManager.save();
+        });
+        autoTNTCard.addChild(enableToggle);
+        Label ticklabel = new Label(contentX, contentY, "Tick Delay: " + CheatsOptions.AutoTNTDelay + " ticks", Label.Style.BODY);
+        autoTNTCard.addChild(ticklabel);
+        Slider tickSlider = new Slider(contentX, contentY, 250, 5, 10, CheatsOptions.AutoTNTDelay, val -> {
+            int ticks = Math.round(val);
+            if (ticks != CheatsOptions.AutoTNTDelay)
+            {
+                CheatsOptions.AutoTNTDelay = ticks;
+                ticklabel.setText("Tick Delay" + ticks + " ticks");
+                ConfigManager.save();
+            }
+        });
+        autoTNTCard.addChild(tickSlider);
     }
 
     private void rebuildChannelsList(ListView channelsList) {

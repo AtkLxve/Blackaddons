@@ -7,6 +7,7 @@ import org.blackum.blackaddons.gui.screen.BaseScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
 import org.blackum.blackaddons.modhider.SpoofMode;
+import org.blackum.blackaddons.cheats.CheatsOptions;
 
 import java.io.File;
 import java.io.FileReader;
@@ -60,6 +61,13 @@ public class ConfigManager {
         public boolean modHiderDisableCustomPayloads = true;
         public ArrayList<String> modHiderAllowedMods = new ArrayList<>();
         public ArrayList<String> modHiderAllowedCustomPayloadChannels = new ArrayList<>();
+
+        //cheats
+
+
+        //AutoTNT
+        public boolean AutoTNTEnabled = false;
+        public int AutoTNTDelay = 5;
     }
 
     public static void save() {
