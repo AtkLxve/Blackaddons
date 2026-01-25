@@ -24,6 +24,12 @@ public class ConnectionMixin {
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.OFF) {
                     return;
                 }
+                // Firmament stop fedding (in case they change stuff around)
+                if (payload.type().id().toString().startsWith("firmament")) {
+                    ci.cancel();
+                    return;
+                }
+
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.VANILLA) {
                     ci.cancel();
                     return;
