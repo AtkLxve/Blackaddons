@@ -19,18 +19,37 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ConnectionMixin {
     @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
     public void sendPacket(Packet<?> packet, ChannelFutureListener channelFutureListener, boolean bl, CallbackInfo ci) {
+        if (((Connection) (Object) this).isMemoryConnection()) {
+            return;
+        }
+
         if (packet instanceof ServerboundCustomPayloadPacket(CustomPacketPayload payload)) {
             if (!(payload instanceof DiscardedPayload) && !(payload instanceof BrandPayload)) {
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.OFF) {
                     return;
                 }
+
                 // Firmament stop fedding (in case they change stuff around)
                 if (payload.type().id().toString().startsWith("firmament")) {
+                    org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("Firmament Block", payload);
+                    net.minecraft.client.Minecraft.getInstance().execute(() -> {
+                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                                "Fuck Firmament",
+                                "Blocked Firmament packet: " + payload.type().id(),
+                                org.blackum.blackaddons.gui.notification.NotificationType.WARNING);
+                    });
                     ci.cancel();
                     return;
                 }
 
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.VANILLA) {
+                    org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("ModHider (Vanilla)", payload);
+                    net.minecraft.client.Minecraft.getInstance().execute(() -> {
+                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                                "Mod Hider",
+                                "Blocked payload: " + payload.type().id(),
+                                org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+                    });
                     ci.cancel();
                     return;
                 }
@@ -44,6 +63,13 @@ public class ConnectionMixin {
                             return;
                         }
                     }
+                    org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("ModHider (Custom)", payload);
+                    net.minecraft.client.Minecraft.getInstance().execute(() -> {
+                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                                "Mod Hider",
+                                "Blocked payload: " + payload.type().id(),
+                                org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+                    });
                     ci.cancel();
                 }
             }

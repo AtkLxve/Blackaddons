@@ -20,8 +20,16 @@ import java.util.Map;
 
 public class ConfigManager {
 
-    private static final File CONFIG_FILE = new File("blackaddons_config.json");
+    private static final java.nio.file.Path CONFIG_DIR = net.fabricmc.loader.api.FabricLoader.getInstance()
+            .getConfigDir().resolve("blackaddons");
+    private static final File CONFIG_FILE = CONFIG_DIR.resolve("blackaddons_config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    static {
+        if (!CONFIG_DIR.toFile().exists()) {
+            CONFIG_DIR.toFile().mkdirs();
+        }
+    }
 
     public static class CardState {
         public int x;
