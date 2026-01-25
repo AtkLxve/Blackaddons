@@ -12,6 +12,7 @@ public class Blackaddons implements ModInitializer {
     public static Runnable guiOpener;
     public static Runnable testMenuOpener;
     public static Runnable mainGuiOpener;
+    public static java.util.function.Consumer<String> notificationTrigger;
 
     @Override
     public void onInitialize() {
@@ -24,7 +25,12 @@ public class Blackaddons implements ModInitializer {
                             .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
                                     .executes(ctx -> executeOpenGui(ctx)))
                             .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
-                                    .executes(ctx -> executeOpenTestMenu(ctx))));
+                                    .executes(ctx -> executeOpenTestMenu(ctx)))
+                            .then(LiteralArgumentBuilder.<CommandSourceStack>literal("notify")
+                                    .then(com.mojang.brigadier.builder.RequiredArgumentBuilder
+                                            .<CommandSourceStack, String>argument("message",
+                                                    com.mojang.brigadier.arguments.StringArgumentType.greedyString())
+                                            .executes(ctx -> executeNotify(ctx)))));
 
             dispatcher.register(LiteralArgumentBuilder.<CommandSourceStack>literal("black")
                     .executes(ctx -> executeOpenMainGui(ctx))
@@ -65,6 +71,14 @@ public class Blackaddons implements ModInitializer {
     private int executeOpenTestMenu(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
         if (testMenuOpener != null) {
             testMenuOpener.run();
+        }
+        return 1;
+    }
+
+    private int executeNotify(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+        if (notificationTrigger != null) {
+            String message = com.mojang.brigadier.arguments.StringArgumentType.getString(context, "message");
+            notificationTrigger.accept(message);
         }
         return 1;
     }

@@ -32,6 +32,16 @@ public class BlackaddonsClient implements ClientModInitializer {
             });
         };
 
+        Blackaddons.notificationTrigger = (message) -> {
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> {
+                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        "Test Notification",
+                        message,
+                        org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+            });
+        };
+
         net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, partialTick) -> {
             if (org.blackum.blackaddons.gui.screen.BaseScreen.showDebugOverlay) {
                 net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
@@ -165,6 +175,14 @@ public class BlackaddonsClient implements ClientModInitializer {
                 }
                 graphics.pose().popMatrix();
             }
+        });
+
+        net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, partialTick) -> {
+            org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().render(graphics);
+        });
+
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().tick();
         });
 
         Blackaddons.LOGGER.info("Client initialization completed");
