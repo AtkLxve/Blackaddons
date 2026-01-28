@@ -48,3 +48,6 @@ Thumbs.db
 .cache/
 logs/
 /docs
+
+# Patched Firmament
+!libs/firmament-patched.jar
