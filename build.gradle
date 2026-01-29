@@ -33,10 +33,12 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    mavenCentral()
     maven { url "https://maven.terraformersmc.com/releases/" }
     maven { url "https://maven.shedaniel.me/" }
+    maven { url "https://maven.architectury.dev/" }
     maven { url "https://repo.hypixel.net/repository/Hypixel/" }
-    maven { url "https://repo.nea.moe/" }
+    maven { url "https://repo.nea.moe/releases/" }
     flatDir {
         dirs 'libs'
     }
@@ -56,9 +58,9 @@ dependencies {
     }
 
     // Dependencies
-    modImplementation "moe.nea:jarvis-fabric:2.1.0"
-    modImplementation "net.hypixel:hypixel-mod-api:1.0.1+build.1+mc1.21"
-    modImplementation "me.shedaniel:basic-math:0.6.1"
+    modImplementation "moe.nea.jarvis:jarvis-fabric:2.1.0"
+    modImplementation "net.hypixel:mod-api:1.0.1"
+    modImplementation "me.shedaniel.cloth:basic-math:0.6.1"
     modImplementation "me.shedaniel:mm:2.4.1"
 
     modCompileOnly "com.terraformersmc:modmenu:17.0.0-beta.2"
