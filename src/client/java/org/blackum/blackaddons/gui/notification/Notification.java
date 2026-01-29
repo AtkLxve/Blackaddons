@@ -46,7 +46,8 @@ public class Notification {
     }
 
     public void tick() {
-        if (!expiring && System.currentTimeMillis() - creationTime > LIFETIME) {
+        if (!expiring && System.currentTimeMillis()
+                - creationTime > org.blackum.blackaddons.general.GeneralOptions.NOTIFICATION_DURATION) {
             expiring = true;
             exitAnimation.start();
         }

@@ -8,6 +8,7 @@ import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
 import org.blackum.blackaddons.modhider.SpoofMode;
 import org.blackum.blackaddons.cheats.CheatsOptions;
+import org.blackum.blackaddons.general.GeneralOptions;
 
 import java.io.File;
 import java.io.FileReader;
@@ -74,6 +75,9 @@ public class ConfigManager {
         // AutoTNT
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 5;
+
+        // Settings
+        public int notificationDuration = 4000;
     }
 
     public static void save() {
@@ -95,6 +99,8 @@ public class ConfigManager {
 
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
+
+        data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -123,6 +129,8 @@ public class ConfigManager {
 
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
+
+        data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -169,6 +177,11 @@ public class ConfigManager {
 
                 CheatsOptions.AutoTNTEnabled = data.AutoTNTEnabled;
                 CheatsOptions.AutoTNTDelay = data.AutoTNTDelay;
+
+                CheatsOptions.AutoTNTEnabled = data.AutoTNTEnabled;
+                CheatsOptions.AutoTNTDelay = data.AutoTNTDelay;
+
+                GeneralOptions.NOTIFICATION_DURATION = data.notificationDuration;
 
                 lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();
             }

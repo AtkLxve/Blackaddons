@@ -11,6 +11,7 @@ import org.blackum.blackaddons.modhider.SpoofMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.blackum.blackaddons.general.GeneralOptions;
 
 public class BlackAddonsGUI extends BaseScreen {
 
@@ -87,6 +88,21 @@ public class BlackAddonsGUI extends BaseScreen {
                     this.init(this.width, this.height);
                 });
         settingsTab.addWidget(layoutToggle);
+
+        Label durationLabel = new Label(contentX, contentY + 320,
+                "Notification Duration: " + GeneralOptions.NOTIFICATION_DURATION + "ms", Label.Style.BODY);
+        settingsTab.addWidget(durationLabel);
+
+        Slider durationSlider = new Slider(contentX, contentY + 330, 200, 500f, 10000f,
+                GeneralOptions.NOTIFICATION_DURATION, val -> {
+                    int duration = Math.round(val);
+                    if (duration != GeneralOptions.NOTIFICATION_DURATION) {
+                        GeneralOptions.NOTIFICATION_DURATION = duration;
+                        durationLabel.setText("Notification Duration: " + duration + "ms");
+                        ConfigManager.save();
+                    }
+                });
+        settingsTab.addWidget(durationSlider);
     }
 
     private void initAboutTab() {
