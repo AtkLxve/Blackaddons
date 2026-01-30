@@ -21,6 +21,8 @@ public class Theme {
     public static int SCROLLBAR_THUMB = 0xFFFFFFFF;
     public static int TOOLTIP_BG = 0xE0000000;
 
+    public static int CONTROL_BG_HOVER = 0x22FFFFFF;
+
     public static final int BORDER_RADIUS = 12;
     public static final int BORDER_RADIUS_SMALL = 8;
     public static final int BORDER_RADIUS_LARGE = 16;

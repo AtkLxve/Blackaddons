@@ -30,7 +30,6 @@ public class ListView extends Widget {
                 item.setY(currentY);
                 item.setWidth(width - scrollbarWidth - 4);
 
-                // Check if item is within the visible area of the ListView
                 if (currentY + item.getHeight() >= y && currentY <= y + height) {
                     item.updateHoverState(mouseX, mouseY);
                 } else {
@@ -111,7 +110,7 @@ public class ListView extends Widget {
         }
 
         for (Widget item : items) {
-            if (item.isVisible() && item.getY() >= y && item.getY() + item.getHeight() <= y + height) {
+            if (item.isVisible() && item.getY() + item.getHeight() > y && item.getY() < y + height) {
                 if (item.mouseClicked(mouseX, mouseY, button)) {
                     return true;
                 }

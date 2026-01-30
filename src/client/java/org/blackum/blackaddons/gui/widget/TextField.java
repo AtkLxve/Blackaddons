@@ -32,6 +32,8 @@ public class TextField extends Widget {
         this.placeholder = placeholder;
         this.focusAnimation = new Animation(0, 1, Theme.ANIM_FOCUS, Easing::easeOut);
         this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
+        this.history.add(new State(text, cursorPosition, selectionStart, selectionEnd));
+        this.historyIndex = 0;
     }
 
     @Override
@@ -153,6 +155,7 @@ public class TextField extends Widget {
             return false;
 
         boolean isCtrlPressed = (modifiers & 2) != 0;
+        boolean isShiftPressed = (modifiers & 1) != 0;
 
         // Ctrl+A - Select All
         if (isCtrlPressed && keyCode == 65) {
@@ -170,22 +173,7 @@ public class TextField extends Widget {
 
         // Ctrl+V - Paste
         if (isCtrlPressed && keyCode == 86) {
-            String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
-            if (clipboard != null && !clipboard.isEmpty()) {
-                if (hasSelection()) {
-                    deleteSelection();
-                }
-                StringBuilder filtered = new StringBuilder();
-                for (char c : clipboard.toCharArray()) {
-                    if (c >= 32 && charFilter.test(c) && text.length() + filtered.length() < maxLength) {
-                        filtered.append(c);
-                    }
-                }
-                if (!filtered.isEmpty()) {
-                    text = text.substring(0, cursorPosition) + filtered + text.substring(cursorPosition);
-                    cursorPosition += filtered.length();
-                }
-            }
+            paste();
             return true;
         }
 
@@ -198,13 +186,26 @@ public class TextField extends Widget {
             return true;
         }
 
+        // Undo
+        if (isCtrlPressed && keyCode == 90) { // Z
+            undo();
+            return true;
+        }
+
+        // Redo
+        if (isCtrlPressed && keyCode == 89) { // Y
+            redo();
+            return true;
+        }
+
         // Backspace
         if (keyCode == 259) {
             if (hasSelection()) {
                 deleteSelection();
-            } else if (cursorPosition > 0) {
-                text = text.substring(0, cursorPosition - 1) + text.substring(cursorPosition);
-                cursorPosition--;
+                pushHistory();
+            } else {
+                deleteText(-1);
+                pushHistory();
             }
             return true;
         }
@@ -213,39 +214,142 @@ public class TextField extends Widget {
         if (keyCode == 261) {
             if (hasSelection()) {
                 deleteSelection();
-            } else if (cursorPosition < text.length()) {
-                text = text.substring(0, cursorPosition) + text.substring(cursorPosition + 1);
+                pushHistory();
+            } else {
+                deleteText(1);
+                pushHistory();
             }
             return true;
         }
 
         // Arrow keys
-        if (keyCode == 263 && cursorPosition > 0) { // Left
-            cursorPosition--;
-            clearSelection();
+        if (keyCode == 263) { // Left
+            if (isCtrlPressed) {
+                moveCursorByWord(-1, isShiftPressed);
+            } else {
+                moveCursor(-1, isShiftPressed);
+            }
             return true;
         }
-        if (keyCode == 262 && cursorPosition < text.length()) { // Right
-            cursorPosition++;
-            clearSelection();
+        if (keyCode == 262) { // Right
+            if (isCtrlPressed) {
+                moveCursorByWord(1, isShiftPressed);
+            } else {
+                moveCursor(1, isShiftPressed);
+            }
             return true;
         }
 
-        // Home ??? idk maybe someone uses it
+        // Home
         if (keyCode == 268) {
-            cursorPosition = 0;
-            clearSelection();
+            moveCursorToStart(isShiftPressed);
             return true;
         }
 
-        // End ??? idk too, like who is even using it?
+        // End
         if (keyCode == 269) {
-            cursorPosition = text.length();
-            clearSelection();
+            moveCursorToEnd(isShiftPressed);
             return true;
         }
 
         return false;
+    }
+
+    private void paste() {
+        String clipboard = Minecraft.getInstance().keyboardHandler.getClipboard();
+        if (clipboard != null && !clipboard.isEmpty()) {
+            if (hasSelection()) {
+                deleteSelection();
+            }
+            insertText(clipboard);
+            pushHistory();
+        }
+    }
+
+    private void moveCursor(int offset, boolean select) {
+        int newPos = Math.max(0, Math.min(text.length(), cursorPosition + offset));
+        updateSelection(newPos, select);
+    }
+
+    private void moveCursorByWord(int direction, boolean select) {
+        int offset = getCursorWordOffset(direction);
+        moveCursor(offset, select);
+    }
+
+    private int getCursorWordOffset(int direction) {
+        if (direction == 0)
+            return 0;
+        int pos = cursorPosition;
+        int len = text.length();
+
+        if (direction > 0) {
+            if (pos >= len)
+                return 0;
+            while (pos < len && text.charAt(pos) == ' ')
+                pos++;
+            while (pos < len && text.charAt(pos) != ' ')
+                pos++;
+        } else {
+            if (pos <= 0)
+                return 0;
+            while (pos > 0 && text.charAt(pos - 1) == ' ')
+                pos--;
+            while (pos > 0 && text.charAt(pos - 1) != ' ')
+                pos--;
+        }
+
+        return pos - cursorPosition;
+    }
+
+    private void moveCursorToStart(boolean select) {
+        updateSelection(0, select);
+    }
+
+    private void moveCursorToEnd(boolean select) {
+        updateSelection(text.length(), select);
+    }
+
+    private void updateSelection(int newPos, boolean keepSelection) {
+        if (keepSelection) {
+            if (selectionStart == -1) {
+                selectionStart = cursorPosition;
+            }
+            selectionEnd = newPos;
+        } else {
+            selectionStart = -1;
+            selectionEnd = -1;
+        }
+        cursorPosition = newPos;
+    }
+
+    private void deleteText(int offset) {
+        if (offset == 0)
+            return;
+        int start = offset < 0 ? cursorPosition + offset : cursorPosition;
+        int end = offset < 0 ? cursorPosition : cursorPosition + offset;
+
+        start = Math.max(0, start);
+        end = Math.min(text.length(), end);
+
+        if (start == end)
+            return;
+
+        text = text.substring(0, start) + text.substring(end);
+        cursorPosition = start;
+        clearSelection();
+    }
+
+    private void insertText(String str) {
+        StringBuilder filtered = new StringBuilder();
+        for (char c : str.toCharArray()) {
+            if (c >= 32 && charFilter.test(c) && text.length() + filtered.length() < maxLength) {
+                filtered.append(c);
+            }
+        }
+        if (!filtered.isEmpty()) {
+            text = text.substring(0, cursorPosition) + filtered + text.substring(cursorPosition);
+            cursorPosition += filtered.length();
+        }
     }
 
     @Override
@@ -260,6 +364,7 @@ public class TextField extends Widget {
             if (text.length() < maxLength) {
                 text = text.substring(0, cursorPosition) + character + text.substring(cursorPosition);
                 cursorPosition++;
+                pushHistory();
                 return true;
             }
         }
@@ -356,5 +461,57 @@ public class TextField extends Widget {
         }
 
         return text.length();
+    }
+
+    private static class State {
+        String text;
+        int cursorPosition;
+        int selectionStart;
+        int selectionEnd;
+
+        State(String text, int cursorPosition, int selectionStart, int selectionEnd) {
+            this.text = text;
+            this.cursorPosition = cursorPosition;
+            this.selectionStart = selectionStart;
+            this.selectionEnd = selectionEnd;
+        }
+    }
+
+    private java.util.LinkedList<State> history = new java.util.LinkedList<>();
+    private int historyIndex = -1;
+
+    private void pushHistory() {
+        while (history.size() > historyIndex + 1) {
+            history.removeLast();
+        }
+
+        if (history.size() > 50) {
+            history.removeFirst();
+            historyIndex--;
+        }
+
+        history.add(new State(text, cursorPosition, selectionStart, selectionEnd));
+        historyIndex++;
+    }
+
+    private void undo() {
+        if (historyIndex > 0) {
+            historyIndex--;
+            restoreState(history.get(historyIndex));
+        }
+    }
+
+    private void redo() {
+        if (historyIndex < history.size() - 1) {
+            historyIndex++;
+            restoreState(history.get(historyIndex));
+        }
+    }
+
+    private void restoreState(State state) {
+        this.text = state.text;
+        this.cursorPosition = state.cursorPosition;
+        this.selectionStart = state.selectionStart;
+        this.selectionEnd = state.selectionEnd;
     }
 }

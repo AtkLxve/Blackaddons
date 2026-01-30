@@ -9,6 +9,8 @@ import org.blackum.blackaddons.modhider.ModHiderOptions;
 import org.blackum.blackaddons.modhider.SpoofMode;
 import org.blackum.blackaddons.cheats.CheatsOptions;
 import org.blackum.blackaddons.general.GeneralOptions;
+import org.blackum.blackaddons.payload.PayloadManager;
+import org.blackum.blackaddons.payload.PayloadOverride;
 
 import java.io.File;
 import java.io.FileReader;
@@ -78,6 +80,10 @@ public class ConfigManager {
 
         // Settings
         public int notificationDuration = 4000;
+
+        // Payload Manager
+        public ArrayList<PayloadOverride> payloadOverrides = new ArrayList<>();
+        public ArrayList<org.blackum.blackaddons.payload.RecordedPayload> recordedPayloads = new ArrayList<>();
     }
 
     public static void save() {
@@ -101,6 +107,9 @@ public class ConfigManager {
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
+
+        data.payloadOverrides = new ArrayList<>(org.blackum.blackaddons.payload.PayloadManager.overrides);
+        data.recordedPayloads = new ArrayList<>(org.blackum.blackaddons.payload.PayloadManager.recordedPayloads);
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -131,6 +140,9 @@ public class ConfigManager {
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
+
+        data.payloadOverrides = new ArrayList<>(org.blackum.blackaddons.payload.PayloadManager.overrides);
+        data.recordedPayloads = new ArrayList<>(org.blackum.blackaddons.payload.PayloadManager.recordedPayloads);
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -182,6 +194,21 @@ public class ConfigManager {
                 CheatsOptions.AutoTNTDelay = data.AutoTNTDelay;
 
                 GeneralOptions.NOTIFICATION_DURATION = data.notificationDuration;
+
+                PayloadManager.overrides.clear();
+                if (data.payloadOverrides != null) {
+                    PayloadManager.overrides.addAll(data.payloadOverrides);
+                }
+
+                PayloadManager.overrides.clear();
+                if (data.payloadOverrides != null) {
+                    PayloadManager.overrides.addAll(data.payloadOverrides);
+                }
+
+                PayloadManager.recordedPayloads.clear();
+                if (data.recordedPayloads != null) {
+                    PayloadManager.recordedPayloads.addAll(data.recordedPayloads);
+                }
 
                 lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();
             }

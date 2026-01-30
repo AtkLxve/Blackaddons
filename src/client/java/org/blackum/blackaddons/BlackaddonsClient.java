@@ -185,6 +185,10 @@ public class BlackaddonsClient implements ClientModInitializer {
             org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().tick();
         });
 
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+            org.blackum.blackaddons.config.ConfigManager.save();
+        });
+
         Blackaddons.LOGGER.info("Client initialization completed");
     }
 }
