@@ -59,6 +59,7 @@ public class Theme {
     public static final int SPACING_SMALL = 8;
     public static final int SPACING_NORMAL = 20;
     public static final int SPACING_LARGE = 30;
+    public static final int CARD_SPACING = 20;
 
     public static int withAlpha(int rgb, float alpha) {
         int a = (int) (alpha * 255) << 24;

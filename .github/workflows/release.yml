@@ -2,13 +2,15 @@ name: Release BlackAddons
 
 permissions:
   contents: write
+  pull-requests: read
+  issues: read
 
 on:
   push:
     branches:
       - "main"
       - "master"
-
+      - "1.21.11"
   workflow_dispatch:
     inputs:
       release_type:

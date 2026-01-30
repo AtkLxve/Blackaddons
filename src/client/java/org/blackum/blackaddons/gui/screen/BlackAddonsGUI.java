@@ -160,19 +160,41 @@ public class BlackAddonsGUI extends BaseScreen {
         int col2X = contentX + 340;
 
         if (isSingleColumn) {
-            createSpoofModeCard(col1X, containerY + 20);
-            createCustomClientCard(col1X, containerY + 60);
-            createHideModsCard(col1X, containerY + 100);
-            createDisablePayloadsCard(col1X, containerY + 140);
-            createAllowedChannelsCard(col1X, containerY + 180);
-            createAllowedModsCard(col1X, containerY + 220);
+            spoofModeCard = createSpoofModeCard(col1X, containerY + 20);
+            int currentY = containerY + 20 + spoofModeCard.getHeight() + Theme.CARD_SPACING;
+
+            customClientCard = createCustomClientCard(col1X, currentY);
+            currentY += customClientCard.getHeight() + Theme.CARD_SPACING;
+
+            hideModsCard = createHideModsCard(col1X, currentY);
+            currentY += hideModsCard.getHeight() + Theme.CARD_SPACING;
+
+            disablePayloadsCard = createDisablePayloadsCard(col1X, currentY);
+            currentY += disablePayloadsCard.getHeight() + Theme.CARD_SPACING;
+
+            allowedChannelsCard = createAllowedChannelsCard(col1X, currentY);
+            currentY += allowedChannelsCard.getHeight() + Theme.CARD_SPACING;
+
+            allowedModsCard = createAllowedModsCard(col1X, currentY);
         } else {
-            createSpoofModeCard(col1X, containerY + 20);
-            createCustomClientCard(col1X, containerY + 60);
-            createHideModsCard(col2X, containerY + 20);
-            createDisablePayloadsCard(col2X, containerY + 60);
-            createAllowedChannelsCard(col1X, containerY + 100);
-            createAllowedModsCard(col2X, containerY + 100);
+            int currentY1 = containerY + 20;
+            int currentY2 = containerY + 20;
+
+            spoofModeCard = createSpoofModeCard(col1X, currentY1);
+            currentY1 += spoofModeCard.getHeight() + Theme.CARD_SPACING;
+
+            customClientCard = createCustomClientCard(col1X, currentY1);
+            currentY1 += customClientCard.getHeight() + Theme.CARD_SPACING;
+
+            allowedChannelsCard = createAllowedChannelsCard(col1X, currentY1);
+
+            hideModsCard = createHideModsCard(col2X, currentY2);
+            currentY2 += hideModsCard.getHeight() + Theme.CARD_SPACING;
+
+            disablePayloadsCard = createDisablePayloadsCard(col2X, currentY2);
+            currentY2 += disablePayloadsCard.getHeight() + Theme.CARD_SPACING;
+
+            allowedModsCard = createAllowedModsCard(col2X, currentY2);
         }
 
         modHiderCardContainer.addCard(spoofModeCard);
@@ -331,7 +353,7 @@ public class BlackAddonsGUI extends BaseScreen {
         });
     }
 
-    private void createSpoofModeCard(int x, int y) {
+    private ResizableCard createSpoofModeCard(int x, int y) {
         spoofModeCard = createResizableCard("spoofMode", x, y, 300, 150, "Spoof Mode");
 
         int contentX = spoofModeCard.getContentX();
@@ -354,9 +376,10 @@ public class BlackAddonsGUI extends BaseScreen {
         spoofModeDropdown.setHeight(24);
         spoofModeDropdown.setSelectedOption(ModHiderOptions.SPOOF_MODE.name());
         spoofModeCard.addChild(spoofModeDropdown);
+        return spoofModeCard;
     }
 
-    private void createCustomClientCard(int x, int y) {
+    private ResizableCard createCustomClientCard(int x, int y) {
         customClientCard = createResizableCard("customClient", x, y, 300, 140, "Custom Client Brand");
 
         int contentX = customClientCard.getContentX();
@@ -375,9 +398,10 @@ public class BlackAddonsGUI extends BaseScreen {
             ConfigManager.save();
         });
         customClientCard.addChild(applyCustomClient);
+        return customClientCard;
     }
 
-    private void createHideModsCard(int x, int y) {
+    private ResizableCard createHideModsCard(int x, int y) {
         hideModsCard = createResizableCard("hideMods", x, y, 300, 110, "Hide Mods");
 
         int contentX = hideModsCard.getContentX();
@@ -391,9 +415,10 @@ public class BlackAddonsGUI extends BaseScreen {
                     ConfigManager.save();
                 });
         hideModsCard.addChild(hideModsToggle);
+        return hideModsCard;
     }
 
-    private void createDisablePayloadsCard(int x, int y) {
+    private ResizableCard createDisablePayloadsCard(int x, int y) {
         disablePayloadsCard = createResizableCard("disablePayloads", x, y, 300, 120, "Disable Custom Payloads");
 
         int contentX = disablePayloadsCard.getContentX();
@@ -407,9 +432,10 @@ public class BlackAddonsGUI extends BaseScreen {
                     ConfigManager.save();
                 });
         disablePayloadsCard.addChild(disablePayloadsToggle);
+        return disablePayloadsCard;
     }
 
-    private void createAllowedChannelsCard(int x, int y) {
+    private ResizableCard createAllowedChannelsCard(int x, int y) {
         allowedChannelsCard = createResizableCard("allowedChannels", x, y, 300, 220, "Allowed Payload Channels");
 
         int contentX = allowedChannelsCard.getContentX();
@@ -452,9 +478,10 @@ public class BlackAddonsGUI extends BaseScreen {
             public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
             }
         });
+        return allowedChannelsCard;
     }
 
-    private void createAllowedModsCard(int x, int y) {
+    private ResizableCard createAllowedModsCard(int x, int y) {
         allowedModsCard = createResizableCard("allowedMods", x, y, 300, 320, "Allowed Mods");
 
         int contentX = allowedModsCard.getContentX();
@@ -488,6 +515,7 @@ public class BlackAddonsGUI extends BaseScreen {
             public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
             }
         });
+        return allowedModsCard;
     }
 
     private void initCheatsTab() {
@@ -536,11 +564,12 @@ public class BlackAddonsGUI extends BaseScreen {
         CardContainer cheatsCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
         cheatsTab.addWidget(cheatsCardContainer);
 
-        createAutoTntCard(contentX + 20, contentY + 50);
+        int currentY = contentY + 50;
+        autoTntCard = createAutoTntCard(contentX + 20, currentY);
         cheatsCardContainer.addCard(autoTntCard);
     }
 
-    private void createAutoTntCard(int x, int y) {
+    private ResizableCard createAutoTntCard(int x, int y) {
         autoTntCard = createResizableCard("autoTnt", x, y, 300, 150, "AutoTnt");
 
         int contentX = autoTntCard.getContentX();
@@ -568,6 +597,7 @@ public class BlackAddonsGUI extends BaseScreen {
             }
         });
         autoTntCard.addChild(tickSlider);
+        return autoTntCard;
     }
 
     private void rebuildChannelsList(ListView channelsList) {
@@ -821,8 +851,11 @@ public class BlackAddonsGUI extends BaseScreen {
             CardContainer payloadsCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
             payloadsTab.addWidget(payloadsCardContainer);
 
-            createRecordedPayloadsCard(contentX + 20, contentY + 50);
-            createActiveOverridesCard(contentX + 20, contentY + 90);
+            int currentY = contentY + 50;
+            recordedPayloadsCard = createRecordedPayloadsCard(contentX + 20, currentY);
+            currentY += recordedPayloadsCard.getHeight() + Theme.CARD_SPACING;
+
+            activeOverridesCard = createActiveOverridesCard(contentX + 20, currentY);
 
             payloadsCardContainer.addCard(recordedPayloadsCard);
             payloadsCardContainer.addCard(activeOverridesCard);
@@ -852,7 +885,7 @@ public class BlackAddonsGUI extends BaseScreen {
         populateOverridesList(overridesList);
     }
 
-    private void createRecordedPayloadsCard(int x, int y) {
+    private ResizableCard createRecordedPayloadsCard(int x, int y) {
         recordedPayloadsCard = createResizableCard("recordedPayloads", x, y, 300, 250, "Recorded Payloads");
         int contentX = recordedPayloadsCard.getContentX();
         int contentY = recordedPayloadsCard.getContentY();
@@ -868,9 +901,10 @@ public class BlackAddonsGUI extends BaseScreen {
         recordedPayloadsCard.addChild(recordedList);
 
         populateRecordedList(recordedList);
+        return recordedPayloadsCard;
     }
 
-    private void createActiveOverridesCard(int x, int y) {
+    private ResizableCard createActiveOverridesCard(int x, int y) {
         activeOverridesCard = createResizableCard("activeOverrides", x, y, 300, 250, "Active Overrides");
         int contentX = activeOverridesCard.getContentX();
         int contentY = activeOverridesCard.getContentY();
@@ -879,6 +913,7 @@ public class BlackAddonsGUI extends BaseScreen {
         activeOverridesCard.addChild(overridesList);
 
         populateOverridesList(overridesList);
+        return activeOverridesCard;
     }
 
     private void populateRecordedList(ListView list) {
