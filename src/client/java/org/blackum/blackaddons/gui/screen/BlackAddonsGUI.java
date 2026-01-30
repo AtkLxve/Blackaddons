@@ -113,7 +113,19 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentY = tabPanel.getContentY();
 
         aboutTab.addWidget(new Label(contentX, contentY, "BlackAddons", Label.Style.TITLE));
-        aboutTab.addWidget(new Label(contentX, contentY + 30, "Version: 1.0.0", Label.Style.BODY));
+
+        String version = "Unknown";
+        try {
+            java.util.Optional<net.fabricmc.loader.api.ModContainer> mod = net.fabricmc.loader.api.FabricLoader
+                    .getInstance().getModContainer("blackaddons");
+            if (mod.isPresent()) {
+                version = mod.get().getMetadata().getVersion().getFriendlyString();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        aboutTab.addWidget(new Label(contentX, contentY + 30, "Version: " + version, Label.Style.BODY));
         aboutTab.addWidget(new Label(contentX, contentY + 50, "Created by Blackum", Label.Style.BODY));
     }
 

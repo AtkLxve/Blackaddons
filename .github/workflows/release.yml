@@ -1,0 +1,87 @@
+name: Release BlackAddons
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - "main"
+      - "master"
+
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release Type (stable)'
+        required: true
+        default: 'stable'
+        type: choice
+        options:
+        - stable
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '9.2.1'
+          arguments: build
+
+      # Nightly Release (On Push)
+      - name: Create Nightly Release
+        if: github.event_name == 'push'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "nightly"
+          prerelease: true
+          title: "Nightly Build"
+          files: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-dev.jar
+
+      # Stable Release (Manual Dispatch)
+      - name: Get Version
+        if: github.event_name == 'workflow_dispatch'
+        id: get_version
+        run: |
+          VERSION=$(grep "mod_version" gradle.properties | cut -d'=' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Current version is $VERSION"
+
+      - name: Create Stable Release
+        if: github.event_name == 'workflow_dispatch'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "v${{ env.VERSION }}"
+          prerelease: false
+          title: "v${{ env.VERSION }}"
+          files: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-dev.jar
+
+      - name: Bump Version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          python3 scripts/bump_version.py
+        
+      - name: Commit & Push Version Bump
+        if: github.event_name == 'workflow_dispatch'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: bump version"
+          file_pattern: gradle.properties
