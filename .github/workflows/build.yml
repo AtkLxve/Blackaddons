@@ -1,8 +1,6 @@
 name: Build BlackAddons
 
 on:
-  push:
-    branches: [ "master", "main", "1.21.10", "1.21.11" ]
   pull_request:
     branches: [ "master", "main", "1.21.10", "1.21.11" ]
 
