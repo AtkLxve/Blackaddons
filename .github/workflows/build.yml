@@ -25,8 +25,17 @@ jobs:
           gradle-version: '9.2.1'
           arguments: build
 
-      - name: Upload Artifacts
+      - name: Upload Mod Jar
         uses: actions/upload-artifact@v4
         with:
-          name: BlackAddons-Artifacts
-          path: build/libs/*.jar
+          name: BlackAddons-Mod
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-dev.jar
+
+      - name: Upload Sources Jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlackAddons-Sources
+          path: build/libs/*-sources.jar
