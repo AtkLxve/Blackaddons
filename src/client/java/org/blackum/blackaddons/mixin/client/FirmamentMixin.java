@@ -13,19 +13,21 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 // Thanks noamm
-@Pseudo
-@Mixin(targets = "moe.nea.firmament.features.misc.ModAnnouncer", remap = false)
-public class FirmamentMixin {
-    @Dynamic
-    @Inject(method = "onServerJoin", at = @At("HEAD"), cancellable = true, require = 0)
-    private void stopFeedingEveryone(@Coerce Object event, CallbackInfo ci) {
-        ci.cancel();
-        Blackaddons.LOGGER.info("Prevented Firmament from announcing mods.");
-        Minecraft.getInstance().execute(() -> {
-            NotificationManager.addNotification(
-                    "Fuck Firmament",
-                    "Blocked Firmament Mod Announcer",
-                    NotificationType.WARNING);
-        });
-    }
-}
+// @Pseudo
+// @Mixin(targets = "moe.nea.firmament.features.misc.ModAnnouncer", remap =
+// false)
+// public class FirmamentMixin {
+// @Dynamic
+// @Inject(method = "onServerJoin", at = @At("HEAD"), cancellable = true,
+// require = 0)
+// private void stopFeedingEveryone(@Coerce Object event, CallbackInfo ci) {
+// ci.cancel();
+// Blackaddons.LOGGER.info("Prevented Firmament from announcing mods.");
+// Minecraft.getInstance().execute(() -> {
+// NotificationManager.addNotification(
+// "Fuck Firmament",
+// "Blocked Firmament Mod Announcer",
+// NotificationType.WARNING);
+// });
+// }
+// }

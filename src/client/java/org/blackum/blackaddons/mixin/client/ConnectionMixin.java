@@ -30,17 +30,18 @@ public class ConnectionMixin {
                 }
 
                 // Firmament stop fedding (in case they change stuff around)
-                if (payload.type().id().toString().startsWith("firmament")) {
-                    org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("Firmament Block", payload);
-                    net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
-                                "Fuck Firmament",
-                                "Blocked Firmament packet: " + payload.type().id(),
-                                org.blackum.blackaddons.gui.notification.NotificationType.WARNING);
-                    });
-                    ci.cancel();
-                    return;
-                }
+                // if (payload.type().id().toString().startsWith("firmament")) {
+                // org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("Firmament Block",
+                // payload);
+                // net.minecraft.client.Minecraft.getInstance().execute(() -> {
+                // org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                // "Fuck Firmament",
+                // "Blocked Firmament packet: " + payload.type().id(),
+                // org.blackum.blackaddons.gui.notification.NotificationType.WARNING);
+                // });
+                // ci.cancel();
+                // return;
+                // }
 
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.VANILLA) {
                     org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("ModHider (Vanilla)", payload);

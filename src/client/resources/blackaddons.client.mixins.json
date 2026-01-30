@@ -9,8 +9,7 @@
     "KnownPacksManagerMixin",
     "AnvilScreenMixin",
     "AbstractSignEditScreenMixin",
-    "LanguageManagerAccessor",
-    "FirmamentMixin"
+    "LanguageManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
