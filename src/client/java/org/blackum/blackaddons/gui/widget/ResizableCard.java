@@ -1,6 +1,9 @@
 package org.blackum.blackaddons.gui.widget;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.Minecraft;
+import com.mojang.blaze3d.platform.InputConstants;
+import org.lwjgl.glfw.GLFW;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 
@@ -24,6 +27,11 @@ public class ResizableCard extends Card {
     private int initialHeight;
     private boolean collapsed = true;
     private int expandedHeight;
+
+    private int minX = Integer.MIN_VALUE;
+    private int minY = Integer.MIN_VALUE;
+    private int maxX = Integer.MAX_VALUE;
+    private int maxY = Integer.MAX_VALUE;
 
     private enum ResizeHandle {
         NONE, BOTTOM_RIGHT, BOTTOM, RIGHT
@@ -64,9 +72,19 @@ public class ResizableCard extends Card {
         }
     }
 
+    public void setDragBounds(int minX, int minY, int maxX, int maxY) {
+        this.minX = minX;
+        this.minY = minY;
+        this.maxX = maxX;
+        this.maxY = maxY;
+    }
+
     @Override
     public void updateHoverState(int mouseX, int mouseY) {
         super.updateHoverState(mouseX, mouseY);
+
+        if (collapsed)
+            return;
 
         float scale = Math.min(1.0f, (float) width / MIN_WIDTH);
         int contentX = getContentX();
@@ -172,6 +190,18 @@ public class ResizableCard extends Card {
             }
         }
 
+        if (button == 1) {
+            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                setCollapsed(!collapsed);
+                if (onLayoutChange != null)
+                    onLayoutChange.run();
+                return true;
+            }
+        }
+
+        if (collapsed)
+            return false;
+
         float scale = Math.min(1.0f, (float) width / MIN_WIDTH);
         int contentX = getContentX();
         int contentY = getContentY();
@@ -180,15 +210,6 @@ public class ResizableCard extends Card {
 
         for (Widget child : getChildren()) {
             if (child.mouseClicked(scaledMouseX, scaledMouseY, button)) {
-                return true;
-            }
-        }
-
-        if (button == 1) {
-            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
-                setCollapsed(!collapsed);
-                if (onLayoutChange != null)
-                    onLayoutChange.run();
                 return true;
             }
         }
@@ -221,8 +242,21 @@ public class ResizableCard extends Card {
         if (dragging) {
             int deltaX = (int) mouseX - dragStartX;
             int deltaY = (int) mouseY - dragStartY;
-            x = dragStartCardX + deltaX;
-            y = dragStartCardY + deltaY;
+
+            int gridSize = 10;
+            int targetX = dragStartCardX + deltaX;
+            int targetY = dragStartCardY + deltaY;
+
+            if (isShiftDown()) {
+                targetX = Math.round((float) targetX / gridSize) * gridSize;
+                targetY = Math.round((float) targetY / gridSize) * gridSize;
+            }
+
+            targetX = Math.max(minX, Math.min(maxX - width, targetX));
+            targetY = Math.max(minY, Math.min(maxY - height, targetY));
+
+            x = targetX;
+            y = targetY;
             updateChildPositions();
             return true;
         }
@@ -232,11 +266,19 @@ public class ResizableCard extends Card {
             int deltaY = (int) mouseY - dragStartY;
 
             if (activeHandle == ResizeHandle.BOTTOM_RIGHT || activeHandle == ResizeHandle.RIGHT) {
-                width = Math.max(initialWidth, dragStartWidth + deltaX);
+                int newWidth = dragStartWidth + deltaX;
+                if (isShiftDown()) {
+                    newWidth = Math.round((float) newWidth / 10) * 10;
+                }
+                width = Math.max(initialWidth, newWidth);
             }
             if (activeHandle == ResizeHandle.BOTTOM_RIGHT || activeHandle == ResizeHandle.BOTTOM) {
                 if (!collapsed) {
-                    height = Math.max(initialHeight, dragStartHeight + deltaY);
+                    int newHeight = dragStartHeight + deltaY;
+                    if (isShiftDown()) {
+                        newHeight = Math.round((float) newHeight / 10) * 10;
+                    }
+                    height = Math.max(initialHeight, newHeight);
                     expandedHeight = height;
                 }
             }
@@ -244,6 +286,9 @@ public class ResizableCard extends Card {
             updateChildPositions();
             return true;
         }
+
+        if (collapsed)
+            return false;
 
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
@@ -311,5 +356,31 @@ public class ResizableCard extends Card {
 
     public boolean isResizing() {
         return resizing;
+    }
+
+    private boolean isShiftDown() {
+        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) ||
+                InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (collapsed)
+            return false;
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (collapsed)
+            return false;
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char character, int modifiers) {
+        if (collapsed)
+            return false;
+        return super.charTyped(character, modifiers);
     }
 }

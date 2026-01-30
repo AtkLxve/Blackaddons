@@ -17,6 +17,7 @@ public class CardContainer extends Widget {
 
     public void addCard(ResizableCard card) {
         cards.add(card);
+        card.setDragBounds(x, y, x + width, y + height);
     }
 
     public void removeCard(ResizableCard card) {

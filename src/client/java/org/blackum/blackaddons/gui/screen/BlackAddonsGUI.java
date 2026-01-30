@@ -30,6 +30,9 @@ public class BlackAddonsGUI extends BaseScreen {
     private ResizableCard allowedModsCard;
     private ResizableCard autoTntCard;
 
+    private ResizableCard recordedPayloadsCard;
+    private ResizableCard activeOverridesCard;
+
     public BlackAddonsGUI() {
         this(null);
     }
@@ -94,7 +97,7 @@ public class BlackAddonsGUI extends BaseScreen {
                 "Notification Duration: " + GeneralOptions.NOTIFICATION_DURATION + "ms", Label.Style.BODY);
         settingsTab.addWidget(durationLabel);
 
-        Slider durationSlider = new Slider(contentX, contentY + 330, 200, 500f, 10000f,
+        Slider durationSlider = new Slider(contentX, contentY + 330, tabPanel.getContentWidth() - 20, 500f, 10000f,
                 GeneralOptions.NOTIFICATION_DURATION, val -> {
                     int duration = Math.round(val);
                     if (duration != GeneralOptions.NOTIFICATION_DURATION) {
@@ -807,6 +810,25 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentY = tabPanel.getContentY();
         int contentWidth = tabPanel.getContentWidth();
 
+        if (ConfigManager.useCardLayout) {
+            Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
+                ConfigManager.lastLoadedCardStates.clear();
+                ConfigManager.save();
+                this.init(this.width, this.height);
+            });
+            payloadsTab.addWidget(resetLayout);
+
+            CardContainer payloadsCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
+            payloadsTab.addWidget(payloadsCardContainer);
+
+            createRecordedPayloadsCard(contentX + 20, contentY + 50);
+            createActiveOverridesCard(contentX + 20, contentY + 90);
+
+            payloadsCardContainer.addCard(recordedPayloadsCard);
+            payloadsCardContainer.addCard(activeOverridesCard);
+            return;
+        }
+
         payloadsTab.addWidget(new Label(contentX, contentY, "Recorded Payloads", Label.Style.TITLE));
 
         Button clearButton = new Button(contentX + 120, contentY - 10, 100, "Clear",
@@ -819,6 +841,47 @@ public class BlackAddonsGUI extends BaseScreen {
         ListView recordedList = new ListView(contentX, contentY + 40, contentWidth - 20, 200);
         payloadsTab.addWidget(recordedList);
 
+        populateRecordedList(recordedList);
+
+        int overridesY = contentY + 250;
+        payloadsTab.addWidget(new Label(contentX, overridesY, "Active Overrides", Label.Style.TITLE));
+
+        ListView overridesList = new ListView(contentX, overridesY + 30, contentWidth - 20, 200);
+        payloadsTab.addWidget(overridesList);
+
+        populateOverridesList(overridesList);
+    }
+
+    private void createRecordedPayloadsCard(int x, int y) {
+        recordedPayloadsCard = createResizableCard("recordedPayloads", x, y, 300, 250, "Recorded Payloads");
+        int contentX = recordedPayloadsCard.getContentX();
+        int contentY = recordedPayloadsCard.getContentY();
+
+        Button clearButton = new Button(contentX + 180, contentY - 8, 80, "Clear",
+                () -> {
+                    org.blackum.blackaddons.payload.PayloadManager.clearRecordedPayloads();
+                    this.init(this.width, this.height);
+                });
+        recordedPayloadsCard.addChild(clearButton);
+
+        ListView recordedList = new ListView(contentX, contentY + 15, 260, 200);
+        recordedPayloadsCard.addChild(recordedList);
+
+        populateRecordedList(recordedList);
+    }
+
+    private void createActiveOverridesCard(int x, int y) {
+        activeOverridesCard = createResizableCard("activeOverrides", x, y, 300, 250, "Active Overrides");
+        int contentX = activeOverridesCard.getContentX();
+        int contentY = activeOverridesCard.getContentY();
+
+        ListView overridesList = new ListView(contentX, contentY, 260, 210);
+        activeOverridesCard.addChild(overridesList);
+
+        populateOverridesList(overridesList);
+    }
+
+    private void populateRecordedList(ListView list) {
         synchronized (org.blackum.blackaddons.payload.PayloadManager.recordedPayloads) {
             for (org.blackum.blackaddons.payload.RecordedPayload payload : org.blackum.blackaddons.payload.PayloadManager.recordedPayloads) {
                 String label = payload.channel + " (" + payload.data.length() / 2 + " bytes)";
@@ -832,19 +895,15 @@ public class BlackAddonsGUI extends BaseScreen {
                     net.minecraft.client.Minecraft.getInstance().setScreen(
                             new PayloadEditorScreen(this, override, true, () -> this.init(this.width, this.height)));
                 });
-                recordedList.addItem(item);
+                list.addItem(item);
             }
         }
+    }
 
-        int overridesY = contentY + 250;
-        payloadsTab.addWidget(new Label(contentX, overridesY, "Active Overrides", Label.Style.TITLE));
-
-        ListView overridesList = new ListView(contentX, overridesY + 30, contentWidth - 20, 200);
-        payloadsTab.addWidget(overridesList);
-
+    private void populateOverridesList(ListView list) {
         for (org.blackum.blackaddons.payload.PayloadOverride override : org.blackum.blackaddons.payload.PayloadManager.overrides) {
-            Widget overrideWidget = createOverrideWidget(override, overridesList);
-            overridesList.addItem(overrideWidget);
+            Widget overrideWidget = createOverrideWidget(override, list);
+            list.addItem(overrideWidget);
         }
     }
 
@@ -951,6 +1010,8 @@ public class BlackAddonsGUI extends BaseScreen {
         addCardToMap(states, "allowedChannels", allowedChannelsCard);
         addCardToMap(states, "allowedMods", allowedModsCard);
         addCardToMap(states, "autoTnt", autoTntCard);
+        addCardToMap(states, "recordedPayloads", recordedPayloadsCard);
+        addCardToMap(states, "activeOverrides", activeOverridesCard);
         ConfigManager.save(states);
         ConfigManager.lastLoadedCardStates = states;
     }
