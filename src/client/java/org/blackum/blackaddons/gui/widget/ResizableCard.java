@@ -214,7 +214,7 @@ public class ResizableCard extends Card {
             }
         }
 
-        return false;
+        return isMouseOver(mouseX, mouseY);
     }
 
     @Override

@@ -35,10 +35,18 @@ public class CardContainer extends Widget {
     @Override
     public void updateHoverState(int mouseX, int mouseY) {
         super.updateHoverState(mouseX, mouseY);
+        boolean blocked = false;
         for (int i = cards.size() - 1; i >= 0; i--) {
             ResizableCard card = cards.get(i);
             if (card.isVisible()) {
-                card.updateHoverState(mouseX, mouseY);
+                if (blocked) {
+                    card.updateHoverState(-10000, -10000);
+                } else {
+                    card.updateHoverState(mouseX, mouseY);
+                    if (card.isMouseOver(mouseX, mouseY)) {
+                        blocked = true;
+                    }
+                }
             }
         }
     }

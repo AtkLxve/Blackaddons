@@ -8,9 +8,10 @@ import io.netty.buffer.Unpooled;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class PayloadManager {
-    public static List<PayloadOverride> overrides = new ArrayList<>();
+    public static List<PayloadOverride> overrides = new CopyOnWriteArrayList<>();
 
     public static List<RecordedPayload> recordedPayloads = Collections.synchronizedList(new ArrayList<>());
 

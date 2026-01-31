@@ -72,7 +72,7 @@ public class Card extends Widget {
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(mouseX, mouseY, button) || isMouseOver(mouseX, mouseY);
     }
 
     @Override

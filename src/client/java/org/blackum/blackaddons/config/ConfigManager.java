@@ -73,7 +73,7 @@ public class ConfigManager {
         public ArrayList<String> modHiderAllowedMods = new ArrayList<>();
         public ArrayList<String> modHiderAllowedCustomPayloadChannels = new ArrayList<>();
 
-        // cheats
+        // Cheats
         // AutoTNT
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 5;
@@ -200,11 +200,6 @@ public class ConfigManager {
                 org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled = data.legitFullbrightEnabled;
 
                 GeneralOptions.NOTIFICATION_DURATION = data.notificationDuration;
-
-                PayloadManager.overrides.clear();
-                if (data.payloadOverrides != null) {
-                    PayloadManager.overrides.addAll(data.payloadOverrides);
-                }
 
                 PayloadManager.overrides.clear();
                 if (data.payloadOverrides != null) {
