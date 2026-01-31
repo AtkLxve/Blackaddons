@@ -41,17 +41,19 @@ public class ConfigManager {
         public int height;
         public boolean collapsed;
         public int initialWidth;
+        public int expandedHeight;
 
         public CardState() {
         }
 
-        public CardState(int x, int y, int width, int height, boolean collapsed, int initialWidth) {
+        public CardState(int x, int y, int width, int height, boolean collapsed, int initialWidth, int expandedHeight) {
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
             this.collapsed = collapsed;
             this.initialWidth = initialWidth;
+            this.expandedHeight = expandedHeight;
         }
     }
 

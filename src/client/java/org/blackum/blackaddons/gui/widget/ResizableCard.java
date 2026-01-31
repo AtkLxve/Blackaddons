@@ -379,6 +379,26 @@ public class ResizableCard extends Card {
     }
 
     @Override
+    public void setX(int x) {
+        super.setX(x);
+        updateChildPositions();
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        updateChildPositions();
+    }
+
+    public int getExpandedHeight() {
+        return expandedHeight;
+    }
+
+    public void setExpandedHeight(int expandedHeight) {
+        this.expandedHeight = expandedHeight;
+    }
+
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (collapsed)
             return false;

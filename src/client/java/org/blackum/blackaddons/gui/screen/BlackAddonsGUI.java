@@ -1086,7 +1086,7 @@ public class BlackAddonsGUI extends BaseScreen {
     private void addCardToMap(java.util.Map<String, ConfigManager.CardState> map, String id, ResizableCard card) {
         if (card != null)
             map.put(id, new ConfigManager.CardState(card.getX(), card.getY(), card.getWidth(), card.getHeight(),
-                    card.isCollapsed(), card.getInitialWidth()));
+                    card.isCollapsed(), card.getInitialWidth(), card.getExpandedHeight()));
     }
 
     private void saveCardLayout() {
@@ -1113,6 +1113,9 @@ public class BlackAddonsGUI extends BaseScreen {
             card.setCollapsed(state.collapsed);
             if (state.initialWidth > 0) {
                 card.setInitialWidth(state.initialWidth);
+            }
+            if (state.expandedHeight > 0) {
+                card.setExpandedHeight(state.expandedHeight);
             }
             card.setOnLayoutChange(this::saveCardLayout);
             return card;

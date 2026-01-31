@@ -30,10 +30,10 @@ public class ListView extends Widget {
                 item.setY(currentY);
                 item.setWidth(width - scrollbarWidth - 4);
 
-                if (currentY + item.getHeight() >= y && currentY <= y + height) {
+                if (isMouseOver(mouseX, mouseY) && currentY + item.getHeight() >= y && currentY <= y + height) {
                     item.updateHoverState(mouseX, mouseY);
                 } else {
-                    item.hovered = false;
+                    item.updateHoverState(-1, -1);
                 }
 
                 currentY += item.getHeight() + itemSpacing;
@@ -100,7 +100,7 @@ public class ListView extends Widget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!enabled || !visible)
+        if (!enabled || !visible || !isMouseOver(mouseX, mouseY))
             return false;
 
         if (isMouseOverScrollbar(mouseX, mouseY)) {
