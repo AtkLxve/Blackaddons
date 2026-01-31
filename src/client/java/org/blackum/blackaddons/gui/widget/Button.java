@@ -8,7 +8,7 @@ import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 
 public class Button extends Widget {
-    private final String text;
+    private String text;
     private final Runnable onClick;
     private Animation hoverAnimation;
     private Animation pressAnimation;
@@ -24,6 +24,10 @@ public class Button extends Widget {
         this.onClick = onClick;
         this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
         this.pressAnimation = new Animation(0, 1, Theme.ANIM_CLICK, Easing::easeInOut);
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     @Override

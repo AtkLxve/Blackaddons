@@ -676,6 +676,9 @@ public class CodeEditorWidget extends Widget {
             return false;
 
         if (character >= 32) {
+            if (hasSelection()) {
+                deleteSelection();
+            }
             lines.get(cursorLine).insert(cursorColumn, character);
             cursorColumn++;
             pushHistory();

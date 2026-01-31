@@ -55,6 +55,9 @@ public class ConfigManager {
         }
     }
 
+    // Bot Integration
+    public static String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
+    public static boolean rngTrackerEnabled = true;
     public static boolean useCardLayout = true;
 
     public static class ConfigData {
@@ -66,6 +69,10 @@ public class ConfigManager {
         public int accentColor = Theme.ACCENT;
         public boolean useCardLayout = true;
         public Map<String, CardState> cardStates = new HashMap<>();
+
+        // Bot
+        public String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
+        public boolean rngTrackerEnabled = true;
 
         // Mod Hider (ported from ClientSpoofer)
         public String modHiderSpoofMode = SpoofMode.VANILLA.name();
@@ -98,6 +105,8 @@ public class ConfigManager {
         data.accentColor = Theme.ACCENT;
         data.useCardLayout = ConfigManager.useCardLayout;
         data.cardStates = lastLoadedCardStates;
+        data.botUrl = ConfigManager.botUrl;
+        data.rngTrackerEnabled = ConfigManager.rngTrackerEnabled;
 
         data.modHiderSpoofMode = ModHiderOptions.SPOOF_MODE.name();
         data.modHiderCustomClient = ModHiderOptions.CUSTOM_CLIENT;
@@ -130,6 +139,8 @@ public class ConfigManager {
         data.accentColor = Theme.ACCENT;
         data.useCardLayout = ConfigManager.useCardLayout;
         data.cardStates = cardStates != null ? cardStates : new HashMap<>();
+        data.botUrl = ConfigManager.botUrl;
+        data.rngTrackerEnabled = ConfigManager.rngTrackerEnabled;
 
         data.modHiderSpoofMode = ModHiderOptions.SPOOF_MODE.name();
         data.modHiderCustomClient = ModHiderOptions.CUSTOM_CLIENT;
@@ -170,6 +181,8 @@ public class ConfigManager {
                     Theme.ACCENT = data.accentColor;
                 }
                 ConfigManager.useCardLayout = data.useCardLayout;
+                ConfigManager.botUrl = data.botUrl != null ? data.botUrl
+                        : "http://hypixel-skyblock-socket.pegle.com:8080";
 
                 try {
                     ModHiderOptions.SPOOF_MODE = SpoofMode.valueOf(
@@ -195,6 +208,7 @@ public class ConfigManager {
 
                 GeneralOptions.NOTIFICATION_DURATION = data.notificationDuration;
 
+                ConfigManager.rngTrackerEnabled = data.rngTrackerEnabled;
                 lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();
             }
         } catch (IOException e) {
