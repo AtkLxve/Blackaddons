@@ -189,6 +189,35 @@ public class BlackaddonsClient implements ClientModInitializer {
             org.blackum.blackaddons.config.ConfigManager.save();
         });
 
+        net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT
+                .register((dispatcher, registryAccess) -> {
+                    java.util.List<String> commands = java.util.List.of("ba", "black", "blackaddons");
+
+                    for (String cmd : commands) {
+                        dispatcher.register(
+                                net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal(cmd)
+                                        .executes(ctx -> {
+                                            if (Blackaddons.mainGuiOpener != null)
+                                                Blackaddons.mainGuiOpener.run();
+                                            return 1;
+                                        })
+                                        .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                                .literal("DebugGui")
+                                                .executes(ctx -> {
+                                                    if (Blackaddons.guiOpener != null)
+                                                        Blackaddons.guiOpener.run();
+                                                    return 1;
+                                                }))
+                                        .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                                .literal("TestMenu")
+                                                .executes(ctx -> {
+                                                    if (Blackaddons.testMenuOpener != null)
+                                                        Blackaddons.testMenuOpener.run();
+                                                    return 1;
+                                                })));
+                    }
+                });
+
         Blackaddons.LOGGER.info("Client initialization completed");
     }
 }

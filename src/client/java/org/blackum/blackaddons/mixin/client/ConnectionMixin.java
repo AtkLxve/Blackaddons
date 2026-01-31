@@ -24,10 +24,7 @@ public class ConnectionMixin {
         }
 
         if (packet instanceof ServerboundCustomPayloadPacket(CustomPacketPayload payload)) {
-            // Record everything first, even if blocked later
             org.blackum.blackaddons.payload.PayloadManager.record(payload);
-
-            // Check overrides FIRST
             if (processPayloadOverride(payload, channelFutureListener, bl, ci)) {
                 return;
             }

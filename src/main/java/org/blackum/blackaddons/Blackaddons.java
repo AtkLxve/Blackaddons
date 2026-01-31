@@ -17,35 +17,6 @@ public class Blackaddons implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("Initialization completed");
-
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(
-                    LiteralArgumentBuilder.<CommandSourceStack>literal("ba")
-                            .executes(ctx -> executeOpenMainGui(ctx))
-                            .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
-                                    .executes(ctx -> executeOpenGui(ctx)))
-                            .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
-                                    .executes(ctx -> executeOpenTestMenu(ctx)))
-                            .then(LiteralArgumentBuilder.<CommandSourceStack>literal("notify")
-                                    .then(com.mojang.brigadier.builder.RequiredArgumentBuilder
-                                            .<CommandSourceStack, String>argument("message",
-                                                    com.mojang.brigadier.arguments.StringArgumentType.greedyString())
-                                            .executes(ctx -> executeNotify(ctx)))));
-
-            dispatcher.register(LiteralArgumentBuilder.<CommandSourceStack>literal("black")
-                    .executes(ctx -> executeOpenMainGui(ctx))
-                    .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
-                            .executes(ctx -> executeOpenGui(ctx)))
-                    .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
-                            .executes(ctx -> executeOpenTestMenu(ctx))));
-
-            dispatcher.register(LiteralArgumentBuilder.<CommandSourceStack>literal("blackaddons")
-                    .executes(ctx -> executeOpenMainGui(ctx))
-                    .then(LiteralArgumentBuilder.<CommandSourceStack>literal("DebugGui")
-                            .executes(ctx -> executeOpenGui(ctx)))
-                    .then(LiteralArgumentBuilder.<CommandSourceStack>literal("TestMenu")
-                            .executes(ctx -> executeOpenTestMenu(ctx))));
-        });
     }
 
     private int executeStatus(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {

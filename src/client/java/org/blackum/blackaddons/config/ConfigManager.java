@@ -78,6 +78,9 @@ public class ConfigManager {
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 5;
 
+        // Legit
+        public boolean legitFullbrightEnabled = false;
+
         // Settings
         public int notificationDuration = 4000;
 
@@ -105,6 +108,8 @@ public class ConfigManager {
 
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
+
+        data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
 
@@ -138,6 +143,8 @@ public class ConfigManager {
 
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
+
+        data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
 
@@ -190,8 +197,7 @@ public class ConfigManager {
                 CheatsOptions.AutoTNTEnabled = data.AutoTNTEnabled;
                 CheatsOptions.AutoTNTDelay = data.AutoTNTDelay;
 
-                CheatsOptions.AutoTNTEnabled = data.AutoTNTEnabled;
-                CheatsOptions.AutoTNTDelay = data.AutoTNTDelay;
+                org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled = data.legitFullbrightEnabled;
 
                 GeneralOptions.NOTIFICATION_DURATION = data.notificationDuration;
 
