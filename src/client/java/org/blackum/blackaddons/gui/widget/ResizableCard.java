@@ -9,7 +9,6 @@ import org.blackum.blackaddons.gui.util.RenderHelper;
 
 public class ResizableCard extends Card {
 
-    private static final int MIN_WIDTH = 200;
     private static final int RESIZE_HANDLE_SIZE = 12;
     private static final int TITLE_BAR_HEIGHT = 24;
 
@@ -24,7 +23,6 @@ public class ResizableCard extends Card {
     private ResizeHandle activeHandle = ResizeHandle.NONE;
 
     private int initialWidth;
-    private int initialHeight;
     private boolean collapsed = true;
     private int expandedHeight;
 
@@ -46,9 +44,6 @@ public class ResizableCard extends Card {
     public ResizableCard(int x, int y, int width, int height, String title) {
         super(x, y, width, height, title);
         this.initialWidth = width;
-        this.initialHeight = height;
-        this.initialWidth = width;
-        this.initialHeight = height;
         this.expandedHeight = height;
 
         if (collapsed) {
@@ -86,7 +81,7 @@ public class ResizableCard extends Card {
         if (collapsed)
             return;
 
-        float scale = Math.min(1.0f, (float) width / MIN_WIDTH);
+        float scale = (float) width / initialWidth;
         int contentX = getContentX();
         int contentY = getContentY();
         int scaledMouseX = (int) ((mouseX - contentX) / scale + contentX);
@@ -128,7 +123,7 @@ public class ResizableCard extends Card {
         if (collapsed)
             return;
 
-        float scale = Math.min(1.0f, (float) width / MIN_WIDTH);
+        float scale = (float) width / initialWidth;
 
         graphics.pose().pushMatrix();
 
@@ -202,7 +197,7 @@ public class ResizableCard extends Card {
         if (collapsed)
             return false;
 
-        float scale = Math.min(1.0f, (float) width / MIN_WIDTH);
+        float scale = (float) width / initialWidth;
         int contentX = getContentX();
         int contentY = getContentY();
         double scaledMouseX = (mouseX - contentX) / scale + contentX;
@@ -270,7 +265,7 @@ public class ResizableCard extends Card {
                 if (isShiftDown()) {
                     newWidth = Math.round((float) newWidth / 10) * 10;
                 }
-                width = Math.max(initialWidth, newWidth);
+                width = Math.max(50, newWidth);
             }
             if (activeHandle == ResizeHandle.BOTTOM_RIGHT || activeHandle == ResizeHandle.BOTTOM) {
                 if (!collapsed) {
@@ -278,7 +273,7 @@ public class ResizableCard extends Card {
                     if (isShiftDown()) {
                         newHeight = Math.round((float) newHeight / 10) * 10;
                     }
-                    height = Math.max(initialHeight, newHeight);
+                    height = Math.max(TITLE_BAR_HEIGHT + 20, newHeight);
                     expandedHeight = height;
                 }
             }
@@ -319,7 +314,12 @@ public class ResizableCard extends Card {
     private void updateChildPositions() {
         int contentX = getContentX();
         int contentY = getContentY();
-        int contentWidth = getContentWidth();
+        float scale = (float) width / initialWidth;
+        // visualWidth = contentWidth * scale
+        // visualWidth should be width - padding * 2
+        // contentWidth * scale = width - padding * 2
+        // contentWidth = (width - padding * 2) / scale
+        int contentWidth = (int) ((width - getPadding() * 2) / scale);
         int currentY = contentY;
 
         for (Widget child : getChildren()) {
@@ -352,6 +352,14 @@ public class ResizableCard extends Card {
 
     public boolean isDragging() {
         return dragging;
+    }
+
+    public int getInitialWidth() {
+        return initialWidth;
+    }
+
+    public void setInitialWidth(int initialWidth) {
+        this.initialWidth = initialWidth;
     }
 
     public boolean isResizing() {

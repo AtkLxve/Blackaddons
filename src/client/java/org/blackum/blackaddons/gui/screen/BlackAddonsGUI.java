@@ -18,8 +18,6 @@ public class BlackAddonsGUI extends BaseScreen {
     private TabPanel tabPanel;
     private static int lastTabIndex = 0;
     private String currentTooltip = null;
-    private int tooltipX = 0;
-    private int tooltipY = 0;
     private final java.util.Map<String, Boolean> collapsedGroups = new java.util.HashMap<>();
 
     private ResizableCard spoofModeCard;
@@ -147,10 +145,9 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentY = tabPanel.getContentY();
         int contentWidth = tabPanel.getContentWidth();
 
-        Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
-            ConfigManager.lastLoadedCardStates.clear();
-            ConfigManager.save();
-            this.init(this.width, this.height);
+        Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
+            resetCardStates("spoofMode", "customClient", "hideMods", "disablePayloads", "allowedChannels",
+                    "allowedMods");
         });
         modHiderTab.addWidget(resetLayout);
 
@@ -529,10 +526,8 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentWidth = tabPanel.getContentWidth();
 
         if (ConfigManager.useCardLayout) {
-            Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
-                ConfigManager.lastLoadedCardStates.clear();
-                ConfigManager.save();
-                this.init(this.width, this.height);
+            Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
+                resetCardStates("fullbright");
             });
             legitTab.addWidget(resetLayout);
 
@@ -610,10 +605,8 @@ public class BlackAddonsGUI extends BaseScreen {
             return;
         }
 
-        Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
-            ConfigManager.lastLoadedCardStates.clear();
-            ConfigManager.save();
-            this.init(this.width, this.height);
+        Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
+            resetCardStates("autoTnt");
         });
         cheatsTab.addWidget(resetLayout);
 
@@ -805,8 +798,6 @@ public class BlackAddonsGUI extends BaseScreen {
                 cb.render(g, mx, my, p);
                 if (cb.isHovered() && !info.dependencies.isEmpty()) {
                     currentTooltip = "Dependencies: " + String.join(", ", info.dependencies);
-                    tooltipX = mx;
-                    tooltipY = my;
                 }
             }
 
@@ -860,12 +851,12 @@ public class BlackAddonsGUI extends BaseScreen {
     protected void renderTooltips(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY) {
         if (currentTooltip != null && !currentTooltip.isEmpty()) {
             int tooltipWidth = font.width(currentTooltip) + 8;
-            int tooltipXPos = this.tooltipX + 10;
-            int tooltipYPos = (int) (this.tooltipY - scrollOffset) - 20;
-            if (tooltipXPos + tooltipWidth > containerX + containerWidth)
-                tooltipXPos = this.tooltipX - tooltipWidth - 10;
-            if (tooltipYPos < containerY)
-                tooltipYPos = (int) (this.tooltipY - scrollOffset) + 10;
+            int tooltipXPos = mouseX + 10;
+            int tooltipYPos = mouseY - 20;
+            if (tooltipXPos + tooltipWidth > width)
+                tooltipXPos = mouseX - tooltipWidth - 10;
+            if (tooltipYPos < 0)
+                tooltipYPos = mouseY + 10;
             graphics.fill(tooltipXPos - 2, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2, tooltipYPos + 10 + 2,
                     Theme.TOOLTIP_BG);
             graphics.fill(tooltipXPos - 2, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2, tooltipYPos - 1,
@@ -897,10 +888,8 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentWidth = tabPanel.getContentWidth();
 
         if (ConfigManager.useCardLayout) {
-            Button resetLayout = new Button(contentX + 20, contentY, 100, "Reset Layout", () -> {
-                ConfigManager.lastLoadedCardStates.clear();
-                ConfigManager.save();
-                this.init(this.width, this.height);
+            Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
+                resetCardStates("recordedPayloads", "activeOverrides");
             });
             payloadsTab.addWidget(resetLayout);
 
@@ -1086,10 +1075,18 @@ public class BlackAddonsGUI extends BaseScreen {
         return wrapper;
     }
 
+    private void resetCardStates(String... ids) {
+        for (String id : ids) {
+            ConfigManager.lastLoadedCardStates.remove(id);
+        }
+        ConfigManager.save(ConfigManager.lastLoadedCardStates);
+        this.init(this.width, this.height);
+    }
+
     private void addCardToMap(java.util.Map<String, ConfigManager.CardState> map, String id, ResizableCard card) {
         if (card != null)
             map.put(id, new ConfigManager.CardState(card.getX(), card.getY(), card.getWidth(), card.getHeight(),
-                    card.isCollapsed()));
+                    card.isCollapsed(), card.getInitialWidth()));
     }
 
     private void saveCardLayout() {
@@ -1114,6 +1111,9 @@ public class BlackAddonsGUI extends BaseScreen {
         if (state != null) {
             ResizableCard card = new ResizableCard(state.x, state.y, state.width, state.height, title);
             card.setCollapsed(state.collapsed);
+            if (state.initialWidth > 0) {
+                card.setInitialWidth(state.initialWidth);
+            }
             card.setOnLayoutChange(this::saveCardLayout);
             return card;
         }

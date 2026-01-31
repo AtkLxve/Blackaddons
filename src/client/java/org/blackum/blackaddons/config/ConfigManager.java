@@ -40,16 +40,18 @@ public class ConfigManager {
         public int width;
         public int height;
         public boolean collapsed;
+        public int initialWidth;
 
         public CardState() {
         }
 
-        public CardState(int x, int y, int width, int height, boolean collapsed) {
+        public CardState(int x, int y, int width, int height, boolean collapsed, int initialWidth) {
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
             this.collapsed = collapsed;
+            this.initialWidth = initialWidth;
         }
     }
 
@@ -98,6 +100,7 @@ public class ConfigManager {
         data.showDebugOverlay = BaseScreen.showDebugOverlay;
         data.accentColor = Theme.ACCENT;
         data.useCardLayout = ConfigManager.useCardLayout;
+        data.cardStates = lastLoadedCardStates;
 
         data.modHiderSpoofMode = ModHiderOptions.SPOOF_MODE.name();
         data.modHiderCustomClient = ModHiderOptions.CUSTOM_CLIENT;
