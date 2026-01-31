@@ -28,9 +28,6 @@ public class BlackAddonsGUI extends BaseScreen {
     private ResizableCard allowedModsCard;
     private ResizableCard autoTntCard;
 
-    private ResizableCard recordedPayloadsCard;
-    private ResizableCard activeOverridesCard;
-
     private ResizableCard fullbrightCard;
 
     public BlackAddonsGUI() {
@@ -51,7 +48,7 @@ public class BlackAddonsGUI extends BaseScreen {
         initModHiderTab();
         initCheatsTab();
         initLegitTab();
-        initPayloadsTab();
+
         initAboutTab();
 
         tabPanel.selectTab(lastTabIndex);
@@ -880,201 +877,6 @@ public class BlackAddonsGUI extends BaseScreen {
         super.onClose();
     }
 
-    private void initPayloadsTab() {
-        TabPanel.Tab payloadsTab = tabPanel.addTab("Payloads");
-
-        int contentX = tabPanel.getContentX();
-        int contentY = tabPanel.getContentY();
-        int contentWidth = tabPanel.getContentWidth();
-
-        if (ConfigManager.useCardLayout) {
-            Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-                resetCardStates("recordedPayloads", "activeOverrides");
-            });
-            payloadsTab.addWidget(resetLayout);
-
-            CardContainer payloadsCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
-            payloadsTab.addWidget(payloadsCardContainer);
-
-            int currentY = contentY + 50;
-            recordedPayloadsCard = createRecordedPayloadsCard(contentX + 20, currentY);
-            currentY += recordedPayloadsCard.getHeight() + Theme.CARD_SPACING;
-
-            activeOverridesCard = createActiveOverridesCard(contentX + 20, currentY);
-
-            payloadsCardContainer.addCard(recordedPayloadsCard);
-            payloadsCardContainer.addCard(activeOverridesCard);
-            return;
-        }
-
-        payloadsTab.addWidget(new Label(contentX, contentY, "Recorded Payloads", Label.Style.TITLE));
-
-        Button clearButton = new Button(contentX + 120, contentY - 10, 100, "Clear",
-                () -> {
-                    org.blackum.blackaddons.payload.PayloadManager.clearRecordedPayloads();
-                    this.init(this.width, this.height);
-                });
-        payloadsTab.addWidget(clearButton);
-
-        ListView recordedList = new ListView(contentX, contentY + 40, contentWidth - 20, 200);
-        payloadsTab.addWidget(recordedList);
-
-        populateRecordedList(recordedList);
-
-        int overridesY = contentY + 250;
-        payloadsTab.addWidget(new Label(contentX, overridesY, "Active Overrides", Label.Style.TITLE));
-
-        ListView overridesList = new ListView(contentX, overridesY + 30, contentWidth - 20, 200);
-        payloadsTab.addWidget(overridesList);
-
-        populateOverridesList(overridesList);
-    }
-
-    private ResizableCard createRecordedPayloadsCard(int x, int y) {
-        recordedPayloadsCard = createResizableCard("recordedPayloads", x, y, 300, 250, "Recorded Payloads");
-        int contentX = recordedPayloadsCard.getContentX();
-        int contentY = recordedPayloadsCard.getContentY();
-
-        Button clearButton = new Button(contentX + 180, contentY - 8, 80, "Clear",
-                () -> {
-                    org.blackum.blackaddons.payload.PayloadManager.clearRecordedPayloads();
-                    this.init(this.width, this.height);
-                });
-        recordedPayloadsCard.addChild(clearButton);
-
-        ListView recordedList = new ListView(contentX, contentY + 15, 260, 200);
-        recordedPayloadsCard.addChild(recordedList);
-
-        populateRecordedList(recordedList);
-        return recordedPayloadsCard;
-    }
-
-    private ResizableCard createActiveOverridesCard(int x, int y) {
-        activeOverridesCard = createResizableCard("activeOverrides", x, y, 300, 250, "Active Overrides");
-        int contentX = activeOverridesCard.getContentX();
-        int contentY = activeOverridesCard.getContentY();
-
-        ListView overridesList = new ListView(contentX, contentY, 260, 210);
-        activeOverridesCard.addChild(overridesList);
-
-        populateOverridesList(overridesList);
-        return activeOverridesCard;
-    }
-
-    private void populateRecordedList(ListView list) {
-        synchronized (org.blackum.blackaddons.payload.PayloadManager.recordedPayloads) {
-            for (org.blackum.blackaddons.payload.RecordedPayload payload : org.blackum.blackaddons.payload.PayloadManager.recordedPayloads) {
-                String label = payload.channel + " (" + payload.data.length() / 2 + " bytes)";
-                Button item = new Button(0, 0, 0, label, () -> {
-                    org.blackum.blackaddons.payload.PayloadOverride override = new org.blackum.blackaddons.payload.PayloadOverride();
-                    override.channel = payload.channel;
-                    override.originalData = payload.data;
-                    override.replacementData = payload.data;
-                    override.enabled = true;
-
-                    net.minecraft.client.Minecraft.getInstance().setScreen(
-                            new PayloadEditorScreen(this, override, true, () -> this.init(this.width, this.height)));
-                });
-                list.addItem(item);
-            }
-        }
-    }
-
-    private void populateOverridesList(ListView list) {
-        for (org.blackum.blackaddons.payload.PayloadOverride override : org.blackum.blackaddons.payload.PayloadManager.overrides) {
-            Widget overrideWidget = createOverrideWidget(override, list);
-            list.addItem(overrideWidget);
-        }
-    }
-
-    private Widget createOverrideWidget(org.blackum.blackaddons.payload.PayloadOverride override, ListView parentList) {
-        Widget container = new Widget(0, 0, 0, 24) {
-            @Override
-            public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
-            }
-        };
-
-        Checkbox enableBox = new Checkbox(0, 2, override.channel, override.enabled, val -> {
-            override.enabled = val;
-            ConfigManager.save();
-        });
-
-        Button editButton = new Button(0, 0, 50, "Edit", () -> {
-            net.minecraft.client.Minecraft.getInstance().setScreen(
-                    new PayloadEditorScreen(this, override, false, () -> this.init(this.width, this.height)));
-        });
-        editButton.setHeight(20);
-
-        Button deleteButton = new Button(0, 0, 20, "X", () -> {
-            org.blackum.blackaddons.payload.PayloadManager.removeOverride(override);
-            ConfigManager.save();
-            this.init(this.width, this.height);
-        });
-        deleteButton.setHeight(20);
-
-        Widget wrapper = new Widget(0, 0, 0, 24) {
-            @Override
-            public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
-                int w = getWidth();
-                int x = getX();
-                int y = getY();
-
-                enableBox.setX(x);
-                enableBox.setY(y + 2);
-                enableBox.setWidth(w - 80);
-
-                editButton.setX(x + w - 75);
-                editButton.setY(y);
-
-                deleteButton.setX(x + w - 22);
-                deleteButton.setY(y);
-
-                enableBox.render(g, mx, my, p);
-                editButton.render(g, mx, my, p);
-                deleteButton.render(g, mx, my, p);
-            }
-
-            @Override
-            public void tick() {
-                enableBox.tick();
-                editButton.tick();
-                deleteButton.tick();
-            }
-
-            @Override
-            public boolean mouseClicked(double mx, double my, int b) {
-                if (editButton.mouseClicked(mx, my, b))
-                    return true;
-                if (deleteButton.mouseClicked(mx, my, b))
-                    return true;
-                if (enableBox.mouseClicked(mx, my, b))
-                    return true;
-                return false;
-            }
-
-            @Override
-            public boolean mouseReleased(double mx, double my, int b) {
-                if (editButton.mouseReleased(mx, my, b))
-                    return true;
-                if (deleteButton.mouseReleased(mx, my, b))
-                    return true;
-                if (enableBox.mouseReleased(mx, my, b))
-                    return true;
-                return false;
-            }
-
-            @Override
-            public void updateHoverState(int mx, int my) {
-                super.updateHoverState(mx, my);
-                enableBox.updateHoverState(mx, my);
-                editButton.updateHoverState(mx, my);
-                deleteButton.updateHoverState(mx, my);
-            }
-        };
-
-        return wrapper;
-    }
-
     private void resetCardStates(String... ids) {
         for (String id : ids) {
             ConfigManager.lastLoadedCardStates.remove(id);
@@ -1098,8 +900,7 @@ public class BlackAddonsGUI extends BaseScreen {
         addCardToMap(states, "allowedChannels", allowedChannelsCard);
         addCardToMap(states, "allowedMods", allowedModsCard);
         addCardToMap(states, "autoTnt", autoTntCard);
-        addCardToMap(states, "recordedPayloads", recordedPayloadsCard);
-        addCardToMap(states, "activeOverrides", activeOverridesCard);
+
         addCardToMap(states, "fullbright", fullbrightCard);
         ConfigManager.save(states);
         ConfigManager.lastLoadedCardStates = states;

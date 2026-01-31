@@ -24,10 +24,6 @@ public class ConnectionMixin {
         }
 
         if (packet instanceof ServerboundCustomPayloadPacket(CustomPacketPayload payload)) {
-            org.blackum.blackaddons.payload.PayloadManager.record(payload);
-            if (processPayloadOverride(payload, channelFutureListener, bl, ci)) {
-                return;
-            }
 
             if (!(payload instanceof DiscardedPayload) && !(payload instanceof BrandPayload)) {
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.OFF) {
@@ -82,15 +78,4 @@ public class ConnectionMixin {
         }
     }
 
-    private boolean processPayloadOverride(CustomPacketPayload payload, ChannelFutureListener channelFutureListener,
-            boolean bl, CallbackInfo ci) {
-        CustomPacketPayload replacement = org.blackum.blackaddons.payload.PayloadManager.getReplacement(payload);
-        if (replacement != null) {
-            ((Connection) (Object) this).send(new ServerboundCustomPayloadPacket(replacement), channelFutureListener,
-                    bl);
-            ci.cancel();
-            return true;
-        }
-        return false;
-    }
 }
