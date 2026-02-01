@@ -216,10 +216,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pv")
                             .executes(ctx -> {
                                 String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                                net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                                    net.minecraft.client.Minecraft.getInstance().setScreen(
-                                            new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player));
-                                });
+                                loadProfileAndOpen(player);
                                 return 1;
                             })
                             .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -227,11 +224,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                                     .executes(ctx -> {
                                         String player = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx,
                                                 "ign");
-                                        net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                                            net.minecraft.client.Minecraft.getInstance().setScreen(
-                                                    new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null,
-                                                            player));
-                                        });
+                                        loadProfileAndOpen(player);
                                         return 1;
                                     })));
 
@@ -322,5 +315,44 @@ public class BlackaddonsClient implements ClientModInitializer {
         });
 
         Blackaddons.LOGGER.info("Client initialization completed");
+    }
+
+    private void loadProfileAndOpen(String player) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        mc.gui.getChat().addMessage(
+                net.minecraft.network.chat.Component.literal("§7[BlackAddons] Loading profile for " + player + "..."));
+
+        org.blackum.blackaddons.util.BotIntegration.getProfileStats(player).thenAccept(json -> {
+            if (json == null) {
+                mc.gui.getChat().addMessage(
+                        net.minecraft.network.chat.Component.literal("§c[BlackAddons] Failed to fetch data."));
+                return;
+            }
+
+            if (json.has("error")) {
+                String err = json.get("error").getAsString();
+                mc.gui.getChat()
+                        .addMessage(net.minecraft.network.chat.Component.literal("§c[BlackAddons] Error: " + err));
+                return;
+            }
+
+            com.google.gson.JsonObject data = null;
+            if (json.has("data")) {
+                data = json.getAsJsonObject("data");
+            } else {
+                mc.gui.getChat().addMessage(
+                        net.minecraft.network.chat.Component.literal("§c[BlackAddons] Invalid response format."));
+                return;
+            }
+
+            final com.google.gson.JsonObject finalData = data;
+            mc.execute(() -> {
+                mc.setScreen(new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, finalData));
+            });
+        }).exceptionally(e -> {
+            mc.gui.getChat().addMessage(
+                    net.minecraft.network.chat.Component.literal("§c[BlackAddons] Exception: " + e.getMessage()));
+            return null;
+        });
     }
 }

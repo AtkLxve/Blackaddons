@@ -29,8 +29,16 @@ public class ProfileViewerScreen extends BaseScreen {
     private static int lastTabIndex = 0;
 
     public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player) {
+        this(parent, player, null);
+    }
+
+    public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player, JsonObject data) {
         super(Component.literal("Profile: " + player), parent);
         this.player = player;
+        if (data != null) {
+            this.profileData = data;
+            this.isLoading = false;
+        }
     }
 
     @Override
@@ -83,60 +91,281 @@ public class ProfileViewerScreen extends BaseScreen {
         TabPanel.Tab tab = tabPanel.addTab("Dungeons");
         int w = tabPanel.getContentWidth() - 20;
         ListView list = new ListView(tabPanel.getContentX(), tabPanel.getContentY(), w, tabPanel.getMaxContentHeight());
+        list.setItemSpacing(10);
         tab.addWidget(list);
-
-        addSectionHeader(list, "General Stats");
 
         double cataXp = getDouble(profileData, "catacombs");
         int secretCount = getInt(profileData, "secrets");
         int bloodKills = getInt(profileData, "blood_mob_kills");
 
-        addInfoRow(list, "Catacombs XP:", String.format("%,.0f", cataXp));
-        addInfoRow(list, "Secrets Found:", String.format("%,d", secretCount));
-        addInfoRow(list, "Blood Mob Kills:", String.format("%,d", bloodKills));
+        int totalRuns = 0;
+        int cataRuns = 0;
+        int masterRuns = 0;
 
-        addSectionHeader(list, "Classes");
+        java.util.Map<String, Double> runDistribution = new java.util.LinkedHashMap<>();
+
+        JsonObject floors = profileData.has("floors") ? profileData.getAsJsonObject("floors") : new JsonObject();
+        List<String> normalFloors = new ArrayList<>();
+        List<String> masterFloors = new ArrayList<>();
+        List<String> keys = new ArrayList<>(floors.keySet());
+        keys.sort((k1, k2) -> {
+            boolean m1 = k1.startsWith("M");
+            boolean m2 = k2.startsWith("M");
+
+            if (m1 && !m2)
+                return -1;
+            if (!m1 && m2)
+                return 1;
+
+            int n1 = getFloorNum(k1);
+            int n2 = getFloorNum(k2);
+            return Integer.compare(n2, n1);
+        });
+
+        for (String key : keys) {
+            JsonObject f = floors.getAsJsonObject(key);
+            int r = getInt(f, "runs");
+            if (r > 0) {
+                totalRuns += r;
+                runDistribution.put(key, (double) r);
+
+                if (key.startsWith("M")) {
+                    masterRuns += r;
+                    masterFloors.add(key);
+                } else {
+                    cataRuns += r;
+                    normalFloors.add(key);
+                }
+            }
+        }
+
+        String entranceKey = null;
+        if (normalFloors.contains("F0")) {
+            entranceKey = "F0";
+            normalFloors.remove("F0");
+        } else if (normalFloors.contains("Entrance")) {
+            entranceKey = "Entrance";
+            normalFloors.remove("Entrance");
+        }
+
+        double secretsPerRun = totalRuns > 0 ? (double) secretCount / totalRuns : 0;
+
+        final int finalTotalRuns = totalRuns;
+        final int finalMasterRuns = masterRuns;
+        final int finalCataRuns = cataRuns;
+        int effectiveW = w - 8;
+
+        addSectionHeader(list, "General Stats");
+        Widget generalStats = new Widget(0, 0, effectiveW, 120) {
+            @Override
+            public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
+                    float partialTick) {
+                int boxW = (width - 10) / 3;
+                int row2Y = y + 65;
+
+                drawStatBox(graphics, x, y, boxW, "Catacombs XP", String.format("%,.0f", cataXp));
+                drawStatBox(graphics, x + boxW + 5, y, boxW, "Secrets Found", String.format("%,d", secretCount));
+                drawStatBox(graphics, x + (boxW + 5) * 2, y, boxW, "Secrets/Run", String.format("%.2f", secretsPerRun));
+                drawStatBox(graphics, x, row2Y, boxW, "Total Runs", String.format("%,d", finalTotalRuns));
+                drawStatBox(graphics, x + boxW + 5, row2Y, boxW, "Master Runs", String.format("%,d", finalMasterRuns));
+                drawStatBox(graphics, x + (boxW + 5) * 2, row2Y, boxW, "Cata Runs",
+                        String.format("%,d", finalCataRuns));
+            }
+
+            private void drawStatBox(net.minecraft.client.gui.GuiGraphics graphics, int x, int y, int w, String label,
+                    String value) {
+                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, x, y, w, 50,
+                        Theme.BORDER_RADIUS, Theme.BACKGROUND_SECONDARY);
+                graphics.drawCenteredString(minecraft.font, label, x + w / 2, y + 10, Theme.ACCENT);
+                graphics.drawCenteredString(minecraft.font, "§f" + value, x + w / 2, y + 25, 0xFFFFFFFF);
+            }
+        };
+        list.addItem(generalStats);
+
+        double cataLvl = org.blackum.blackaddons.util.DungeonUtils.getCataLevel(cataXp);
+        Widget cataHeader = new Widget(0, 0, effectiveW, 40) {
+            @Override
+            public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
+                    float partialTick) {
+                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, x, y, width, height,
+                        Theme.BORDER_RADIUS, Theme.BACKGROUND_SECONDARY);
+
+                String title = "§lCatacombs Level";
+                String val = String.format("§f%.2f", cataLvl);
+
+                graphics.drawString(minecraft.font, title, x + 10, y + 10, Theme.ACCENT);
+
+                int valWidth = minecraft.font.width(val);
+                graphics.drawString(minecraft.font, val, x + width - valWidth - 10, y + 10, 0xFFFFFFFF);
+
+                int barX = x + 10;
+                int barY = y + 25;
+                int barW = width - 20;
+                int barH = 6;
+
+                double progress = cataLvl % 1.0;
+                int fillW = (int) (barW * progress);
+
+                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, barX, barY, barW, barH, 3,
+                        Theme.BACKGROUND_TERTIARY);
+
+                if (fillW > 0) {
+                    org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, barX, barY, fillW, barH,
+                            3, Theme.ACCENT_PRIMARY);
+                }
+            }
+        };
+        list.addItem(cataHeader);
 
         if (profileData.has("classes")) {
             JsonObject classes = profileData.getAsJsonObject("classes");
-            List<Map.Entry<String, JsonElement>> sortedClasses = new ArrayList<>(classes.entrySet());
-            sortedClasses.sort((e1, e2) -> Double.compare(e2.getValue().getAsDouble(), e1.getValue().getAsDouble()));
+            java.util.Map<String, Double> classData = new java.util.HashMap<>();
+            List<Map.Entry<String, JsonElement>> sorted = new ArrayList<>(classes.entrySet());
+            sorted.sort((e1, e2) -> Double.compare(e2.getValue().getAsDouble(), e1.getValue().getAsDouble()));
 
-            for (Map.Entry<String, JsonElement> entry : sortedClasses) {
-                String className = entry.getKey();
+            for (Map.Entry<String, JsonElement> entry : sorted) {
                 double xp = entry.getValue().getAsDouble();
-                addInfoRow(list, className + ":", String.format("%,.0f XP", xp));
+                classData.put(entry.getKey(), org.blackum.blackaddons.util.DungeonUtils.getCataLevel(xp));
             }
+
+            org.blackum.blackaddons.gui.widget.BarGraphWidget graph = new org.blackum.blackaddons.gui.widget.BarGraphWidget(
+                    0, 0, effectiveW, "Class Levels");
+            graph.setData(classData, "Lvl");
+
+            java.util.Map<String, Integer> classColors = new java.util.HashMap<>();
+            classColors.put("Archer", 0xFF2ECC71); // Green
+            classColors.put("Berserk", 0xFFE74C3C); // Red
+            classColors.put("Healer", 0xFFF1C40F); // Yellow
+            classColors.put("Mage", 0xFF3498DB); // Blue
+            classColors.put("Tank", 0xFF95A5A6); // Gray
+            graph.setColorMap(classColors);
+
+            list.addItem(graph);
         }
 
         addSectionHeader(list, "Dungeon Floors");
 
-        if (profileData.has("floors")) {
-            JsonObject floors = profileData.getAsJsonObject("floors");
-            List<String> keys = new ArrayList<>(floors.keySet());
-            keys.sort((k1, k2) -> {
-                boolean m1 = k1.startsWith("M");
-                boolean m2 = k2.startsWith("M");
-                if (m1 && !m2)
-                    return -1;
-                if (!m1 && m2)
-                    return 1;
-                return k2.compareTo(k1);
-            });
+        int maxRows = Math.max(normalFloors.size(), masterFloors.size());
 
-            for (String key : keys) {
-                JsonObject floorData = floors.getAsJsonObject(key);
-                int runs = getInt(floorData, "runs");
-                if (runs == 0)
-                    continue;
+        for (int i = 0; i < maxRows; i++) {
+            GridRow row = new GridRow(effectiveW, 50);
 
-                int bestScore = getInt(floorData, "best_score");
-                String sPlus = formatMs(getInt(floorData, "fastest_s_plus"));
-                String s = formatMs(getInt(floorData, "fastest_s"));
+            int cardW1 = (effectiveW - 10) / 2;
+            int cardW2 = effectiveW - 10 - cardW1;
 
-                String left = "§b" + key + "§r";
-                String right = String.format("%d Runs | %d Score | §7S+: %s | S: %s", runs, bestScore, sPlus, s);
-                addInfoRow(list, left, right);
+            if (i < normalFloors.size()) {
+                String key = normalFloors.get(i);
+                JsonObject data = floors.getAsJsonObject(key);
+                String name = "Floor " + (key.startsWith("F") ? key.substring(1) : key);
+                row.addChild(createFloorCard(cardW1, name, data), 0);
+            }
+
+            if (i < masterFloors.size()) {
+                String key = masterFloors.get(i);
+                JsonObject data = floors.getAsJsonObject(key);
+                String name = "Master " + key.substring(1);
+                row.addChild(createFloorCard(cardW2, name, data), cardW1 + 10);
+            }
+
+            list.addItem(row);
+        }
+
+        if (entranceKey != null && floors.has(entranceKey)) {
+            JsonObject data = floors.getAsJsonObject(entranceKey);
+            org.blackum.blackaddons.gui.widget.FloorCardWidget entCard = createFloorCard(effectiveW, "Entrance", data);
+            list.addItem(entCard);
+        }
+
+        if (!runDistribution.isEmpty()) {
+            java.util.Map<String, Double> formattedRunDist = new java.util.LinkedHashMap<>();
+            for (Map.Entry<String, Double> entry : runDistribution.entrySet()) {
+                String k = entry.getKey();
+                String label = (k.equals("F0") || k.equals("Entrance")) ? "Entrance" : k;
+                formattedRunDist.put(label, entry.getValue());
+            }
+
+            org.blackum.blackaddons.gui.widget.BarGraphWidget runGraph = new org.blackum.blackaddons.gui.widget.BarGraphWidget(
+                    0, 0, effectiveW, "Floor Completions");
+            runGraph.setData(formattedRunDist, "Runs");
+
+            java.util.Map<String, Integer> floorColors = new java.util.HashMap<>();
+            int normalColor = 0xFF9B59B6; // Purple
+            int masterColor = 0xFFD35400; // Orange
+
+            floorColors.put("Entrance", normalColor);
+            floorColors.put("F1", normalColor);
+            floorColors.put("F2", normalColor);
+            floorColors.put("F3", normalColor);
+            floorColors.put("F4", normalColor);
+            floorColors.put("F5", normalColor);
+            floorColors.put("F6", normalColor);
+            floorColors.put("F7", normalColor);
+
+            floorColors.put("M1", masterColor);
+            floorColors.put("M2", masterColor);
+            floorColors.put("M3", masterColor);
+            floorColors.put("M4", masterColor);
+            floorColors.put("M5", masterColor);
+            floorColors.put("M6", masterColor);
+            floorColors.put("M7", masterColor);
+
+            runGraph.setColorMap(floorColors);
+
+            list.addItem(runGraph);
+        }
+    }
+
+    private int getFloorNum(String key) {
+        if (key.equals("F0") || key.equals("Entrance"))
+            return 0;
+        try {
+            return Integer.parseInt(key.substring(1));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private org.blackum.blackaddons.gui.widget.FloorCardWidget createFloorCard(int width, String name,
+            JsonObject data) {
+        int runs = getInt(data, "runs");
+        int best = getInt(data, "best_score");
+        String sPlus = formatMs(getInt(data, "fastest_s_plus"));
+        String s = formatMs(getInt(data, "fastest_s"));
+        return new org.blackum.blackaddons.gui.widget.FloorCardWidget(width, name, runs, best, sPlus, s);
+    }
+
+    private static class GridRow extends Widget {
+        private final List<java.util.Map.Entry<Widget, Integer>> children = new ArrayList<>();
+
+        GridRow(int w, int h) {
+            super(0, 0, w, h);
+        }
+
+        public void addChild(Widget w, int xOffset) {
+            children.add(new java.util.AbstractMap.SimpleEntry<>(w, xOffset));
+        }
+
+        @Override
+        public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            for (java.util.Map.Entry<Widget, Integer> entry : children) {
+                Widget w = entry.getKey();
+                int xOff = entry.getValue();
+                int originalX = w.getX();
+                int originalY = w.getY();
+
+                w.setX(this.x + xOff);
+                w.setY(this.y);
+                w.render(graphics, mouseX, mouseY, partialTick);
+
+                w.setX(originalX);
+                w.setY(originalY);
+            }
+        }
+
+        @Override
+        public void tick() {
+            for (java.util.Map.Entry<Widget, Integer> entry : children) {
+                entry.getKey().tick();
             }
         }
     }
@@ -169,11 +398,25 @@ public class ProfileViewerScreen extends BaseScreen {
     private class TeammateRow extends Widget {
         private final Teammate tm;
         private Animation hoverAnimation;
+        private final Button inviteBtn;
 
         public TeammateRow(int width, Teammate tm) {
             super(0, 0, width, 18);
             this.tm = tm;
             this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
+            this.inviteBtn = new Button(0, 0, 40, 12, "Invite", () -> {
+                if (minecraft.player != null) {
+                    minecraft.player.connection.sendCommand("party " + tm.ign);
+                }
+            });
+        }
+
+        @Override
+        public void updateHoverState(int mouseX, int mouseY) {
+            super.updateHoverState(mouseX, mouseY);
+            inviteBtn.setX(this.x + this.width - 45);
+            inviteBtn.setY(this.y + 3);
+            inviteBtn.updateHoverState(mouseX, mouseY);
         }
 
         @Override
@@ -187,8 +430,8 @@ public class ProfileViewerScreen extends BaseScreen {
             int cx = x + 2;
             int cy = y + 5;
 
-            String ignText = "§b" + tm.ign;
-            graphics.drawString(minecraft.font, ignText, cx, cy, 0xFFFFFFFF);
+            String ignText = tm.ign;
+            graphics.drawString(minecraft.font, ignText, cx, cy, Theme.ACCENT);
             cx += COL_IGN;
             graphics.drawString(minecraft.font, "§f" + tm.count, cx, cy, 0xFFFFFFFF);
             cx += COL_RUNS;
@@ -202,10 +445,15 @@ public class ProfileViewerScreen extends BaseScreen {
 
             String timeAgo = formatRelativeTime(tm.lastTs);
             graphics.drawString(minecraft.font, "§7" + timeAgo, cx, cy, 0xFFFFFFFF);
+
+            inviteBtn.setX(this.x + this.width - 45);
+            inviteBtn.setY(this.y + 3);
+            inviteBtn.render(graphics, mouseX, mouseY, partialTick);
         }
 
         @Override
         public void tick() {
+            inviteBtn.tick();
             if (hovered && hoverAnimation.getProgress() < 1
                     && (!hoverAnimation.isRunning() || hoverAnimation.getValue() < 1)) {
                 hoverAnimation = new Animation(hoverAnimation.getValue(), 1, Theme.ANIM_HOVER, Easing::easeOut);
@@ -219,6 +467,9 @@ public class ProfileViewerScreen extends BaseScreen {
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (inviteBtn.mouseClicked(mouseX, mouseY, button)) {
+                return true;
+            }
             if (visible && isMouseOver(mouseX, mouseY) && button == 0) {
                 if (minecraft.player != null) {
                     minecraft.player.connection.sendCommand("ba pv " + tm.ign);
@@ -226,6 +477,11 @@ public class ProfileViewerScreen extends BaseScreen {
                 }
             }
             return false;
+        }
+
+        @Override
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+            return inviteBtn.mouseReleased(mouseX, mouseY, button);
         }
     }
 
@@ -257,7 +513,7 @@ public class ProfileViewerScreen extends BaseScreen {
     private static final int COL_FLOOR = 35;
 
     private void initTeammatesTab() {
-        TabPanel.Tab tab = tabPanel.addTab("Teammates");
+        TabPanel.Tab tab = tabPanel.addTab("Recent Teammates");
 
         int controlsHeight = 20;
         int listMarginTop = 30;
@@ -525,7 +781,8 @@ public class ProfileViewerScreen extends BaseScreen {
     }
 
     private void addSectionHeader(ListView list, String title) {
-        Label label = new Label(0, 0, "§6§l" + title, Label.Style.TITLE);
+        Label label = new Label(0, 0, "§l" + title, Label.Style.TITLE);
+        label.setColor(Theme.ACCENT);
         label.setHeight(25);
         list.addItem(label);
     }

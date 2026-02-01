@@ -315,10 +315,6 @@ public class ResizableCard extends Card {
         int contentX = getContentX();
         int contentY = getContentY();
         float scale = (float) width / initialWidth;
-        // visualWidth = contentWidth * scale
-        // visualWidth should be width - padding * 2
-        // contentWidth * scale = width - padding * 2
-        // contentWidth = (width - padding * 2) / scale
         int contentWidth = (int) ((width - getPadding() * 2) / scale);
         int currentY = contentY;
 

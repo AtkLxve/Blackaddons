@@ -13,6 +13,10 @@ public class Theme {
     public static int TEXT_SECONDARY = 0xFFBBBBBB;
     public static int BORDER = 0x44FFFFFF;
 
+    public static int BACKGROUND_SECONDARY = 0xAA222222;
+    public static int BACKGROUND_TERTIARY = 0xAA333333;
+    public static int ACCENT_PRIMARY = 0xFF00A8FF;
+
     public static int GLASS_FILL = 0x801A1A1A;
     public static int GLASS_BORDER = 0x40FFFFFF;
     public static int GLASS_HIGHLIGHT = 0x22FFFFFF;
