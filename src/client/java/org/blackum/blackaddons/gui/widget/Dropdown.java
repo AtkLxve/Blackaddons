@@ -60,6 +60,13 @@ public class Dropdown extends Widget {
         }
     }
 
+    public void setOptions(List<String> newOptions) {
+        this.options = newOptions;
+        if (selectedIndex >= options.size()) {
+            selectedIndex = options.isEmpty() ? -1 : 0;
+        }
+    }
+
     public boolean isExpanded() {
         return expanded;
     }

@@ -90,6 +90,42 @@ public class BotIntegration {
         });
     }
 
+    public static CompletableFuture<JsonObject> getRngData(String player) {
+        if (ConfigManager.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        return sendGetRequest("/v1/rng?player=" + player).thenApply(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Failed to parse RNG data: " + e.getMessage());
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
+    public static CompletableFuture<Boolean> updateRngDrop(String player, String category, String item, String action,
+            Integer count) {
+        if (ConfigManager.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(false);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("player", player);
+        json.addProperty("action", action);
+        json.addProperty("category", category);
+        json.addProperty("item", item);
+        if (count != null) {
+            json.addProperty("count", count);
+        }
+
+        return sendPostRequest("/v1/rng", json.toString()).thenApply(res -> {
+            return res != null && res.statusCode() >= 200 && res.statusCode() < 300;
+        });
+    }
+
     public static CompletableFuture<JsonObject> getLeaderboard(String period, String metric, int page) {
         if (ConfigManager.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
