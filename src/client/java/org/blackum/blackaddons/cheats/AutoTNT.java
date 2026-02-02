@@ -9,15 +9,18 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.blackum.blackaddons.mixin.client.KeyBindingAccessor;
-import org.blackum.blackaddons.mixin.client.InventoryAccessor; // IMPORT THIS
+import org.blackum.blackaddons.mixin.client.InventoryAccessor;
 
 import java.util.List;
 
 public class AutoTNT {
+    private static final List<Block> TARGET_BLOCKS = List.of(
+            Blocks.CRACKED_STONE_BRICKS,
+            Blocks.STONE_SLAB
+    );
 
-    private static final List<Block> TARGET_BLOCKS = List.of(Blocks.CRACKED_STONE_BRICKS, Blocks.STONE_SLAB);
-    private static final List<String> TNT_NAMES = List.of("Infinityboom TNT", "Superboom TNT");
     private static final ModState STATE = new ModState();
 
     public static void register() {
@@ -25,20 +28,24 @@ public class AutoTNT {
     }
 
     private static void onClientTick(Minecraft client) {
-        if (client.player == null || client.level == null) return;
-
-        if (!client.options.keyAttack.isDown()) {
-            unequipTnt(client.player);
+        if (!CheatsOptions.AutoTNTEnabled || client.player == null || client.level == null) {
+            if (STATE.isTntEquipped) unequipTnt(client.player);
             return;
         }
 
         if (isLookingAtTargetBlock(client)) {
-            equipTnt(client.player);
-            if (STATE.isTntEquipped && !STATE.hasClicked) {
-                STATE.ticksSinceEquip++;
-                if (STATE.ticksSinceEquip >= 2) {
-                    triggerAttack(client);
-                    STATE.hasClicked = true;
+            int tntSlot = findTntHotbarSlot(client.player);
+
+            if (tntSlot != -1) {
+                equipTnt(client.player, tntSlot);
+
+                if (STATE.isTntEquipped && !STATE.hasClicked) {
+                    STATE.ticksSinceEquip++;
+
+                    if (STATE.ticksSinceEquip >= STATE.currentRandomDelay) {
+                        triggerAttack(client);
+                        STATE.hasClicked = true;
+                    }
                 }
             }
         } else {
@@ -50,39 +57,49 @@ public class AutoTNT {
         if (client.options.keyAttack instanceof KeyBindingAccessor accessor) {
             KeyMapping.click(accessor.getBoundKey());
         }
-        client.player.swing(InteractionHand.MAIN_HAND);
+        if (client.player != null) {
+            client.player.swing(InteractionHand.MAIN_HAND);
+        }
     }
 
     private static boolean isLookingAtTargetBlock(Minecraft client) {
-        if (client.hitResult instanceof BlockHitResult blockHit) {
+        if (client.hitResult instanceof BlockHitResult blockHit && client.hitResult.getType() == HitResult.Type.BLOCK) {
+            // Get the distance to the block
+            double distance = client.player.distanceToSqr(blockHit.getLocation());
+
+            double limit = 3.3;
+            if (distance > (limit * limit)) return false;
+
             Block block = client.level.getBlockState(blockHit.getBlockPos()).getBlock();
             return TARGET_BLOCKS.contains(block);
         }
         return false;
     }
 
-    private static void equipTnt(Player player) {
-        if (STATE.isTntEquipped) return;
-        int slot = -1;
+    private static int findTntHotbarSlot(Player player) {
         for (int i = 0; i < 9; i++) {
             ItemStack stack = player.getInventory().getItem(i);
-            String name = stack.getHoverName().getString().replaceAll("§.", "");
-            if (TNT_NAMES.contains(name)) {
-                slot = i;
-                break;
+            if (stack.isEmpty()) continue;
+            String name = stack.getHoverName().getString().replaceAll("(?i)§[0-9A-FK-OR]", "").toLowerCase();
+            if (name.contains("superboom") || name.contains("infinityboom")) {
+                return i;
             }
         }
+        return -1;
+    }
 
-        if (slot != -1) {
-            InventoryAccessor inv = (InventoryAccessor) player.getInventory();
-            STATE.previousSlot = inv.getSelectedSlot();
-            inv.setSelectedSlot(slot);
-            STATE.isTntEquipped = true;
-        }
+    private static void equipTnt(Player player, int slot) {
+        if (STATE.isTntEquipped) return;
+        InventoryAccessor inv = (InventoryAccessor) player.getInventory();
+        STATE.previousSlot = inv.getSelectedSlot();
+        inv.setSelectedSlot(slot);
+        STATE.isTntEquipped = true;
+        STATE.ticksSinceEquip = 0;
+        STATE.hasClicked = false;
     }
 
     private static void unequipTnt(Player player) {
-        if (!STATE.isTntEquipped) return;
+        if (!STATE.isTntEquipped || player == null) return;
         InventoryAccessor inv = (InventoryAccessor) player.getInventory();
         inv.setSelectedSlot(STATE.previousSlot);
         STATE.reset();
@@ -92,7 +109,15 @@ public class AutoTNT {
         boolean isTntEquipped = false;
         int previousSlot = -1;
         int ticksSinceEquip = 0;
+        int currentRandomDelay = 5;
         boolean hasClicked = false;
-        void reset() { isTntEquipped = false; previousSlot = -1; ticksSinceEquip = 0; hasClicked = false; }
+
+        void reset() {
+            isTntEquipped = false;
+            previousSlot = -1;
+            ticksSinceEquip = 0;
+            hasClicked = false;
+            this.currentRandomDelay = CheatsOptions.AutoTNTDelay + (Math.random() > 0.5 ? 1 : 0);
+        }
     }
 }

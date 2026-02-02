@@ -10,6 +10,7 @@ public class BlackaddonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Blackaddons.LOGGER.info("Initializing client...");
+        org.blackum.blackaddons.cheats.AutoTNT.register();
         org.blackum.blackaddons.config.ConfigManager.load();
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
