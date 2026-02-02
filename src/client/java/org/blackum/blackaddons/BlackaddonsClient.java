@@ -63,6 +63,7 @@ public class BlackaddonsClient implements ClientModInitializer {
 
                 java.util.List<String> debugInfo = new java.util.ArrayList<>();
                 debugInfo.add("§6[BlackAddons Debug]");
+                debugInfo.add("Nick: " + mc.getUser().getName());
                 debugInfo.add("VSync: " + mc.options.enableVsync().get());
                 debugInfo.add("Mouse: " + finalMouseX + ", " + finalMouseY);
                 debugInfo.add("Screen: " + (mc.screen != null ? mc.screen.getClass().getSimpleName() : "None"));

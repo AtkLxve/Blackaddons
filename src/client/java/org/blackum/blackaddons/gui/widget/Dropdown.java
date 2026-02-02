@@ -24,7 +24,12 @@ public class Dropdown extends Widget {
     private Animation expandAnimation;
 
     public Dropdown(int x, int y, int width, String label, List<String> options, Consumer<String> onSelect) {
-        super(x, y, width, Theme.BUTTON_HEIGHT);
+        this(x, y, width, Theme.BUTTON_HEIGHT, label, options, onSelect);
+    }
+
+    public Dropdown(int x, int y, int width, int height, String label, List<String> options,
+            Consumer<String> onSelect) {
+        super(x, y, width, height);
         this.label = label;
         this.options = options;
         this.onSelect = onSelect;
@@ -45,7 +50,8 @@ public class Dropdown extends Widget {
     }
 
     public void setSelectedOption(String option) {
-        if (option == null) return;
+        if (option == null)
+            return;
         for (int i = 0; i < options.size(); i++) {
             if (option.equalsIgnoreCase(options.get(i))) {
                 setSelectedIndex(i);
@@ -62,7 +68,6 @@ public class Dropdown extends Widget {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
-
 
         RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, false);
 
@@ -88,7 +93,8 @@ public class Dropdown extends Widget {
 
             graphics.fill(x - 3, menuY - 3, x + width + 3, menuY + totalHeight + 3, 0xFF000000);
             RenderHelper.renderSurface(graphics, x, menuY, width, totalHeight, Theme.BORDER_RADIUS_SMALL, false);
-            RenderHelper.renderRoundedOutline(graphics, x, menuY, width, totalHeight, Theme.BORDER_RADIUS_SMALL, Theme.withAlpha(Theme.BORDER, 0.5f));
+            RenderHelper.renderRoundedOutline(graphics, x, menuY, width, totalHeight, Theme.BORDER_RADIUS_SMALL,
+                    Theme.withAlpha(Theme.BORDER, 0.5f));
 
             for (int i = 0; i < options.size(); i++) {
                 String option = options.get(i);

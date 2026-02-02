@@ -151,6 +151,15 @@ public class ListView extends Widget {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (!visible)
+            return false;
+
+        for (Widget item : items) {
+            if (item.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
+                return true;
+            }
+        }
+
         if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
             scroll((int) (-scrollY * 20));
             return true;

@@ -60,6 +60,71 @@ public class BotIntegration {
         });
     }
 
+    public static CompletableFuture<JsonObject> getRtcaStats(String player, String floor,
+            java.util.Map<String, Double> bonuses) {
+        if (ConfigManager.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("player", player);
+        json.addProperty("floor", floor);
+
+        if (bonuses != null && !bonuses.isEmpty()) {
+            JsonObject bonusJson = new JsonObject();
+            for (java.util.Map.Entry<String, Double> entry : bonuses.entrySet()) {
+                bonusJson.addProperty(entry.getKey(), entry.getValue());
+            }
+            json.add("bonuses", bonusJson);
+        }
+
+        return sendPostRequest("/v1/rtca", json.toString()).thenApply(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Failed to parse RTCA stats: " + res.body());
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
+    public static CompletableFuture<JsonObject> getLeaderboard(String period, String metric, int page) {
+        if (ConfigManager.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        String endpoint = String.format("/v1/leaderboard?period=%s&metric=%s&page=%d", period, metric, page);
+        return sendGetRequest(endpoint).thenApply(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Failed to parse leaderboard stats: " + e.getMessage());
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
+    public static CompletableFuture<JsonObject> getLeaderboardWithPlayer(String period, String metric, String player) {
+        if (ConfigManager.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        String endpoint = String.format("/v1/leaderboard?period=%s&metric=%s&find_player=%s", period, metric, player);
+        return sendGetRequest(endpoint).thenApply(res -> {
+            if (res != null && (res.statusCode() == 200 || res.statusCode() == 404)) {
+                try {
+                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
     private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody) {
         String url = ConfigManager.botUrl + endpoint;
 
