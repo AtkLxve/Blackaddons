@@ -10,9 +10,11 @@ import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
+import org.blackum.blackaddons.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class TeammatesTabController extends ProfileTabController {
 
@@ -37,7 +39,6 @@ public class TeammatesTabController extends ProfileTabController {
     @Override
     public void init(TabPanel.Tab tab) {
         int controlsHeight = 20;
-        int listMarginTop = 30;
 
         int startY = tab.getParent().getContentY();
         int contentWidth = tab.getParent().getContentWidth();
@@ -153,7 +154,7 @@ public class TeammatesTabController extends ProfileTabController {
                     JsonArray tuple = tmElem.getAsJsonArray();
                     if (tuple.size() >= 2) {
                         String ign = tuple.get(0).getAsString();
-                        JsonObject data = tuple.get(1).getAsJsonObject();
+                        JsonObject data = JsonUtils.getObject(tuple, 1);
                         allTeammates.add(new Teammate(ign, data));
                     }
                 }
@@ -248,18 +249,12 @@ public class TeammatesTabController extends ProfileTabController {
 
         Teammate(String ign, JsonObject data) {
             this.ign = ign;
-            this.count = data.has("count") ? data.get("count").getAsInt() : 0;
-            this.lastFloor = data.has("last_floor") && !data.get("last_floor").isJsonNull()
-                    ? data.get("last_floor").getAsString()
-                    : "";
-            this.lastClass = data.has("last_class") && !data.get("last_class").isJsonNull()
-                    ? data.get("last_class").getAsString()
-                    : "";
+            this.count = JsonUtils.getInt(data, "count");
+            this.lastFloor = JsonUtils.getString(data, "last_floor", "");
+            this.lastClass = JsonUtils.getString(data, "last_class", "");
             this.lastTs = data.has("last_ts") && !data.get("last_ts").isJsonNull() ? data.get("last_ts").getAsLong()
                     : 0;
-            this.lastClassLevel = data.has("last_class_level") && !data.get("last_class_level").isJsonNull()
-                    ? data.get("last_class_level").getAsInt()
-                    : 0;
+            this.lastClassLevel = JsonUtils.getInt(data, "last_class_level");
         }
     }
 

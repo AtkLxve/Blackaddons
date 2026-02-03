@@ -7,6 +7,7 @@ import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class TextField extends Widget {
@@ -22,6 +23,11 @@ public class TextField extends Widget {
     private Animation hoverAnimation;
     private int maxLength = 32;
     private Predicate<Character> charFilter = c -> true;
+
+    private Consumer<String> onValueChange;
+    private long debounceDelay = 0;
+    private long lastChangeTime = 0;
+    private boolean pendingChange = false;
 
     public TextField(int x, int y, int width, String placeholder) {
         this(x, y, width, Theme.TEXTFIELD_HEIGHT, placeholder);
@@ -100,6 +106,13 @@ public class TextField extends Widget {
                 && (!hoverAnimation.isRunning() || hoverAnimation.getValue() > 0)) {
             hoverAnimation = new Animation(hoverAnimation.getValue(), 0, Theme.ANIM_HOVER, Easing::easeOut);
             hoverAnimation.start();
+        }
+
+        if (pendingChange && onValueChange != null) {
+            if (debounceDelay <= 0 || currentTime - lastChangeTime >= debounceDelay) {
+                onValueChange.accept(text);
+                pendingChange = false;
+            }
         }
     }
 
@@ -337,6 +350,7 @@ public class TextField extends Widget {
         text = text.substring(0, start) + text.substring(end);
         cursorPosition = start;
         clearSelection();
+        triggerChange();
     }
 
     private void insertText(String str) {
@@ -349,6 +363,7 @@ public class TextField extends Widget {
         if (!filtered.isEmpty()) {
             text = text.substring(0, cursorPosition) + filtered + text.substring(cursorPosition);
             cursorPosition += filtered.length();
+            triggerChange();
         }
     }
 
@@ -365,6 +380,7 @@ public class TextField extends Widget {
                 text = text.substring(0, cursorPosition) + character + text.substring(cursorPosition);
                 cursorPosition++;
                 pushHistory();
+                triggerChange();
                 return true;
             }
         }
@@ -388,6 +404,7 @@ public class TextField extends Widget {
     public void setText(String text) {
         this.text = text;
         this.cursorPosition = Math.min(cursorPosition, text.length());
+        triggerChange();
     }
 
     public String getPlaceholder() {
@@ -430,11 +447,13 @@ public class TextField extends Widget {
         text = text.substring(0, start) + text.substring(end);
         cursorPosition = start;
         clearSelection();
+        triggerChange();
     }
 
     private void clearSelection() {
         selectionStart = -1;
         selectionEnd = -1;
+        triggerChange();
     }
 
     private void selectAll() {
@@ -513,5 +532,26 @@ public class TextField extends Widget {
         this.cursorPosition = state.cursorPosition;
         this.selectionStart = state.selectionStart;
         this.selectionEnd = state.selectionEnd;
+        triggerChange();
+    }
+
+    public void setOnValueChange(Consumer<String> onValueChange) {
+        this.onValueChange = onValueChange;
+    }
+
+    public void setDebounceDelay(long debounceDelay) {
+        this.debounceDelay = debounceDelay;
+    }
+
+    private void triggerChange() {
+        if (onValueChange != null) {
+            if (debounceDelay <= 0) {
+                onValueChange.accept(text);
+                pendingChange = false;
+            } else {
+                lastChangeTime = System.currentTimeMillis();
+                pendingChange = true;
+            }
+        }
     }
 }

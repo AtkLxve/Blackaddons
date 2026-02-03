@@ -9,6 +9,9 @@ import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.DungeonFloor;
+import org.blackum.blackaddons.util.FormatUtils;
+import org.blackum.blackaddons.util.JsonUtils;
 
 import java.util.List;
 
@@ -19,7 +22,7 @@ public class DailyTabController extends ProfileTabController {
     private String dailyMetric = "xp";
     private int dailyPage = 1;
     private int dailyTotalPages = 1;
-    private String dailyFloor = "master_7";
+    private DungeonFloor dailyFloorValue = DungeonFloor.M7;
 
     private ListView dailyLeaderboardList;
     private ListView dailyPersonalList;
@@ -29,14 +32,7 @@ public class DailyTabController extends ProfileTabController {
     private Button dailyShowMeBtn;
     private Dropdown dailyFloorDropdown;
 
-    private String dailyLastInput = "";
-    private long dailyLastInputTime = 0;
-    private String dailyExecutedQuery = "";
     private boolean dailyDataLoaded = false;
-
-    private static final List<String> FLOOR_OPTIONS = List.of(
-            "M7", "M6", "M5", "M4", "M3", "M2", "M1",
-            "F7", "F6", "F5", "F4", "F3", "F2", "F1", "Entrance");
 
     public DailyTabController(ProfileViewerScreen screen, JsonObject profileData) {
         super(screen, profileData);
@@ -94,30 +90,29 @@ public class DailyTabController extends ProfileTabController {
         int searchFieldX = cx + 65;
         int searchFieldW = showMeX - searchFieldX - 10;
 
-        dailySearchField = new TextField(searchFieldX, searchY, searchFieldW, 20, "IGN...") {
-            @Override
-            public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-                if (keyCode == 257) { // Enter
-                    String type = dailySearchTypeDropdown.getSelectedIndex() == 1 ? "Page" : "IGN";
-                    dailyExecutedQuery = getText();
-                    performSearch(getText(), type);
-                    return true;
-                }
-                return super.keyPressed(keyCode, scanCode, modifiers);
+        dailySearchField = new TextField(searchFieldX, searchY, searchFieldW, 20, "IGN...");
+        dailySearchField.setDebounceDelay(500);
+        dailySearchField.setOnValueChange(query -> {
+            if (!query.isEmpty()) {
+                String type = (dailySearchTypeDropdown != null && dailySearchTypeDropdown.getSelectedIndex() == 1)
+                        ? "Page"
+                        : "IGN";
+                performSearch(query, type);
             }
-        };
+        });
 
         tab.addWidget(dailySearchField);
         tab.addWidget(dailyShowMeBtn);
         tab.addWidget(dailySearchTypeDropdown);
 
-        dailyFloorDropdown = new Dropdown(cx, cy + 50, w - 20, 20, "Floor: M7", FLOOR_OPTIONS, (val) -> {
-            dailyFloor = getDailyFloorKey(val);
-            if (dailyMetric.startsWith("runs")) {
-                this.dailyMetric = "runs_" + dailyFloor;
-                fetchDailyData();
-            }
-        });
+        dailyFloorDropdown = new Dropdown(cx, cy + 50, w - 20, 20, "Floor: M7", DungeonFloor.getDisplayNames(),
+                (val) -> {
+                    dailyFloorValue = DungeonFloor.fromDisplayName(val);
+                    if (dailyMetric.startsWith("runs")) {
+                        this.dailyMetric = "runs_" + dailyFloorValue.getKey();
+                        fetchDailyData();
+                    }
+                });
         dailyFloorDropdown.setVisible(false);
         dailyFloorDropdown.setSelectedOption("M7");
         tab.addWidget(dailyFloorDropdown);
@@ -139,23 +134,6 @@ public class DailyTabController extends ProfileTabController {
     }
 
     public void tick() {
-        if (dailySearchField != null && dailySearchField.isVisible()) {
-            String currentText = dailySearchField.getText();
-            if (!currentText.equals(dailyLastInput)) {
-                dailyLastInput = currentText;
-                dailyLastInputTime = System.currentTimeMillis();
-            }
-
-            if (!dailyLastInput.isEmpty() && !dailyLastInput.equals(dailyExecutedQuery)) {
-                if (System.currentTimeMillis() - dailyLastInputTime > 500) {
-                    dailyExecutedQuery = dailyLastInput;
-                    String type = (dailySearchTypeDropdown != null && dailySearchTypeDropdown.getSelectedIndex() == 1)
-                            ? "Page"
-                            : "IGN";
-                    performSearch(dailyLastInput, type);
-                }
-            }
-        }
     }
 
     private void performSearch(String query, String type) {
@@ -220,32 +198,12 @@ public class DailyTabController extends ProfileTabController {
 
     private void toggleDailyMetric() {
         if (this.dailyMetric.equals("xp")) {
-            this.dailyMetric = "runs_" + dailyFloor;
+            this.dailyMetric = "runs_" + dailyFloorValue.getKey();
         } else {
             this.dailyMetric = "xp";
         }
         updateDailyButtons();
         fetchDailyData();
-    }
-
-    private String getDailyFloorKey(String display) {
-        if (display.equals("Entrance") || display.equals("Ent"))
-            return "normal_0";
-        if (display.startsWith("M"))
-            return "master_" + display.substring(1);
-        if (display.startsWith("F"))
-            return "normal_" + display.substring(1);
-        return "master_7";
-    }
-
-    private String getDailyFloorDisplay(String key) {
-        if (key.equals("normal_0"))
-            return "Entrance";
-        if (key.startsWith("master_"))
-            return "M" + key.substring(7);
-        if (key.startsWith("normal_"))
-            return "F" + key.substring(7);
-        return "M7";
     }
 
     private void updateDailyButtons() {
@@ -261,7 +219,7 @@ public class DailyTabController extends ProfileTabController {
         if (dailyFloorDropdown != null) {
             dailyFloorDropdown.setVisible(isRuns && isLb);
             if (isRuns) {
-                dailyFloorDropdown.setSelectedOption(getDailyFloorDisplay(dailyFloor));
+                dailyFloorDropdown.setSelectedOption(dailyFloorValue.getDisplayName());
             }
         }
 
@@ -332,9 +290,9 @@ public class DailyTabController extends ProfileTabController {
             long now = System.currentTimeMillis() / 1000;
             long elapsed = now - lastUpdatedTs;
 
-            String lastUpdatedStr = formatTime(elapsed) + " ago";
+            String lastUpdatedStr = FormatUtils.formatTime(elapsed) + " ago";
             long nextUpdate = 86400 - elapsed;
-            String nextUpdateStr = nextUpdate > 0 ? " (Next update in " + formatTime(nextUpdate) + ")"
+            String nextUpdateStr = nextUpdate > 0 ? " (Next update in " + FormatUtils.formatTime(nextUpdate) + ")"
                     : " (Updating soon...)";
             addInfoRow(dailyLeaderboardList, "Last Updated: " + lastUpdatedStr + nextUpdateStr, "");
         }
@@ -352,10 +310,8 @@ public class DailyTabController extends ProfileTabController {
             return;
         }
 
-        JsonObject daily = profileData.has("daily_stats") ? profileData.getAsJsonObject("daily_stats")
-                : new JsonObject();
-        JsonObject monthly = profileData.has("monthly_stats") ? profileData.getAsJsonObject("monthly_stats")
-                : new JsonObject();
+        JsonObject daily = JsonUtils.getObject(profileData, "daily_stats");
+        JsonObject monthly = JsonUtils.getObject(profileData, "monthly_stats");
 
         if (daily.size() == 0 && monthly.size() == 0) {
             addInfoRow(dailyPersonalList, "No personal data available.", "Link Discord with /link to track.");
@@ -740,13 +696,4 @@ public class DailyTabController extends ProfileTabController {
         }
     }
 
-    private String formatTime(long seconds) {
-        if (seconds < 0)
-            seconds = 0;
-        if (seconds < 60)
-            return seconds + "s";
-        if (seconds < 3600)
-            return (seconds / 60) + "m " + (seconds % 60) + "s";
-        return (seconds / 3600) + "h " + ((seconds % 3600) / 60) + "m " + (seconds % 60) + "s";
-    }
 }

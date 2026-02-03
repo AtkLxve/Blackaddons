@@ -130,101 +130,21 @@ public class ProfileViewerScreen extends BaseScreen {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
-    private static class Confetti {
-        double x, y;
-        double speedX, speedY;
-        int color;
-        int life;
-        int maxLife;
-        float size;
-
-        Confetti(double x, double y) {
-            this.x = x;
-            this.y = y;
-            this.speedX = (Math.random() - 0.5) * 5;
-            this.speedY = -(Math.random() * 3 + 2);
-            java.awt.Color c = java.awt.Color.getHSBColor((float) Math.random(), 1f, 1f);
-            this.color = c.getRGB();
-            this.maxLife = 100 + (int) (Math.random() * 100);
-            this.life = this.maxLife;
-            this.size = (float) (Math.random() * 3 + 2);
-        }
-    }
-
-    private java.util.List<Confetti> confettiParticles = new java.util.ArrayList<>();
-    private boolean confettiActive = false;
-    private int confettiTimer = 0;
+    private final org.blackum.blackaddons.gui.util.ConfettiEffect confetti = new org.blackum.blackaddons.gui.util.ConfettiEffect();
 
     public void startConfetti() {
-        if (confettiActive)
-            return;
-        stopConfetti();
-        confettiActive = true;
-        confettiTimer = 100;
-        spawnConfettiBurst();
+        confetti.start(width, height);
     }
 
     private void stopConfetti() {
-        confettiActive = false;
-        confettiTimer = 0;
-        confettiParticles.clear();
-    }
-
-    private void spawnConfettiBurst() {
-        if (width <= 0)
-            return;
-        for (int i = 0; i < 100; i++) {
-            double startX = width / 2.0;
-            double startY = height;
-            double sx = (Math.random() - 0.5) * 10;
-            double sy = -(Math.random() * 5 + 5);
-            Confetti c = new Confetti(startX, startY);
-            c.speedX = sx;
-            c.speedY = sy;
-            confettiParticles.add(c);
-        }
+        confetti.stop();
     }
 
     private void tickConfetti() {
-        if (confettiActive) {
-            confettiTimer--;
-            if (confettiTimer <= 0) {
-                confettiActive = false;
-            } else if (confettiTimer % 5 == 0 && confettiParticles.size() < 200) {
-                for (int k = 0; k < 2; k++) {
-                    double startX = width / 2.0 + (Math.random() - 0.5) * 100;
-                    double startY = height;
-                    Confetti c = new Confetti(startX, startY);
-                    c.speedX = (Math.random() - 0.5) * 5;
-                    c.speedY = -(Math.random() * 5 + 5);
-                    confettiParticles.add(c);
-                }
-            }
-        }
-
-        if (confettiParticles.isEmpty())
-            return;
-
-        java.util.Iterator<Confetti> it = confettiParticles.iterator();
-        while (it.hasNext()) {
-            Confetti c = it.next();
-            c.x += c.speedX;
-            c.y += c.speedY;
-            c.speedY += 0.2;
-            c.life--;
-
-            if (c.y > height + 20 || c.life <= 0) {
-                it.remove();
-            }
-        }
+        confetti.tick(width, height);
     }
 
     private void renderConfetti(net.minecraft.client.gui.GuiGraphics graphics) {
-        if (confettiParticles.isEmpty())
-            return;
-
-        for (Confetti c : confettiParticles) {
-            graphics.fill((int) c.x, (int) c.y, (int) (c.x + c.size), (int) (c.y + c.size), c.color);
-        }
+        confetti.render(graphics);
     }
 }

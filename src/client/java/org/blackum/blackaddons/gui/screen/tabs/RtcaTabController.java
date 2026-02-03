@@ -7,6 +7,8 @@ import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.FormatUtils;
+import org.blackum.blackaddons.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -237,12 +239,12 @@ public class RtcaTabController extends ProfileTabController {
                 }
 
                 if (json.has("error")) {
-                    addInfoRow(simResultsList, "Error:", json.get("error").getAsString());
+                    addInfoRow(simResultsList, "Error:", JsonUtils.getString(json, "error", "Unknown error"));
                     return;
                 }
 
                 try {
-                    int totalRuns = json.get("total_runs").getAsInt();
+                    int totalRuns = JsonUtils.getInt(json, "total_runs");
                     if (totalRuns == 0) {
                         screen.startConfetti();
                         simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 25) {
@@ -272,7 +274,7 @@ public class RtcaTabController extends ProfileTabController {
                         }
                     });
 
-                    com.google.gson.JsonObject results = json.getAsJsonObject("results");
+                    com.google.gson.JsonObject results = JsonUtils.getObject(json, "results");
                     List<String> sortedClasses = new ArrayList<>(results.keySet());
                     sortedClasses.sort(String::compareTo);
 
@@ -285,9 +287,9 @@ public class RtcaTabController extends ProfileTabController {
                     simResultsList.addItem(header);
 
                     for (String cls : sortedClasses) {
-                        com.google.gson.JsonObject clsData = results.getAsJsonObject(cls);
-                        int runs = clsData.get("runs_done").getAsInt();
-                        double remaining = clsData.get("remaining_xp").getAsDouble();
+                        com.google.gson.JsonObject clsData = JsonUtils.getObject(results, cls);
+                        int runs = JsonUtils.getInt(clsData, "runs_done");
+                        double remaining = JsonUtils.getDouble(clsData, "remaining_xp");
                         xpData.put(cls, remaining);
 
                         WidgetRow row = new WidgetRow(simResultsList.getWidth() - 10, 15);
@@ -296,8 +298,7 @@ public class RtcaTabController extends ProfileTabController {
                         nameLabel.setColor(Theme.ACCENT);
                         row.addChild(nameLabel, 5);
                         row.addChild(new Label(0, 0, String.format("%,d", runs), Label.Style.BODY), 80);
-                        String xpText = remaining >= 1_000_000 ? String.format("%.2fM", remaining / 1_000_000)
-                                : String.format("%,.0f", remaining);
+                        String xpText = FormatUtils.formatNumber(remaining);
                         row.addChild(new Label(0, 0, xpText, Label.Style.BODY), 180);
                         simResultsList.addItem(row);
                     }

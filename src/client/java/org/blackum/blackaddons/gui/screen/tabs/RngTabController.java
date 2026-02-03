@@ -12,6 +12,7 @@ import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public class RngTabController extends ProfileTabController {
 
                     String errorMsg = "Failed to fetch data from bot.";
                     if (json != null && json.has("error")) {
-                        errorMsg = json.get("error").getAsString();
+                        errorMsg = JsonUtils.getString(json, "error", "Unknown error");
                     }
 
                     addInfoRow(list, "§cError", "");
@@ -73,7 +74,7 @@ public class RngTabController extends ProfileTabController {
             }
 
             if (json.has("data")) {
-                parseRngData(json.getAsJsonObject("data"));
+                parseRngData(JsonUtils.getObject(json, "data"));
                 Minecraft.getInstance().execute(() -> {
                     buildRngTabUI(tab);
                 });
@@ -88,12 +89,12 @@ public class RngTabController extends ProfileTabController {
 
     private void parseRngData(JsonObject data) {
         if (data.has("drops")) {
-            JsonObject drops = data.getAsJsonObject("drops");
+            JsonObject drops = JsonUtils.getObject(data, "drops");
             rngDropCounts = new java.util.HashMap<>();
             for (String cat : drops.keySet()) {
                 if (cat.startsWith("_"))
                     continue;
-                JsonObject catData = drops.getAsJsonObject(cat);
+                JsonObject catData = JsonUtils.getObject(drops, cat);
                 Map<String, Integer> itemMap = new java.util.HashMap<>();
                 for (String item : catData.keySet()) {
                     itemMap.put(item, catData.get(item).getAsInt());
@@ -103,7 +104,7 @@ public class RngTabController extends ProfileTabController {
         }
 
         if (data.has("prices")) {
-            JsonObject prices = data.getAsJsonObject("prices");
+            JsonObject prices = JsonUtils.getObject(data, "prices");
             rngPrices = new java.util.HashMap<>();
             for (String id : prices.keySet()) {
                 rngPrices.put(id, prices.get(id).getAsDouble());
@@ -111,15 +112,15 @@ public class RngTabController extends ProfileTabController {
         }
 
         if (data.has("run_counts")) {
-            JsonObject runs = data.getAsJsonObject("run_counts");
+            JsonObject runs = JsonUtils.getObject(data, "run_counts");
             rngRunCounts = new java.util.HashMap<>();
             for (String floor : runs.keySet()) {
-                rngRunCounts.put(floor, runs.getAsJsonObject(floor));
+                rngRunCounts.put(floor, JsonUtils.getObject(runs, floor));
             }
         }
 
         if (data.has("chest_costs")) {
-            JsonObject costs = data.getAsJsonObject("chest_costs");
+            JsonObject costs = JsonUtils.getObject(data, "chest_costs");
             rngChestCosts = new java.util.HashMap<>();
             for (String item : costs.keySet()) {
                 rngChestCosts.put(item, costs.get(item).getAsInt());
@@ -127,7 +128,7 @@ public class RngTabController extends ProfileTabController {
         }
 
         if (data.has("categories")) {
-            JsonObject cats = data.getAsJsonObject("categories");
+            JsonObject cats = JsonUtils.getObject(data, "categories");
             rngCategories = new java.util.LinkedHashMap<>();
             for (String cat : cats.keySet()) {
                 JsonArray subs = cats.getAsJsonArray(cat);
@@ -140,7 +141,7 @@ public class RngTabController extends ProfileTabController {
         }
 
         if (data.has("items")) {
-            JsonObject items = data.getAsJsonObject("items");
+            JsonObject items = JsonUtils.getObject(data, "items");
             rngItems = new java.util.HashMap<>();
             for (String sub : items.keySet()) {
                 JsonArray itemArray = items.getAsJsonArray(sub);
@@ -161,7 +162,7 @@ public class RngTabController extends ProfileTabController {
         }
 
         if (data.has("item_ids")) {
-            JsonObject ids = data.getAsJsonObject("item_ids");
+            JsonObject ids = JsonUtils.getObject(data, "item_ids");
             rngItemIds = new java.util.HashMap<>();
             for (String itemName : ids.keySet()) {
                 rngItemIds.put(itemName, ids.get(itemName).getAsString());
@@ -316,8 +317,8 @@ public class RngTabController extends ProfileTabController {
             String floorKey = getFloorKey(currentRngSubcategory);
             if (floorKey != null && rngRunCounts.containsKey(floorKey)) {
                 JsonObject runs = rngRunCounts.get(floorKey);
-                int totalRuns = runs.has("normal") ? runs.get("normal").getAsInt() : 0;
-                totalRuns += runs.has("master") ? runs.get("master").getAsInt() : 0;
+                int totalRuns = JsonUtils.getInt(runs, "normal");
+                totalRuns += JsonUtils.getInt(runs, "master");
 
                 if (totalRuns > 0) {
                     double profitPerRun = totalProfit / totalRuns;
@@ -457,10 +458,13 @@ public class RngTabController extends ProfileTabController {
                             btn -> {
                                 try {
                                     int newCount = Integer.parseInt(inputBox.getValue());
-                                    String cat = (RngTabController.this.rngGlobalDrops != null && RngTabController.this.rngGlobalDrops.contains(itemName))
-                                            ? "Global"
-                                            : subcategory;
-                                    BotIntegration.updateRngDrop(RngTabController.this.playerName, cat, itemName, "set", newCount)
+                                    String cat = (RngTabController.this.rngGlobalDrops != null
+                                            && RngTabController.this.rngGlobalDrops.contains(itemName))
+                                                    ? "Global"
+                                                    : subcategory;
+                                    BotIntegration
+                                            .updateRngDrop(RngTabController.this.playerName, cat, itemName, "set",
+                                                    newCount)
                                             .thenAccept(success -> {
                                                 if (success) {
                                                     mc.execute(() -> {
@@ -484,9 +488,11 @@ public class RngTabController extends ProfileTabController {
                 }
 
                 @Override
-                public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
+                        float partialTick) {
                     super.render(graphics, mouseX, mouseY, partialTick);
-                    graphics.drawCenteredString(mc.font, "Set count for " + itemName, width / 2, height / 2 - 35, 0xFFFFFFFF);
+                    graphics.drawCenteredString(mc.font, "Set count for " + itemName, width / 2, height / 2 - 35,
+                            0xFFFFFFFF);
                 }
             });
         }

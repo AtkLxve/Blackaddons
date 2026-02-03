@@ -6,6 +6,8 @@ import org.blackum.blackaddons.gui.widget.Label;
 import org.blackum.blackaddons.gui.widget.ListView;
 import org.blackum.blackaddons.gui.widget.TabPanel;
 import org.blackum.blackaddons.gui.theme.Theme;
+import org.blackum.blackaddons.util.FormatUtils;
+import org.blackum.blackaddons.util.JsonUtils;
 
 public abstract class ProfileTabController {
     protected final ProfileViewerScreen screen;
@@ -19,11 +21,11 @@ public abstract class ProfileTabController {
     public abstract void init(TabPanel.Tab tab);
 
     protected double getDouble(JsonObject json, String key) {
-        return json.has(key) && !json.get(key).isJsonNull() ? json.get(key).getAsDouble() : 0.0;
+        return JsonUtils.getDouble(json, key);
     }
 
     protected int getInt(JsonObject json, String key) {
-        return json.has(key) && !json.get(key).isJsonNull() ? json.get(key).getAsInt() : 0;
+        return JsonUtils.getInt(json, key);
     }
 
     protected void addSectionHeader(ListView list, String title) {
@@ -34,13 +36,7 @@ public abstract class ProfileTabController {
     }
 
     protected String formatMs(int ms) {
-        if (ms == 0)
-            return "-";
-        int seconds = ms / 1000;
-        int millis = ms % 1000;
-        int m = seconds / 60;
-        int s = seconds % 60;
-        return String.format("%d:%02d.%03d", m, s, millis);
+        return FormatUtils.formatMs(ms);
     }
 
     protected void addInfoRow(ListView list, String labelText, String valueText) {
@@ -51,29 +47,10 @@ public abstract class ProfileTabController {
     }
 
     protected String formatRelativeTime(long timestamp) {
-        if (timestamp == 0)
-            return "Unknown";
-        long now = System.currentTimeMillis() / 1000;
-        long diff = now - timestamp;
-
-        if (diff < 60)
-            return diff + "s";
-        if (diff < 3600)
-            return (diff / 60) + "m";
-        if (diff < 86400)
-            return (diff / 3600) + "h";
-        return (diff / 86400) + "d";
+        return FormatUtils.formatRelativeTime(timestamp);
     }
 
     protected String formatNumber(double value) {
-        if (value >= 1_000_000_000) {
-            return String.format("%.1fB", value / 1_000_000_000);
-        } else if (value >= 1_000_000) {
-            return String.format("%.1fM", value / 1_000_000);
-        } else if (value >= 1_000) {
-            return String.format("%.0fk", value / 1_000);
-        } else {
-            return String.format("%,.0f", value);
-        }
+        return FormatUtils.formatNumber(value);
     }
 }

@@ -7,6 +7,9 @@ import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 
+import org.blackum.blackaddons.util.DungeonUtils;
+import org.blackum.blackaddons.util.FormatUtils;
+import org.blackum.blackaddons.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,36 +85,23 @@ public class DungeonsTabController extends ProfileTabController {
 
         addSectionHeader(list, "General Stats");
 
-        double cataLvl = org.blackum.blackaddons.util.DungeonUtils.getCataLevel(cataXp);
+        double cataLvl = DungeonUtils.getCataLevel(cataXp);
 
-        Widget generalStats = new Widget(0, 0, effectiveW, 120) {
-            @Override
-            public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
-                    float partialTick) {
-                int boxW = (width - 10) / 3;
-                int boxW2 = (width - 5) / 2;
-                int row2Y = y + 65;
+        GridRow row1 = new GridRow(effectiveW, 55);
+        int boxW = (effectiveW - 10) / 3;
+        row1.addChild(new StatBox(0, 0, boxW, "Cata Level", String.format("%.2f", cataLvl)), 0);
+        row1.addChild(new StatBox(0, 0, boxW, "Blood Mobs", String.format("%,d", bloodKills)), boxW + 5);
+        row1.addChild(new StatBox(0, 0, boxW, "Total Runs", String.format("%,d", finalTotalRuns)), (boxW + 5) * 2);
+        list.addItem(row1);
 
-                drawStatBox(graphics, x, y, boxW, "Cata Level", String.format("%.2f", cataLvl));
-                drawStatBox(graphics, x + boxW + 5, y, boxW, "Blood Mobs", String.format("%,d", bloodKills));
-                drawStatBox(graphics, x + (boxW + 5) * 2, y, boxW, "Total Runs", String.format("%,d", finalTotalRuns));
-
-                drawStatBox(graphics, x, row2Y, boxW2, "Secrets", String.format("%,d", secretCount));
-                drawStatBox(graphics, x + boxW2 + 5, row2Y, boxW2, "Secrets/Run", String.format("%.2f", secretsPerRun));
-            }
-
-            private void drawStatBox(net.minecraft.client.gui.GuiGraphics graphics, int x, int y, int w, String label,
-                    String value) {
-                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, x, y, w, 50,
-                        Theme.BORDER_RADIUS, Theme.BACKGROUND_SECONDARY);
-                graphics.drawCenteredString(Minecraft.getInstance().font, label, x + w / 2, y + 10, Theme.ACCENT);
-                graphics.drawCenteredString(Minecraft.getInstance().font, "§f" + value, x + w / 2, y + 25, 0xFFFFFFFF);
-            }
-        };
-        list.addItem(generalStats);
+        GridRow row2 = new GridRow(effectiveW, 55);
+        int boxW2 = (effectiveW - 5) / 2;
+        row2.addChild(new StatBox(0, 0, boxW2, "Secrets", String.format("%,d", secretCount)), 0);
+        row2.addChild(new StatBox(0, 0, boxW2, "Secrets/Run", String.format("%.2f", secretsPerRun)), boxW2 + 5);
+        list.addItem(row2);
 
         if (profileData.has("classes")) {
-            JsonObject classes = profileData.getAsJsonObject("classes");
+            JsonObject classes = JsonUtils.getObject(profileData, "classes");
             java.util.Map<String, Double> classData = new java.util.HashMap<>();
             List<Map.Entry<String, JsonElement>> sorted = new ArrayList<>(classes.entrySet());
             sorted.sort((e1, e2) -> Double.compare(e2.getValue().getAsDouble(), e1.getValue().getAsDouble()));
@@ -120,7 +110,7 @@ public class DungeonsTabController extends ProfileTabController {
 
             for (Map.Entry<String, JsonElement> entry : sorted) {
                 double xp = entry.getValue().getAsDouble();
-                double lvl = org.blackum.blackaddons.util.DungeonUtils.getCataLevel(xp);
+                double lvl = DungeonUtils.getCataLevel(xp);
                 classData.put(entry.getKey(), lvl);
 
                 if (List.of("archer", "berserk", "healer", "mage", "tank").contains(entry.getKey().toLowerCase())) {
@@ -249,10 +239,10 @@ public class DungeonsTabController extends ProfileTabController {
     }
 
     private FloorCardWidget createFloorCard(int width, String name, JsonObject data) {
-        int runs = getInt(data, "runs");
-        int best = getInt(data, "best_score");
-        String sPlus = formatMs(getInt(data, "fastest_s_plus"));
-        String s = formatMs(getInt(data, "fastest_s"));
+        int runs = JsonUtils.getInt(data, "runs");
+        int best = JsonUtils.getInt(data, "best_score");
+        String sPlus = FormatUtils.formatMs(JsonUtils.getInt(data, "fastest_s_plus"));
+        String s = FormatUtils.formatMs(JsonUtils.getInt(data, "fastest_s"));
         return new FloorCardWidget(width, name, runs, best, sPlus, s);
     }
 }
