@@ -43,11 +43,16 @@ public class BotIntegration {
         });
     }
 
-    public static CompletableFuture<JsonObject> getProfileStats(String player) {
+    public static CompletableFuture<JsonObject> getProfileStats(String player, boolean force) {
         if (ConfigManager.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        return sendGetRequest("/v1/profile?player=" + player).thenApply(res -> {
+        String url = "/v1/profile?player=" + player;
+        if (force) {
+            url += "&force=true";
+        }
+
+        return sendGetRequest(url).thenApply(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
                     return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();

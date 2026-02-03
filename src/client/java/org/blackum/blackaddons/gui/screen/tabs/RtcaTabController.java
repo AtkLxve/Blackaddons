@@ -134,13 +134,10 @@ public class RtcaTabController extends ProfileTabController {
         tab.addWidget(simulateBtn);
         currentY += 25;
 
-        Label resultsLabel = new Label(cx, currentY, "§lResults", Label.Style.TITLE);
-        resultsLabel.setColor(Theme.ACCENT);
-        tab.addWidget(resultsLabel);
-        currentY += 20;
-
-        int listHeight = tab.getParent().getMaxContentHeight() - (currentY - cy) - 10;
-        simResultsList = new ListView(cx, currentY, w - 10, listHeight);
+        int listY = currentY;
+        int listHeight = tab.getParent().getMaxContentHeight() - (listY - cy) - 10;
+        simResultsList = new ListView(cx, listY, w - 10, listHeight);
+        addSectionHeader(simResultsList, "Results");
         tab.addWidget(simResultsList);
     }
 
@@ -280,7 +277,7 @@ public class RtcaTabController extends ProfileTabController {
 
                     Map<String, Double> xpData = new HashMap<>();
 
-                    WidgetRow header = new WidgetRow(simResultsList.getWidth() - 10, 15);
+                    GridRow header = new GridRow(simResultsList.getWidth() - 10, 15);
                     header.addChild(new Label(0, 0, "Class", Label.Style.BODY), 5);
                     header.addChild(new Label(0, 0, "Remaining Runs", Label.Style.BODY), 80);
                     header.addChild(new Label(0, 0, "XP to Class Lvl 50", Label.Style.BODY), 180);
@@ -292,7 +289,7 @@ public class RtcaTabController extends ProfileTabController {
                         double remaining = JsonUtils.getDouble(clsData, "remaining_xp");
                         xpData.put(cls, remaining);
 
-                        WidgetRow row = new WidgetRow(simResultsList.getWidth() - 10, 15);
+                        GridRow row = new GridRow(simResultsList.getWidth() - 10, 15);
                         String name = cls.substring(0, 1).toUpperCase() + cls.substring(1);
                         Label nameLabel = new Label(0, 0, name, Label.Style.BODY);
                         nameLabel.setColor(Theme.ACCENT);
@@ -331,70 +328,4 @@ public class RtcaTabController extends ProfileTabController {
         });
     }
 
-    private static class WidgetRow extends Widget {
-        private final List<Widget> children = new ArrayList<>();
-
-        public WidgetRow(int width, int height) {
-            super(0, 0, width, height);
-        }
-
-        public void addChild(Widget widget, int xOffset) {
-            widget.setX(x + xOffset);
-            widget.setY(y);
-            children.add(widget);
-        }
-
-        @Override
-        public void setX(int x) {
-            int diff = x - this.x;
-            super.setX(x);
-            for (Widget w : children)
-                w.setX(w.getX() + diff);
-        }
-
-        @Override
-        public void setY(int y) {
-            int diff = y - this.y;
-            super.setY(y);
-            for (Widget w : children)
-                w.setY(w.getY() + diff);
-        }
-
-        @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            for (Widget w : children)
-                w.render(graphics, mouseX, mouseY, partialTick);
-        }
-
-        @Override
-        public void tick() {
-            for (Widget w : children)
-                w.tick();
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            for (Widget w : children) {
-                if (w.mouseClicked(mouseX, mouseY, button))
-                    return true;
-            }
-            return false;
-        }
-
-        @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
-            for (Widget w : children) {
-                if (w.mouseReleased(mouseX, mouseY, button))
-                    return true;
-            }
-            return false;
-        }
-
-        @Override
-        public void updateHoverState(int mouseX, int mouseY) {
-            super.updateHoverState(mouseX, mouseY);
-            for (Widget w : children)
-                w.updateHoverState(mouseX, mouseY);
-        }
-    }
 }

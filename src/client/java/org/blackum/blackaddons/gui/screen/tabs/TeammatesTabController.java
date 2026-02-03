@@ -5,16 +5,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import org.blackum.blackaddons.gui.animation.Animation;
-import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
+import org.blackum.blackaddons.model.Teammate;
 import org.blackum.blackaddons.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class TeammatesTabController extends ProfileTabController {
 
@@ -239,112 +236,4 @@ public class TeammatesTabController extends ProfileTabController {
         }
     }
 
-    private static class Teammate {
-        String ign;
-        int count;
-        String lastFloor;
-        String lastClass;
-        long lastTs;
-        int lastClassLevel;
-
-        Teammate(String ign, JsonObject data) {
-            this.ign = ign;
-            this.count = JsonUtils.getInt(data, "count");
-            this.lastFloor = JsonUtils.getString(data, "last_floor", "");
-            this.lastClass = JsonUtils.getString(data, "last_class", "");
-            this.lastTs = data.has("last_ts") && !data.get("last_ts").isJsonNull() ? data.get("last_ts").getAsLong()
-                    : 0;
-            this.lastClassLevel = JsonUtils.getInt(data, "last_class_level");
-        }
-    }
-
-    private class TeammateRow extends Widget {
-        private final Teammate tm;
-        private Animation hoverAnimation;
-        private final Button inviteBtn;
-
-        public TeammateRow(int width, Teammate tm) {
-            super(0, 0, width, 18);
-            this.tm = tm;
-            this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
-            this.inviteBtn = new Button(0, 0, 40, 12, "Invite", () -> {
-                if (Minecraft.getInstance().player != null) {
-                    Minecraft.getInstance().player.connection.sendCommand("party " + tm.ign);
-                }
-            });
-        }
-
-        @Override
-        public void updateHoverState(int mouseX, int mouseY) {
-            super.updateHoverState(mouseX, mouseY);
-            inviteBtn.setX(this.x + this.width - 45);
-            inviteBtn.setY(this.y + 3);
-            inviteBtn.updateHoverState(mouseX, mouseY);
-        }
-
-        @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            float hover = hoverAnimation.getValue();
-            if (hover > 0) {
-                int color = Theme.withAlpha(Theme.GLASS_HIGHLIGHT, hover * 0.2f);
-                graphics.fill(x, y, x + width, y + height, color);
-            }
-
-            int cx = x + 2;
-            int cy = y + 5;
-
-            String ignText = tm.ign;
-            graphics.drawString(Minecraft.getInstance().font, ignText, cx, cy, Theme.ACCENT);
-            cx += COL_IGN;
-            graphics.drawString(Minecraft.getInstance().font, "§f" + tm.count, cx, cy, 0xFFFFFFFF);
-            cx += COL_RUNS;
-
-            String classText = String.format("§f%s %d", tm.lastClass, tm.lastClassLevel);
-            graphics.drawString(Minecraft.getInstance().font, classText, cx, cy, 0xFFFFFFFF);
-            cx += COL_CLASS;
-
-            graphics.drawString(Minecraft.getInstance().font, "§f" + tm.lastFloor, cx, cy, 0xFFFFFFFF);
-            cx += COL_FLOOR;
-
-            String timeAgo = formatRelativeTime(tm.lastTs);
-            graphics.drawString(Minecraft.getInstance().font, "§7" + timeAgo, cx, cy, 0xFFFFFFFF);
-
-            inviteBtn.setX(this.x + this.width - 45);
-            inviteBtn.setY(this.y + 3);
-            inviteBtn.render(graphics, mouseX, mouseY, partialTick);
-        }
-
-        @Override
-        public void tick() {
-            inviteBtn.tick();
-            if (hovered && hoverAnimation.getProgress() < 1
-                    && (!hoverAnimation.isRunning() || hoverAnimation.getValue() < 1)) {
-                hoverAnimation = new Animation(hoverAnimation.getValue(), 1, Theme.ANIM_HOVER, Easing::easeOut);
-                hoverAnimation.start();
-            } else if (!hovered && hoverAnimation.getProgress() > 0
-                    && (!hoverAnimation.isRunning() || hoverAnimation.getValue() > 0)) {
-                hoverAnimation = new Animation(hoverAnimation.getValue(), 0, Theme.ANIM_HOVER, Easing::easeOut);
-                hoverAnimation.start();
-            }
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (inviteBtn.mouseClicked(mouseX, mouseY, button)) {
-                return true;
-            }
-            if (visible && isMouseOver(mouseX, mouseY) && button == 0) {
-                if (Minecraft.getInstance().player != null) {
-                    Minecraft.getInstance().player.connection.sendCommand("ba pv " + tm.ign);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public boolean mouseReleased(double mouseX, double mouseY, int button) {
-            return inviteBtn.mouseReleased(mouseX, mouseY, button);
-        }
-    }
 }

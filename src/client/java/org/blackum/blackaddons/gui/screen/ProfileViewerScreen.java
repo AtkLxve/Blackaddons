@@ -9,6 +9,7 @@ import org.blackum.blackaddons.util.BotIntegration;
 
 public class ProfileViewerScreen extends BaseScreen {
     private final String player;
+    private final boolean forceUpdate;
     private TabPanel tabPanel;
     private JsonObject profileData;
     private boolean isLoading = true;
@@ -24,19 +25,16 @@ public class ProfileViewerScreen extends BaseScreen {
     @Override
     protected void initWidgets() {
         if (isLoading) {
-            BotIntegration.getProfileStats(player).thenAccept(json -> {
-                isLoading = false;
-                if (json == null) {
-                    errorMessage = "Failed to fetch data from bot.";
-                } else if (json.has("error")) {
-                    errorMessage = json.get("error").getAsString();
-                } else if (json.has("data")) {
-                    profileData = json.getAsJsonObject("data");
-                } else {
-                    errorMessage = "Invalid data received.";
-                }
-                net.minecraft.client.Minecraft.getInstance().execute(() -> this.init(this.width, this.height));
-            });
+            org.blackum.blackaddons.util.ProfileStateManager.getInstance().getProfile(player, forceUpdate)
+                    .thenAccept(result -> {
+                        isLoading = false;
+                        if (result.isSuccess()) {
+                            profileData = result.getData();
+                        } else {
+                            errorMessage = result.getError();
+                        }
+                        net.minecraft.client.Minecraft.getInstance().execute(() -> this.init(this.width, this.height));
+                    });
         }
 
         if (isLoading) {
@@ -90,16 +88,22 @@ public class ProfileViewerScreen extends BaseScreen {
     }
 
     public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player) {
-        this(parent, player, null);
+        this(parent, player, false, null);
+    }
+
+    public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player, boolean force) {
+        this(parent, player, force, null);
     }
 
     public String getPlayer() {
         return player;
     }
 
-    public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player, JsonObject data) {
+    public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player, boolean force,
+            JsonObject data) {
         super(Component.literal("Profile: " + player), parent);
         this.player = player;
+        this.forceUpdate = force;
         if (data != null) {
             this.profileData = data;
             this.isLoading = false;
@@ -110,6 +114,14 @@ public class ProfileViewerScreen extends BaseScreen {
     public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderConfetti(graphics);
+
+        if (!isLoading && profileData != null) {
+            String label = "Viewing: " + player;
+            int x = containerX + 10;
+            int y = containerY + containerHeight - 15;
+            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, label, x, y,
+                    org.blackum.blackaddons.gui.theme.Theme.TEXT_SECONDARY);
+        }
     }
 
     @Override

@@ -2,11 +2,11 @@ package org.blackum.blackaddons.gui.screen.tabs;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
-import org.blackum.blackaddons.gui.util.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.util.BotIntegration;
 import org.blackum.blackaddons.util.DungeonFloor;
@@ -31,6 +31,7 @@ public class DailyTabController extends ProfileTabController {
     private TextField dailySearchField;
     private Button dailyShowMeBtn;
     private Dropdown dailyFloorDropdown;
+    private PaginationWidget paginationWidget;
 
     private boolean dailyDataLoaded = false;
 
@@ -82,7 +83,7 @@ public class DailyTabController extends ProfileTabController {
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null) {
                 if (!dailySearchTypeDropdown.isExpanded()) {
-                    performSearch(mc.player.getName().getString(), "IGN");
+                    performSearch(mc.player.getName().getString(), "IGN", false);
                 }
             }
         });
@@ -97,7 +98,9 @@ public class DailyTabController extends ProfileTabController {
                 String type = (dailySearchTypeDropdown != null && dailySearchTypeDropdown.getSelectedIndex() == 1)
                         ? "Page"
                         : "IGN";
-                performSearch(query, type);
+                performSearch(query, type, false);
+            } else {
+                fetchDailyData();
             }
         });
 
@@ -120,9 +123,15 @@ public class DailyTabController extends ProfileTabController {
         int listY = cy + 75;
         int listH = tab.getParent().getMaxContentHeight() - 75;
 
-        dailyLeaderboardList = new ListView(cx, listY, w - 20, listH);
+        dailyLeaderboardList = new ListView(cx, listY, w - 20, listH - 30);
         dailyPersonalList = new ListView(cx, listY, w - 20, listH);
         dailyPersonalList.setVisible(false);
+
+        paginationWidget = new PaginationWidget(cx, cy + listH - 25, w - 20, dailyPage, dailyTotalPages, page -> {
+            this.dailyPage = page;
+            fetchDailyData();
+        });
+        tab.addWidget(paginationWidget);
 
         tab.addWidget(dailyLeaderboardList);
         tab.addWidget(dailyPersonalList);
@@ -136,7 +145,7 @@ public class DailyTabController extends ProfileTabController {
     public void tick() {
     }
 
-    private void performSearch(String query, String type) {
+    private void performSearch(String query, String type, boolean force) {
         if (query == null || query.trim().isEmpty())
             return;
         query = query.trim();
@@ -229,6 +238,8 @@ public class DailyTabController extends ProfileTabController {
             dailyShowMeBtn.setVisible(isLb);
         if (dailySearchTypeDropdown != null)
             dailySearchTypeDropdown.setVisible(isLb);
+        if (paginationWidget != null)
+            paginationWidget.setVisible(isLb);
     }
 
     private void fetchDailyData() {
@@ -248,6 +259,9 @@ public class DailyTabController extends ProfileTabController {
                         dailyTotalPages = json.get("total_pages").getAsInt();
                     } else {
                         dailyTotalPages = 1;
+                    }
+                    if (paginationWidget != null) {
+                        paginationWidget.update(dailyPage, dailyTotalPages);
                     }
 
                     renderLeaderboard(json);
@@ -297,9 +311,46 @@ public class DailyTabController extends ProfileTabController {
             addInfoRow(dailyLeaderboardList, "Last Updated: " + lastUpdatedStr + nextUpdateStr, "");
         }
 
-        addPaginationControls(dailyLeaderboardList);
         addDiscordLinkButton(dailyLeaderboardList);
         dailyDataLoaded = true;
+    }
+
+    private void addDiscordLinkButton(ListView list) {
+        Button linkBtn = new Button(0, 0, list.getWidth() - 20, 20, "§bWant to be on leaderboard? Link Discord", () -> {
+            String url = "https://discord.com/oauth2/authorize?client_id=1134507219220713472";
+            Util.getPlatform().openUri(url);
+        });
+
+        Widget wrapper = new Widget(0, 0, list.getWidth(), 30) {
+            @Override
+            public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+                linkBtn.setX(this.x + 10);
+                linkBtn.setY(this.y + 5);
+                linkBtn.setWidth(this.width - 20);
+                linkBtn.render(g, mouseX, mouseY, partialTick);
+            }
+
+            @Override
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                return linkBtn.mouseClicked(mouseX, mouseY, button);
+            }
+
+            @Override
+            public void updateHoverState(int mouseX, int mouseY) {
+                linkBtn.updateHoverState(mouseX, mouseY);
+            }
+
+            @Override
+            public void tick() {
+                linkBtn.tick();
+            }
+
+            @Override
+            public boolean mouseReleased(double mouseX, double mouseY, int button) {
+                return linkBtn.mouseReleased(mouseX, mouseY, button);
+            }
+        };
+        list.addItem(wrapper);
     }
 
     private void renderPersonalStats() {
@@ -520,179 +571,6 @@ public class DailyTabController extends ProfileTabController {
             if (i > 0)
                 sb.append(", ");
             sb.append(parts.get(i));
-        }
-    }
-
-    private void addPaginationControls(ListView list) {
-        int w = list.getWidth();
-        Widget paging = new Widget(0, 0, w, 25) {
-            Button prev;
-            Button next;
-
-            {
-                prev = new Button(0, 0, 80, 20, "< Prev", () -> changePage(-1));
-                next = new Button(0, 0, 80, 20, "Next >", () -> changePage(1));
-            }
-
-            private void updateLayout() {
-                int mid = x + width / 2;
-                prev.setX(mid - 120);
-                prev.setY(y + 2);
-                prev.setEnabled(dailyPage > 1);
-
-                next.setX(mid + 40);
-                next.setY(y + 2);
-                next.setEnabled(dailyPage < dailyTotalPages);
-            }
-
-            @Override
-            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                updateLayout();
-                prev.render(graphics, mouseX, mouseY, partialTick);
-                next.render(graphics, mouseX, mouseY, partialTick);
-
-                String pageStr = dailyPage + " / " + dailyTotalPages;
-                graphics.drawCenteredString(Minecraft.getInstance().font, pageStr, x + width / 2, y + 8, 0xFFAAAAAA);
-            }
-
-            @Override
-            public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                updateLayout();
-                if (prev.mouseClicked(mouseX, mouseY, button))
-                    return true;
-                if (next.mouseClicked(mouseX, mouseY, button))
-                    return true;
-                return false;
-            }
-
-            @Override
-            public void updateHoverState(int mouseX, int mouseY) {
-                updateLayout();
-                prev.updateHoverState(mouseX, mouseY);
-                next.updateHoverState(mouseX, mouseY);
-            }
-
-            @Override
-            public void tick() {
-                prev.tick();
-                next.tick();
-            }
-
-            @Override
-            public boolean mouseReleased(double mouseX, double mouseY, int button) {
-                if (prev.mouseReleased(mouseX, mouseY, button))
-                    return true;
-                if (next.mouseReleased(mouseX, mouseY, button))
-                    return true;
-                return false;
-            }
-        };
-        list.addItem(paging);
-    }
-
-    private void changePage(int delta) {
-        this.dailyPage += delta;
-        if (this.dailyPage < 1)
-            this.dailyPage = 1;
-        if (dailyTotalPages > 0 && this.dailyPage > this.dailyTotalPages)
-            this.dailyPage = this.dailyTotalPages;
-        fetchDailyData();
-    }
-
-    private void addDiscordLinkButton(ListView list) {
-        Button linkBtn = new Button(0, 0, list.getWidth() - 20, 20, "§bWant to be on leaderboard? Link Discord", () -> {
-            String url = "https://discord.com/oauth2/authorize?client_id=1134507219220713472";
-            try {
-                java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-        Widget wrapper = new Widget(0, 0, list.getWidth(), 30) {
-            @Override
-            public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-                linkBtn.setX(this.x + 10);
-                linkBtn.setY(this.y + 5);
-                linkBtn.setWidth(this.width - 20);
-                linkBtn.render(g, mouseX, mouseY, partialTick);
-            }
-
-            @Override
-            public boolean mouseClicked(double mouseX, double mouseY, int button) {
-                return linkBtn.mouseClicked(mouseX, mouseY, button);
-            }
-
-            @Override
-            public void updateHoverState(int mouseX, int mouseY) {
-                linkBtn.updateHoverState(mouseX, mouseY);
-            }
-
-            @Override
-            public void tick() {
-                linkBtn.tick();
-            }
-
-            @Override
-            public boolean mouseReleased(double mouseX, double mouseY, int button) {
-                return linkBtn.mouseReleased(mouseX, mouseY, button);
-            }
-        };
-        list.addItem(wrapper);
-    }
-
-    private class LeaderboardRow extends Widget {
-        private final int rank;
-        private final String ign;
-        private final double value;
-        private final boolean isRuns;
-        private boolean isCurrentPlayer = false;
-
-        public LeaderboardRow(int w, int rank, String ign, double value, boolean isRuns) {
-            super(0, 0, w, 20);
-            this.rank = rank;
-            this.ign = ign;
-            this.value = value;
-            this.isRuns = isRuns;
-        }
-
-        public void setCurrentPlayer(boolean current) {
-            this.isCurrentPlayer = current;
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (isMouseOver(mouseX, mouseY) && button == 0) {
-                Minecraft.getInstance().setScreen(new ProfileViewerScreen(null, ign));
-                return true;
-            }
-            return super.mouseClicked(mouseX, mouseY, button);
-        }
-
-        @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            int color = hovered ? Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.4f) : 0;
-            if (isCurrentPlayer) {
-                color = Theme.withAlpha(Theme.ACCENT, 0.3f);
-            }
-            if (color != 0)
-                RenderHelper.renderRoundedRect(graphics, x, y, width, height, 3, color);
-
-            Minecraft mc = Minecraft.getInstance();
-            String rankStr = "#" + rank;
-            if (rank == 1)
-                rankStr = "§6🥇";
-            else if (rank == 2)
-                rankStr = "§7🥈";
-            else if (rank == 3)
-                rankStr = "§c🥉";
-
-            graphics.drawString(mc.font, rankStr, x + 5, y + 6, 0xFFFFFFFF);
-            graphics.drawString(mc.font, ign, x + 30, y + 6, isCurrentPlayer ? 0xFFFFFFFF : Theme.ACCENT);
-
-            String valStr = isRuns ? String.format("%,.0f Runs", value) : String.format("%,.0f XP", value);
-            int valW = mc.font.width(valStr);
-            graphics.drawString(mc.font, "§f" + valStr, x + width - valW - 5, y + 6, 0xFFFFFFFF);
         }
     }
 

@@ -92,6 +92,7 @@ public class ConfigManager {
 
         // Settings
         public int notificationDuration = 4000;
+        public int cacheDurationMinutes = 5;
 
     }
 
@@ -207,6 +208,7 @@ public class ConfigManager {
                 org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled = data.legitFullbrightEnabled;
 
                 GeneralOptions.NOTIFICATION_DURATION = data.notificationDuration;
+                GeneralOptions.CACHE_DURATION_MINUTES = data.cacheDurationMinutes == 0 ? 5 : data.cacheDurationMinutes;
 
                 ConfigManager.rngTrackerEnabled = data.rngTrackerEnabled;
                 lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();

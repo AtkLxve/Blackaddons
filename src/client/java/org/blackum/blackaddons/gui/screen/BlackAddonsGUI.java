@@ -105,6 +105,39 @@ public class BlackAddonsGUI extends BaseScreen {
                     }
                 });
         settingsTab.addWidget(durationSlider);
+
+        settingsTab.addWidget(new Label(contentX, contentY + 390, "Profile Cache Duration", Label.Style.BODY));
+
+        java.util.List<String> cacheOptions = java.util.List.of("1 Minute", "5 Minutes", "10 Minutes", "30 Minutes",
+                "1 Hour");
+        Dropdown cacheDropdown = new Dropdown(contentX, contentY + 410, tabPanel.getContentWidth() - 20, 20,
+                "Cache Duration", cacheOptions, selected -> {
+                    int minutes = 5;
+                    if (selected.contains("1 Minute"))
+                        minutes = 1;
+                    else if (selected.contains("5 Minutes"))
+                        minutes = 5;
+                    else if (selected.contains("10 Minutes"))
+                        minutes = 10;
+                    else if (selected.contains("30 Minutes"))
+                        minutes = 30;
+                    else if (selected.contains("1 Hour"))
+                        minutes = 60;
+
+                    if (GeneralOptions.CACHE_DURATION_MINUTES != minutes) {
+                        GeneralOptions.CACHE_DURATION_MINUTES = minutes;
+                        ConfigManager.save();
+                    }
+                });
+
+        String currentOption = GeneralOptions.CACHE_DURATION_MINUTES + " Minutes";
+        if (GeneralOptions.CACHE_DURATION_MINUTES == 1)
+            currentOption = "1 Minute";
+        else if (GeneralOptions.CACHE_DURATION_MINUTES == 60)
+            currentOption = "1 Hour";
+
+        cacheDropdown.setSelectedOption(currentOption);
+        settingsTab.addWidget(cacheDropdown);
     }
 
     private void initAboutTab() {

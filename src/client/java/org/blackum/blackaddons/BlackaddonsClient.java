@@ -217,7 +217,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pv")
                             .executes(ctx -> {
                                 String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                                loadProfileAndOpen(player);
+                                loadProfileAndOpen(player, false);
                                 return 1;
                             })
                             .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -225,9 +225,18 @@ public class BlackaddonsClient implements ClientModInitializer {
                                     .executes(ctx -> {
                                         String player = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx,
                                                 "ign");
-                                        loadProfileAndOpen(player);
+                                        loadProfileAndOpen(player, false);
                                         return 1;
-                                    })));
+                                    })
+                                    .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                            .literal("force")
+                                            .executes(ctx -> {
+                                                String player = com.mojang.brigadier.arguments.StringArgumentType
+                                                        .getString(ctx,
+                                                                "ign");
+                                                loadProfileAndOpen(player, true);
+                                                return 1;
+                                            }))));
 
                     command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("daily")
                             .executes(ctx -> {
@@ -318,12 +327,13 @@ public class BlackaddonsClient implements ClientModInitializer {
         Blackaddons.LOGGER.info("Client initialization completed");
     }
 
-    private void loadProfileAndOpen(String player) {
+    private void loadProfileAndOpen(String player, boolean force) {
         net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
         mc.gui.getChat().addMessage(
-                net.minecraft.network.chat.Component.literal("§7[BlackAddons] Loading profile for " + player + "..."));
+                net.minecraft.network.chat.Component
+                        .literal("§7[BlackAddons] Loading profile for " + player + (force ? " (Forced)" : "") + "..."));
 
-        org.blackum.blackaddons.util.BotIntegration.getProfileStats(player).thenAccept(json -> {
+        org.blackum.blackaddons.util.BotIntegration.getProfileStats(player, force).thenAccept(json -> {
             if (json == null) {
                 mc.gui.getChat().addMessage(
                         net.minecraft.network.chat.Component.literal("§c[BlackAddons] Failed to fetch data."));
@@ -348,7 +358,8 @@ public class BlackaddonsClient implements ClientModInitializer {
 
             final com.google.gson.JsonObject finalData = data;
             mc.execute(() -> {
-                mc.setScreen(new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, finalData));
+                mc.setScreen(
+                        new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, force, finalData));
             });
         }).exceptionally(e -> {
             mc.gui.getChat().addMessage(

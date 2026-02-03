@@ -29,10 +29,7 @@ public abstract class ProfileTabController {
     }
 
     protected void addSectionHeader(ListView list, String title) {
-        Label label = new Label(0, 0, "§l" + title, Label.Style.TITLE);
-        label.setColor(Theme.ACCENT);
-        label.setHeight(25);
-        list.addItem(label);
+        list.addItem(new org.blackum.blackaddons.gui.widget.SectionHeader(list.getWidth(), title));
     }
 
     protected String formatMs(int ms) {

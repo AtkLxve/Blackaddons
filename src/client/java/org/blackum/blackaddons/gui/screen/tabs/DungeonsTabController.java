@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 
 import org.blackum.blackaddons.util.DungeonUtils;
@@ -119,27 +118,6 @@ public class DungeonsTabController extends ProfileTabController {
             }
 
             double classAvg = totalLevel / 5.0;
-            if (classAvg >= 50.0) {
-                screen.startConfetti();
-                list.addItem(new Widget(0, 0, effectiveW, 25) {
-                    @Override
-                    public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
-                            float partialTick) {
-                        graphics.drawCenteredString(Minecraft.getInstance().font, "§6§l🎉 CLASS AVERAGE 50! 🎉",
-                                x + width / 2, y + 8,
-                                0xFFFFFFFF);
-                    }
-                });
-                list.addItem(new Widget(0, 0, effectiveW, 20) {
-                    @Override
-                    public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
-                            float partialTick) {
-                        graphics.drawCenteredString(Minecraft.getInstance().font,
-                                "§eCongratulations! You need to touch some grass!", x + width / 2, y + 5,
-                                0xFFFFD700);
-                    }
-                });
-            }
 
             BarGraphWidget graph = new BarGraphWidget(
                     0, 0, effectiveW, String.format("Class Levels (Avg: %.2f)", classAvg));
