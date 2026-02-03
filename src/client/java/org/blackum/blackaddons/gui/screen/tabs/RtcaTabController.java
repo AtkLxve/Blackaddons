@@ -1,0 +1,399 @@
+package org.blackum.blackaddons.gui.screen.tabs;
+
+import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
+import org.blackum.blackaddons.gui.theme.Theme;
+import org.blackum.blackaddons.gui.widget.*;
+import org.blackum.blackaddons.util.BotIntegration;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class RtcaTabController extends ProfileTabController {
+
+    private ListView simResultsList;
+    private Button simulateBtn;
+    private Dropdown rtcaFloorDropdown;
+
+    private boolean simRing = true;
+    private int simHecatombLvl = 10;
+    private int simScarfAccIndex = 3;
+    private int simScarfAttrLvl = 10;
+    private int simGlobalIndex = 0;
+    private int simMayorIndex = 0;
+    private String rtcaFloor = "M7";
+
+    private static final List<String> FLOOR_OPTIONS = List.of(
+            "M7", "M6", "M5", "M4", "M3", "M2", "M1",
+            "F7", "F6", "F5", "F4", "F3", "F2", "F1", "Entrance");
+
+    public RtcaTabController(ProfileViewerScreen screen, JsonObject profileData) {
+        super(screen, profileData);
+    }
+
+    @Override
+    public void init(TabPanel.Tab tab) {
+        int w = tab.getParent().getContentWidth();
+        int cx = tab.getParent().getContentX();
+        int cy = tab.getParent().getContentY();
+
+        Label settingsLabel = new Label(cx, cy, "§lSimulation Settings", Label.Style.TITLE);
+        settingsLabel.setColor(Theme.ACCENT);
+        tab.addWidget(settingsLabel);
+
+        int currentY = cy + 25;
+        int btnW = (w - 30) / 2;
+        int btnH = 20;
+
+        Button[] ringBtnRef = new Button[1];
+        ringBtnRef[0] = new Button(cx, currentY, btnW, btnH, getRingLabel(), () -> {
+            simRing = !simRing;
+            if (ringBtnRef[0] != null)
+                ringBtnRef[0].setText(getRingLabel());
+        });
+
+        Button[] hecaBtnRef = new Button[1];
+        hecaBtnRef[0] = new Button(cx + btnW + 10, currentY, btnW, btnH, getHecatombLabel(), () -> {
+            simHecatombLvl = (simHecatombLvl + 1) % 11;
+            if (hecaBtnRef[0] != null)
+                hecaBtnRef[0].setText(getHecatombLabel());
+        });
+        tab.addWidget(ringBtnRef[0]);
+        tab.addWidget(hecaBtnRef[0].setOnRightClick(() -> {
+            simHecatombLvl = (simHecatombLvl - 1 + 11) % 11;
+            if (hecaBtnRef[0] != null)
+                hecaBtnRef[0].setText(getHecatombLabel());
+        }));
+        currentY += btnH + 5;
+
+        Button[] scarfAccBtnRef = new Button[1];
+        scarfAccBtnRef[0] = new Button(cx, currentY, btnW, btnH, getScarfAccLabel(), () -> {
+            simScarfAccIndex = (simScarfAccIndex + 1) % 4;
+            if (scarfAccBtnRef[0] != null)
+                scarfAccBtnRef[0].setText(getScarfAccLabel());
+        });
+
+        Button[] scarfAttrBtnRef = new Button[1];
+        scarfAttrBtnRef[0] = new Button(cx + btnW + 10, currentY, btnW, btnH, getScarfAttrLabel(), () -> {
+            simScarfAttrLvl = (simScarfAttrLvl + 1) % 11;
+            if (scarfAttrBtnRef[0] != null)
+                scarfAttrBtnRef[0].setText(getScarfAttrLabel());
+        });
+        tab.addWidget(scarfAccBtnRef[0].setOnRightClick(() -> {
+            simScarfAccIndex = (simScarfAccIndex - 1 + 4) % 4;
+            if (scarfAccBtnRef[0] != null)
+                scarfAccBtnRef[0].setText(getScarfAccLabel());
+        }));
+        tab.addWidget(scarfAttrBtnRef[0].setOnRightClick(() -> {
+            simScarfAttrLvl = (simScarfAttrLvl - 1 + 11) % 11;
+            if (scarfAttrBtnRef[0] != null)
+                scarfAttrBtnRef[0].setText(getScarfAttrLabel());
+        }));
+        currentY += btnH + 5;
+
+        Button[] globalBtnRef = new Button[1];
+        globalBtnRef[0] = new Button(cx, currentY, btnW, btnH, getGlobalLabel(), () -> {
+            simGlobalIndex = (simGlobalIndex + 1) % 6;
+            if (globalBtnRef[0] != null)
+                globalBtnRef[0].setText(getGlobalLabel());
+        });
+
+        Button[] mayorBtnRef = new Button[1];
+        mayorBtnRef[0] = new Button(cx + btnW + 10, currentY, btnW, btnH, getMayorLabel(), () -> {
+            simMayorIndex = (simMayorIndex + 1) % 3;
+            if (mayorBtnRef[0] != null)
+                mayorBtnRef[0].setText(getMayorLabel());
+        });
+        tab.addWidget(globalBtnRef[0].setOnRightClick(() -> {
+            simGlobalIndex = (simGlobalIndex - 1 + 6) % 6;
+            if (globalBtnRef[0] != null)
+                globalBtnRef[0].setText(getGlobalLabel());
+        }));
+        tab.addWidget(mayorBtnRef[0].setOnRightClick(() -> {
+            simMayorIndex = (simMayorIndex - 1 + 3) % 3;
+            if (mayorBtnRef[0] != null)
+                mayorBtnRef[0].setText(getMayorLabel());
+        }));
+        currentY += btnH + 10;
+
+        rtcaFloorDropdown = new Dropdown(cx, currentY, w - 20, 20, "Floor: M7", FLOOR_OPTIONS, (val) -> {
+            rtcaFloor = val;
+            updateSimulateButtonText();
+        });
+        rtcaFloorDropdown.setSelectedOption(rtcaFloor);
+        tab.addWidget(rtcaFloorDropdown);
+        currentY += 25;
+
+        simulateBtn = new Button(cx, currentY, w - 20, 20, "Simulate Runs (" + rtcaFloor + ")", this::runSimulation);
+        tab.addWidget(simulateBtn);
+        currentY += 25;
+
+        Label resultsLabel = new Label(cx, currentY, "§lResults", Label.Style.TITLE);
+        resultsLabel.setColor(Theme.ACCENT);
+        tab.addWidget(resultsLabel);
+        currentY += 20;
+
+        int listHeight = tab.getParent().getMaxContentHeight() - (currentY - cy) - 10;
+        simResultsList = new ListView(cx, currentY, w - 10, listHeight);
+        tab.addWidget(simResultsList);
+    }
+
+    private void updateSimulateButtonText() {
+        if (simulateBtn != null) {
+            simulateBtn.setText("Simulate Runs (" + rtcaFloor + ")");
+        }
+    }
+
+    private String getRingLabel() {
+        return "Expert Ring: " + (simRing ? "Yes (+10%)" : "No");
+    }
+
+    private String getHecatombLabel() {
+        if (simHecatombLvl == 0)
+            return "Hecatomb: None";
+        double bonus = 0.4 + (simHecatombLvl * 0.16);
+        return "Hecatomb: " + intToRoman(simHecatombLvl) + String.format(" (+%.2f%%)", bonus);
+    }
+
+    private String getScarfAccLabel() {
+        double[] bonus = { 0, 2, 4, 6 };
+        String name = switch (simScarfAccIndex) {
+            case 1 -> "Studies";
+            case 2 -> "Thesis";
+            case 3 -> "Grimoire";
+            default -> "None";
+        };
+        String extra = simScarfAccIndex == 0 ? "" : " (+" + (int) bonus[simScarfAccIndex] + "%)";
+        return "Scarf's Talisman: " + name + extra;
+    }
+
+    private String getScarfAttrLabel() {
+        if (simScarfAttrLvl == 0)
+            return "Scarf's Attribute: None";
+        return "Scarf's Attribute: " + intToRoman(simScarfAttrLvl) + " (+" + (simScarfAttrLvl * 2) + "%)";
+    }
+
+    private String getGlobalLabel() {
+        double[] vals = { 0, 0.05, 0.1, 0.15, 0.2, 0.3 };
+        return "Global: " + String.format("%.0f%%", vals[simGlobalIndex] * 100);
+    }
+
+    private String getMayorLabel() {
+        return switch (simMayorIndex) {
+            case 1 -> "Mayor: Derpy";
+            case 2 -> "Mayor: Aura";
+            default -> "Mayor: None";
+        };
+    }
+
+    private String intToRoman(int num) {
+        String[] roman = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X" };
+        if (num >= 0 && num < roman.length)
+            return roman[num];
+        return String.valueOf(num);
+    }
+
+    private void runSimulation() {
+        if (simResultsList != null)
+            simResultsList.clearItems();
+
+        String playerName = screen.getPlayer();
+        if (playerName == null || playerName.isEmpty()) {
+            if (simResultsList != null)
+                addInfoRow(simResultsList, "Error:", "No player selected.");
+            return;
+        }
+
+        if (simResultsList != null)
+            addInfoRow(simResultsList, "Status:", "Requesting API...");
+
+        Map<String, Double> bonuses = new HashMap<>();
+        bonuses.put("ring", simRing ? 0.1 : 0.0);
+        double hecaVal = 0.0;
+        if (simHecatombLvl > 0)
+            hecaVal = 0.004 + (simHecatombLvl * 0.0016);
+        bonuses.put("hecatomb", hecaVal);
+        double[] scarfAccVals = { 0.0, 0.02, 0.04, 0.06 };
+        bonuses.put("scarf_accessory", scarfAccVals[simScarfAccIndex]);
+        bonuses.put("scarf_attribute", simScarfAttrLvl * 0.02);
+        double[] globalVals = { 1.0, 1.05, 1.1, 1.15, 1.2, 1.3 };
+        bonuses.put("global", globalVals[simGlobalIndex]);
+        double[] mayorVals = { 1.0, 1.5, 1.55 };
+        bonuses.put("mayor", mayorVals[simMayorIndex]);
+
+        BotIntegration.getRtcaStats(playerName, rtcaFloor, bonuses).thenAccept(json -> {
+            Minecraft.getInstance().execute(() -> {
+                if (simResultsList == null)
+                    return;
+                simResultsList.clearItems();
+
+                if (json == null) {
+                    addInfoRow(simResultsList, "Error:", "API Unavailable or Failed.");
+                    return;
+                }
+
+                if (json.has("error")) {
+                    addInfoRow(simResultsList, "Error:", json.get("error").getAsString());
+                    return;
+                }
+
+                try {
+                    int totalRuns = json.get("total_runs").getAsInt();
+                    if (totalRuns == 0) {
+                        screen.startConfetti();
+                        simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 25) {
+                            @Override
+                            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                                graphics.drawCenteredString(Minecraft.getInstance().font,
+                                        "§6§l🎉 Congratulations " + playerName
+                                                + ", you already hit Class Average 50! 🎉",
+                                        x + width / 2, y + 8, 0xFFFFFFFF);
+                            }
+                        });
+                        simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 30) {
+                            @Override
+                            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                                graphics.drawCenteredString(Minecraft.getInstance().font,
+                                        "§eYou don't need this simulation anymore. Go touch some grass! 🌱",
+                                        x + width / 2, y + 5, 0xFFFFD700);
+                            }
+                        });
+                        return;
+                    }
+                    addInfoRow(simResultsList, "Total Runs Needed:", String.format("%,d", totalRuns));
+
+                    simResultsList.addItem(new Widget(0, 0, 0, 10) {
+                        @Override
+                        public void render(GuiGraphics g, int x, int y, float p) {
+                        }
+                    });
+
+                    com.google.gson.JsonObject results = json.getAsJsonObject("results");
+                    List<String> sortedClasses = new ArrayList<>(results.keySet());
+                    sortedClasses.sort(String::compareTo);
+
+                    Map<String, Double> xpData = new HashMap<>();
+
+                    WidgetRow header = new WidgetRow(simResultsList.getWidth() - 10, 15);
+                    header.addChild(new Label(0, 0, "Class", Label.Style.BODY), 5);
+                    header.addChild(new Label(0, 0, "Remaining Runs", Label.Style.BODY), 80);
+                    header.addChild(new Label(0, 0, "XP to Class Lvl 50", Label.Style.BODY), 180);
+                    simResultsList.addItem(header);
+
+                    for (String cls : sortedClasses) {
+                        com.google.gson.JsonObject clsData = results.getAsJsonObject(cls);
+                        int runs = clsData.get("runs_done").getAsInt();
+                        double remaining = clsData.get("remaining_xp").getAsDouble();
+                        xpData.put(cls, remaining);
+
+                        WidgetRow row = new WidgetRow(simResultsList.getWidth() - 10, 15);
+                        String name = cls.substring(0, 1).toUpperCase() + cls.substring(1);
+                        Label nameLabel = new Label(0, 0, name, Label.Style.BODY);
+                        nameLabel.setColor(Theme.ACCENT);
+                        row.addChild(nameLabel, 5);
+                        row.addChild(new Label(0, 0, String.format("%,d", runs), Label.Style.BODY), 80);
+                        String xpText = remaining >= 1_000_000 ? String.format("%.2fM", remaining / 1_000_000)
+                                : String.format("%,.0f", remaining);
+                        row.addChild(new Label(0, 0, xpText, Label.Style.BODY), 180);
+                        simResultsList.addItem(row);
+                    }
+
+                    simResultsList.addItem(new Widget(0, 0, 0, 10) {
+                        @Override
+                        public void render(GuiGraphics g, int x, int y, float p) {
+                        }
+                    });
+
+                    BarGraphWidget xpGraph = new BarGraphWidget(0, 0, simResultsList.getWidth() - 10,
+                            "Remaining XP per Class");
+                    xpGraph.setData(xpData, "XP");
+
+                    Map<String, Integer> classColors = new HashMap<>();
+                    classColors.put("archer", 0xFFFFAA00);
+                    classColors.put("berserk", 0xFFFF5555);
+                    classColors.put("healer", 0xFFFF55FF);
+                    classColors.put("mage", 0xFF55FFFF);
+                    classColors.put("tank", 0xFF00AA00);
+                    xpGraph.setColorMap(classColors);
+
+                    simResultsList.addItem(xpGraph);
+
+                } catch (Exception e) {
+                    addInfoRow(simResultsList, "Error:", "Failed to parse results.");
+                    e.printStackTrace();
+                }
+            });
+        });
+    }
+
+    private static class WidgetRow extends Widget {
+        private final List<Widget> children = new ArrayList<>();
+
+        public WidgetRow(int width, int height) {
+            super(0, 0, width, height);
+        }
+
+        public void addChild(Widget widget, int xOffset) {
+            widget.setX(x + xOffset);
+            widget.setY(y);
+            children.add(widget);
+        }
+
+        @Override
+        public void setX(int x) {
+            int diff = x - this.x;
+            super.setX(x);
+            for (Widget w : children)
+                w.setX(w.getX() + diff);
+        }
+
+        @Override
+        public void setY(int y) {
+            int diff = y - this.y;
+            super.setY(y);
+            for (Widget w : children)
+                w.setY(w.getY() + diff);
+        }
+
+        @Override
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            for (Widget w : children)
+                w.render(graphics, mouseX, mouseY, partialTick);
+        }
+
+        @Override
+        public void tick() {
+            for (Widget w : children)
+                w.tick();
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            for (Widget w : children) {
+                if (w.mouseClicked(mouseX, mouseY, button))
+                    return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+            for (Widget w : children) {
+                if (w.mouseReleased(mouseX, mouseY, button))
+                    return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void updateHoverState(int mouseX, int mouseY) {
+            super.updateHoverState(mouseX, mouseY);
+            for (Widget w : children)
+                w.updateHoverState(mouseX, mouseY);
+        }
+    }
+}

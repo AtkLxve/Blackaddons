@@ -10,6 +10,7 @@ import org.blackum.blackaddons.gui.util.RenderHelper;
 public class Button extends Widget {
     private String text;
     private final Runnable onClick;
+    private Runnable onRightClick;
     private Animation hoverAnimation;
     private Animation pressAnimation;
     private boolean pressed = false;
@@ -24,6 +25,11 @@ public class Button extends Widget {
         this.onClick = onClick;
         this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
         this.pressAnimation = new Animation(0, 1, Theme.ANIM_CLICK, Easing::easeInOut);
+    }
+
+    public Button setOnRightClick(Runnable onRightClick) {
+        this.onRightClick = onRightClick;
+        return this;
     }
 
     public void setText(String text) {
@@ -71,7 +77,7 @@ public class Button extends Widget {
         if (!enabled || !visible)
             return false;
 
-        if (isMouseOver(mouseX, mouseY) && button == 0) {
+        if (isMouseOver(mouseX, mouseY) && (button == 0 || button == 1)) {
             pressed = true;
             pressAnimation = new Animation(0, 1, Theme.ANIM_CLICK, Easing::easeInOut);
             pressAnimation.start();
@@ -85,13 +91,17 @@ public class Button extends Widget {
         if (!enabled || !visible)
             return false;
 
-        if (pressed && button == 0) {
+        if (pressed && (button == 0 || button == 1)) {
             pressed = false;
             pressAnimation = new Animation(pressAnimation.getValue(), 0, Theme.ANIM_CLICK, Easing::easeInOut);
             pressAnimation.start();
 
-            if (isMouseOver(mouseX, mouseY) && onClick != null) {
-                onClick.run();
+            if (isMouseOver(mouseX, mouseY)) {
+                if (button == 0 && onClick != null) {
+                    onClick.run();
+                } else if (button == 1 && onRightClick != null) {
+                    onRightClick.run();
+                }
             }
             return true;
         }

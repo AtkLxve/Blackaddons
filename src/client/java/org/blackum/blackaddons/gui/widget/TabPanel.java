@@ -16,16 +16,22 @@ import java.util.function.Consumer;
 public class TabPanel extends Widget {
 
     public static class Tab {
+        private final TabPanel parent;
         public final String name;
         public final List<Widget> widgets = new ArrayList<>();
 
-        public Tab(String name) {
+        public Tab(TabPanel parent, String name) {
+            this.parent = parent;
             this.name = name;
         }
 
         public Tab addWidget(Widget widget) {
             widgets.add(widget);
             return this;
+        }
+
+        public TabPanel getParent() {
+            return parent;
         }
     }
 
@@ -302,7 +308,7 @@ public class TabPanel extends Widget {
     }
 
     public Tab addTab(String name) {
-        Tab tab = new Tab(name);
+        Tab tab = new Tab(this, name);
         tabs.add(tab);
         return tab;
     }

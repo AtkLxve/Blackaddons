@@ -1,0 +1,752 @@
+package org.blackum.blackaddons.gui.screen.tabs;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
+import org.blackum.blackaddons.gui.theme.Theme;
+import org.blackum.blackaddons.gui.util.RenderHelper;
+import org.blackum.blackaddons.gui.widget.*;
+import org.blackum.blackaddons.util.BotIntegration;
+
+import java.util.List;
+
+public class DailyTabController extends ProfileTabController {
+
+    private String dailyMode = "leaderboard";
+    private String dailyPeriod = "daily";
+    private String dailyMetric = "xp";
+    private int dailyPage = 1;
+    private int dailyTotalPages = 1;
+    private String dailyFloor = "master_7";
+
+    private ListView dailyLeaderboardList;
+    private ListView dailyPersonalList;
+    private Button[] dailyModeButtons = new Button[4];
+    private Dropdown dailySearchTypeDropdown;
+    private TextField dailySearchField;
+    private Button dailyShowMeBtn;
+    private Dropdown dailyFloorDropdown;
+
+    private String dailyLastInput = "";
+    private long dailyLastInputTime = 0;
+    private String dailyExecutedQuery = "";
+    private boolean dailyDataLoaded = false;
+
+    private static final List<String> FLOOR_OPTIONS = List.of(
+            "M7", "M6", "M5", "M4", "M3", "M2", "M1",
+            "F7", "F6", "F5", "F4", "F3", "F2", "F1", "Entrance");
+
+    public DailyTabController(ProfileViewerScreen screen, JsonObject profileData) {
+        super(screen, profileData);
+    }
+
+    @Override
+    public void init(TabPanel.Tab tab) {
+        int w = tab.getParent().getContentWidth();
+        int cx = tab.getParent().getContentX();
+        int cy = tab.getParent().getContentY();
+
+        int btnW = (w - 34) / 4;
+        int btnH = 20;
+        int gap = 5;
+
+        dailyModeButtons[0] = new Button(cx, cy, btnW, btnH, "Daily", () -> setDailyMode("leaderboard", "daily"));
+        dailyModeButtons[1] = new Button(cx + btnW + gap, cy, btnW, btnH, "Monthly",
+                () -> setDailyMode("leaderboard", "monthly"));
+        dailyModeButtons[2] = new Button(cx + (btnW + gap) * 2, cy, btnW, btnH, "Personal",
+                () -> setDailyMode("personal", "daily"));
+        dailyModeButtons[3] = new Button(cx + (btnW + gap) * 3, cy, btnW, btnH, "Runs", this::toggleDailyMetric);
+
+        for (Button b : dailyModeButtons)
+            tab.addWidget(b);
+
+        int searchY = cy + 25;
+
+        dailySearchTypeDropdown = new Dropdown(cx, searchY, 60, 20, "Search By", List.of("IGN", "Page"),
+                (val) -> {
+                    if (val.equals("Page")) {
+                        dailySearchField.setPlaceholder("Page #");
+                        dailySearchField.setCharFilter(Character::isDigit);
+                        String txt = dailySearchField.getText();
+                        if (!txt.matches("\\d*")) {
+                            dailySearchField.setText(txt.replaceAll("\\D", ""));
+                        }
+                    } else {
+                        dailySearchField.setPlaceholder("IGN...");
+                        dailySearchField.setCharFilter(c -> true);
+                    }
+                });
+        dailySearchTypeDropdown.setSelectedIndex(0);
+
+        int showMeW = 70;
+        int showMeX = cx + w - showMeW - 20;
+        dailyShowMeBtn = new Button(showMeX, searchY, showMeW, 20, "Show Me", () -> {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null) {
+                if (!dailySearchTypeDropdown.isExpanded()) {
+                    performSearch(mc.player.getName().getString(), "IGN");
+                }
+            }
+        });
+
+        int searchFieldX = cx + 65;
+        int searchFieldW = showMeX - searchFieldX - 10;
+
+        dailySearchField = new TextField(searchFieldX, searchY, searchFieldW, 20, "IGN...") {
+            @Override
+            public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+                if (keyCode == 257) { // Enter
+                    String type = dailySearchTypeDropdown.getSelectedIndex() == 1 ? "Page" : "IGN";
+                    dailyExecutedQuery = getText();
+                    performSearch(getText(), type);
+                    return true;
+                }
+                return super.keyPressed(keyCode, scanCode, modifiers);
+            }
+        };
+
+        tab.addWidget(dailySearchField);
+        tab.addWidget(dailyShowMeBtn);
+        tab.addWidget(dailySearchTypeDropdown);
+
+        dailyFloorDropdown = new Dropdown(cx, cy + 50, w - 20, 20, "Floor: M7", FLOOR_OPTIONS, (val) -> {
+            dailyFloor = getDailyFloorKey(val);
+            if (dailyMetric.startsWith("runs")) {
+                this.dailyMetric = "runs_" + dailyFloor;
+                fetchDailyData();
+            }
+        });
+        dailyFloorDropdown.setVisible(false);
+        dailyFloorDropdown.setSelectedOption("M7");
+        tab.addWidget(dailyFloorDropdown);
+
+        int listY = cy + 75;
+        int listH = tab.getParent().getMaxContentHeight() - 75;
+
+        dailyLeaderboardList = new ListView(cx, listY, w - 20, listH);
+        dailyPersonalList = new ListView(cx, listY, w - 20, listH);
+        dailyPersonalList.setVisible(false);
+
+        tab.addWidget(dailyLeaderboardList);
+        tab.addWidget(dailyPersonalList);
+
+        updateDailyButtons();
+        if (!dailyDataLoaded) {
+            fetchDailyData();
+        }
+    }
+
+    public void tick() {
+        if (dailySearchField != null && dailySearchField.isVisible()) {
+            String currentText = dailySearchField.getText();
+            if (!currentText.equals(dailyLastInput)) {
+                dailyLastInput = currentText;
+                dailyLastInputTime = System.currentTimeMillis();
+            }
+
+            if (!dailyLastInput.isEmpty() && !dailyLastInput.equals(dailyExecutedQuery)) {
+                if (System.currentTimeMillis() - dailyLastInputTime > 500) {
+                    dailyExecutedQuery = dailyLastInput;
+                    String type = (dailySearchTypeDropdown != null && dailySearchTypeDropdown.getSelectedIndex() == 1)
+                            ? "Page"
+                            : "IGN";
+                    performSearch(dailyLastInput, type);
+                }
+            }
+        }
+    }
+
+    private void performSearch(String query, String type) {
+        if (query == null || query.trim().isEmpty())
+            return;
+        query = query.trim();
+
+        if (type.equals("Page")) {
+            if (query.matches("\\d+")) {
+                int page = Integer.parseInt(query);
+                this.dailyPage = page;
+                if (this.dailyPage < 1)
+                    this.dailyPage = 1;
+                fetchDailyData();
+            }
+        } else {
+            dailyLeaderboardList.clearItems();
+            addInfoRow(dailyLeaderboardList, "Searching...", "");
+
+            BotIntegration.getLeaderboardWithPlayer(dailyPeriod, dailyMetric, query).thenAccept(json -> {
+                Minecraft.getInstance().execute(() -> {
+                    if (json == null || json.has("error")) {
+                        dailyLeaderboardList.clearItems();
+                        if (json != null && json.has("error")) {
+                            addInfoRow(dailyLeaderboardList, json.get("error").getAsString(), "");
+                        } else {
+                            addInfoRow(dailyLeaderboardList, "Not found.", "");
+                        }
+                        return;
+                    }
+
+                    if (json.has("page")) {
+                        this.dailyPage = json.get("page").getAsInt();
+                    }
+                    if (json.has("total_pages")) {
+                        this.dailyTotalPages = json.get("total_pages").getAsInt();
+                    }
+
+                    dailyLeaderboardList.clearItems();
+                    renderLeaderboard(json);
+                });
+            });
+        }
+    }
+
+    private void setDailyMode(String mode, String period) {
+        this.dailyMode = mode;
+        if (period != null)
+            this.dailyPeriod = period;
+        this.dailyPage = 1;
+
+        if (mode.equals("personal")) {
+            dailyLeaderboardList.setVisible(false);
+            dailyPersonalList.setVisible(true);
+        } else {
+            dailyLeaderboardList.setVisible(true);
+            dailyPersonalList.setVisible(false);
+        }
+        updateDailyButtons();
+        fetchDailyData();
+    }
+
+    private void toggleDailyMetric() {
+        if (this.dailyMetric.equals("xp")) {
+            this.dailyMetric = "runs_" + dailyFloor;
+        } else {
+            this.dailyMetric = "xp";
+        }
+        updateDailyButtons();
+        fetchDailyData();
+    }
+
+    private String getDailyFloorKey(String display) {
+        if (display.equals("Entrance") || display.equals("Ent"))
+            return "normal_0";
+        if (display.startsWith("M"))
+            return "master_" + display.substring(1);
+        if (display.startsWith("F"))
+            return "normal_" + display.substring(1);
+        return "master_7";
+    }
+
+    private String getDailyFloorDisplay(String key) {
+        if (key.equals("normal_0"))
+            return "Entrance";
+        if (key.startsWith("master_"))
+            return "M" + key.substring(7);
+        if (key.startsWith("normal_"))
+            return "F" + key.substring(7);
+        return "M7";
+    }
+
+    private void updateDailyButtons() {
+        boolean isLb = dailyMode.equals("leaderboard");
+        boolean isRuns = dailyMetric.startsWith("runs");
+
+        dailyModeButtons[0].setEnabled(!isLb || !dailyPeriod.equals("daily"));
+        dailyModeButtons[1].setEnabled(!isLb || !dailyPeriod.equals("monthly"));
+        dailyModeButtons[2].setEnabled(!dailyMode.equals("personal"));
+
+        dailyModeButtons[3].setText(isRuns ? "Show XP" : "Runs");
+
+        if (dailyFloorDropdown != null) {
+            dailyFloorDropdown.setVisible(isRuns && isLb);
+            if (isRuns) {
+                dailyFloorDropdown.setSelectedOption(getDailyFloorDisplay(dailyFloor));
+            }
+        }
+
+        if (dailySearchField != null)
+            dailySearchField.setVisible(isLb);
+        if (dailyShowMeBtn != null)
+            dailyShowMeBtn.setVisible(isLb);
+        if (dailySearchTypeDropdown != null)
+            dailySearchTypeDropdown.setVisible(isLb);
+    }
+
+    private void fetchDailyData() {
+        if (dailyMode.equals("leaderboard")) {
+            dailyLeaderboardList.clearItems();
+            addInfoRow(dailyLeaderboardList, "Loading...", "");
+
+            BotIntegration.getLeaderboard(dailyPeriod, dailyMetric, dailyPage).thenAccept(json -> {
+                Minecraft.getInstance().execute(() -> {
+                    dailyLeaderboardList.clearItems();
+                    if (json == null || json.has("error")) {
+                        addInfoRow(dailyLeaderboardList, "Error fetching data.", "");
+                        return;
+                    }
+
+                    if (json.has("total_pages")) {
+                        dailyTotalPages = json.get("total_pages").getAsInt();
+                    } else {
+                        dailyTotalPages = 1;
+                    }
+
+                    renderLeaderboard(json);
+                });
+            });
+        } else {
+            renderPersonalStats();
+        }
+    }
+
+    private void renderLeaderboard(JsonObject json) {
+        if (!json.has("data") || json.get("data").isJsonNull()) {
+            addInfoRow(dailyLeaderboardList, "No data found.", "");
+            return;
+        }
+
+        com.google.gson.JsonArray data = json.getAsJsonArray("data");
+        if (data.size() == 0) {
+            addInfoRow(dailyLeaderboardList, "No entries yet.", "");
+            return;
+        }
+
+        int rank = (dailyPage - 1) * 10 + 1;
+        String viewPlayer = screen.getPlayer();
+        for (JsonElement e : data) {
+            JsonObject entry = e.getAsJsonObject();
+            String ign = entry.get("ign").getAsString();
+            double val = entry.get("gained").getAsDouble();
+
+            LeaderboardRow row = new LeaderboardRow(dailyLeaderboardList.getWidth(), rank++, ign, val,
+                    dailyMetric.startsWith("runs"));
+            if (ign.equalsIgnoreCase(viewPlayer)) {
+                row.setCurrentPlayer(true);
+            }
+            dailyLeaderboardList.addItem(row);
+        }
+
+        if (json.has("last_updated") && !json.get("last_updated").isJsonNull()) {
+            long lastUpdatedTs = json.get("last_updated").getAsLong();
+            long now = System.currentTimeMillis() / 1000;
+            long elapsed = now - lastUpdatedTs;
+
+            String lastUpdatedStr = formatTime(elapsed) + " ago";
+            long nextUpdate = 86400 - elapsed;
+            String nextUpdateStr = nextUpdate > 0 ? " (Next update in " + formatTime(nextUpdate) + ")"
+                    : " (Updating soon...)";
+            addInfoRow(dailyLeaderboardList, "Last Updated: " + lastUpdatedStr + nextUpdateStr, "");
+        }
+
+        addPaginationControls(dailyLeaderboardList);
+        addDiscordLinkButton(dailyLeaderboardList);
+        dailyDataLoaded = true;
+    }
+
+    private void renderPersonalStats() {
+        dailyPersonalList.clearItems();
+
+        if (profileData == null) {
+            addInfoRow(dailyPersonalList, "No profile data loaded.", "");
+            return;
+        }
+
+        JsonObject daily = profileData.has("daily_stats") ? profileData.getAsJsonObject("daily_stats")
+                : new JsonObject();
+        JsonObject monthly = profileData.has("monthly_stats") ? profileData.getAsJsonObject("monthly_stats")
+                : new JsonObject();
+
+        if (daily.size() == 0 && monthly.size() == 0) {
+            addInfoRow(dailyPersonalList, "No personal data available.", "Link Discord with /link to track.");
+            return;
+        }
+
+        final String playerName = screen.getPlayer();
+
+        Widget header = new Widget(0, 0, dailyPersonalList.getWidth(), 30) {
+            @Override
+            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                graphics.drawCenteredString(Minecraft.getInstance().font, "§l📊 Personal Stats: " + playerName,
+                        x + width / 2, y + 10,
+                        Theme.ACCENT);
+            }
+        };
+        dailyPersonalList.addItem(header);
+
+        renderStatGroup(dailyPersonalList, "Catacombs", daily, monthly, null);
+
+        addSectionHeader(dailyPersonalList, "Class Progress");
+        String[] classes = { "archer", "berserk", "healer", "mage", "tank" };
+        for (String cls : classes) {
+            renderStatGroup(dailyPersonalList, cls.substring(0, 1).toUpperCase() + cls.substring(1), daily, monthly,
+                    cls);
+        }
+
+        addSectionHeader(dailyPersonalList, "Runs Gained");
+        renderRunsGroup(dailyPersonalList, daily, monthly);
+
+        dailyPersonalList.addItem(new Widget(0, 0, 0, 40) {
+            @Override
+            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            }
+        });
+    }
+
+    private void renderStatGroup(ListView list, String title, JsonObject dailyRoot, JsonObject monthlyRoot,
+            String classKey) {
+        double dGained = 0, dStart = 0, dEnd = 0;
+        double mGained = 0, mStart = 0, mEnd = 0;
+        boolean hasDaily = false, hasMonthly = false;
+
+        if (classKey == null) {
+            if (dailyRoot != null && dailyRoot.has("cata_gained")) {
+                dGained = getDouble(dailyRoot, "cata_gained");
+                dStart = getDouble(dailyRoot, "cata_start_lvl");
+                dEnd = getDouble(dailyRoot, "cata_current_lvl");
+                hasDaily = true;
+            }
+        } else {
+            if (dailyRoot != null && dailyRoot.has("classes") && dailyRoot.getAsJsonObject("classes").has(classKey)) {
+                JsonObject cls = dailyRoot.getAsJsonObject("classes").getAsJsonObject(classKey);
+                dGained = getDouble(cls, "gained");
+                dStart = getDouble(cls, "start_lvl");
+                dEnd = getDouble(cls, "current_lvl");
+                hasDaily = true;
+            }
+        }
+
+        if (classKey == null) {
+            if (monthlyRoot != null && monthlyRoot.has("cata_gained")) {
+                mGained = getDouble(monthlyRoot, "cata_gained");
+                mStart = getDouble(monthlyRoot, "cata_start_lvl");
+                mEnd = getDouble(monthlyRoot, "cata_current_lvl");
+                hasMonthly = true;
+            }
+        } else {
+            if (monthlyRoot != null && monthlyRoot.has("classes")
+                    && monthlyRoot.getAsJsonObject("classes").has(classKey)) {
+                JsonObject cls = monthlyRoot.getAsJsonObject("classes").getAsJsonObject(classKey);
+                mGained = getDouble(cls, "gained");
+                mStart = getDouble(cls, "start_lvl");
+                mEnd = getDouble(cls, "current_lvl");
+                hasMonthly = true;
+            }
+        }
+
+        if (dGained <= 0 && mGained <= 0)
+            return;
+
+        final double fdGained = dGained, fdStart = dStart, fdEnd = dEnd;
+        final double fmGained = mGained, fmStart = mStart, fmEnd = mEnd;
+        final boolean fHasDaily = hasDaily && dGained > 0;
+        final boolean fHasMonthly = hasMonthly && mGained > 0;
+
+        Widget w = new Widget(0, 0, list.getWidth(), 55) {
+            @Override
+            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, x, y, width - 4, height - 2,
+                        3, Theme.BACKGROUND_SECONDARY);
+                Minecraft mc = Minecraft.getInstance();
+                graphics.drawString(mc.font, "§b" + title, x + 5, y + 5, 0xFFFFFFFF);
+
+                int rowY = y + 18;
+                if (fHasDaily) {
+                    String dStr = "Day: §a+" + String.format("%,.0f", fdGained) + " XP §7("
+                            + String.format("%.2f", fdStart) + " ➤ " + String.format("%.2f", fdEnd) + ")";
+                    graphics.drawString(mc.font, dStr, x + 10, rowY, 0xFFE0E0E0);
+                    rowY += 12;
+                } else {
+                    graphics.drawString(mc.font, "Day: §7No Gain", x + 10, rowY, 0xFFAAAAAA);
+                    rowY += 12;
+                }
+
+                if (fHasMonthly) {
+                    String mStr = "Month: §a+" + String.format("%,.0f", fmGained) + " XP §7("
+                            + String.format("%.2f", fmStart) + " ➤ " + String.format("%.2f", fmEnd) + ")";
+                    graphics.drawString(mc.font, mStr, x + 10, rowY, 0xFFE0E0E0);
+                } else {
+                    graphics.drawString(mc.font, "Month: §7No Gain", x + 10, rowY, 0xFFAAAAAA);
+                }
+            }
+        };
+        list.addItem(w);
+    }
+
+    private void renderRunsGroup(ListView list, JsonObject daily, JsonObject monthly) {
+        StringBuilder dailyRuns = new StringBuilder();
+        StringBuilder monthlyRuns = new StringBuilder();
+
+        if (daily != null && daily.has("runs")) {
+            appendRuns(dailyRuns, daily.getAsJsonObject("runs"));
+        }
+        if (monthly != null && monthly.has("runs")) {
+            appendRuns(monthlyRuns, monthly.getAsJsonObject("runs"));
+        }
+
+        if (dailyRuns.length() == 0 && monthlyRuns.length() == 0) {
+            addInfoRow(list, "No runs recorded recently.", "");
+            return;
+        }
+
+        final String dText = dailyRuns.length() > 0 ? dailyRuns.toString() : "None";
+        final String mText = monthlyRuns.length() > 0 ? monthlyRuns.toString() : "None";
+
+        Widget w = new Widget(0, 0, list.getWidth(), 45) {
+            @Override
+            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, x, y, width - 4, height - 2,
+                        3, Theme.BACKGROUND_SECONDARY);
+                Minecraft mc = Minecraft.getInstance();
+                graphics.drawString(mc.font, "Daily: " + dText, x + 5, y + 8, 0xFFE0E0E0);
+                graphics.drawString(mc.font, "Monthly: " + mText, x + 5, y + 25, 0xFFE0E0E0);
+            }
+        };
+        list.addItem(w);
+    }
+
+    private void appendRuns(StringBuilder sb, JsonObject runsObj) {
+        java.util.List<String> parts = new java.util.ArrayList<>();
+
+        int totalSum = 0;
+        if (runsObj.has("total")) {
+            totalSum += runsObj.get("total").getAsInt();
+        } else {
+            if (runsObj.has("master") && runsObj.getAsJsonObject("master").has("total")) {
+                totalSum += runsObj.getAsJsonObject("master").get("total").getAsInt();
+            }
+            if (runsObj.has("normal") && runsObj.getAsJsonObject("normal").has("total")) {
+                totalSum += runsObj.getAsJsonObject("normal").get("total").getAsInt();
+            }
+        }
+
+        if (totalSum > 0) {
+            parts.add("Total (+" + totalSum + ")");
+        }
+
+        if (runsObj.has("master")) {
+            JsonObject m = runsObj.getAsJsonObject("master");
+            for (int i = 7; i >= 1; i--) {
+                String key = String.valueOf(i);
+                if (m.has(key)) {
+                    int val = m.get(key).getAsInt();
+                    if (val > 0) {
+                        parts.add("§6M" + key + " (+" + val + ")§r");
+                    }
+                }
+            }
+        }
+
+        if (runsObj.has("normal")) {
+            JsonObject n = runsObj.getAsJsonObject("normal");
+            for (int i = 7; i >= 1; i--) {
+                String key = String.valueOf(i);
+                if (n.has(key)) {
+                    int val = n.get(key).getAsInt();
+                    if (val > 0) {
+                        parts.add("§fF" + key + " (+" + val + ")§r");
+                    }
+                }
+            }
+        }
+
+        if (runsObj.has("normal")) {
+            JsonObject n = runsObj.getAsJsonObject("normal");
+            if (n.has("0")) {
+                int val = n.get("0").getAsInt();
+                if (val > 0) {
+                    parts.add("§7Entrance (+" + val + ")§r");
+                }
+            }
+        }
+
+        for (int i = 0; i < parts.size(); i++) {
+            if (i > 0)
+                sb.append(", ");
+            sb.append(parts.get(i));
+        }
+    }
+
+    private void addPaginationControls(ListView list) {
+        int w = list.getWidth();
+        Widget paging = new Widget(0, 0, w, 25) {
+            Button prev;
+            Button next;
+
+            {
+                prev = new Button(0, 0, 80, 20, "< Prev", () -> changePage(-1));
+                next = new Button(0, 0, 80, 20, "Next >", () -> changePage(1));
+            }
+
+            private void updateLayout() {
+                int mid = x + width / 2;
+                prev.setX(mid - 120);
+                prev.setY(y + 2);
+                prev.setEnabled(dailyPage > 1);
+
+                next.setX(mid + 40);
+                next.setY(y + 2);
+                next.setEnabled(dailyPage < dailyTotalPages);
+            }
+
+            @Override
+            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                updateLayout();
+                prev.render(graphics, mouseX, mouseY, partialTick);
+                next.render(graphics, mouseX, mouseY, partialTick);
+
+                String pageStr = dailyPage + " / " + dailyTotalPages;
+                graphics.drawCenteredString(Minecraft.getInstance().font, pageStr, x + width / 2, y + 8, 0xFFAAAAAA);
+            }
+
+            @Override
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                updateLayout();
+                if (prev.mouseClicked(mouseX, mouseY, button))
+                    return true;
+                if (next.mouseClicked(mouseX, mouseY, button))
+                    return true;
+                return false;
+            }
+
+            @Override
+            public void updateHoverState(int mouseX, int mouseY) {
+                updateLayout();
+                prev.updateHoverState(mouseX, mouseY);
+                next.updateHoverState(mouseX, mouseY);
+            }
+
+            @Override
+            public void tick() {
+                prev.tick();
+                next.tick();
+            }
+
+            @Override
+            public boolean mouseReleased(double mouseX, double mouseY, int button) {
+                if (prev.mouseReleased(mouseX, mouseY, button))
+                    return true;
+                if (next.mouseReleased(mouseX, mouseY, button))
+                    return true;
+                return false;
+            }
+        };
+        list.addItem(paging);
+    }
+
+    private void changePage(int delta) {
+        this.dailyPage += delta;
+        if (this.dailyPage < 1)
+            this.dailyPage = 1;
+        if (dailyTotalPages > 0 && this.dailyPage > this.dailyTotalPages)
+            this.dailyPage = this.dailyTotalPages;
+        fetchDailyData();
+    }
+
+    private void addDiscordLinkButton(ListView list) {
+        Button linkBtn = new Button(0, 0, list.getWidth() - 20, 20, "§bWant to be on leaderboard? Link Discord", () -> {
+            String url = "https://discord.com/oauth2/authorize?client_id=1134507219220713472";
+            try {
+                java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        Widget wrapper = new Widget(0, 0, list.getWidth(), 30) {
+            @Override
+            public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+                linkBtn.setX(this.x + 10);
+                linkBtn.setY(this.y + 5);
+                linkBtn.setWidth(this.width - 20);
+                linkBtn.render(g, mouseX, mouseY, partialTick);
+            }
+
+            @Override
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                return linkBtn.mouseClicked(mouseX, mouseY, button);
+            }
+
+            @Override
+            public void updateHoverState(int mouseX, int mouseY) {
+                linkBtn.updateHoverState(mouseX, mouseY);
+            }
+
+            @Override
+            public void tick() {
+                linkBtn.tick();
+            }
+
+            @Override
+            public boolean mouseReleased(double mouseX, double mouseY, int button) {
+                return linkBtn.mouseReleased(mouseX, mouseY, button);
+            }
+        };
+        list.addItem(wrapper);
+    }
+
+    private class LeaderboardRow extends Widget {
+        private final int rank;
+        private final String ign;
+        private final double value;
+        private final boolean isRuns;
+        private boolean isCurrentPlayer = false;
+
+        public LeaderboardRow(int w, int rank, String ign, double value, boolean isRuns) {
+            super(0, 0, w, 20);
+            this.rank = rank;
+            this.ign = ign;
+            this.value = value;
+            this.isRuns = isRuns;
+        }
+
+        public void setCurrentPlayer(boolean current) {
+            this.isCurrentPlayer = current;
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (isMouseOver(mouseX, mouseY) && button == 0) {
+                Minecraft.getInstance().setScreen(new ProfileViewerScreen(null, ign));
+                return true;
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            int color = hovered ? Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.4f) : 0;
+            if (isCurrentPlayer) {
+                color = Theme.withAlpha(Theme.ACCENT, 0.3f);
+            }
+            if (color != 0)
+                RenderHelper.renderRoundedRect(graphics, x, y, width, height, 3, color);
+
+            Minecraft mc = Minecraft.getInstance();
+            String rankStr = "#" + rank;
+            if (rank == 1)
+                rankStr = "§6🥇";
+            else if (rank == 2)
+                rankStr = "§7🥈";
+            else if (rank == 3)
+                rankStr = "§c🥉";
+
+            graphics.drawString(mc.font, rankStr, x + 5, y + 6, 0xFFFFFFFF);
+            graphics.drawString(mc.font, ign, x + 30, y + 6, isCurrentPlayer ? 0xFFFFFFFF : Theme.ACCENT);
+
+            String valStr = isRuns ? String.format("%,.0f Runs", value) : String.format("%,.0f XP", value);
+            int valW = mc.font.width(valStr);
+            graphics.drawString(mc.font, "§f" + valStr, x + width - valW - 5, y + 6, 0xFFFFFFFF);
+        }
+    }
+
+    private String formatTime(long seconds) {
+        if (seconds < 0)
+            seconds = 0;
+        if (seconds < 60)
+            return seconds + "s";
+        if (seconds < 3600)
+            return (seconds / 60) + "m " + (seconds % 60) + "s";
+        return (seconds / 3600) + "h " + ((seconds % 3600) / 60) + "m " + (seconds % 60) + "s";
+    }
+}
