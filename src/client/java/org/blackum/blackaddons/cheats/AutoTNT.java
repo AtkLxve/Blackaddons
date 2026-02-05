@@ -18,7 +18,7 @@ import java.util.Random;
 public class AutoTNT {
     private static final List<Block> TARGET_BLOCKS = List.of(
             Blocks.CRACKED_STONE_BRICKS,
-            Blocks.STONE_SLAB);
+            Blocks.SMOOTH_STONE_SLAB);
 
     private static final double BASE_DISTANCE_LIMIT = 3.3;
     private static final Random RANDOM = new Random();
