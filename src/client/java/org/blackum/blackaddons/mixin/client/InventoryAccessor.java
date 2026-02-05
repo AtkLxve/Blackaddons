@@ -7,8 +7,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(Inventory.class)
 public interface InventoryAccessor {
     @Accessor("selected")
-    int getSelectedSlot();
+    int getBlackaddonsSelected();
 
     @Accessor("selected")
-    void setSelectedSlot(int slot);
+    void setBlackaddonsSelected(int slot);
 }
