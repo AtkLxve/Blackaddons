@@ -10,6 +10,7 @@ public class BlackaddonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Blackaddons.LOGGER.info("Initializing client...");
+        org.blackum.blackaddons.cheats.AutoTNT.register();
         org.blackum.blackaddons.config.ConfigManager.load();
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
@@ -139,7 +140,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     for (String modId : hiddenModIds) {
                         if (count >= 5)
                             break;
-                        debugInfo.add("  " + modId);
+                        debugInfo.add(" - " + modId);
                         count++;
                     }
                     if (hiddenModIds.size() > 5) {
@@ -164,6 +165,8 @@ public class BlackaddonsClient implements ClientModInitializer {
 
                 debugInfo.add("Allowed Channels: "
                         + org.blackum.blackaddons.modhider.ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size());
+
+                debugInfo.addAll(org.blackum.blackaddons.cheats.AutoTNT.getDebugInfo());
 
                 graphics.pose().pushMatrix();
                 graphics.pose().translate((float) x, (float) y);
@@ -200,14 +203,17 @@ public class BlackaddonsClient implements ClientModInitializer {
                                 return 1;
                             });
 
-                    command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("DebugGui")
+                    com.mojang.brigadier.builder.LiteralArgumentBuilder<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> testNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                            .literal("test");
+
+                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("DebugGui")
                             .executes(ctx -> {
                                 if (Blackaddons.guiOpener != null)
                                     Blackaddons.guiOpener.run();
                                 return 1;
                             }));
 
-                    command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("TestMenu")
+                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("TestMenu")
                             .executes(ctx -> {
                                 if (Blackaddons.testMenuOpener != null)
                                     Blackaddons.testMenuOpener.run();
@@ -265,7 +271,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                                 return 1;
                             }));
 
-                    command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("testrng")
+                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("rng")
                             .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
                                     .argument("type", com.mojang.brigadier.arguments.StringArgumentType.string())
                                     .suggests((context, builder) -> net.minecraft.commands.SharedSuggestionProvider
@@ -309,6 +315,24 @@ public class BlackaddonsClient implements ClientModInitializer {
 
                                                         return 1;
                                                     })))));
+
+                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("GiveTNT")
+                            .executes(ctx -> {
+                                Minecraft client = Minecraft.getInstance();
+                                if (client.player != null && client.player.connection != null) {
+                                    client.player.connection
+                                            .sendCommand("give @s tnt[custom_name='\"Superboom TNT\"'] 64");
+                                    client.player.connection
+                                            .sendCommand("give @s tnt[custom_name='\"Infinityboom TNT\"'] 64");
+                                    client.player.connection.sendCommand(
+                                            "give @s repeating_command_block[block_entity_data={id:\"minecraft:command_block\",Command:\"setblock ~ ~1 ~ cracked_stone_bricks\",auto:1b}] 1");
+                                    client.player.connection.sendCommand(
+                                            "give @s repeating_command_block[block_entity_data={id:\"minecraft:command_block\",Command:\"setblock ~ ~1 ~ stone_slab\",auto:1b}] 1");
+                                }
+                                return 1;
+                            }));
+
+                    command.then(testNode);
 
                     com.mojang.brigadier.tree.LiteralCommandNode<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> mainNode = dispatcher
                             .register(command);
