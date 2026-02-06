@@ -327,7 +327,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                                     client.player.connection.sendCommand(
                                             "give @s repeating_command_block[block_entity_data={id:\"minecraft:command_block\",Command:\"setblock ~ ~1 ~ cracked_stone_bricks\",auto:1b}] 1");
                                     client.player.connection.sendCommand(
-                                            "give @s repeating_command_block[block_entity_data={id:\"minecraft:command_block\",Command:\"setblock ~ ~1 ~ stone_slab\",auto:1b}] 1");
+                                            "give @s repeating_command_block[block_entity_data={id:\"minecraft:command_block\",Command:\"setblock ~ ~1 ~ smooth_stone_slab\",auto:1b}] 1");
                                 }
                                 return 1;
                             }));

@@ -87,8 +87,7 @@ public class ConfigManager {
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 5;
         public int UnequipDelay = 8;
-        public boolean SingleClickMode = true;
-        public boolean AntiSpamMode = true;
+
         public boolean SwapBack = false;
 
         // Legit
@@ -123,8 +122,7 @@ public class ConfigManager {
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
         data.UnequipDelay = CheatsOptions.UnequipDelay;
-        data.SingleClickMode = CheatsOptions.SingleClickMode;
-        data.AntiSpamMode = CheatsOptions.AntiSpamMode;
+
         data.SwapBack = CheatsOptions.SwapBack;
 
         data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
@@ -161,8 +159,7 @@ public class ConfigManager {
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
         data.UnequipDelay = CheatsOptions.UnequipDelay;
-        data.SingleClickMode = CheatsOptions.SingleClickMode;
-        data.AntiSpamMode = CheatsOptions.AntiSpamMode;
+
         data.SwapBack = CheatsOptions.SwapBack;
 
         data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
@@ -218,8 +215,7 @@ public class ConfigManager {
                 CheatsOptions.AutoTNTDelay = data.AutoTNTDelay;
                 if (data.UnequipDelay != 0)
                     CheatsOptions.UnequipDelay = data.UnequipDelay;
-                CheatsOptions.SingleClickMode = data.SingleClickMode;
-                CheatsOptions.AntiSpamMode = data.AntiSpamMode;
+
                 CheatsOptions.SwapBack = data.SwapBack;
 
                 org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled = data.legitFullbrightEnabled;

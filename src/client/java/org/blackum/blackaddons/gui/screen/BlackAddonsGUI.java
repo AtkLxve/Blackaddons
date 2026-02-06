@@ -649,7 +649,7 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private ResizableCard createAutoTntCard(int x, int y) {
-        autoTntCard = createResizableCard("autoTnt", x, y, 300, 360, "AutoTnt");
+        autoTntCard = createResizableCard("autoTnt", x, y, 300, 260, "AutoTnt");
 
         int contentX = autoTntCard.getContentX();
         int contentY = autoTntCard.getContentY();
@@ -681,7 +681,7 @@ public class BlackAddonsGUI extends BaseScreen {
                 "Unequip Delay: " + CheatsOptions.UnequipDelay + " ticks", Label.Style.BODY);
         autoTntCard.addChild(unequipLabel);
 
-        Slider unequipSlider = new Slider(contentX, contentY + 120, 260, 5, 20, CheatsOptions.UnequipDelay, val -> {
+        Slider unequipSlider = new Slider(contentX, contentY + 120, 260, 5, 10, CheatsOptions.UnequipDelay, val -> {
             int ticks = Math.round(val);
             if (ticks != CheatsOptions.UnequipDelay) {
                 CheatsOptions.UnequipDelay = ticks;
@@ -691,25 +691,7 @@ public class BlackAddonsGUI extends BaseScreen {
         });
         autoTntCard.addChild(unequipSlider);
 
-        ToggleSwitch singleClickToggle = new ToggleSwitch(contentX, contentY + 150, 260,
-                "Single Click Mode",
-                "Only click once per look session",
-                CheatsOptions.SingleClickMode, value -> {
-                    CheatsOptions.SingleClickMode = value;
-                    ConfigManager.save();
-                });
-        autoTntCard.addChild(singleClickToggle);
-
-        ToggleSwitch antiSpamToggle = new ToggleSwitch(contentX, contentY + 200, 260,
-                "Anti-Spam Mode",
-                "Re-roll delays when switching blocks",
-                CheatsOptions.AntiSpamMode, value -> {
-                    CheatsOptions.AntiSpamMode = value;
-                    ConfigManager.save();
-                });
-        autoTntCard.addChild(antiSpamToggle);
-
-        ToggleSwitch swapBackToggle = new ToggleSwitch(contentX, contentY + 250, 260,
+        ToggleSwitch swapBackToggle = new ToggleSwitch(contentX, contentY + 150, 260,
                 "Swap Back",
                 "Switch to original item after interaction",
                 CheatsOptions.SwapBack, value -> {

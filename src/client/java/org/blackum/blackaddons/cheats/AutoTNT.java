@@ -37,11 +37,7 @@ public class AutoTNT {
             if (isTargetBlock(client, blockHit)) {
                 if (!blockHit.getBlockPos().equals(STATE.lastTargetPos)) {
                     STATE.lastTargetPos = blockHit.getBlockPos();
-                    if (CheatsOptions.AntiSpamMode && !CheatsOptions.SingleClickMode) {
-                        STATE.ticksSinceEquip = 0;
-                        STATE.updateDelays();
-                        STATE.hasClicked = false;
-                    } else if (CheatsOptions.SingleClickMode) {
+                    if (true) {
                         STATE.ticksSinceEquip = 0;
                         STATE.updateDelays();
                     }
@@ -49,7 +45,7 @@ public class AutoTNT {
 
                 int tntSlot = findTntHotbarSlot(client.player);
                 if (tntSlot != -1) {
-                    if (!CheatsOptions.SingleClickMode || !STATE.hasClicked) {
+                    if (!STATE.hasClicked) {
                         equipTnt(client.player, tntSlot);
                     }
 
