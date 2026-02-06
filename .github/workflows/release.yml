@@ -11,6 +11,7 @@ on:
       - "main"
       - "master"
       - "1.21.11"
+      - "1.21.10"
   workflow_dispatch:
     inputs:
       release_type:
@@ -24,9 +25,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: ["1.21.10", "1.21.11"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -40,8 +46,32 @@ jobs:
           gradle-version: '9.2.1'
           arguments: build
 
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.branch }}
+          path: |
+            build/libs/*.jar
+            !build/libs/*-sources.jar
+            !build/libs/*-dev.jar
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
       # Nightly Release (On Push)
-      - name: Create Nightly Release
+      - name: Update Nightly Release
         if: github.event_name == 'push'
         uses: marvinpinto/action-automatic-releases@latest
         with:
@@ -49,12 +79,19 @@ jobs:
           automatic_release_tag: "nightly"
           prerelease: true
           title: "Nightly Build"
-          files: |
-            build/libs/*.jar
-            !build/libs/*-sources.jar
-            !build/libs/*-dev.jar
+          files: artifacts/*.jar
 
       # Stable Release (Manual Dispatch)
+      - name: Build Changelog
+        if: github.event_name == 'workflow_dispatch'
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          ignorePreReleases: true
+          toTag: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Get Version
         if: github.event_name == 'workflow_dispatch'
         id: get_version
@@ -71,10 +108,8 @@ jobs:
           automatic_release_tag: "v${{ env.VERSION }}"
           prerelease: false
           title: "v${{ env.VERSION }}"
-          files: |
-            build/libs/*.jar
-            !build/libs/*-sources.jar
-            !build/libs/*-dev.jar
+          body: "${{ steps.changelog.outputs.changelog }}"
+          files: artifacts/*.jar
 
       - name: Bump Version
         if: github.event_name == 'workflow_dispatch'
