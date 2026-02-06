@@ -19,10 +19,10 @@ public class ResizableCard extends Card {
     private int dragStartCardX = 0;
     private int dragStartCardY = 0;
     private int dragStartWidth = 0;
-    private int dragStartHeight = 0;
     private ResizeHandle activeHandle = ResizeHandle.NONE;
 
     private int initialWidth;
+
     private boolean collapsed = true;
     private int expandedHeight;
 
@@ -63,7 +63,7 @@ public class ResizableCard extends Card {
             this.expandedHeight = this.height;
             this.height = TITLE_BAR_HEIGHT;
         } else {
-            this.height = this.expandedHeight;
+            updateLayout();
         }
     }
 
@@ -163,7 +163,6 @@ public class ResizableCard extends Card {
                     dragStartX = (int) mouseX;
                     dragStartY = (int) mouseY;
                     dragStartWidth = width;
-                    dragStartHeight = height;
                     return true;
                 }
             }
@@ -232,6 +231,26 @@ public class ResizableCard extends Card {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    public void pack() {
+        float scale = (float) width / initialWidth;
+        int usedHeight = getContentY() - y;
+        int childrenHeight = 0;
+        for (Widget child : getChildren()) {
+            if (child.isVisible()) {
+                childrenHeight += child.getHeight() + Theme.SPACING_SMALL;
+            }
+        }
+        if (childrenHeight > 0) {
+            childrenHeight -= Theme.SPACING_SMALL;
+        }
+        int targetHeight = usedHeight + (int) (childrenHeight * scale) + getPadding();
+
+        this.expandedHeight = targetHeight;
+        if (!collapsed) {
+            this.height = targetHeight;
+        }
+    }
+
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (dragging) {
@@ -252,13 +271,12 @@ public class ResizableCard extends Card {
 
             x = targetX;
             y = targetY;
-            updateChildPositions();
+            updateLayout();
             return true;
         }
 
         if (resizing) {
             int deltaX = (int) mouseX - dragStartX;
-            int deltaY = (int) mouseY - dragStartY;
 
             if (activeHandle == ResizeHandle.BOTTOM_RIGHT || activeHandle == ResizeHandle.RIGHT) {
                 int newWidth = dragStartWidth + deltaX;
@@ -267,23 +285,28 @@ public class ResizableCard extends Card {
                 }
                 width = Math.max(50, newWidth);
             }
-            if (activeHandle == ResizeHandle.BOTTOM_RIGHT || activeHandle == ResizeHandle.BOTTOM) {
-                if (!collapsed) {
-                    int newHeight = dragStartHeight + deltaY;
-                    if (isShiftDown()) {
-                        newHeight = Math.round((float) newHeight / 10) * 10;
-                    }
-                    height = Math.max(TITLE_BAR_HEIGHT + 20, newHeight);
-                    expandedHeight = height;
-                }
-            }
 
-            updateChildPositions();
+            updateLayout();
             return true;
         }
 
         if (collapsed)
             return false;
+
+        float scale = (float) width / initialWidth;
+        int contentX = getContentX();
+        int contentY = getContentY();
+        double scaledMouseX = (mouseX - contentX) / scale + contentX;
+        double scaledMouseY = (mouseY - contentY) / scale + contentY;
+
+        double scaledDragX = dragX / scale;
+        double scaledDragY = dragY / scale;
+
+        for (Widget child : getChildren()) {
+            if (child.mouseDragged(scaledMouseX, scaledMouseY, button, scaledDragX, scaledDragY)) {
+                return true;
+            }
+        }
 
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
@@ -304,14 +327,10 @@ public class ResizableCard extends Card {
                 mouseY >= y && mouseY <= y + height) {
             return ResizeHandle.RIGHT;
         }
-        if (mouseY >= y + height - RESIZE_HANDLE_SIZE && mouseY <= y + height &&
-                mouseX >= x && mouseX <= x + width) {
-            return ResizeHandle.BOTTOM;
-        }
         return ResizeHandle.NONE;
     }
 
-    private void updateChildPositions() {
+    public void updateLayout() {
         int contentX = getContentX();
         int contentY = getContentY();
         float scale = (float) width / initialWidth;
@@ -326,6 +345,7 @@ public class ResizableCard extends Card {
                 currentY += child.getHeight() + Theme.SPACING_SMALL;
             }
         }
+        pack();
     }
 
     @Override
@@ -377,13 +397,13 @@ public class ResizableCard extends Card {
     @Override
     public void setX(int x) {
         super.setX(x);
-        updateChildPositions();
+        updateLayout();
     }
 
     @Override
     public void setY(int y) {
         super.setY(y);
-        updateChildPositions();
+        updateLayout();
     }
 
     public int getExpandedHeight() {

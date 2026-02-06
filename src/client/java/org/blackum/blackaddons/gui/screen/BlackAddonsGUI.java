@@ -406,6 +406,8 @@ public class BlackAddonsGUI extends BaseScreen {
         spoofModeDropdown.setHeight(24);
         spoofModeDropdown.setSelectedOption(ModHiderOptions.SPOOF_MODE.name());
         spoofModeCard.addChild(spoofModeDropdown);
+
+        spoofModeCard.updateLayout();
         return spoofModeCard;
     }
 
@@ -428,6 +430,8 @@ public class BlackAddonsGUI extends BaseScreen {
             ConfigManager.save();
         });
         customClientCard.addChild(applyCustomClient);
+
+        customClientCard.updateLayout();
         return customClientCard;
     }
 
@@ -445,6 +449,8 @@ public class BlackAddonsGUI extends BaseScreen {
                     ConfigManager.save();
                 });
         hideModsCard.addChild(hideModsToggle);
+
+        hideModsCard.updateLayout();
         return hideModsCard;
     }
 
@@ -462,6 +468,8 @@ public class BlackAddonsGUI extends BaseScreen {
                     ConfigManager.save();
                 });
         disablePayloadsCard.addChild(disablePayloadsToggle);
+
+        disablePayloadsCard.updateLayout();
         return disablePayloadsCard;
     }
 
@@ -508,6 +516,8 @@ public class BlackAddonsGUI extends BaseScreen {
             public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
             }
         });
+
+        allowedChannelsCard.updateLayout();
         return allowedChannelsCard;
     }
 
@@ -545,6 +555,8 @@ public class BlackAddonsGUI extends BaseScreen {
             public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
             }
         });
+
+        allowedModsCard.updateLayout();
         return allowedModsCard;
     }
 
@@ -596,6 +608,8 @@ public class BlackAddonsGUI extends BaseScreen {
                     ConfigManager.save();
                 });
         fullbrightCard.addChild(fullbrightToggle);
+
+        fullbrightCard.updateLayout();
         return fullbrightCard;
     }
 
@@ -700,6 +714,7 @@ public class BlackAddonsGUI extends BaseScreen {
                 });
         autoTntCard.addChild(swapBackToggle);
 
+        autoTntCard.updateLayout();
         return autoTntCard;
     }
 
