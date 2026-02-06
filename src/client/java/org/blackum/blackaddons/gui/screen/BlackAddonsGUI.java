@@ -312,7 +312,8 @@ public class BlackAddonsGUI extends BaseScreen {
             modHiderTab.addWidget(channelsLabel);
             currentY += 25;
 
-            TextField channelField = new TextField(contentX, currentY, contentWidth - 100, "example: Hypixel");
+            TextField channelField = new TextField(contentX, currentY, contentWidth - 100,
+                    "example: minecraft:register");
             modHiderTab.addWidget(channelField);
 
             ListView finalChannelsList = new ListView(contentX, currentY + 40, contentWidth, 100);
@@ -483,7 +484,7 @@ public class BlackAddonsGUI extends BaseScreen {
                 "Whitelist custom payload channels (CUSTOM mode)", Label.Style.BODY);
         allowedChannelsCard.addChild(description);
 
-        TextField channelField = new TextField(contentX, contentY + 30, 180, "example: Hypixel");
+        TextField channelField = new TextField(contentX, contentY + 30, 180, "example: minecraft:register");
         allowedChannelsCard.addChild(channelField);
 
         Button addChannel = new Button(contentX + 190, contentY + 30, 90, "Add", () -> {
