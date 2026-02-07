@@ -195,16 +195,13 @@ public class BlackaddonsClient implements ClientModInitializer {
 
         net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT
                 .register((dispatcher, registryAccess) -> {
-                    com.mojang.brigadier.builder.LiteralArgumentBuilder<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> command = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-                            .literal("ba")
-                            .executes(ctx -> {
-                                if (Blackaddons.mainGuiOpener != null)
-                                    Blackaddons.mainGuiOpener.run();
-                                return 1;
-                            });
+                    com.mojang.brigadier.Command<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> openGui = ctx -> {
+                        if (Blackaddons.mainGuiOpener != null)
+                            Blackaddons.mainGuiOpener.run();
+                        return 1;
+                    };
 
-                    com.mojang.brigadier.builder.LiteralArgumentBuilder<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> testNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-                            .literal("test");
+                    var testNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("test");
 
                     testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("DebugGui")
                             .executes(ctx -> {
@@ -217,57 +214,6 @@ public class BlackaddonsClient implements ClientModInitializer {
                             .executes(ctx -> {
                                 if (Blackaddons.testMenuOpener != null)
                                     Blackaddons.testMenuOpener.run();
-                                return 1;
-                            }));
-
-                    command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pv")
-                            .executes(ctx -> {
-                                String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                                loadProfileAndOpen(player, false);
-                                return 1;
-                            })
-                            .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-                                    .argument("ign", com.mojang.brigadier.arguments.StringArgumentType.string())
-                                    .executes(ctx -> {
-                                        String player = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx,
-                                                "ign");
-                                        loadProfileAndOpen(player, false);
-                                        return 1;
-                                    })
-                                    .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-                                            .literal("force")
-                                            .executes(ctx -> {
-                                                String player = com.mojang.brigadier.arguments.StringArgumentType
-                                                        .getString(ctx,
-                                                                "ign");
-                                                loadProfileAndOpen(player, true);
-                                                return 1;
-                                            }))));
-
-                    command.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("daily")
-                            .executes(ctx -> {
-                                String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
-                                        "Daily Sync",
-                                        "Syncing stats with bot...",
-                                        org.blackum.blackaddons.gui.notification.NotificationType.INFO);
-
-                                org.blackum.blackaddons.util.BotIntegration.sendDailySync(player)
-                                        .thenAccept(success -> {
-                                            if (success) {
-                                                org.blackum.blackaddons.gui.notification.NotificationManager
-                                                        .addNotification(
-                                                                "Daily Sync",
-                                                                "Stats synced successfully!",
-                                                                org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
-                                            } else {
-                                                org.blackum.blackaddons.gui.notification.NotificationManager
-                                                        .addNotification(
-                                                                "Daily Sync",
-                                                                "Failed to sync stats.",
-                                                                org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
-                                            }
-                                        });
                                 return 1;
                             }));
 
@@ -332,14 +278,66 @@ public class BlackaddonsClient implements ClientModInitializer {
                                 return 1;
                             }));
 
-                    command.then(testNode);
+                    var pvNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pv")
+                            .executes(ctx -> {
+                                String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                                loadProfileAndOpen(player, false);
+                                return 1;
+                            })
+                            .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                    .argument("ign", com.mojang.brigadier.arguments.StringArgumentType.string())
+                                    .executes(ctx -> {
+                                        String player = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx,
+                                                "ign");
+                                        loadProfileAndOpen(player, false);
+                                        return 1;
+                                    })
+                                    .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                            .literal("force")
+                                            .executes(ctx -> {
+                                                String player = com.mojang.brigadier.arguments.StringArgumentType
+                                                        .getString(ctx,
+                                                                "ign");
+                                                loadProfileAndOpen(player, true);
+                                                return 1;
+                                            })));
 
-                    com.mojang.brigadier.tree.LiteralCommandNode<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> mainNode = dispatcher
-                            .register(command);
-                    dispatcher.register(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("black")
-                            .redirect(mainNode));
-                    dispatcher.register(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-                            .literal("blackaddons").redirect(mainNode));
+                    var dailyNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("daily")
+                            .executes(ctx -> {
+                                String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                                        "Daily Sync",
+                                        "Syncing stats with bot...",
+                                        org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+
+                                org.blackum.blackaddons.util.BotIntegration.sendDailySync(player)
+                                        .thenAccept(success -> {
+                                            if (success) {
+                                                org.blackum.blackaddons.gui.notification.NotificationManager
+                                                        .addNotification(
+                                                                "Daily Sync",
+                                                                "Stats synced successfully!",
+                                                                org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
+                                            } else {
+                                                org.blackum.blackaddons.gui.notification.NotificationManager
+                                                        .addNotification(
+                                                                "Daily Sync",
+                                                                "Failed to sync stats.",
+                                                                org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                                            }
+                                        });
+                                return 1;
+                            });
+
+                    for (String alias : new String[] { "ba", "black", "blackaddons" }) {
+                        var cmd = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                .literal(alias)
+                                .executes(openGui);
+                        cmd.then(testNode);
+                        cmd.then(pvNode);
+                        cmd.then(dailyNode);
+                        dispatcher.register(cmd);
+                    }
                 });
 
         net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.GAME.register((message, overlay) ->
@@ -357,24 +355,22 @@ public class BlackaddonsClient implements ClientModInitializer {
                 net.minecraft.network.chat.Component
                         .literal("§7[BlackAddons] Loading profile for " + player + (force ? " (Forced)" : "") + "..."));
 
-        org.blackum.blackaddons.util.BotIntegration.getProfileStats(player, force).thenAccept(json -> {
-            if (json == null) {
+        org.blackum.blackaddons.util.ProfileStateManager.getInstance().getProfile(player, force).thenAccept(result -> {
+            if (result == null) {
                 mc.gui.getChat().addMessage(
                         net.minecraft.network.chat.Component.literal("§c[BlackAddons] Failed to fetch data."));
                 return;
             }
 
-            if (json.has("error")) {
-                String err = json.get("error").getAsString();
+            if (result.hasError()) {
+                String err = result.getError();
                 mc.gui.getChat()
                         .addMessage(net.minecraft.network.chat.Component.literal("§c[BlackAddons] Error: " + err));
                 return;
             }
 
-            com.google.gson.JsonObject data = null;
-            if (json.has("data")) {
-                data = json.getAsJsonObject("data");
-            } else {
+            com.google.gson.JsonObject data = result.getData();
+            if (data == null) {
                 mc.gui.getChat().addMessage(
                         net.minecraft.network.chat.Component.literal("§c[BlackAddons] Invalid response format."));
                 return;

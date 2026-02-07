@@ -54,36 +54,35 @@ public class RngTabController extends ProfileTabController {
             return;
         }
 
-        BotIntegration.getRngData(playerName).thenAccept(json -> {
-            if (json == null || json.has("error")) {
+        org.blackum.blackaddons.util.ProfileStateManager.getInstance().getRngData(playerName).thenAccept(result -> {
+            if (result == null || result.hasError()) {
                 Minecraft.getInstance().execute(() -> {
                     tab.widgets.clear();
                     ListView list = new ListView(tab.getParent().getContentX(), tab.getParent().getContentY(),
                             tab.getParent().getContentWidth(), tab.getParent().getMaxContentHeight());
                     tab.addWidget(list);
 
-                    String errorMsg = "Failed to fetch data from bot.";
-                    if (json != null && json.has("error")) {
-                        errorMsg = JsonUtils.getString(json, "error", "Unknown error");
-                    }
-
+                    String errorMsg = (result != null && result.hasError()) ? result.getError() : "Unknown error";
                     addInfoRow(list, "§cError", "");
                     addInfoRow(list, errorMsg, "");
                 });
                 return;
             }
 
-            if (json.has("data")) {
-                parseRngData(JsonUtils.getObject(json, "data"));
-                Minecraft.getInstance().execute(() -> {
-                    buildRngTabUI(tab);
-                });
-            }
+            JsonObject json = result.getData();
+            if (json == null)
+                return;
+
+            parseRngData(json);
+            Minecraft.getInstance().execute(() -> {
+                buildRngTabUI(tab);
+            });
         });
 
         ListView loadingList = new ListView(tab.getParent().getContentX(), tab.getParent().getContentY(),
                 tab.getParent().getContentWidth(), tab.getParent().getMaxContentHeight());
         tab.addWidget(loadingList);
+
         addInfoRow(loadingList, "Loading RNG data...", "");
     }
 
@@ -211,6 +210,13 @@ public class RngTabController extends ProfileTabController {
         tab.addWidget(rngStatsBar);
 
         addInfoRow(rngItemsList, "Select a category above", "");
+
+        if (!categoryNames.isEmpty()) {
+            rngCategoryDropdown.setSelectedOption(categoryNames.get(0));
+            currentRngCategory = categoryNames.get(0);
+            updateRngSubcategoryDropdown();
+            updateRngItemsList();
+        }
     }
 
     private void updateRngSubcategoryDropdown() {
@@ -353,14 +359,21 @@ public class RngTabController extends ProfileTabController {
     }
 
     private double getItemPrice(String itemName) {
-        if (rngPrices == null || rngItemIds == null)
+        if (rngItemIds == null)
             return 0;
 
         String itemId = rngItemIds.get(itemName);
         if (itemId == null)
             return 0;
 
-        return rngPrices.getOrDefault(itemId, 0.0);
+        double localPrice = org.blackum.blackaddons.util.LocalIntegration.getPrice(itemId);
+        double botPrice = (rngPrices != null) ? rngPrices.getOrDefault(itemId, 0.0) : 0.0;
+
+        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+            return localPrice > 0 ? localPrice : botPrice;
+        } else {
+            return botPrice > 0 ? botPrice : localPrice;
+        }
     }
 
     private int getChestCost(String itemName) {
@@ -403,7 +416,9 @@ public class RngTabController extends ProfileTabController {
         private void handleIncrement() {
             String cat = (RngTabController.this.rngGlobalDrops != null
                     && RngTabController.this.rngGlobalDrops.contains(itemName)) ? "Global" : subcategory;
-            BotIntegration.updateRngDrop(RngTabController.this.playerName, cat, itemName, "increment", null)
+
+            org.blackum.blackaddons.util.ProfileStateManager.getInstance()
+                    .updateRngCount(RngTabController.this.playerName, cat, itemName, "increment", null)
                     .thenAccept(success -> {
                         if (success) {
                             Minecraft.getInstance().execute(() -> {
@@ -419,7 +434,9 @@ public class RngTabController extends ProfileTabController {
                 return;
             String cat = (RngTabController.this.rngGlobalDrops != null
                     && RngTabController.this.rngGlobalDrops.contains(itemName)) ? "Global" : subcategory;
-            BotIntegration.updateRngDrop(RngTabController.this.playerName, cat, itemName, "decrement", null)
+
+            org.blackum.blackaddons.util.ProfileStateManager.getInstance()
+                    .updateRngCount(RngTabController.this.playerName, cat, itemName, "decrement", null)
                     .thenAccept(success -> {
                         if (success) {
                             Minecraft.getInstance().execute(() -> {
@@ -462,8 +479,9 @@ public class RngTabController extends ProfileTabController {
                                             && RngTabController.this.rngGlobalDrops.contains(itemName))
                                                     ? "Global"
                                                     : subcategory;
-                                    BotIntegration
-                                            .updateRngDrop(RngTabController.this.playerName, cat, itemName, "set",
+
+                                    org.blackum.blackaddons.util.ProfileStateManager.getInstance()
+                                            .updateRngCount(RngTabController.this.playerName, cat, itemName, "set",
                                                     newCount)
                                             .thenAccept(success -> {
                                                 if (success) {

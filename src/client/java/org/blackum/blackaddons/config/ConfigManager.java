@@ -55,8 +55,13 @@ public class ConfigManager {
         }
     }
 
+    public static enum DataSource {
+        BOT, LOCAL
+    }
+
     // Bot Integration
     public static String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
+    public static DataSource dataSource = DataSource.LOCAL;
     public static boolean rngTrackerEnabled = true;
     public static boolean useCardLayout = true;
 
@@ -72,6 +77,7 @@ public class ConfigManager {
 
         // Bot
         public String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
+        public String dataSource = DataSource.LOCAL.name();
         public boolean rngTrackerEnabled = true;
 
         // Mod Hider (ported from ClientSpoofer)
@@ -110,6 +116,7 @@ public class ConfigManager {
         data.useCardLayout = ConfigManager.useCardLayout;
         data.cardStates = lastLoadedCardStates;
         data.botUrl = ConfigManager.botUrl;
+        data.dataSource = ConfigManager.dataSource.name();
         data.rngTrackerEnabled = ConfigManager.rngTrackerEnabled;
 
         data.modHiderSpoofMode = ModHiderOptions.SPOOF_MODE.name();
@@ -128,6 +135,7 @@ public class ConfigManager {
         data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
+        data.cacheDurationMinutes = GeneralOptions.CACHE_DURATION_MINUTES;
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -147,6 +155,7 @@ public class ConfigManager {
         data.useCardLayout = ConfigManager.useCardLayout;
         data.cardStates = cardStates != null ? cardStates : new HashMap<>();
         data.botUrl = ConfigManager.botUrl;
+        data.dataSource = ConfigManager.dataSource.name();
         data.rngTrackerEnabled = ConfigManager.rngTrackerEnabled;
 
         data.modHiderSpoofMode = ModHiderOptions.SPOOF_MODE.name();
@@ -165,6 +174,7 @@ public class ConfigManager {
         data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
+        data.cacheDurationMinutes = GeneralOptions.CACHE_DURATION_MINUTES;
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -193,6 +203,13 @@ public class ConfigManager {
                 ConfigManager.useCardLayout = data.useCardLayout;
                 ConfigManager.botUrl = data.botUrl != null ? data.botUrl
                         : "http://hypixel-skyblock-socket.pegle.com:8080";
+
+                try {
+                    ConfigManager.dataSource = DataSource.valueOf(
+                            data.dataSource == null ? DataSource.LOCAL.name() : data.dataSource);
+                } catch (IllegalArgumentException ignored) {
+                    ConfigManager.dataSource = DataSource.LOCAL;
+                }
 
                 try {
                     ModHiderOptions.SPOOF_MODE = SpoofMode.valueOf(

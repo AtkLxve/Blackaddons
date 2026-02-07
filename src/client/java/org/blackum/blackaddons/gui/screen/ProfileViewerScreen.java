@@ -77,7 +77,7 @@ public class ProfileViewerScreen extends BaseScreen {
         if (dailyController == null) {
             dailyController = new org.blackum.blackaddons.gui.screen.tabs.DailyTabController(this, profileData);
         }
-        dailyController.init(tabPanel.addTab("Daily"));
+        dailyController.init(tabPanel.addTab("Leaderboard"));
 
         if (rtcaController == null) {
             rtcaController = new org.blackum.blackaddons.gui.screen.tabs.RtcaTabController(this, profileData);
@@ -118,8 +118,12 @@ public class ProfileViewerScreen extends BaseScreen {
         if (!isLoading && profileData != null) {
             String label = "Viewing: " + player;
             int x = containerX + 10;
-            int y = containerY + containerHeight - 15;
+            int y = containerY + containerHeight - 25;
             graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, label, x, y,
+                    org.blackum.blackaddons.gui.theme.Theme.TEXT_SECONDARY);
+
+            String source = "Source: " + org.blackum.blackaddons.config.ConfigManager.dataSource.name();
+            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, source, x, y + 10,
                     org.blackum.blackaddons.gui.theme.Theme.TEXT_SECONDARY);
         }
     }

@@ -224,6 +224,37 @@ public class RtcaTabController extends ProfileTabController {
         double[] mayorVals = { 1.0, 1.5, 1.55 };
         bonuses.put("mayor", mayorVals[simMayorIndex]);
 
+        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+
+            Map<String, Double> currentClassXp = new HashMap<>();
+            try {
+                JsonObject classesObj = JsonUtils.getObject(profileData, "classes");
+                for (String cls : classesObj.keySet()) {
+                    currentClassXp.put(cls, classesObj.get(cls).getAsDouble());
+                }
+            } catch (Exception e) {
+                if (simResultsList != null)
+                    addInfoRow(simResultsList, "Error:", "Could not read profile class data.");
+                return;
+            }
+
+            if (simResultsList != null) {
+                simResultsList.clearItems();
+                addInfoRow(simResultsList, "Status:", "Simulating locally...");
+            }
+
+            org.blackum.blackaddons.util.LocalRtcaService.simulate(rtcaFloor, currentClassXp, bonuses)
+                    .thenAccept(json -> {
+                        Minecraft.getInstance().execute(() -> {
+                            if (simResultsList == null)
+                                return;
+                            simResultsList.clearItems();
+                            processRtcaResults(json);
+                        });
+                    });
+            return;
+        }
+
         BotIntegration.getRtcaStats(playerName, rtcaFloor, bonuses).thenAccept(json -> {
             Minecraft.getInstance().execute(() -> {
                 if (simResultsList == null)
@@ -240,92 +271,97 @@ public class RtcaTabController extends ProfileTabController {
                     return;
                 }
 
-                try {
-                    int totalRuns = JsonUtils.getInt(json, "total_runs");
-                    if (totalRuns == 0) {
-                        screen.startConfetti();
-                        simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 25) {
-                            @Override
-                            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                                graphics.drawCenteredString(Minecraft.getInstance().font,
-                                        "§6§l🎉 Congratulations " + playerName
-                                                + ", you already hit Class Average 50! 🎉",
-                                        x + width / 2, y + 8, 0xFFFFFFFF);
-                            }
-                        });
-                        simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 30) {
-                            @Override
-                            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                                graphics.drawCenteredString(Minecraft.getInstance().font,
-                                        "§eYou don't need this simulation anymore. Go touch some grass! 🌱",
-                                        x + width / 2, y + 5, 0xFFFFD700);
-                            }
-                        });
-                        return;
-                    }
-                    addInfoRow(simResultsList, "Total Runs Needed:", String.format("%,d", totalRuns));
-
-                    simResultsList.addItem(new Widget(0, 0, 0, 10) {
-                        @Override
-                        public void render(GuiGraphics g, int x, int y, float p) {
-                        }
-                    });
-
-                    com.google.gson.JsonObject results = JsonUtils.getObject(json, "results");
-                    List<String> sortedClasses = new ArrayList<>(results.keySet());
-                    sortedClasses.sort(String::compareTo);
-
-                    Map<String, Double> xpData = new HashMap<>();
-
-                    GridRow header = new GridRow(simResultsList.getWidth() - 10, 15);
-                    header.addChild(new Label(0, 0, "Class", Label.Style.BODY), 5);
-                    header.addChild(new Label(0, 0, "Remaining Runs", Label.Style.BODY), 80);
-                    header.addChild(new Label(0, 0, "XP to Class Lvl 50", Label.Style.BODY), 180);
-                    simResultsList.addItem(header);
-
-                    for (String cls : sortedClasses) {
-                        com.google.gson.JsonObject clsData = JsonUtils.getObject(results, cls);
-                        int runs = JsonUtils.getInt(clsData, "runs_done");
-                        double remaining = JsonUtils.getDouble(clsData, "remaining_xp");
-                        xpData.put(cls, remaining);
-
-                        GridRow row = new GridRow(simResultsList.getWidth() - 10, 15);
-                        String name = cls.substring(0, 1).toUpperCase() + cls.substring(1);
-                        Label nameLabel = new Label(0, 0, name, Label.Style.BODY);
-                        nameLabel.setColor(Theme.ACCENT);
-                        row.addChild(nameLabel, 5);
-                        row.addChild(new Label(0, 0, String.format("%,d", runs), Label.Style.BODY), 80);
-                        String xpText = FormatUtils.formatNumber(remaining);
-                        row.addChild(new Label(0, 0, xpText, Label.Style.BODY), 180);
-                        simResultsList.addItem(row);
-                    }
-
-                    simResultsList.addItem(new Widget(0, 0, 0, 10) {
-                        @Override
-                        public void render(GuiGraphics g, int x, int y, float p) {
-                        }
-                    });
-
-                    BarGraphWidget xpGraph = new BarGraphWidget(0, 0, simResultsList.getWidth() - 10,
-                            "Remaining XP per Class");
-                    xpGraph.setData(xpData, "XP");
-
-                    Map<String, Integer> classColors = new HashMap<>();
-                    classColors.put("archer", 0xFFFFAA00);
-                    classColors.put("berserk", 0xFFFF5555);
-                    classColors.put("healer", 0xFFFF55FF);
-                    classColors.put("mage", 0xFF55FFFF);
-                    classColors.put("tank", 0xFF00AA00);
-                    xpGraph.setColorMap(classColors);
-
-                    simResultsList.addItem(xpGraph);
-
-                } catch (Exception e) {
-                    addInfoRow(simResultsList, "Error:", "Failed to parse results.");
-                    e.printStackTrace();
-                }
+                processRtcaResults(json);
             });
         });
+    }
+
+    private void processRtcaResults(JsonObject json) {
+        try {
+            int totalRuns = JsonUtils.getInt(json, "total_runs");
+            if (totalRuns == 0) {
+                screen.startConfetti();
+                simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 25) {
+                    @Override
+                    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                        graphics.drawCenteredString(Minecraft.getInstance().font,
+                                "§6§l🎉 Congratulations " + screen.getPlayer()
+                                        + ", you already hit Class Average 50! 🎉",
+                                x + width / 2, y + 8, 0xFFFFFFFF);
+                    }
+                });
+                simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 30) {
+                    @Override
+                    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                        graphics.drawCenteredString(Minecraft.getInstance().font,
+                                "§eYou don't need this simulation anymore. Go touch some grass! 🌱",
+                                x + width / 2, y + 5, 0xFFFFD700);
+                    }
+                });
+                return;
+            }
+            addInfoRow(simResultsList, "Total Runs Needed:", String.format("%,d", totalRuns));
+
+            simResultsList.addItem(new Widget(0, 0, 0, 10) {
+
+                @Override
+                public void render(GuiGraphics g, int x, int y, float p) {
+                }
+            });
+
+            com.google.gson.JsonObject results = JsonUtils.getObject(json, "results");
+            List<String> sortedClasses = new ArrayList<>(results.keySet());
+            sortedClasses.sort(String::compareTo);
+
+            Map<String, Double> xpData = new HashMap<>();
+
+            GridRow header = new GridRow(simResultsList.getWidth() - 10, 15);
+            header.addChild(new Label(0, 0, "Class", Label.Style.BODY), 5);
+            header.addChild(new Label(0, 0, "Remaining Runs", Label.Style.BODY), 80);
+            header.addChild(new Label(0, 0, "XP to Class Lvl 50", Label.Style.BODY), 180);
+            simResultsList.addItem(header);
+
+            for (String cls : sortedClasses) {
+                com.google.gson.JsonObject clsData = JsonUtils.getObject(results, cls);
+                int runs = JsonUtils.getInt(clsData, "runs_done");
+                double remaining = JsonUtils.getDouble(clsData, "remaining_xp");
+                xpData.put(cls, remaining);
+
+                GridRow row = new GridRow(simResultsList.getWidth() - 10, 15);
+                String name = cls.substring(0, 1).toUpperCase() + cls.substring(1);
+                Label nameLabel = new Label(0, 0, name, Label.Style.BODY);
+                nameLabel.setColor(Theme.ACCENT);
+                row.addChild(nameLabel, 5);
+                row.addChild(new Label(0, 0, String.format("%,d", runs), Label.Style.BODY), 80);
+                String xpText = FormatUtils.formatNumber(remaining);
+                row.addChild(new Label(0, 0, xpText, Label.Style.BODY), 180);
+                simResultsList.addItem(row);
+            }
+
+            simResultsList.addItem(new Widget(0, 0, 0, 10) {
+                @Override
+                public void render(GuiGraphics g, int x, int y, float p) {
+                }
+            });
+
+            BarGraphWidget xpGraph = new BarGraphWidget(0, 0, simResultsList.getWidth() - 10,
+                    "Remaining XP per Class");
+            xpGraph.setData(xpData, "XP");
+
+            Map<String, Integer> classColors = new HashMap<>();
+            classColors.put("archer", 0xFFFFAA00);
+            classColors.put("berserk", 0xFFFF5555);
+            classColors.put("healer", 0xFFFF55FF);
+            classColors.put("mage", 0xFF55FFFF);
+            classColors.put("tank", 0xFF00AA00);
+            xpGraph.setColorMap(classColors);
+
+            simResultsList.addItem(xpGraph);
+
+        } catch (Exception e) {
+            addInfoRow(simResultsList, "Error:", "Failed to parse results.");
+            e.printStackTrace();
+        }
     }
 
 }

@@ -1,5 +1,7 @@
 package org.blackum.blackaddons.util;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,18 +33,87 @@ public class ProfileStateManager {
             }
         }
 
-        return BotIntegration.getProfileStats(player, force).thenApply(json -> {
+        CompletableFuture<JsonObject> future;
+
+        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+            CompletableFuture<JsonObject> localFuture = LocalIntegration.getProfileStats(player, force);
+            CompletableFuture<JsonObject> botFuture = getSafeBotProfile(player, force);
+
+            future = localFuture.thenCombine(botFuture, (local, bot) -> {
+                if (local == null)
+                    return bot;
+                if (bot != null && !bot.has("error")) {
+                    mergeBotDataIntoLocal(local, bot);
+                }
+                return local;
+            });
+        } else {
+            future = getSafeBotProfile(player, force).thenCompose(bot -> {
+                if (bot != null && !bot.has("error")) {
+                    return CompletableFuture.completedFuture(bot);
+                }
+
+                String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                if (player.equalsIgnoreCase(currentUser)) {
+                    return LocalIntegration.getProfileStats(player, force).thenApply(local -> {
+                        if (local != null) {
+                            return local;
+                        }
+                        return bot;
+                    });
+                }
+
+                return CompletableFuture.completedFuture(bot);
+            });
+        }
+
+        return future.thenApply(json -> {
             if (json == null)
                 return BotResult.error("API Unavailable");
             if (json.has("error"))
                 return BotResult.error(json.get("error").getAsString());
+
+            JsonObject data = json;
             if (json.has("data")) {
-                JsonObject data = json.getAsJsonObject("data");
+                data = json.getAsJsonObject("data");
+            }
+
+            if (data.has("catacombs") || data.has("members") || data.has("profiles")) {
                 profileCache.put(player.toLowerCase(), new CacheEntry<>(data));
                 return BotResult.success(data);
             }
             return BotResult.error("Invalid data");
         });
+    }
+
+    private CompletableFuture<JsonObject> getSafeBotProfile(String player, boolean force) {
+        return BotIntegration.getProfileStats(player, force)
+                .exceptionally(e -> null);
+    }
+
+    private void mergeBotDataIntoLocal(JsonObject local, JsonObject bot) {
+        try {
+            JsonObject botData = bot.has("data") ? bot.getAsJsonObject("data") : bot;
+            if (botData.has("teammates")) {
+                JsonElement botTm = botData.get("teammates");
+                if (botTm.isJsonArray()) {
+                    JsonArray botTeammates = botTm.getAsJsonArray();
+                    JsonArray localTeammates = local.has("teammates") ? local.getAsJsonArray("teammates")
+                            : new JsonArray();
+                    JsonArray merged = org.blackum.blackaddons.features.LocalTeammateManager.getInstance()
+                            .mergeTeammates(localTeammates, botTeammates);
+                    local.add("teammates", merged);
+                }
+            }
+            if (botData.has("recent_runs"))
+                local.add("recent_runs", botData.get("recent_runs"));
+            if (botData.has("daily_stats"))
+                local.add("daily_stats", botData.get("daily_stats"));
+            if (botData.has("monthly_stats"))
+                local.add("monthly_stats", botData.get("monthly_stats"));
+        } catch (Exception e) {
+            org.blackum.blackaddons.Blackaddons.LOGGER.error("Error merging bot data: " + e.getMessage());
+        }
     }
 
     public CompletableFuture<BotResult<JsonObject>> getRngData(String player) {
@@ -53,18 +124,86 @@ public class ProfileStateManager {
             }
         }
 
-        return BotIntegration.getRngData(player).thenApply(json -> {
-            if (json == null)
-                return BotResult.error("API Unavailable");
-            if (json.has("error"))
-                return BotResult.error(json.get("error").getAsString());
-            if (json.has("data")) {
-                JsonObject data = json.getAsJsonObject("data");
-                rngCache.put(player.toLowerCase(), new CacheEntry<>(data));
-                return BotResult.success(data);
+        CompletableFuture<JsonObject> botFuture = BotIntegration.getRngData(player).exceptionally(e -> null);
+
+        return botFuture.thenApply(json -> {
+            JsonObject botData = null;
+            if (json != null && !json.has("error") && json.has("data")) {
+                botData = json.getAsJsonObject("data");
+            }
+
+            JsonObject localData = org.blackum.blackaddons.features.LocalRngManager.getInstance().getRngData();
+            JsonObject finalData;
+            String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+            boolean isSelf = player.equalsIgnoreCase(currentUser);
+
+            if (botData == null) {
+                if (isSelf) {
+                    finalData = localData;
+                } else {
+                    return BotResult.error("API Unavailable");
+                }
+            } else {
+                if (isSelf) {
+                    if (localData.has("drops")) {
+                        JsonObject localDrops = localData.getAsJsonObject("drops");
+                        JsonObject botDrops = botData.has("drops") ? botData.getAsJsonObject("drops")
+                                : new JsonObject();
+
+                        for (String cat : localDrops.keySet()) {
+                            JsonObject localCat = localDrops.getAsJsonObject(cat);
+                            JsonObject botCat = botDrops.has(cat) ? botDrops.getAsJsonObject(cat) : new JsonObject();
+
+                            for (String item : localCat.keySet()) {
+                                int localCount = localCat.get(item).getAsInt();
+                                int botCount = botCat.has(item) ? botCat.get(item).getAsInt() : 0;
+
+                                if (localCount > botCount) {
+                                    botCat.addProperty(item, localCount);
+                                }
+                            }
+                            botDrops.add(cat, botCat);
+                        }
+                        botData.add("drops", botDrops);
+                    }
+                }
+                finalData = botData;
+            }
+
+            if (finalData != null) {
+                rngCache.put(player.toLowerCase(), new CacheEntry<>(finalData));
+                return BotResult.success(finalData);
             }
             return BotResult.error("Invalid data");
         });
+    }
+
+    public CompletableFuture<Boolean> updateRngCount(String player, String category, String item, String action,
+            Integer count) {
+        String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+        if (!player.equalsIgnoreCase(currentUser)) {
+            return CompletableFuture.completedFuture(false);
+        }
+
+        if ("set".equals(action) && count != null) {
+            org.blackum.blackaddons.features.LocalRngManager.getInstance().setDropCount(category, item, count);
+        } else if ("increment".equals(action)) {
+            org.blackum.blackaddons.features.LocalRngManager.getInstance().addDrop(category, item, 1);
+        } else if ("decrement".equals(action)) {
+            org.blackum.blackaddons.features.LocalRngManager.getInstance().addDrop(category, item, -1);
+        }
+
+        rngCache.remove(player.toLowerCase());
+
+        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.BOT) {
+            return BotIntegration.updateRngDrop(player, category, item, action, count)
+                    .exceptionally(e -> false)
+                    .thenApply(success -> {
+                        return true;
+                    });
+        }
+
+        return CompletableFuture.completedFuture(true);
     }
 
     public void clearCache(String player) {

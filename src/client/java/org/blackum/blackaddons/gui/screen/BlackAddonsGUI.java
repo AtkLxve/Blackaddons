@@ -73,15 +73,33 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentX = tabPanel.getContentX();
         int contentY = tabPanel.getContentY();
 
-        settingsTab.addWidget(new Label(contentX, contentY, "App Appearance", Label.Style.TITLE));
+        settingsTab.addWidget(new Label(contentX, contentY, "Data Source", Label.Style.TITLE));
 
-        settingsTab.addWidget(new Label(contentX, contentY + 30, "Accent Color (Main Theme)", Label.Style.BODY));
+        java.util.List<String> dataSources = java.util.List.of("LOCAL", "BOT");
+        Dropdown dataSourceDropdown = new Dropdown(contentX, contentY + 30, 200, "Data Source", dataSources,
+                selected -> {
+                    try {
+                        ConfigManager.dataSource = ConfigManager.DataSource.valueOf(selected);
+                        ConfigManager.save();
+                    } catch (Exception e) {
+                        ConfigManager.dataSource = ConfigManager.DataSource.LOCAL;
+                    }
+                });
+        dataSourceDropdown.setSelectedOption(ConfigManager.dataSource.name());
+        settingsTab.addWidget(dataSourceDropdown);
 
-        ColorPicker accentPicker = new ColorPicker(contentX, contentY + 50, color -> Theme.ACCENT = color);
+        int offsetY = 80;
+
+        settingsTab.addWidget(new Label(contentX, contentY + offsetY, "App Appearance", Label.Style.TITLE));
+
+        settingsTab
+                .addWidget(new Label(contentX, contentY + offsetY + 30, "Accent Color (Main Theme)", Label.Style.BODY));
+
+        ColorPicker accentPicker = new ColorPicker(contentX, contentY + offsetY + 50, color -> Theme.ACCENT = color);
 
         settingsTab.addWidget(accentPicker);
 
-        ToggleSwitch layoutToggle = new ToggleSwitch(contentX, contentY + 280, 400,
+        ToggleSwitch layoutToggle = new ToggleSwitch(contentX, contentY + offsetY + 280, 400,
                 "Use Card Layout",
                 "Enable resizable card-based layout for Mod Hider",
                 ConfigManager.useCardLayout, value -> {
@@ -91,11 +109,12 @@ public class BlackAddonsGUI extends BaseScreen {
                 });
         settingsTab.addWidget(layoutToggle);
 
-        Label durationLabel = new Label(contentX, contentY + 320,
+        Label durationLabel = new Label(contentX, contentY + offsetY + 320,
                 "Notification Duration: " + GeneralOptions.NOTIFICATION_DURATION + "ms", Label.Style.BODY);
         settingsTab.addWidget(durationLabel);
 
-        Slider durationSlider = new Slider(contentX, contentY + 330, tabPanel.getContentWidth() - 20, 500f, 10000f,
+        Slider durationSlider = new Slider(contentX, contentY + offsetY + 330, tabPanel.getContentWidth() - 20, 500f,
+                10000f,
                 GeneralOptions.NOTIFICATION_DURATION, val -> {
                     int duration = Math.round(val);
                     if (duration != GeneralOptions.NOTIFICATION_DURATION) {
@@ -106,11 +125,12 @@ public class BlackAddonsGUI extends BaseScreen {
                 });
         settingsTab.addWidget(durationSlider);
 
-        settingsTab.addWidget(new Label(contentX, contentY + 390, "Profile Cache Duration", Label.Style.BODY));
+        settingsTab
+                .addWidget(new Label(contentX, contentY + offsetY + 390, "Profile Cache Duration", Label.Style.BODY));
 
         java.util.List<String> cacheOptions = java.util.List.of("1 Minute", "5 Minutes", "10 Minutes", "30 Minutes",
                 "1 Hour");
-        Dropdown cacheDropdown = new Dropdown(contentX, contentY + 410, tabPanel.getContentWidth() - 20, 20,
+        Dropdown cacheDropdown = new Dropdown(contentX, contentY + offsetY + 410, tabPanel.getContentWidth() - 20, 20,
                 "Cache Duration", cacheOptions, selected -> {
                     int minutes = 5;
                     if (selected.contains("1 Minute"))

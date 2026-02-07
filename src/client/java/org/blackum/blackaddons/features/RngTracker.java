@@ -46,6 +46,15 @@ public class RngTracker {
 
             String location = org.blackum.blackaddons.util.LocationUtils.getLocation();
 
+            String localCat = "Unknown";
+            if (location.contains("Catacombs")) {
+                localCat = "Dungeons";
+            } else if (rarity.contains("PRAY")) {
+                localCat = "Slayers";
+            }
+
+            LocalRngManager.getInstance().addDrop(localCat, item, 1);
+
             BotIntegration.sendRngDrop(player, item, rarity, location);
         }
     }

@@ -154,6 +154,12 @@ public class TeammatesTabController extends ProfileTabController {
                         JsonObject data = JsonUtils.getObject(tuple, 1);
                         allTeammates.add(new Teammate(ign, data));
                     }
+                } else if (tmElem.isJsonObject()) {
+                    JsonObject obj = tmElem.getAsJsonObject();
+                    if (obj.has("ign")) {
+                        String ign = obj.get("ign").getAsString();
+                        allTeammates.add(new Teammate(ign, obj));
+                    }
                 }
             }
             updateTeammatesList();
