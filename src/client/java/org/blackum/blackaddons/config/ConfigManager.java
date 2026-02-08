@@ -63,6 +63,7 @@ public class ConfigManager {
     public static String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
     public static DataSource dataSource = DataSource.LOCAL;
     public static boolean rngTrackerEnabled = true;
+    public static String developerKey = "";
     public static boolean useCardLayout = true;
 
     public static class ConfigData {
@@ -79,6 +80,7 @@ public class ConfigManager {
         public String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
         public String dataSource = DataSource.LOCAL.name();
         public boolean rngTrackerEnabled = true;
+        public String developerKey = "";
 
         // Mod Hider (ported from ClientSpoofer)
         public String modHiderSpoofMode = SpoofMode.VANILLA.name();
@@ -203,6 +205,7 @@ public class ConfigManager {
                 ConfigManager.useCardLayout = data.useCardLayout;
                 ConfigManager.botUrl = data.botUrl != null ? data.botUrl
                         : "http://hypixel-skyblock-socket.pegle.com:8080";
+                ConfigManager.developerKey = data.developerKey != null ? data.developerKey : "";
 
                 try {
                     ConfigManager.dataSource = DataSource.valueOf(

@@ -112,10 +112,10 @@ public class BotIntegration {
         });
     }
 
-    public static CompletableFuture<Boolean> updateRngDrop(String player, String category, String item, String action,
+    public static CompletableFuture<Integer> updateRngDrop(String player, String category, String item, String action,
             Integer count) {
         if (ConfigManager.botUrl.isEmpty())
-            return CompletableFuture.completedFuture(false);
+            return CompletableFuture.completedFuture(null);
 
         JsonObject json = new JsonObject();
         json.addProperty("player", player);
@@ -127,7 +127,18 @@ public class BotIntegration {
         }
 
         return sendPostRequest("/v1/rng", json.toString()).thenApply(res -> {
-            return res != null && res.statusCode() >= 200 && res.statusCode() < 300;
+            if (res != null && res.statusCode() >= 200 && res.statusCode() < 300) {
+                try {
+                    JsonObject responseJson = com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    if (responseJson.has("count")) {
+                        return responseJson.get("count").getAsInt();
+                    }
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Failed to parse RNG update response: " + e.getMessage());
+                }
+                return -1;
+            }
+            return null;
         });
     }
 
@@ -167,47 +178,145 @@ public class BotIntegration {
     }
 
     private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody) {
+        return sendPostRequest(endpoint, jsonBody, true);
+    }
+
+    private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody,
+            boolean allowRetry) {
         String url = ConfigManager.botUrl + endpoint;
 
-        HttpRequest request = HttpRequest.newBuilder()
+        String playerInit = "Unknown";
+        String uuidInit = "Unknown";
+        try {
+            if (net.minecraft.client.Minecraft.getInstance().getUser() != null) {
+                playerInit = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                uuidInit = net.minecraft.client.Minecraft.getInstance().getUser().getProfileId().toString();
+            }
+        } catch (Exception e) {
+        }
+        final String player = playerInit;
+        final String uuid = uuidInit;
+
+        String rawIdentity = uuid + ":" + player + ":" + System.currentTimeMillis();
+        String encryptedIdentity = EncryptionUtils.encrypt(rawIdentity);
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(Duration.ofSeconds(10))
                 .header("Content-Type", "application/json")
-                .header("User-Agent", "BlackAddons/1.0")
-                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                .build();
+                .header("User-Agent", "BlackAddons/1.0");
 
-        return sendRequest(request, endpoint);
-    }
+        if (encryptedIdentity != null) {
+            builder.header("X-Encrypted-Identity", encryptedIdentity);
+        }
 
-    private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint) {
-        String url = ConfigManager.botUrl + endpoint;
+        builder.POST(HttpRequest.BodyPublishers.ofString(jsonBody));
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(10))
-                .header("Content-Type", "application/json")
-                .header("User-Agent", "BlackAddons/1.0")
-                .GET()
-                .build();
+        if (ConfigManager.developerKey != null && !ConfigManager.developerKey.isEmpty()) {
+            builder.header("X-Developer-Key", ConfigManager.developerKey);
+        }
 
-        return sendRequest(request, endpoint);
-    }
+        return client.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
+                .thenCompose(res -> {
+                    if (res.statusCode() == 403 && allowRetry) {
+                        Blackaddons.LOGGER.info("Authentication failed. Refetching key and retrying...");
+                        return fetchVerificationKey().thenCompose(v -> sendPostRequest(endpoint, jsonBody, false));
+                    }
 
-    private static CompletableFuture<HttpResponse<String>> sendRequest(HttpRequest request, String endpoint) {
-        return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenApply(res -> {
                     if (res.statusCode() >= 200 && res.statusCode() < 300) {
                         Blackaddons.LOGGER.info("Successfully communicated with bot: " + endpoint);
                     } else {
-                        Blackaddons.LOGGER.warn(
-                                "Bot communication failed. Status: " + res.statusCode() + " Body: " + res.body());
+                        Blackaddons.LOGGER
+                                .warn("Bot communication failed. Status: " + res.statusCode() + " Body: " + res.body());
                     }
-                    return res;
+                    return CompletableFuture.completedFuture(res);
                 })
                 .exceptionally(e -> {
                     Blackaddons.LOGGER.error("Error communicating with bot: " + e.getMessage());
                     return null;
                 });
     }
+
+    private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint) {
+        return sendGetRequest(endpoint, true);
+    }
+
+    private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint, boolean allowRetry) {
+        String url = ConfigManager.botUrl + endpoint;
+
+        String playerInit = "Unknown";
+        String uuidInit = "Unknown";
+        try {
+            if (net.minecraft.client.Minecraft.getInstance().getUser() != null) {
+                playerInit = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                uuidInit = net.minecraft.client.Minecraft.getInstance().getUser().getProfileId().toString();
+            }
+        } catch (Exception e) {
+        }
+        final String player = playerInit;
+        final String uuid = uuidInit;
+
+        String rawIdentity = uuid + ":" + player + ":" + System.currentTimeMillis();
+        String encryptedIdentity = EncryptionUtils.encrypt(rawIdentity);
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(10))
+                .header("Content-Type", "application/json")
+                .header("User-Agent", "BlackAddons/1.0");
+
+        if (encryptedIdentity != null) {
+            builder.header("X-Encrypted-Identity", encryptedIdentity);
+        }
+
+        builder.GET();
+
+        if (ConfigManager.developerKey != null && !ConfigManager.developerKey.isEmpty()) {
+            builder.header("X-Developer-Key", ConfigManager.developerKey);
+        }
+
+        return client.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
+                .thenCompose(res -> {
+                    if (res.statusCode() == 403 && allowRetry) {
+                        Blackaddons.LOGGER.info("Authentication failed. Refetching key and retrying...");
+                        return fetchVerificationKey().thenCompose(v -> sendGetRequest(endpoint, false));
+                    }
+
+                    if (res.statusCode() >= 200 && res.statusCode() < 300) {
+                        Blackaddons.LOGGER.info("Successfully communicated with bot: " + endpoint);
+                    } else {
+                        Blackaddons.LOGGER
+                                .warn("Bot communication failed. Status: " + res.statusCode() + " Body: " + res.body());
+                    }
+                    return CompletableFuture.completedFuture(res);
+                })
+                .exceptionally(e -> {
+                    Blackaddons.LOGGER.error("Error communicating with bot: " + e.getMessage());
+                    return null;
+                });
+    }
+
+    public static CompletableFuture<Void> fetchVerificationKey() {
+        if (ConfigManager.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        return sendGetRequest("/v1/key").thenAccept(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    JsonObject json = com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    if (json.has("key")) {
+                        String key = json.get("key").getAsString();
+                        EncryptionUtils.setKeyBase64(key);
+                        Blackaddons.LOGGER.info("Successfully fetched verification key from bot.");
+                    }
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Failed to parse verification key: " + e.getMessage());
+                }
+            } else {
+                Blackaddons.LOGGER
+                        .warn("Failed to fetch verification key. Status: " + (res != null ? res.statusCode() : "null"));
+            }
+        });
+    }
+
 }

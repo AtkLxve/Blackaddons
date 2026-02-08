@@ -88,7 +88,18 @@ public class BlackAddonsGUI extends BaseScreen {
         dataSourceDropdown.setSelectedOption(ConfigManager.dataSource.name());
         settingsTab.addWidget(dataSourceDropdown);
 
-        int offsetY = 80;
+        settingsTab.addWidget(new Label(contentX, contentY + 60, "Developer Key", Label.Style.TITLE));
+        TextField devKeyField = new TextField(contentX, contentY + 90, 200, "Enter key...");
+        devKeyField.setText(ConfigManager.developerKey);
+        settingsTab.addWidget(devKeyField);
+
+        Button saveKeyBtn = new Button(contentX + 210, contentY + 90, 60, "Save", () -> {
+            ConfigManager.developerKey = devKeyField.getText();
+            ConfigManager.save();
+        });
+        settingsTab.addWidget(saveKeyBtn);
+
+        int offsetY = 140;
 
         settingsTab.addWidget(new Label(contentX, contentY + offsetY, "App Appearance", Label.Style.TITLE));
 

@@ -212,10 +212,16 @@ public class RngTabController extends ProfileTabController {
         addInfoRow(rngItemsList, "Select a category above", "");
 
         if (!categoryNames.isEmpty()) {
-            rngCategoryDropdown.setSelectedOption(categoryNames.get(0));
-            currentRngCategory = categoryNames.get(0);
-            updateRngSubcategoryDropdown();
-            updateRngItemsList();
+            if (currentRngCategory == null || !categoryNames.contains(currentRngCategory)) {
+                rngCategoryDropdown.setSelectedOption(categoryNames.get(0));
+                currentRngCategory = categoryNames.get(0);
+                updateRngSubcategoryDropdown();
+                updateRngItemsList();
+            } else {
+                rngCategoryDropdown.setSelectedOption(currentRngCategory);
+                updateRngSubcategoryDropdown();
+                updateRngItemsList();
+            }
         }
     }
 
@@ -227,7 +233,10 @@ public class RngTabController extends ProfileTabController {
         List<String> subs = rngCategories.get(currentRngCategory);
         if (subs != null && !subs.isEmpty()) {
             rngSubcategoryDropdown.setOptions(subs);
-            currentRngSubcategory = subs.get(0);
+
+            if (currentRngSubcategory == null || !subs.contains(currentRngSubcategory)) {
+                currentRngSubcategory = subs.get(0);
+            }
             rngSubcategoryDropdown.setSelectedOption(currentRngSubcategory);
 
             if (subs.size() == 1) {
@@ -419,10 +428,10 @@ public class RngTabController extends ProfileTabController {
 
             org.blackum.blackaddons.util.ProfileStateManager.getInstance()
                     .updateRngCount(RngTabController.this.playerName, cat, itemName, "increment", null)
-                    .thenAccept(success -> {
-                        if (success) {
+                    .thenAccept(newCount -> {
+                        if (newCount != null) {
                             Minecraft.getInstance().execute(() -> {
-                                count++;
+                                count = newCount;
                                 updateRngDropCountLocal(cat, itemName, count);
                             });
                         }
@@ -437,10 +446,10 @@ public class RngTabController extends ProfileTabController {
 
             org.blackum.blackaddons.util.ProfileStateManager.getInstance()
                     .updateRngCount(RngTabController.this.playerName, cat, itemName, "decrement", null)
-                    .thenAccept(success -> {
-                        if (success) {
+                    .thenAccept(newCount -> {
+                        if (newCount != null) {
                             Minecraft.getInstance().execute(() -> {
-                                count = Math.max(0, count - 1);
+                                count = newCount;
                                 updateRngDropCountLocal(cat, itemName, count);
                             });
                         }
@@ -483,11 +492,11 @@ public class RngTabController extends ProfileTabController {
                                     org.blackum.blackaddons.util.ProfileStateManager.getInstance()
                                             .updateRngCount(RngTabController.this.playerName, cat, itemName, "set",
                                                     newCount)
-                                            .thenAccept(success -> {
-                                                if (success) {
+                                            .thenAccept(updatedCount -> {
+                                                if (updatedCount != null) {
                                                     mc.execute(() -> {
-                                                        count = newCount;
-                                                        updateRngDropCountLocal(cat, itemName, newCount);
+                                                        count = updatedCount;
+                                                        updateRngDropCountLocal(cat, itemName, updatedCount);
                                                         mc.setScreen(RngTabController.this.screen);
                                                     });
                                                 }
@@ -597,8 +606,17 @@ public class RngTabController extends ProfileTabController {
             }
 
             if (visible && isMouseOver(mouseX, mouseY) && button == 0) {
-                expanded = !expanded;
-                return true;
+                try {
+                    String currentPlayer = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                    boolean isDev = org.blackum.blackaddons.config.ConfigManager.developerKey != null
+                            && !org.blackum.blackaddons.config.ConfigManager.developerKey.isEmpty();
+
+                    if (isDev || currentPlayer.equalsIgnoreCase(RngTabController.this.playerName)) {
+                        expanded = !expanded;
+                        return true;
+                    }
+                } catch (Exception e) {
+                }
             }
             return false;
         }
