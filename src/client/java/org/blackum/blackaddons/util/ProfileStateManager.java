@@ -181,7 +181,10 @@ public class ProfileStateManager {
     public CompletableFuture<Integer> updateRngCount(String player, String category, String item, String action,
             Integer count) {
         String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-        if (!player.equalsIgnoreCase(currentUser)) {
+        boolean isDev = org.blackum.blackaddons.config.ConfigManager.developerKey != null
+                && !org.blackum.blackaddons.config.ConfigManager.developerKey.isEmpty();
+
+        if (!isDev && !player.equalsIgnoreCase(currentUser)) {
             return CompletableFuture.completedFuture(null);
         }
 

@@ -45,6 +45,7 @@ public class BlackAddonsGUI extends BaseScreen {
         addWidget(tabPanel);
 
         initSettingsTab();
+
         initModHiderTab();
         initCheatsTab();
         initLegitTab();
@@ -88,18 +89,18 @@ public class BlackAddonsGUI extends BaseScreen {
         dataSourceDropdown.setSelectedOption(ConfigManager.dataSource.name());
         settingsTab.addWidget(dataSourceDropdown);
 
-        settingsTab.addWidget(new Label(contentX, contentY + 60, "Developer Key", Label.Style.TITLE));
-        TextField devKeyField = new TextField(contentX, contentY + 90, 200, "Enter key...");
+        settingsTab.addWidget(new Label(contentX, contentY + 80, "Developer Key", Label.Style.TITLE));
+        TextField devKeyField = new TextField(contentX, contentY + 110, 200, "Enter key...");
         devKeyField.setText(ConfigManager.developerKey);
         settingsTab.addWidget(devKeyField);
 
-        Button saveKeyBtn = new Button(contentX + 210, contentY + 90, 60, "Save", () -> {
+        Button saveKeyBtn = new Button(contentX + 210, contentY + 110, 60, "Save", () -> {
             ConfigManager.developerKey = devKeyField.getText();
             ConfigManager.save();
         });
         settingsTab.addWidget(saveKeyBtn);
 
-        int offsetY = 140;
+        int offsetY = 160;
 
         settingsTab.addWidget(new Label(contentX, contentY + offsetY, "App Appearance", Label.Style.TITLE));
 
