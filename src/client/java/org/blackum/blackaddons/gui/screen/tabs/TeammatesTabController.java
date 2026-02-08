@@ -11,23 +11,32 @@ import org.blackum.blackaddons.model.Teammate;
 import org.blackum.blackaddons.util.JsonUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+
+import org.blackum.blackaddons.gui.theme.Theme;
 
 public class TeammatesTabController extends ProfileTabController {
 
     private List<Teammate> allTeammates = new ArrayList<>();
     private String filterClass = "All";
     private String filterTime = "Any";
-    private String filterSort = "Runs";
+
+    private SortColumn currentSort = SortColumn.RUNS;
+    private boolean sortAsc = false;
 
     private TextField searchField;
     private ListView teammatesList;
     private String lastSearchText = "";
 
-    private static final int COL_IGN = 100;
+    private static final int COL_IGN = 90;
     private static final int COL_RUNS = 40;
     private static final int COL_CLASS = 80;
-    private static final int COL_FLOOR = 35;
+    private static final int COL_FLOOR = 45;
+
+    private enum SortColumn {
+        IGN, RUNS, CLASS, FLOOR, LAST_SEEN
+    }
 
     public TeammatesTabController(ProfileViewerScreen screen, JsonObject profileData) {
         super(screen, profileData);
@@ -46,7 +55,7 @@ public class TeammatesTabController extends ProfileTabController {
 
         int btnY = startY;
         int btnH = controlsHeight;
-        int btnW = 75;
+        int btnW = 90;
         int btnGap = 5;
 
         int currentBtnX = tab.getParent().getContentX() + 120 + btnGap;
@@ -83,44 +92,82 @@ public class TeammatesTabController extends ProfileTabController {
             public void render(GuiGraphics g, int x, int y, float p) {
             }
         });
-        currentBtnX += btnW + btnGap;
-
-        Button sortBtn = new Button(currentBtnX, btnY, btnW, btnH, "Sort: Runs", () -> {
-            cycleSortFilter();
-            updateTeammatesList();
-        });
-        tab.addWidget(sortBtn);
-        tab.addWidget(new Widget(0, 0, 0, 0) {
-            @Override
-            public void tick() {
-                sortBtn.setText("Sort: " + filterSort);
-            }
-
-            @Override
-            public void render(GuiGraphics g, int x, int y, float p) {
-            }
-        });
 
         int headerY = startY + controlsHeight + 10;
         int headerX = tab.getParent().getContentX();
+
         tab.addWidget(new Widget(headerX, headerY, contentWidth - 20, 15) {
             @Override
-            public void render(GuiGraphics graphics, int mouseX, int mouseY,
-                    float partialTick) {
+            public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
                 int x = this.x + 2;
-                graphics.drawString(Minecraft.getInstance().font, "§7IGN", x, y + 4, 0xFFFFFFFF);
+                drawHeader(graphics, "IGN", x, COL_IGN, SortColumn.IGN);
                 x += COL_IGN;
-                graphics.drawString(Minecraft.getInstance().font, "§7Runs", x, y + 4, 0xFFFFFFFF);
+                drawHeader(graphics, "Runs", x, COL_RUNS, SortColumn.RUNS);
                 x += COL_RUNS;
-                graphics.drawString(Minecraft.getInstance().font, "§7Class", x, y + 4, 0xFFFFFFFF);
+                drawHeader(graphics, "Class", x, COL_CLASS, SortColumn.CLASS);
                 x += COL_CLASS;
-                graphics.drawString(Minecraft.getInstance().font, "§7Floor", x, y + 4, 0xFFFFFFFF);
+                drawHeader(graphics, "Floor", x, COL_FLOOR, SortColumn.FLOOR);
                 x += COL_FLOOR;
-                graphics.drawString(Minecraft.getInstance().font, "§7Last Seen", x, y + 4, 0xFFFFFFFF);
+                drawHeader(graphics, "Last Seen", x, 100, SortColumn.LAST_SEEN);
 
                 graphics.fill(this.x, this.y + 14, this.x + width, this.y + 15, 0x40FFFFFF);
             }
+
+            private void drawHeader(GuiGraphics g, String text, int x, int w, SortColumn col) {
+                int color = 0xFFFFFFFF;
+                if (currentSort == col) {
+                    color = Theme.ACCENT;
+                    String arrow = sortAsc ? " ▲" : " ▼";
+                    text += arrow;
+                }
+                g.drawString(Minecraft.getInstance().font, text, x, y + 4, color);
+            }
+
+            @Override
+            public boolean mouseClicked(double mouseX, double mouseY, int button) {
+                if (button == 0 && isMouseOver(mouseX, mouseY)) {
+                    int relX = (int) (mouseX - this.x - 2);
+                    SortColumn clicked = null;
+
+                    int currentX = 0;
+                    if (relX >= currentX && relX < currentX + COL_IGN)
+                        clicked = SortColumn.IGN;
+                    currentX += COL_IGN;
+                    if (relX >= currentX && relX < currentX + COL_RUNS)
+                        clicked = SortColumn.RUNS;
+                    currentX += COL_RUNS;
+                    if (relX >= currentX && relX < currentX + COL_CLASS)
+                        clicked = SortColumn.CLASS;
+                    currentX += COL_CLASS;
+                    if (relX >= currentX && relX < currentX + COL_FLOOR)
+                        clicked = SortColumn.FLOOR;
+                    currentX += COL_FLOOR;
+                    if (relX >= currentX)
+                        clicked = SortColumn.LAST_SEEN;
+
+                    if (clicked != null) {
+                        if (currentSort == clicked) {
+                            sortAsc = !sortAsc;
+                        } else {
+                            currentSort = clicked;
+                            if (clicked == SortColumn.IGN || clicked == SortColumn.CLASS
+                                    || clicked == SortColumn.FLOOR) {
+                                sortAsc = true;
+                            } else {
+                                sortAsc = false;
+                            }
+                        }
+                        Minecraft.getInstance().getSoundManager()
+                                .play(net.minecraft.client.resources.sounds.SimpleSoundInstance
+                                        .forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                        updateTeammatesList();
+                        return true;
+                    }
+                }
+                return false;
+            }
         });
+
         teammatesList = new ListView(tab.getParent().getContentX(), headerY + 15,
                 contentWidth - 20, tab.getParent().getContentHeight() - controlsHeight - 10 - 15);
         teammatesList.setItemSpacing(0);
@@ -188,10 +235,6 @@ public class TeammatesTabController extends ProfileTabController {
         }
     }
 
-    private void cycleSortFilter() {
-        filterSort = filterSort.equals("Runs") ? "Recent" : "Runs";
-    }
-
     private void updateTeammatesList() {
         if (teammatesList == null)
             return;
@@ -222,11 +265,21 @@ public class TeammatesTabController extends ProfileTabController {
             filtered.add(tm);
         }
 
-        if (filterSort.equals("Runs")) {
-            filtered.sort((t1, t2) -> Integer.compare(t2.count, t1.count));
-        } else {
-            filtered.sort((t1, t2) -> Long.compare(t2.lastTs, t1.lastTs));
+        Comparator<Teammate> comparator;
+        switch (currentSort) {
+            case IGN -> comparator = Comparator.comparing(t -> t.ign.toLowerCase());
+            case CLASS -> comparator = Comparator.comparing(t -> t.lastClass);
+            case FLOOR -> comparator = Comparator.comparing(t -> t.lastFloor);
+            case LAST_SEEN -> comparator = Comparator.comparingLong(t -> t.lastTs);
+            case RUNS -> comparator = Comparator.comparingInt(t -> t.count);
+            default -> comparator = Comparator.comparingInt(t -> t.count);
         }
+
+        if (!sortAsc) {
+            comparator = comparator.reversed();
+        }
+
+        filtered.sort(comparator);
 
         if (filtered.isEmpty()) {
             teammatesList.addItem(new Widget(0, 0, 0, 5) {
