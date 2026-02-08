@@ -100,6 +100,19 @@ public class LocalRngManager {
         save();
     }
 
+    public int getDropCount(String category, String item) {
+        if (data.has("drops")) {
+            JsonObject drops = data.getAsJsonObject("drops");
+            if (drops.has(category)) {
+                JsonObject catDrops = drops.getAsJsonObject(category);
+                if (catDrops.has(item)) {
+                    return catDrops.get(item).getAsInt();
+                }
+            }
+        }
+        return 0;
+    }
+
     public JsonObject getRngData() {
         return data;
     }

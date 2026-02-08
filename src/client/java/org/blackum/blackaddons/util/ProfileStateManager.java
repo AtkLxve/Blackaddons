@@ -178,11 +178,24 @@ public class ProfileStateManager {
         });
     }
 
-    public CompletableFuture<Boolean> updateRngCount(String player, String category, String item, String action,
+    public CompletableFuture<Integer> updateRngCount(String player, String category, String item, String action,
             Integer count) {
         String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
         if (!player.equalsIgnoreCase(currentUser)) {
-            return CompletableFuture.completedFuture(false);
+            return CompletableFuture.completedFuture(null);
+        }
+
+        final int fallbackCount;
+        if ("set".equals(action) && count != null) {
+            fallbackCount = count;
+        } else if ("increment".equals(action)) {
+            int current = org.blackum.blackaddons.features.LocalRngManager.getInstance().getDropCount(category, item);
+            fallbackCount = current + 1;
+        } else if ("decrement".equals(action)) {
+            int current = org.blackum.blackaddons.features.LocalRngManager.getInstance().getDropCount(category, item);
+            fallbackCount = Math.max(0, current - 1);
+        } else {
+            fallbackCount = -1;
         }
 
         if ("set".equals(action) && count != null) {
@@ -195,15 +208,35 @@ public class ProfileStateManager {
 
         rngCache.remove(player.toLowerCase());
 
-        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.BOT) {
-            return BotIntegration.updateRngDrop(player, category, item, action, count)
-                    .exceptionally(e -> false)
-                    .thenApply(success -> {
-                        return true;
-                    });
-        }
+        return BotIntegration.updateRngDrop(player, category, item, action, count)
+                .thenApply(newCount -> {
+                    if (newCount == null) {
+                        org.blackum.blackaddons.Blackaddons.LOGGER
+                                .warn("Failed to sync RNG drop with bot. Using local value.");
+                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                                "Rng Sync Failed",
+                                "Saved locally. Bot unreachable.",
+                                org.blackum.blackaddons.gui.notification.NotificationType.WARNING);
+                        return fallbackCount != -1 ? fallbackCount : null;
+                    }
 
-        return CompletableFuture.completedFuture(true);
+                    if (newCount != -1) {
+                        org.blackum.blackaddons.features.LocalRngManager.getInstance().setDropCount(category, item,
+                                newCount);
+                        return newCount;
+                    }
+
+                    return null;
+                })
+                .exceptionally(e -> {
+                    org.blackum.blackaddons.Blackaddons.LOGGER
+                            .error("Error syncing RNG drop with bot: " + e.getMessage());
+                    org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                            "Rng Sync Error",
+                            "Saved locally. Error: " + e.getMessage(),
+                            org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                    return fallbackCount != -1 ? fallbackCount : null;
+                });
     }
 
     public void clearCache(String player) {

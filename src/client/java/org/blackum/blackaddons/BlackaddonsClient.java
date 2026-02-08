@@ -12,6 +12,9 @@ public class BlackaddonsClient implements ClientModInitializer {
         Blackaddons.LOGGER.info("Initializing client...");
         org.blackum.blackaddons.cheats.AutoTNT.register();
         org.blackum.blackaddons.config.ConfigManager.load();
+
+        org.blackum.blackaddons.util.BotIntegration.fetchVerificationKey();
+
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
             client.execute(() -> {
@@ -359,6 +362,10 @@ public class BlackaddonsClient implements ClientModInitializer {
             if (result == null) {
                 mc.gui.getChat().addMessage(
                         net.minecraft.network.chat.Component.literal("§c[BlackAddons] Failed to fetch data."));
+                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        "Profile Error",
+                        "Failed to fetch data from API.",
+                        org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
                 return;
             }
 
@@ -366,6 +373,10 @@ public class BlackaddonsClient implements ClientModInitializer {
                 String err = result.getError();
                 mc.gui.getChat()
                         .addMessage(net.minecraft.network.chat.Component.literal("§c[BlackAddons] Error: " + err));
+                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        "Profile Error",
+                        err,
+                        org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
                 return;
             }
 
@@ -373,6 +384,10 @@ public class BlackaddonsClient implements ClientModInitializer {
             if (data == null) {
                 mc.gui.getChat().addMessage(
                         net.minecraft.network.chat.Component.literal("§c[BlackAddons] Invalid response format."));
+                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        "Profile Error",
+                        "Invalid response format.",
+                        org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
                 return;
             }
 
@@ -384,6 +399,10 @@ public class BlackaddonsClient implements ClientModInitializer {
         }).exceptionally(e -> {
             mc.gui.getChat().addMessage(
                     net.minecraft.network.chat.Component.literal("§c[BlackAddons] Exception: " + e.getMessage()));
+            org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                    "Profile Exception",
+                    e.getMessage(),
+                    org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
             return null;
         });
     }
