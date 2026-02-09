@@ -66,6 +66,8 @@ public class ConfigManager {
     public static String developerKey = "";
     public static boolean useCardLayout = true;
 
+    public static Map<String, String> knownAliases = new HashMap<>();
+
     public static class ConfigData {
         public int overlayX = 5;
         public int overlayY = 5;
@@ -91,11 +93,9 @@ public class ConfigManager {
         public ArrayList<String> modHiderAllowedCustomPayloadChannels = new ArrayList<>();
 
         // Cheats
-        // AutoTNT
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 5;
         public int UnequipDelay = 8;
-
         public boolean SwapBack = false;
 
         // Legit
@@ -105,6 +105,7 @@ public class ConfigManager {
         public int notificationDuration = 4000;
         public int cacheDurationMinutes = 5;
 
+        public Map<String, String> knownAliases = new HashMap<>();
     }
 
     public static void save() {
@@ -131,13 +132,14 @@ public class ConfigManager {
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
         data.UnequipDelay = CheatsOptions.UnequipDelay;
-
         data.SwapBack = CheatsOptions.SwapBack;
 
         data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
         data.cacheDurationMinutes = GeneralOptions.CACHE_DURATION_MINUTES;
+
+        data.knownAliases = new HashMap<>(ConfigManager.knownAliases);
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -170,13 +172,14 @@ public class ConfigManager {
         data.AutoTNTEnabled = CheatsOptions.AutoTNTEnabled;
         data.AutoTNTDelay = CheatsOptions.AutoTNTDelay;
         data.UnequipDelay = CheatsOptions.UnequipDelay;
-
         data.SwapBack = CheatsOptions.SwapBack;
 
         data.legitFullbrightEnabled = org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled;
 
         data.notificationDuration = GeneralOptions.NOTIFICATION_DURATION;
         data.cacheDurationMinutes = GeneralOptions.CACHE_DURATION_MINUTES;
+
+        data.knownAliases = new HashMap<>(ConfigManager.knownAliases);
 
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(data, writer);
@@ -245,6 +248,9 @@ public class ConfigManager {
 
                 ConfigManager.rngTrackerEnabled = data.rngTrackerEnabled;
                 lastLoadedCardStates = data.cardStates != null ? data.cardStates : new HashMap<>();
+
+                // Sync data map back to local storage
+                ConfigManager.knownAliases = data.knownAliases != null ? data.knownAliases : new HashMap<>();
             }
         } catch (IOException e) {
             Blackaddons.LOGGER.error("Failed to load config", e);

@@ -1,19 +1,22 @@
 package org.blackum.blackaddons;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.minecraft.client.Minecraft;
 
+import org.blackum.blackaddons.features.CommandUtils;
 import org.blackum.blackaddons.gui.screen.DemoScreen;
 import org.blackum.blackaddons.gui.screen.TestMenuScreen;
-import org.blackum.blackaddons.gui.screen.DemoScreen;
-import org.blackum.blackaddons.gui.screen.TestMenuScreen;
+import org.blackum.blackaddons.config.ConfigManager;
 
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Blackaddons.LOGGER.info("Initializing client...");
         org.blackum.blackaddons.cheats.AutoTNT.register();
-        org.blackum.blackaddons.config.ConfigManager.load();
+
+
+        ConfigManager.load();
 
         org.blackum.blackaddons.util.BotIntegration.fetchVerificationKey();
 
@@ -197,7 +200,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         });
 
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            org.blackum.blackaddons.config.ConfigManager.save();
+            ConfigManager.save();
         });
 
         net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT
@@ -336,15 +339,19 @@ public class BlackaddonsClient implements ClientModInitializer {
                                 return 1;
                             });
 
+                    CommandUtils.register(dispatcher);
                     for (String alias : new String[] { "ba", "black", "blackaddons" }) {
-                        var cmd = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                        var cmd = ClientCommandManager
                                 .literal(alias)
                                 .executes(openGui);
                         cmd.then(testNode);
                         cmd.then(pvNode);
                         cmd.then(dailyNode);
+                        cmd.then(CommandUtils.subcommand);
                         dispatcher.register(cmd);
                     }
+
+
                 });
 
         net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.GAME.register((message, overlay) ->
