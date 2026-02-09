@@ -25,7 +25,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      version: ${{ steps.get_version.outputs.version }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - id: get_version
+        run: |
+          VERSION=$(grep "mod_version" gradle.properties | cut -d'=' -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - id: set-matrix
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
@@ -57,7 +66,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '9.2.1'
-          arguments: build
+          arguments: build -Pmod_version=${{ needs.setup.outputs.version }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -130,7 +139,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         id: get_version
         run: |
-          VERSION=$(grep "mod_version" gradle.properties | cut -d'=' -f2)
+          VERSION=${{ needs.setup.outputs.version }}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Current version is $VERSION"
 
