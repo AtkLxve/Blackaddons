@@ -30,6 +30,7 @@ public class PacketLogger {
         new Thread(() -> {
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE, true))) {
                 String timestamp = LocalDateTime.now().format(DATE_FORMAT);
+
                 String id = payload.type().id().toString();
                 String data = payload.toString();
 

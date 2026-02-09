@@ -5,6 +5,8 @@ import net.minecraft.client.Minecraft;
 
 import org.blackum.blackaddons.gui.screen.DemoScreen;
 import org.blackum.blackaddons.gui.screen.TestMenuScreen;
+import org.blackum.blackaddons.gui.screen.DemoScreen;
+import org.blackum.blackaddons.gui.screen.TestMenuScreen;
 
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
@@ -185,6 +187,8 @@ public class BlackaddonsClient implements ClientModInitializer {
         });
 
         net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, partialTick) -> {
+            if (Minecraft.getInstance().screen instanceof org.blackum.blackaddons.gui.screen.BaseScreen)
+                return;
             org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().render(graphics);
         });
 

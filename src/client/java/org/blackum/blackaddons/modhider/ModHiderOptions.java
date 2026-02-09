@@ -4,7 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Ported from ClientSpoofer-1.21.11. Backed by {@link org.blackum.blackaddons.config.ConfigManager}.
+ * Ported from ClientSpoofer-1.21.11. Backed by
+ * {@link org.blackum.blackaddons.config.ConfigManager}.
  */
 public class ModHiderOptions {
     public static SpoofMode SPOOF_MODE = SpoofMode.VANILLA;
@@ -13,6 +14,10 @@ public class ModHiderOptions {
     public static boolean DISABLE_CUSTOM_PAYLOADS = true;
     public static Set<String> ALLOWED_MODS = new HashSet<>();
     public static Set<String> ALLOWED_CUSTOM_PAYLOAD_CHANNELS = new HashSet<>();
+    public static final Set<String> FABRIC_DEFAULT_CHANNELS = Set.of(
+            "fabric:attachment_sync_v1",
+            "fabric:recipe_sync",
+            "fabric-screen-handler-api-v1:open_screen");
 
     public static boolean hideMods() {
         return switch (SPOOF_MODE) {
@@ -22,4 +27,3 @@ public class ModHiderOptions {
         };
     }
 }
-
