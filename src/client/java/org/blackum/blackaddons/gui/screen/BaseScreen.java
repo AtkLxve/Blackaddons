@@ -217,6 +217,8 @@ public abstract class BaseScreen extends Screen {
         }
 
         renderTooltips(graphics, mouseX, mouseY);
+
+        org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().render(graphics);
     }
 
     protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {

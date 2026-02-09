@@ -14,6 +14,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import java.util.HashSet;
 
 @Mixin(Connection.class)
 public class ConnectionMixin {
@@ -60,8 +63,13 @@ public class ConnectionMixin {
                 }
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM &&
                         ModHiderOptions.DISABLE_CUSTOM_PAYLOADS) {
+                    String id = payload.type().id().toString();
+                    if (id.equals("minecraft:register") || id.equals("minecraft:unregister")) {
+                        return;
+                    }
+
                     for (String channel : ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS) {
-                        if (payload.type().id().toString().toLowerCase().startsWith(channel.toLowerCase())) {
+                        if (id.toLowerCase().startsWith(channel.toLowerCase())) {
                             return;
                         }
                     }
@@ -78,4 +86,21 @@ public class ConnectionMixin {
         }
     }
 
+    @ModifyVariable(method = "sendPacket", at = @At("HEAD"), argsOnly = true)
+    private Packet<?> modifyPacket(Packet<?> packet) {
+        if (packet instanceof ServerboundCustomPayloadPacket(CustomPacketPayload payload)) {
+            String id = payload.type().id().toString();
+            if (id.equals("minecraft:register") || id.equals("minecraft:unregister")) {
+                if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM && ModHiderOptions.DISABLE_CUSTOM_PAYLOADS) {
+                    CustomPacketPayload newPayload = org.blackum.blackaddons.util.PayloadHelper.createRegisterPayload(
+                            payload,
+                            new HashSet<>(ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS));
+                    if (newPayload != null) {
+                        return new ServerboundCustomPayloadPacket(newPayload);
+                    }
+                }
+            }
+        }
+        return packet;
+    }
 }

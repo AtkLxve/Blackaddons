@@ -45,7 +45,9 @@ public class BlackAddonsGUI extends BaseScreen {
         addWidget(tabPanel);
 
         initSettingsTab();
+
         initModHiderTab();
+        initPayloadsTab();
         initCheatsTab();
         initLegitTab();
 
@@ -88,18 +90,18 @@ public class BlackAddonsGUI extends BaseScreen {
         dataSourceDropdown.setSelectedOption(ConfigManager.dataSource.name());
         settingsTab.addWidget(dataSourceDropdown);
 
-        settingsTab.addWidget(new Label(contentX, contentY + 60, "Developer Key", Label.Style.TITLE));
-        TextField devKeyField = new TextField(contentX, contentY + 90, 200, "Enter key...");
+        settingsTab.addWidget(new Label(contentX, contentY + 80, "Developer Key", Label.Style.TITLE));
+        TextField devKeyField = new TextField(contentX, contentY + 110, 200, "Enter key...");
         devKeyField.setText(ConfigManager.developerKey);
         settingsTab.addWidget(devKeyField);
 
-        Button saveKeyBtn = new Button(contentX + 210, contentY + 90, 60, "Save", () -> {
+        Button saveKeyBtn = new Button(contentX + 210, contentY + 110, 60, "Save", () -> {
             ConfigManager.developerKey = devKeyField.getText();
             ConfigManager.save();
         });
         settingsTab.addWidget(saveKeyBtn);
 
-        int offsetY = 140;
+        int offsetY = 160;
 
         settingsTab.addWidget(new Label(contentX, contentY + offsetY, "App Appearance", Label.Style.TITLE));
 
@@ -207,8 +209,7 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentWidth = tabPanel.getContentWidth();
 
         Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            resetCardStates("spoofMode", "customClient", "hideMods", "disablePayloads", "allowedChannels",
-                    "allowedMods");
+            resetCardStates("spoofMode", "hideMods", "disablePayloads", "allowedMods");
         });
         modHiderTab.addWidget(resetLayout);
 
@@ -224,17 +225,11 @@ public class BlackAddonsGUI extends BaseScreen {
             spoofModeCard = createSpoofModeCard(col1X, containerY + 20);
             int currentY = containerY + 20 + spoofModeCard.getHeight() + Theme.CARD_SPACING;
 
-            customClientCard = createCustomClientCard(col1X, currentY);
-            currentY += customClientCard.getHeight() + Theme.CARD_SPACING;
-
             hideModsCard = createHideModsCard(col1X, currentY);
             currentY += hideModsCard.getHeight() + Theme.CARD_SPACING;
 
             disablePayloadsCard = createDisablePayloadsCard(col1X, currentY);
             currentY += disablePayloadsCard.getHeight() + Theme.CARD_SPACING;
-
-            allowedChannelsCard = createAllowedChannelsCard(col1X, currentY);
-            currentY += allowedChannelsCard.getHeight() + Theme.CARD_SPACING;
 
             allowedModsCard = createAllowedModsCard(col1X, currentY);
         } else {
@@ -244,26 +239,57 @@ public class BlackAddonsGUI extends BaseScreen {
             spoofModeCard = createSpoofModeCard(col1X, currentY1);
             currentY1 += spoofModeCard.getHeight() + Theme.CARD_SPACING;
 
-            customClientCard = createCustomClientCard(col1X, currentY1);
-            currentY1 += customClientCard.getHeight() + Theme.CARD_SPACING;
-
-            allowedChannelsCard = createAllowedChannelsCard(col1X, currentY1);
+            allowedModsCard = createAllowedModsCard(col1X, currentY1);
 
             hideModsCard = createHideModsCard(col2X, currentY2);
             currentY2 += hideModsCard.getHeight() + Theme.CARD_SPACING;
 
             disablePayloadsCard = createDisablePayloadsCard(col2X, currentY2);
             currentY2 += disablePayloadsCard.getHeight() + Theme.CARD_SPACING;
-
-            allowedModsCard = createAllowedModsCard(col2X, currentY2);
         }
 
         modHiderCardContainer.addCard(spoofModeCard);
-        modHiderCardContainer.addCard(customClientCard);
         modHiderCardContainer.addCard(hideModsCard);
         modHiderCardContainer.addCard(disablePayloadsCard);
-        modHiderCardContainer.addCard(allowedChannelsCard);
         modHiderCardContainer.addCard(allowedModsCard);
+    }
+
+    private void initPayloadsTab() {
+        if (!ConfigManager.useCardLayout) {
+            return;
+        }
+
+        TabPanel.Tab payloadsTab = tabPanel.addTab("Payloads");
+
+        int contentX = tabPanel.getContentX();
+        int contentY = tabPanel.getContentY();
+        int contentWidth = tabPanel.getContentWidth();
+
+        Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
+            resetCardStates("customClient", "allowedChannels");
+        });
+        payloadsTab.addWidget(resetLayout);
+
+        CardContainer payloadsCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
+        payloadsTab.addWidget(payloadsCardContainer);
+
+        int containerY = contentY + 30;
+        boolean isSingleColumn = contentWidth < 680;
+        int col1X = contentX + 20;
+        int col2X = contentX + 340;
+
+        if (isSingleColumn) {
+            customClientCard = createCustomClientCard(col1X, containerY + 20);
+            int currentY = containerY + 20 + customClientCard.getHeight() + Theme.CARD_SPACING;
+
+            allowedChannelsCard = createPayloadChannelsCard(col1X, currentY);
+        } else {
+            customClientCard = createCustomClientCard(col1X, containerY + 20);
+            allowedChannelsCard = createPayloadChannelsCard(col2X, containerY + 20);
+        }
+
+        payloadsCardContainer.addCard(customClientCard);
+        payloadsCardContainer.addCard(allowedChannelsCard);
     }
 
     private void initModHiderTabLegacy() {
@@ -460,6 +486,9 @@ public class BlackAddonsGUI extends BaseScreen {
         Button applyCustomClient = new Button(contentX + 190, contentY + 30, 70, "Apply", () -> {
             ModHiderOptions.CUSTOM_CLIENT = customClient.getText().isBlank() ? "fabric" : customClient.getText();
             ConfigManager.save();
+            org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                    "BlackAddons", "Saved custom client brand!",
+                    org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
         });
         customClientCard.addChild(applyCustomClient);
 
@@ -505,49 +534,56 @@ public class BlackAddonsGUI extends BaseScreen {
         return disablePayloadsCard;
     }
 
-    private ResizableCard createAllowedChannelsCard(int x, int y) {
-        allowedChannelsCard = createResizableCard("allowedChannels", x, y, 300, 220, "Allowed Payload Channels");
+    private ResizableCard createPayloadChannelsCard(int x, int y) {
+        allowedChannelsCard = createResizableCard("allowedChannels", x, y, 300, 300, "Registered Channels Modifier");
 
         int contentX = allowedChannelsCard.getContentX();
         int contentY = allowedChannelsCard.getContentY();
 
         Label description = new Label(contentX, contentY,
-                "Whitelist custom payload channels (CUSTOM mode)", Label.Style.BODY);
+                "One channel per line. Example: fabric:recipe_sync", Label.Style.BODY);
         allowedChannelsCard.addChild(description);
 
-        TextField channelField = new TextField(contentX, contentY + 30, 180, "example: minecraft:register");
-        allowedChannelsCard.addChild(channelField);
+        CodeEditorWidget codeEditor = new CodeEditorWidget(contentX, contentY + 30, 260, 170);
+        String initialText = String.join("\n", ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS);
+        codeEditor.setText(initialText);
+        allowedChannelsCard.addChild(codeEditor);
 
-        Button addChannel = new Button(contentX + 190, contentY + 30, 90, "Add", () -> {
-            String val = channelField.getText() == null ? "" : channelField.getText().trim();
-            if (!val.isBlank()) {
-                ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.add(val);
-                channelField.setText("");
-                ConfigManager.save();
+        Button saveBtn = new Button(contentX, contentY + 210, 125, "Save", () -> {
+            String text = codeEditor.getText();
+            ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.clear();
+            if (text != null && !text.isBlank()) {
+                String[] lines = text.split("\n", -1);
+                for (String line : lines) {
+                    if (!line.trim().isEmpty()) {
+                        ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.add(line.trim());
+                    }
+                }
             }
+            ConfigManager.save();
+            org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                    "BlackAddons", "Saved registered channels!",
+                    org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
         });
-        allowedChannelsCard.addChild(addChannel);
+        allowedChannelsCard.addChild(saveBtn);
 
-        ListView channelsList = new ListView(contentX, contentY + 70, 260, 110);
-        allowedChannelsCard.addChild(channelsList);
-
-        rebuildChannelsList(channelsList);
-
-        allowedChannelsCard.addChild(new Widget(0, 0, 0, 0) {
-            private int lastSize = -1;
-
-            @Override
-            public void tick() {
-                if (lastSize != ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size()) {
-                    lastSize = ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size();
-                    rebuildChannelsList(channelsList);
+        Button addDefaultsBtn = new Button(contentX + 135, contentY + 210, 125, "+ Fabric Default", () -> {
+            StringBuilder sb = new StringBuilder();
+            if (!codeEditor.getText().isEmpty()) {
+                sb.append(codeEditor.getText());
+                if (!codeEditor.getText().endsWith("\n")) {
+                    sb.append("\n");
                 }
             }
 
-            @Override
-            public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
+            for (String ch : ModHiderOptions.FABRIC_DEFAULT_CHANNELS) {
+                if (!ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.contains(ch)) {
+                    sb.append(ch).append("\n");
+                }
             }
+            codeEditor.setText(sb.toString());
         });
+        allowedChannelsCard.addChild(addDefaultsBtn);
 
         allowedChannelsCard.updateLayout();
         return allowedChannelsCard;

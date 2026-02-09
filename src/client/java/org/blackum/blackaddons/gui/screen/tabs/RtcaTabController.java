@@ -9,6 +9,8 @@ import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.util.BotIntegration;
 import org.blackum.blackaddons.util.FormatUtils;
 import org.blackum.blackaddons.util.JsonUtils;
+import org.blackum.blackaddons.util.CatacombsUtils;
+import org.blackum.blackaddons.util.DungeonUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ public class RtcaTabController extends ProfileTabController {
     private ListView simResultsList;
     private Button simulateBtn;
     private Dropdown rtcaFloorDropdown;
+    private TextField desiredLvlField;
 
     private boolean simRing = true;
     private int simHecatombLvl = 10;
@@ -43,11 +46,21 @@ public class RtcaTabController extends ProfileTabController {
         int cx = tab.getParent().getContentX();
         int cy = tab.getParent().getContentY();
 
-        Label settingsLabel = new Label(cx, cy, "§lSimulation Settings", Label.Style.TITLE);
+        Label settingsLabel = new Label(cx, cy, "§lConfiguration", Label.Style.TITLE);
         settingsLabel.setColor(Theme.ACCENT);
         tab.addWidget(settingsLabel);
 
         int currentY = cy + 25;
+        currentY = initControls(tab, cx, currentY, w);
+
+        int listHeight = tab.getParent().getMaxContentHeight() - (currentY - cy) - 5;
+        simResultsList = new ListView(cx, currentY, w - 10, Math.max(100, listHeight));
+        addSectionHeader(simResultsList, "Results");
+        tab.addWidget(simResultsList);
+    }
+
+    private int initControls(TabPanel.Tab tab, int cx, int y, int w) {
+        int currentY = y;
         int btnW = (w - 30) / 2;
         int btnH = 20;
 
@@ -122,28 +135,29 @@ public class RtcaTabController extends ProfileTabController {
         }));
         currentY += btnH + 10;
 
-        rtcaFloorDropdown = new Dropdown(cx, currentY, w - 20, 20, "Floor: M7", FLOOR_OPTIONS, (val) -> {
+        rtcaFloorDropdown = new Dropdown(cx, currentY, (w - 30) / 2, 20, "Floor: M7", FLOOR_OPTIONS, (val) -> {
             rtcaFloor = val;
             updateSimulateButtonText();
         });
         rtcaFloorDropdown.setSelectedOption(rtcaFloor);
         tab.addWidget(rtcaFloorDropdown);
+
+        desiredLvlField = new TextField(cx + (w - 30) / 2 + 10, currentY, (w - 30) / 2, 20, "Desired Lvl (50)");
+        desiredLvlField.setText("50");
+        tab.addWidget(desiredLvlField);
+
         currentY += 25;
 
-        simulateBtn = new Button(cx, currentY, w - 20, 20, "Simulate Runs (" + rtcaFloor + ")", this::runSimulation);
+        simulateBtn = new Button(cx, currentY, w - 20, 20, "Simulate & Calculate (" + rtcaFloor + ")",
+                this::runSimulation);
         tab.addWidget(simulateBtn);
-        currentY += 25;
 
-        int listY = currentY;
-        int listHeight = tab.getParent().getMaxContentHeight() - (listY - cy) - 10;
-        simResultsList = new ListView(cx, listY, w - 10, listHeight);
-        addSectionHeader(simResultsList, "Results");
-        tab.addWidget(simResultsList);
+        return currentY + 25;
     }
 
     private void updateSimulateButtonText() {
         if (simulateBtn != null) {
-            simulateBtn.setText("Simulate Runs (" + rtcaFloor + ")");
+            simulateBtn.setText("Simulate & Calculate (" + rtcaFloor + ")");
         }
     }
 
@@ -196,6 +210,60 @@ public class RtcaTabController extends ProfileTabController {
         return String.valueOf(num);
     }
 
+    private void renderCalculatorResults() {
+        if (simResultsList == null)
+            return;
+
+        try {
+            String targetText = desiredLvlField.getText();
+            if (targetText != null && !targetText.isEmpty()) {
+                double targetLvl = Double.parseDouble(targetText);
+
+                double cataXp = 0;
+                if (profileData != null && profileData.has("catacombs")) {
+                    cataXp = profileData.get("catacombs").getAsDouble();
+                }
+                double curLvlVal = DungeonUtils.getCataLevel(cataXp);
+
+                double ringVal = simRing ? 0.1 : 0.0;
+                double calcHeca = simHecatombLvl > 0 ? 0.004 + (simHecatombLvl * 0.0016) : 0;
+                double[] globalVals = { 1.0, 1.05, 1.1, 1.15, 1.2, 1.3 };
+                double calcGlobal = globalVals[simGlobalIndex];
+                double[] mayorVals = { 1.0, 1.5, 1.55 };
+                double calcMayor = mayorVals[simMayorIndex];
+
+                double xpPerRun = CatacombsUtils.calculateDungeonXpPerRun(rtcaFloor, ringVal, calcHeca, calcGlobal,
+                        calcMayor);
+
+                addSectionHeader(simResultsList, "Goal Progress (Level " + (int) targetLvl + ")");
+                addInfoRow(simResultsList, "Current Level:", String.format("%.2f", curLvlVal));
+                addInfoRow(simResultsList, "Est. XP/Run:", String.format("%,.0f", xpPerRun));
+
+                double targetXp = CatacombsUtils.getTotalXpForLevel(targetLvl);
+                if (cataXp >= targetXp) {
+                    addInfoRow(simResultsList, "Runs Needed:", "0 (Reached!)");
+                } else {
+                    double remaining = targetXp - cataXp;
+                    if (xpPerRun > 0) {
+                        long runs = (long) Math.ceil(remaining / xpPerRun);
+                        addInfoRow(simResultsList, "Runs Needed:", String.format("%,d", runs));
+                        addInfoRow(simResultsList, "Remaining XP:", FormatUtils.formatNumber(remaining));
+                    } else {
+                        addInfoRow(simResultsList, "Runs Needed:", "? (XP=0)");
+                    }
+                }
+
+                simResultsList.addItem(new Widget(0, 0, 0, 5) {
+                    @Override
+                    public void render(GuiGraphics g, int x, int y, float p) {
+                    }
+                });
+            }
+        } catch (Exception e) {
+            addInfoRow(simResultsList, "Calc Error:", "Invalid Input");
+        }
+    }
+
     private void runSimulation() {
         if (simResultsList != null)
             simResultsList.clearItems();
@@ -207,8 +275,7 @@ public class RtcaTabController extends ProfileTabController {
             return;
         }
 
-        if (simResultsList != null)
-            addInfoRow(simResultsList, "Status:", "Requesting API...");
+        renderCalculatorResults();
 
         Map<String, Double> bonuses = new HashMap<>();
         bonuses.put("ring", simRing ? 0.1 : 0.0);
@@ -238,17 +305,15 @@ public class RtcaTabController extends ProfileTabController {
                 return;
             }
 
-            if (simResultsList != null) {
-                simResultsList.clearItems();
-                addInfoRow(simResultsList, "Status:", "Simulating locally...");
-            }
-
             org.blackum.blackaddons.util.LocalRtcaService.simulate(rtcaFloor, currentClassXp, bonuses)
                     .thenAccept(json -> {
                         Minecraft.getInstance().execute(() -> {
                             if (simResultsList == null)
                                 return;
+
                             simResultsList.clearItems();
+                            renderCalculatorResults();
+
                             processRtcaResults(json);
                         });
                     });
@@ -259,7 +324,9 @@ public class RtcaTabController extends ProfileTabController {
             Minecraft.getInstance().execute(() -> {
                 if (simResultsList == null)
                     return;
+
                 simResultsList.clearItems();
+                renderCalculatorResults();
 
                 if (json == null) {
                     addInfoRow(simResultsList, "Error:", "API Unavailable or Failed.");
@@ -300,9 +367,17 @@ public class RtcaTabController extends ProfileTabController {
                 });
                 return;
             }
+
+            simResultsList.addItem(new Widget(0, 0, 0, 5) {
+                @Override
+                public void render(GuiGraphics g, int x, int y, float p) {
+                }
+            });
+            addSectionHeader(simResultsList, "Class Simulation");
+
             addInfoRow(simResultsList, "Total Runs Needed:", String.format("%,d", totalRuns));
 
-            simResultsList.addItem(new Widget(0, 0, 0, 10) {
+            simResultsList.addItem(new Widget(0, 0, 0, 5) {
 
                 @Override
                 public void render(GuiGraphics g, int x, int y, float p) {
@@ -338,7 +413,7 @@ public class RtcaTabController extends ProfileTabController {
                 simResultsList.addItem(row);
             }
 
-            simResultsList.addItem(new Widget(0, 0, 0, 10) {
+            simResultsList.addItem(new Widget(0, 0, 0, 5) {
                 @Override
                 public void render(GuiGraphics g, int x, int y, float p) {
                 }

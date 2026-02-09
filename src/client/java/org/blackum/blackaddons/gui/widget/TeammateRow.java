@@ -13,10 +13,10 @@ public class TeammateRow extends Widget {
     private Animation hoverAnimation;
     private final Button inviteBtn;
 
-    public static final int COL_IGN = 100;
+    public static final int COL_IGN = 90;
     public static final int COL_RUNS = 40;
     public static final int COL_CLASS = 80;
-    public static final int COL_FLOOR = 35;
+    public static final int COL_FLOOR = 45;
 
     public TeammateRow(int width, Teammate tm) {
         super(0, 0, width, 18);
