@@ -1,10 +1,11 @@
 package org.blackum.blackaddons.util;
 
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,9 +14,29 @@ public class PayloadHelper {
     public static CustomPacketPayload createRegisterPayload(CustomPacketPayload original, Set<String> channels) {
         try {
             Class<?> clazz = original.getClass();
+            Object sampleId = original.type().id();
+            Class<?> idClass = sampleId.getClass();
 
-            List<Identifier> idList = channels.stream()
-                    .map(s -> Identifier.tryParse(s))
+            Method tryParse = null;
+            try {
+                tryParse = idClass.getMethod("tryParse", String.class);
+            } catch (NoSuchMethodException e) {
+                org.blackum.blackaddons.Blackaddons.LOGGER
+                        .error("[ModHider] Could not find tryParse in " + idClass.getName());
+                ReflectionDump.dumpClass(idClass);
+                return null;
+            }
+
+            final Method parseMethod = tryParse;
+
+            List<Object> idList = channels.stream()
+                    .map(s -> {
+                        try {
+                            return parseMethod.invoke(null, s);
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    })
                     .filter(java.util.Objects::nonNull)
                     .collect(Collectors.toList());
 
@@ -28,7 +49,7 @@ public class PayloadHelper {
                     if (List.class.isAssignableFrom(paramType)) {
                         return (CustomPacketPayload) c.newInstance(idList);
                     } else if (Set.class.isAssignableFrom(paramType)) {
-                        return (CustomPacketPayload) c.newInstance(new java.util.HashSet<>(idList));
+                        return (CustomPacketPayload) c.newInstance(new HashSet<>(idList));
                     } else if (Collection.class.isAssignableFrom(paramType)) {
                         return (CustomPacketPayload) c.newInstance(idList);
                     }
