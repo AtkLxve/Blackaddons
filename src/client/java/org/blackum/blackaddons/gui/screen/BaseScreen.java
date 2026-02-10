@@ -1,11 +1,14 @@
 package org.blackum.blackaddons.gui.screen;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.*;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.Widget;
+import org.blackum.blackaddons.gui.util.RenderHelper;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +64,7 @@ public abstract class BaseScreen extends Screen {
     @Override
     public void onClose() {
         if (parent != null) {
-            net.minecraft.client.Minecraft.getInstance().setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
         } else {
             super.onClose();
         }
@@ -149,7 +152,7 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        Minecraft mc = Minecraft.getInstance();
         double windowWidth = mc.getWindow().getScreenWidth();
         double windowHeight = mc.getWindow().getScreenHeight();
         double scaledWidth = this.width;
@@ -160,7 +163,7 @@ public abstract class BaseScreen extends Screen {
 
         super.render(graphics, mouseX, mouseY, partialTick);
 
-        org.blackum.blackaddons.gui.util.RenderHelper.renderSurface(
+        RenderHelper.renderSurface(
                 graphics, containerX, containerY, containerWidth, containerHeight,
                 Theme.BORDER_RADIUS_LARGE, false);
 
@@ -218,7 +221,7 @@ public abstract class BaseScreen extends Screen {
 
         renderTooltips(graphics, mouseX, mouseY);
 
-        org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().render(graphics);
+        NotificationManager.getInstance().render(graphics);
     }
 
     protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
@@ -243,7 +246,7 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean pressed) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        Minecraft mc = Minecraft.getInstance();
         double windowWidth = mc.getWindow().getScreenWidth();
         double windowHeight = mc.getWindow().getScreenHeight();
         double scaledWidth = this.width;
@@ -257,7 +260,7 @@ public abstract class BaseScreen extends Screen {
         if (showClickDebug && mc.player != null) {
             String msg = String.format("§e[Click] Scaled: %.1f,%.1f (Raw: %.1f,%.1f)", mouseX, mouseY,
                     mc.mouseHandler.xpos(), mc.mouseHandler.ypos());
-            mc.player.displayClientMessage(net.minecraft.network.chat.Component.literal(msg), false);
+            mc.player.displayClientMessage(Component.literal(msg), false);
         }
 
         if (canScroll) {
@@ -291,7 +294,7 @@ public abstract class BaseScreen extends Screen {
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         isDraggingScrollbar = false;
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        Minecraft mc = Minecraft.getInstance();
         double mouseX = mc.mouseHandler.xpos() * ((double) this.width / mc.getWindow().getScreenWidth());
         double rawMouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
         double mouseY = rawMouseY + scrollOffset;
@@ -307,7 +310,7 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        Minecraft mc = Minecraft.getInstance();
         double mouseX = mc.mouseHandler.xpos() * ((double) this.width / mc.getWindow().getScreenWidth());
         double rawMouseY = mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
         double mouseY = rawMouseY + scrollOffset;

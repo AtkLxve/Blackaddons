@@ -1,8 +1,11 @@
 package org.blackum.blackaddons.util;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.config.ConfigManager;
+import java.util.Map;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -55,7 +58,7 @@ public class BotIntegration {
         return sendGetRequest(url).thenApply(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
-                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
                     Blackaddons.LOGGER.error("Failed to parse profile stats: " + e.getMessage());
                     return null;
@@ -66,7 +69,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<JsonObject> getRtcaStats(String player, String floor,
-            java.util.Map<String, Double> bonuses) {
+            Map<String, Double> bonuses) {
         if (ConfigManager.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
@@ -76,7 +79,7 @@ public class BotIntegration {
 
         if (bonuses != null && !bonuses.isEmpty()) {
             JsonObject bonusJson = new JsonObject();
-            for (java.util.Map.Entry<String, Double> entry : bonuses.entrySet()) {
+            for (Map.Entry<String, Double> entry : bonuses.entrySet()) {
                 bonusJson.addProperty(entry.getKey(), entry.getValue());
             }
             json.add("bonuses", bonusJson);
@@ -85,7 +88,7 @@ public class BotIntegration {
         return sendPostRequest("/v1/rtca", json.toString()).thenApply(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
-                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
                     Blackaddons.LOGGER.error("Failed to parse RTCA stats: " + res.body());
                     return null;
@@ -102,7 +105,7 @@ public class BotIntegration {
         return sendGetRequest("/v1/rng?player=" + player).thenApply(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
-                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
                     Blackaddons.LOGGER.error("Failed to parse RNG data: " + e.getMessage());
                     return null;
@@ -129,7 +132,7 @@ public class BotIntegration {
         return sendPostRequest("/v1/rng", json.toString()).thenApply(res -> {
             if (res != null && res.statusCode() >= 200 && res.statusCode() < 300) {
                 try {
-                    JsonObject responseJson = com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    JsonObject responseJson = JsonParser.parseString(res.body()).getAsJsonObject();
                     if (responseJson.has("count")) {
                         return responseJson.get("count").getAsInt();
                     }
@@ -150,7 +153,7 @@ public class BotIntegration {
         return sendGetRequest(endpoint).thenApply(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
-                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
                     Blackaddons.LOGGER.error("Failed to parse leaderboard stats: " + e.getMessage());
                     return null;
@@ -168,7 +171,7 @@ public class BotIntegration {
         return sendGetRequest(endpoint).thenApply(res -> {
             if (res != null && (res.statusCode() == 200 || res.statusCode() == 404)) {
                 try {
-                    return com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
                     return null;
                 }
@@ -188,9 +191,9 @@ public class BotIntegration {
         String playerInit = "Unknown";
         String uuidInit = "Unknown";
         try {
-            if (net.minecraft.client.Minecraft.getInstance().getUser() != null) {
-                playerInit = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                uuidInit = net.minecraft.client.Minecraft.getInstance().getUser().getProfileId().toString();
+            if (Minecraft.getInstance().getUser() != null) {
+                playerInit = Minecraft.getInstance().getUser().getName();
+                uuidInit = Minecraft.getInstance().getUser().getProfileId().toString();
             }
         } catch (Exception e) {
         }
@@ -247,9 +250,9 @@ public class BotIntegration {
         String playerInit = "Unknown";
         String uuidInit = "Unknown";
         try {
-            if (net.minecraft.client.Minecraft.getInstance().getUser() != null) {
-                playerInit = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                uuidInit = net.minecraft.client.Minecraft.getInstance().getUser().getProfileId().toString();
+            if (Minecraft.getInstance().getUser() != null) {
+                playerInit = Minecraft.getInstance().getUser().getName();
+                uuidInit = Minecraft.getInstance().getUser().getProfileId().toString();
             }
         } catch (Exception e) {
         }
@@ -303,7 +306,7 @@ public class BotIntegration {
         return sendGetRequest("/v1/key").thenAccept(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
-                    JsonObject json = com.google.gson.JsonParser.parseString(res.body()).getAsJsonObject();
+                    JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
                     if (json.has("key")) {
                         String key = json.get("key").getAsString();
                         EncryptionUtils.setKeyBase64(key);

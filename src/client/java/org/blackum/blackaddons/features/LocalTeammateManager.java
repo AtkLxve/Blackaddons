@@ -12,14 +12,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import net.fabricmc.loader.api.FabricLoader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class LocalTeammateManager {
     private static LocalTeammateManager instance;
-    private static final Path CONFIG_DIR = net.fabricmc.loader.api.FabricLoader.getInstance()
+    private static final Path CONFIG_DIR = FabricLoader.getInstance()
             .getConfigDir().resolve("blackaddons");
     private static final File DATA_FILE = CONFIG_DIR.resolve("teammates.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -205,7 +208,7 @@ public class LocalTeammateManager {
         if (localList == null || localList.isEmpty())
             return botList;
 
-        java.util.Map<String, JsonObject> mergedMap = new java.util.HashMap<>();
+        Map<String, JsonObject> mergedMap = new HashMap<>();
 
         for (JsonElement elem : localList) {
             if (!elem.isJsonObject())

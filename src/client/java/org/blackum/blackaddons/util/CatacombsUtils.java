@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.util;
 
 import java.util.List;
+import java.util.Map;
 
 public class CatacombsUtils {
 
@@ -15,13 +16,13 @@ public class CatacombsUtils {
             19000000.0, 24000000.0, 30000000.0, 38000000.0, 48000000.0, 60000000.0, 75000000.0,
             93000000.0, 116250000.0, 200000000.0);
 
-    private static final java.util.Map<String, Integer> FLOOR_XP_MAP = java.util.Map.ofEntries(
-            java.util.Map.entry("M7", 300000), java.util.Map.entry("M6", 100000), java.util.Map.entry("M5", 70000),
-            java.util.Map.entry("M4", 55000), java.util.Map.entry("M3", 35000), java.util.Map.entry("M2", 20000),
-            java.util.Map.entry("M1", 15000),
-            java.util.Map.entry("F7", 28000), java.util.Map.entry("F6", 4880), java.util.Map.entry("F5", 2400),
-            java.util.Map.entry("F4", 1420), java.util.Map.entry("F3", 560), java.util.Map.entry("F2", 220),
-            java.util.Map.entry("F1", 110), java.util.Map.entry("Entrance", 55));
+    private static final Map<String, Integer> FLOOR_XP_MAP = Map.ofEntries(
+            Map.entry("M7", 300000), Map.entry("M6", 100000), Map.entry("M5", 70000),
+            Map.entry("M4", 55000), Map.entry("M3", 35000), Map.entry("M2", 20000),
+            Map.entry("M1", 15000),
+            Map.entry("F7", 28000), Map.entry("F6", 4880), Map.entry("F5", 2400),
+            Map.entry("F4", 1420), Map.entry("F3", 560), Map.entry("F2", 220),
+            Map.entry("F1", 110), Map.entry("Entrance", 55));
 
     public static double calculateDungeonXpPerRun(String floor, double ring, double hecatomb, double globalMult,
             double mayorMult) {

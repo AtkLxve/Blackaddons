@@ -10,6 +10,11 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
+import net.minecraft.client.Minecraft;
+import org.blackum.blackaddons.util.PacketLogger;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.util.PayloadHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,25 +40,25 @@ public class ConnectionMixin {
 
                 // Firmament stop fedding (in case they change stuff around)
                 // if (payload.type().id().toString().startsWith("firmament")) {
-                // org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("Firmament Block",
+                // PacketLogger.logBlockedPacket("Firmament Block",
                 // payload);
-                // net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                // org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                // Minecraft.getInstance().execute(() -> {
+                // NotificationManager.addNotification(
                 // "Fuck Firmament",
                 // "Blocked Firmament packet: " + payload.type().id(),
-                // org.blackum.blackaddons.gui.notification.NotificationType.WARNING);
+                // NotificationType.WARNING);
                 // });
                 // ci.cancel();
                 // return;
                 // }
 
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.VANILLA) {
-                    org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("ModHider (Vanilla)", payload);
-                    net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                    PacketLogger.logBlockedPacket("ModHider (Vanilla)", payload);
+                    Minecraft.getInstance().execute(() -> {
+                        NotificationManager.addNotification(
                                 "Mod Hider",
                                 "Blocked payload: " + payload.type().id(),
-                                org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+                                NotificationType.INFO);
                     });
                     ci.cancel();
                     return;
@@ -73,12 +78,12 @@ public class ConnectionMixin {
                             return;
                         }
                     }
-                    org.blackum.blackaddons.util.PacketLogger.logBlockedPacket("ModHider (Custom)", payload);
-                    net.minecraft.client.Minecraft.getInstance().execute(() -> {
-                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                    PacketLogger.logBlockedPacket("ModHider (Custom)", payload);
+                    Minecraft.getInstance().execute(() -> {
+                        NotificationManager.addNotification(
                                 "Mod Hider",
                                 "Blocked payload: " + payload.type().id(),
-                                org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+                                NotificationType.INFO);
                     });
                     ci.cancel();
                 }
@@ -92,7 +97,7 @@ public class ConnectionMixin {
             String id = payload.type().id().toString();
             if (id.equals("minecraft:register") || id.equals("minecraft:unregister")) {
                 if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM && ModHiderOptions.DISABLE_CUSTOM_PAYLOADS) {
-                    CustomPacketPayload newPayload = org.blackum.blackaddons.util.PayloadHelper.createRegisterPayload(
+                    CustomPacketPayload newPayload = PayloadHelper.createRegisterPayload(
                             payload,
                             new HashSet<>(ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS));
                     if (newPayload != null) {

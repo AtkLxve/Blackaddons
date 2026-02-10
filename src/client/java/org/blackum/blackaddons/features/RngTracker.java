@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.LocationUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +45,7 @@ public class RngTracker {
 
             Blackaddons.LOGGER.info("RNG Drop Detected: " + item + " (" + rarity + ")");
 
-            String location = org.blackum.blackaddons.util.LocationUtils.getLocation();
+            String location = LocationUtils.getLocation();
 
             String localCat = "Unknown";
             if (location.contains("Catacombs")) {

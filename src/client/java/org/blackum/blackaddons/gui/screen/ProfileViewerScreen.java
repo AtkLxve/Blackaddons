@@ -2,10 +2,18 @@ package org.blackum.blackaddons.gui.screen;
 
 import com.google.gson.JsonObject;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 
 import org.blackum.blackaddons.gui.widget.Label;
 import org.blackum.blackaddons.gui.widget.TabPanel;
+import org.blackum.blackaddons.gui.theme.Theme;
+import org.blackum.blackaddons.gui.util.ConfettiEffect;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.ProfileStateManager;
+import org.blackum.blackaddons.config.ConfigManager;
+import org.blackum.blackaddons.gui.screen.tabs.*;
 
 public class ProfileViewerScreen extends BaseScreen {
     private final String player;
@@ -16,16 +24,16 @@ public class ProfileViewerScreen extends BaseScreen {
     private String errorMessage = null;
     private static int lastTabIndex = 0;
 
-    private org.blackum.blackaddons.gui.screen.tabs.DungeonsTabController dungeonsController;
-    private org.blackum.blackaddons.gui.screen.tabs.TeammatesTabController teammatesController;
-    private org.blackum.blackaddons.gui.screen.tabs.RngTabController rngController;
-    private org.blackum.blackaddons.gui.screen.tabs.DailyTabController dailyController;
-    private org.blackum.blackaddons.gui.screen.tabs.RtcaTabController rtcaController;
+    private DungeonsTabController dungeonsController;
+    private TeammatesTabController teammatesController;
+    private RngTabController rngController;
+    private DailyTabController dailyController;
+    private RtcaTabController rtcaController;
 
     @Override
     protected void initWidgets() {
         if (isLoading) {
-            org.blackum.blackaddons.util.ProfileStateManager.getInstance().getProfile(player, forceUpdate)
+            ProfileStateManager.getInstance().getProfile(player, forceUpdate)
                     .thenAccept(result -> {
                         isLoading = false;
                         if (result.isSuccess()) {
@@ -33,7 +41,7 @@ public class ProfileViewerScreen extends BaseScreen {
                         } else {
                             errorMessage = result.getError();
                         }
-                        net.minecraft.client.Minecraft.getInstance().execute(() -> this.init(this.width, this.height));
+                        Minecraft.getInstance().execute(() -> this.init(this.width, this.height));
                     });
         }
 
@@ -60,38 +68,38 @@ public class ProfileViewerScreen extends BaseScreen {
         addWidget(tabPanel);
 
         if (dungeonsController == null) {
-            dungeonsController = new org.blackum.blackaddons.gui.screen.tabs.DungeonsTabController(this, profileData);
+            dungeonsController = new DungeonsTabController(this, profileData);
         }
         dungeonsController.init(tabPanel.addTab("Dungeons"));
 
         if (teammatesController == null) {
-            teammatesController = new org.blackum.blackaddons.gui.screen.tabs.TeammatesTabController(this, profileData);
+            teammatesController = new TeammatesTabController(this, profileData);
         }
         teammatesController.init(tabPanel.addTab("Recent Teammates"));
 
         if (rngController == null) {
-            rngController = new org.blackum.blackaddons.gui.screen.tabs.RngTabController(this, profileData, player);
+            rngController = new RngTabController(this, profileData, player);
         }
         rngController.init(tabPanel.addTab("RNG"));
 
         if (dailyController == null) {
-            dailyController = new org.blackum.blackaddons.gui.screen.tabs.DailyTabController(this, profileData);
+            dailyController = new DailyTabController(this, profileData);
         }
         dailyController.init(tabPanel.addTab("Leaderboard"));
 
         if (rtcaController == null) {
-            rtcaController = new org.blackum.blackaddons.gui.screen.tabs.RtcaTabController(this, profileData);
+            rtcaController = new RtcaTabController(this, profileData);
         }
         rtcaController.init(tabPanel.addTab("RTCA"));
 
         tabPanel.selectTab(lastTabIndex);
     }
 
-    public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player) {
+    public ProfileViewerScreen(Screen parent, String player) {
         this(parent, player, false, null);
     }
 
-    public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player, boolean force) {
+    public ProfileViewerScreen(Screen parent, String player, boolean force) {
         this(parent, player, force, null);
     }
 
@@ -99,7 +107,7 @@ public class ProfileViewerScreen extends BaseScreen {
         return player;
     }
 
-    public ProfileViewerScreen(net.minecraft.client.gui.screens.Screen parent, String player, boolean force,
+    public ProfileViewerScreen(Screen parent, String player, boolean force,
             JsonObject data) {
         super(Component.literal("Profile: " + player), parent);
         this.player = player;
@@ -111,7 +119,7 @@ public class ProfileViewerScreen extends BaseScreen {
     }
 
     @Override
-    public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderConfetti(graphics);
 
@@ -119,12 +127,12 @@ public class ProfileViewerScreen extends BaseScreen {
             String label = "Viewing: " + player;
             int x = containerX + 10;
             int y = containerY + containerHeight - 25;
-            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, label, x, y,
-                    org.blackum.blackaddons.gui.theme.Theme.TEXT_SECONDARY);
+            graphics.drawString(Minecraft.getInstance().font, label, x, y,
+                    Theme.TEXT_SECONDARY);
 
-            String source = "Source: " + org.blackum.blackaddons.config.ConfigManager.dataSource.name();
-            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font, source, x, y + 10,
-                    org.blackum.blackaddons.gui.theme.Theme.TEXT_SECONDARY);
+            String source = "Source: " + ConfigManager.dataSource.name();
+            graphics.drawString(Minecraft.getInstance().font, source, x, y + 10,
+                    Theme.TEXT_SECONDARY);
         }
     }
 
@@ -146,7 +154,7 @@ public class ProfileViewerScreen extends BaseScreen {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
-    private final org.blackum.blackaddons.gui.util.ConfettiEffect confetti = new org.blackum.blackaddons.gui.util.ConfettiEffect();
+    private final ConfettiEffect confetti = new ConfettiEffect();
 
     public void startConfetti() {
         confetti.start(width, height);
@@ -160,7 +168,7 @@ public class ProfileViewerScreen extends BaseScreen {
         confetti.tick(width, height);
     }
 
-    private void renderConfetti(net.minecraft.client.gui.GuiGraphics graphics) {
+    private void renderConfetti(GuiGraphics graphics) {
         confetti.render(graphics);
     }
 }
