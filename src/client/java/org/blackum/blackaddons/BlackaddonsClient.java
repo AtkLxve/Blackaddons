@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
@@ -18,11 +17,10 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.cheats.AutoTNT;
-import org.blackum.blackaddons.config.ConfigManager;
+import org.blackum.blackaddons.config.ConfigManagerV2;
 import org.blackum.blackaddons.features.CommandUtils;
 import org.blackum.blackaddons.features.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
@@ -42,7 +40,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         Blackaddons.LOGGER.info("Initializing client...");
         AutoTNT.register();
 
-        ConfigManager.load();
+        ConfigManagerV2.load();
 
         BotIntegration.fetchVerificationKey();
 
@@ -226,7 +224,11 @@ public class BlackaddonsClient implements ClientModInitializer {
         });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            ConfigManager.save();
+            ConfigManagerV2.save();
+
+            while (true) {
+                System.out.println("who's closing the game now bitch");
+            }
         });
 
         ClientCommandRegistrationCallback.EVENT

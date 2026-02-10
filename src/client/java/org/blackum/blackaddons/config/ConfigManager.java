@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public class ConfigManager {
+public class _ConfigManager {
 
     private static final String APP_ID = "blackaddons";
     private static final String CONFIG_FILE_NAME = "blackaddons_config.json";

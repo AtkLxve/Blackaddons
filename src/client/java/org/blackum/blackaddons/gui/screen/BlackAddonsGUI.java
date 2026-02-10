@@ -7,6 +7,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import org.blackum.blackaddons.cheats.CheatsOptions;
 import org.blackum.blackaddons.config.ConfigManager;
+import org.blackum.blackaddons.config.ConfigManagerV2;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
@@ -1053,13 +1054,13 @@ public class BlackAddonsGUI extends BaseScreen {
         addCardToMap(states, "autoTnt", autoTntCard);
 
         addCardToMap(states, "fullbright", fullbrightCard);
-        ConfigManager.save(states);
-        ConfigManager.lastLoadedCardStates = states;
+        ConfigManagerV2.save(states);
+        ConfigManagerV2.data.lastLoadedCardStates = states;
     }
 
     private ResizableCard createResizableCard(String id, int defaultX, int defaultY, int defaultW, int defaultH,
             String title) {
-        ConfigManager.CardState state = ConfigManager.lastLoadedCardStates.get(id);
+        ConfigManagerV2.data.CardState state = ConfigManagerV2.data.lastLoadedCardStates.get(id);
         if (state != null) {
             ResizableCard card = new ResizableCard(state.x, state.y, state.width, state.height, title);
             card.setCollapsed(state.collapsed);
