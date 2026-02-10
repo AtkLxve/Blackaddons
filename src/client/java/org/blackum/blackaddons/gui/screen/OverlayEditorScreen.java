@@ -1,10 +1,17 @@
 package org.blackum.blackaddons.gui.screen;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.Button;
+import org.blackum.blackaddons.gui.widget.Widget;
+import org.blackum.blackaddons.config.ConfigManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OverlayEditorScreen extends BaseScreen {
 
@@ -12,16 +19,16 @@ public class OverlayEditorScreen extends BaseScreen {
     private boolean isResizing = false;
     private int dragOffsetX, dragOffsetY;
 
-    private final net.minecraft.client.gui.screens.Screen parent;
+    private final Screen parent;
 
-    public OverlayEditorScreen(net.minecraft.client.gui.screens.Screen parent) {
+    public OverlayEditorScreen(Screen parent) {
         super(Component.literal("Overlay Editor"));
         this.parent = parent;
     }
 
     @Override
     public void onClose() {
-        org.blackum.blackaddons.config.ConfigManager.save();
+        ConfigManager.save();
         this.minecraft.setScreen(this.parent);
     }
 
@@ -44,7 +51,7 @@ public class OverlayEditorScreen extends BaseScreen {
         graphics.fill(x + boxWidth - handleSize + 2, y + boxHeight - handleSize + 2, x + boxWidth + 2,
                 y + boxHeight + 2, 0xFFFFFFFF);
 
-        for (org.blackum.blackaddons.gui.widget.Widget widget : widgets) {
+        for (Widget widget : widgets) {
             if (widget.isVisible()) {
                 widget.updateHoverState(mouseX, mouseY);
                 widget.render(graphics, mouseX, mouseY, partialTick);
@@ -62,7 +69,7 @@ public class OverlayEditorScreen extends BaseScreen {
         int x = 0;
         int y = 0;
 
-        java.util.List<String> debugInfo = new java.util.ArrayList<>();
+        List<String> debugInfo = new ArrayList<>();
         debugInfo.add("§6[BlackAddons Debug]");
         debugInfo.add("VSync: " + this.minecraft.options.enableVsync().get());
         debugInfo.add("Mouse: " + (int) this.minecraft.mouseHandler.xpos() + ", "
@@ -129,7 +136,7 @@ public class OverlayEditorScreen extends BaseScreen {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean pressed) {
         if (event.button() == 0) {
-            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            Minecraft mc = Minecraft.getInstance();
 
             double windowWidth = mc.getWindow().getScreenWidth();
             double windowHeight = mc.getWindow().getScreenHeight();
@@ -171,7 +178,7 @@ public class OverlayEditorScreen extends BaseScreen {
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
         if (isDragging || isResizing) {
-            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            Minecraft mc = Minecraft.getInstance();
             double windowWidth = mc.getWindow().getScreenWidth();
             double scaledWidth = this.width;
             double mouseX = mc.mouseHandler.xpos() * (scaledWidth / windowWidth);

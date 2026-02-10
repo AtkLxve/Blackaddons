@@ -1,24 +1,50 @@
 package org.blackum.blackaddons;
 
+import com.google.gson.JsonObject;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import java.util.ArrayList;
+import java.util.List;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.Minecraft;
-
-import org.blackum.blackaddons.features.CommandUtils;
-import org.blackum.blackaddons.gui.screen.DemoScreen;
-import org.blackum.blackaddons.gui.screen.TestMenuScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
+import org.blackum.blackaddons.cheats.AutoTNT;
 import org.blackum.blackaddons.config.ConfigManager;
+import org.blackum.blackaddons.features.CommandUtils;
+import org.blackum.blackaddons.features.RngTracker;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.gui.screen.BaseScreen;
+import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
+import org.blackum.blackaddons.gui.screen.DemoScreen;
+import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
+import org.blackum.blackaddons.gui.screen.TestMenuScreen;
+import org.blackum.blackaddons.modhider.ModHiderOptions;
+import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.ProfileStateManager;
 
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         Blackaddons.LOGGER.info("Initializing client...");
-        org.blackum.blackaddons.cheats.AutoTNT.register();
-
+        AutoTNT.register();
 
         ConfigManager.load();
 
-        org.blackum.blackaddons.util.BotIntegration.fetchVerificationKey();
+        BotIntegration.fetchVerificationKey();
 
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
@@ -37,29 +63,29 @@ public class BlackaddonsClient implements ClientModInitializer {
         Blackaddons.mainGuiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
             client.execute(() -> {
-                client.setScreen(new org.blackum.blackaddons.gui.screen.BlackAddonsGUI());
+                client.setScreen(new BlackAddonsGUI());
             });
         };
 
         Blackaddons.notificationTrigger = (message) -> {
             Minecraft client = Minecraft.getInstance();
             client.execute(() -> {
-                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                NotificationManager.addNotification(
                         "Test Notification",
                         message,
-                        org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+                        NotificationType.INFO);
             });
         };
 
-        net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, partialTick) -> {
-            if (org.blackum.blackaddons.gui.screen.BaseScreen.showDebugOverlay) {
-                net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        HudRenderCallback.EVENT.register((graphics, partialTick) -> {
+            if (BaseScreen.showDebugOverlay) {
+                Minecraft mc = Minecraft.getInstance();
                 if (mc.options.hideGui)
                     return;
 
-                int x = org.blackum.blackaddons.gui.screen.BaseScreen.overlayX;
-                int y = org.blackum.blackaddons.gui.screen.BaseScreen.overlayY;
-                float scale = org.blackum.blackaddons.gui.screen.BaseScreen.overlayScale;
+                int x = BaseScreen.overlayX;
+                int y = BaseScreen.overlayY;
+                float scale = BaseScreen.overlayScale;
                 int color = 0xFFFFFFFF;
 
                 double windowWidth = mc.getWindow().getScreenWidth();
@@ -70,7 +96,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                 int finalMouseX = (int) (mc.mouseHandler.xpos() * ((double) scaledWidth / windowWidth));
                 int finalMouseY = (int) (mc.mouseHandler.ypos() * ((double) scaledHeight / windowHeight));
 
-                java.util.List<String> debugInfo = new java.util.ArrayList<>();
+                List<String> debugInfo = new ArrayList<>();
                 debugInfo.add("§6[BlackAddons Debug]");
                 debugInfo.add("Nick: " + mc.getUser().getName());
                 debugInfo.add("VSync: " + mc.options.enableVsync().get());
@@ -84,7 +110,7 @@ public class BlackaddonsClient implements ClientModInitializer {
 
                 int modCount = 0;
                 int libCount = 0;
-                for (net.fabricmc.loader.api.ModContainer mod : net.fabricmc.loader.api.FabricLoader.getInstance()
+                for (ModContainer mod : FabricLoader.getInstance()
                         .getAllMods()) {
                     if ("builtin".equals(mod.getMetadata().getType()))
                         continue;
@@ -102,18 +128,18 @@ public class BlackaddonsClient implements ClientModInitializer {
 
                 debugInfo.add("");
                 debugInfo.add("§6[Mod Hider Status]");
-                debugInfo.add("Spoof Mode: " + org.blackum.blackaddons.modhider.ModHiderOptions.SPOOF_MODE.name());
-                debugInfo.add("Hide Mods: " + org.blackum.blackaddons.modhider.ModHiderOptions.hideMods());
-                debugInfo.add("Custom Client: " + org.blackum.blackaddons.modhider.ModHiderOptions.CUSTOM_CLIENT);
+                debugInfo.add("Spoof Mode: " + ModHiderOptions.SPOOF_MODE.name());
+                debugInfo.add("Hide Mods: " + ModHiderOptions.hideMods());
+                debugInfo.add("Custom Client: " + ModHiderOptions.CUSTOM_CLIENT);
                 debugInfo.add("Disable Payloads: "
-                        + org.blackum.blackaddons.modhider.ModHiderOptions.DISABLE_CUSTOM_PAYLOADS);
+                        + ModHiderOptions.DISABLE_CUSTOM_PAYLOADS);
 
-                java.util.List<String> allowedModIds = new java.util.ArrayList<>();
-                java.util.List<String> allowedLibIds = new java.util.ArrayList<>();
-                java.util.List<String> hiddenModIds = new java.util.ArrayList<>();
-                java.util.List<String> hiddenLibIds = new java.util.ArrayList<>();
+                List<String> allowedModIds = new ArrayList<>();
+                List<String> allowedLibIds = new ArrayList<>();
+                List<String> hiddenModIds = new ArrayList<>();
+                List<String> hiddenLibIds = new ArrayList<>();
 
-                for (net.fabricmc.loader.api.ModContainer mod : net.fabricmc.loader.api.FabricLoader.getInstance()
+                for (ModContainer mod : FabricLoader.getInstance()
                         .getAllMods()) {
                     if ("builtin".equals(mod.getMetadata().getType()))
                         continue;
@@ -121,7 +147,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     String type = mod.getMetadata().getType();
                     boolean isLibrary = type.contains("library") || type.contains("api") ||
                             modId.contains("library") || modId.contains("api");
-                    boolean isAllowed = org.blackum.blackaddons.modhider.ModHiderOptions.ALLOWED_MODS.contains(modId);
+                    boolean isAllowed = ModHiderOptions.ALLOWED_MODS.contains(modId);
 
                     if (isLibrary) {
                         if (isAllowed) {
@@ -172,9 +198,9 @@ public class BlackaddonsClient implements ClientModInitializer {
                 }
 
                 debugInfo.add("Allowed Channels: "
-                        + org.blackum.blackaddons.modhider.ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size());
+                        + ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size());
 
-                debugInfo.addAll(org.blackum.blackaddons.cheats.AutoTNT.getDebugInfo());
+                debugInfo.addAll(AutoTNT.getDebugInfo());
 
                 graphics.pose().pushMatrix();
                 graphics.pose().translate((float) x, (float) y);
@@ -189,62 +215,62 @@ public class BlackaddonsClient implements ClientModInitializer {
             }
         });
 
-        net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((graphics, partialTick) -> {
-            if (Minecraft.getInstance().screen instanceof org.blackum.blackaddons.gui.screen.BaseScreen)
+        HudRenderCallback.EVENT.register((graphics, partialTick) -> {
+            if (Minecraft.getInstance().screen instanceof BaseScreen)
                 return;
-            org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().render(graphics);
+            NotificationManager.getInstance().render(graphics);
         });
 
-        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            org.blackum.blackaddons.gui.notification.NotificationManager.getInstance().tick();
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            NotificationManager.getInstance().tick();
         });
 
-        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
             ConfigManager.save();
         });
 
-        net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback.EVENT
+        ClientCommandRegistrationCallback.EVENT
                 .register((dispatcher, registryAccess) -> {
-                    com.mojang.brigadier.Command<net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource> openGui = ctx -> {
+                    Command<FabricClientCommandSource> openGui = ctx -> {
                         if (Blackaddons.mainGuiOpener != null)
                             Blackaddons.mainGuiOpener.run();
                         return 1;
                     };
 
-                    var testNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("test");
+                    var testNode = ClientCommandManager.literal("test");
 
-                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("DebugGui")
+                    testNode.then(ClientCommandManager.literal("DebugGui")
                             .executes(ctx -> {
                                 if (Blackaddons.guiOpener != null)
                                     Blackaddons.guiOpener.run();
                                 return 1;
                             }));
 
-                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("TestMenu")
+                    testNode.then(ClientCommandManager.literal("TestMenu")
                             .executes(ctx -> {
                                 if (Blackaddons.testMenuOpener != null)
                                     Blackaddons.testMenuOpener.run();
                                 return 1;
                             }));
 
-                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("rng")
-                            .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-                                    .argument("type", com.mojang.brigadier.arguments.StringArgumentType.string())
-                                    .suggests((context, builder) -> net.minecraft.commands.SharedSuggestionProvider
+                    testNode.then(ClientCommandManager.literal("rng")
+                            .then(ClientCommandManager
+                                    .argument("type", StringArgumentType.string())
+                                    .suggests((context, builder) -> SharedSuggestionProvider
                                             .suggest(new String[] { "rare", "crazy", "pray" }, builder))
-                                    .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                    .then(ClientCommandManager
                                             .argument("magic_find",
-                                                    com.mojang.brigadier.arguments.IntegerArgumentType.integer(0))
-                                            .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                                    IntegerArgumentType.integer(0))
+                                            .then(ClientCommandManager
                                                     .argument("item",
-                                                            com.mojang.brigadier.arguments.StringArgumentType
+                                                            StringArgumentType
                                                                     .greedyString())
                                                     .executes(context -> {
-                                                        String typeArg = com.mojang.brigadier.arguments.StringArgumentType
+                                                        String typeArg = StringArgumentType
                                                                 .getString(context, "type").toLowerCase();
-                                                        int mf = com.mojang.brigadier.arguments.IntegerArgumentType
+                                                        int mf = IntegerArgumentType
                                                                 .getInteger(context, "magic_find");
-                                                        String item = com.mojang.brigadier.arguments.StringArgumentType
+                                                        String item = StringArgumentType
                                                                 .getString(context, "item");
 
                                                         String typePrefix = "§6§lRARE";
@@ -256,23 +282,23 @@ public class BlackaddonsClient implements ClientModInitializer {
                                                         String fakeMessage = typePrefix + " DROP! §r§f" + item
                                                                 + " §r§b(+§r§b" + mf + "% §r§b✯ Magic Find§r§b)";
 
-                                                        net.minecraft.client.Minecraft.getInstance().gui.getChat()
-                                                                .addMessage(net.minecraft.network.chat.Component
+                                                        Minecraft.getInstance().gui.getChat()
+                                                                .addMessage(Component
                                                                         .literal(fakeMessage));
 
-                                                        org.blackum.blackaddons.features.RngTracker
-                                                                .onChatMessage(net.minecraft.network.chat.Component
+                                                        RngTracker
+                                                                .onChatMessage(Component
                                                                         .literal(fakeMessage));
                                                         String title = "RNG Drop Tested";
                                                         String notificationMsg = item + " (" + typeArg + ")";
-                                                        org.blackum.blackaddons.gui.notification.NotificationManager
+                                                        NotificationManager
                                                                 .addNotification(title, notificationMsg,
-                                                                        org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
+                                                                        NotificationType.SUCCESS);
 
                                                         return 1;
                                                     })))));
 
-                    testNode.then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("GiveTNT")
+                    testNode.then(ClientCommandManager.literal("GiveTNT")
                             .executes(ctx -> {
                                 Minecraft client = Minecraft.getInstance();
                                 if (client.player != null && client.player.connection != null) {
@@ -288,52 +314,52 @@ public class BlackaddonsClient implements ClientModInitializer {
                                 return 1;
                             }));
 
-                    var pvNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("pv")
+                    var pvNode = ClientCommandManager.literal("pv")
                             .executes(ctx -> {
-                                String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                                String player = Minecraft.getInstance().getUser().getName();
                                 loadProfileAndOpen(player, false);
                                 return 1;
                             })
-                            .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-                                    .argument("ign", com.mojang.brigadier.arguments.StringArgumentType.string())
+                            .then(ClientCommandManager
+                                    .argument("ign", StringArgumentType.string())
                                     .executes(ctx -> {
-                                        String player = com.mojang.brigadier.arguments.StringArgumentType.getString(ctx,
+                                        String player = StringArgumentType.getString(ctx,
                                                 "ign");
                                         loadProfileAndOpen(player, false);
                                         return 1;
                                     })
-                                    .then(net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+                                    .then(ClientCommandManager
                                             .literal("force")
                                             .executes(ctx -> {
-                                                String player = com.mojang.brigadier.arguments.StringArgumentType
+                                                String player = StringArgumentType
                                                         .getString(ctx,
                                                                 "ign");
                                                 loadProfileAndOpen(player, true);
                                                 return 1;
                                             })));
 
-                    var dailyNode = net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal("daily")
+                    var dailyNode = ClientCommandManager.literal("daily")
                             .executes(ctx -> {
-                                String player = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                                String player = Minecraft.getInstance().getUser().getName();
+                                NotificationManager.addNotification(
                                         "Daily Sync",
                                         "Syncing stats with bot...",
-                                        org.blackum.blackaddons.gui.notification.NotificationType.INFO);
+                                        NotificationType.INFO);
 
-                                org.blackum.blackaddons.util.BotIntegration.sendDailySync(player)
+                                BotIntegration.sendDailySync(player)
                                         .thenAccept(success -> {
                                             if (success) {
-                                                org.blackum.blackaddons.gui.notification.NotificationManager
+                                                NotificationManager
                                                         .addNotification(
                                                                 "Daily Sync",
                                                                 "Stats synced successfully!",
-                                                                org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
+                                                                NotificationType.SUCCESS);
                                             } else {
-                                                org.blackum.blackaddons.gui.notification.NotificationManager
+                                                NotificationManager
                                                         .addNotification(
                                                                 "Daily Sync",
                                                                 "Failed to sync stats.",
-                                                                org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                                                                NotificationType.ERROR);
                                             }
                                         });
                                 return 1;
@@ -351,69 +377,68 @@ public class BlackaddonsClient implements ClientModInitializer {
                         dispatcher.register(cmd);
                     }
 
-
                 });
 
-        net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents.GAME.register((message, overlay) ->
+        ClientReceiveMessageEvents.GAME.register((message, overlay) ->
 
         {
-            org.blackum.blackaddons.features.RngTracker.onChatMessage(message);
+            RngTracker.onChatMessage(message);
         });
 
         Blackaddons.LOGGER.info("Client initialization completed");
     }
 
     private void loadProfileAndOpen(String player, boolean force) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        Minecraft mc = Minecraft.getInstance();
         mc.gui.getChat().addMessage(
-                net.minecraft.network.chat.Component
+                Component
                         .literal("§7[BlackAddons] Loading profile for " + player + (force ? " (Forced)" : "") + "..."));
 
-        org.blackum.blackaddons.util.ProfileStateManager.getInstance().getProfile(player, force).thenAccept(result -> {
+        ProfileStateManager.getInstance().getProfile(player, force).thenAccept(result -> {
             if (result == null) {
                 mc.gui.getChat().addMessage(
-                        net.minecraft.network.chat.Component.literal("§c[BlackAddons] Failed to fetch data."));
-                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        Component.literal("§c[BlackAddons] Failed to fetch data."));
+                NotificationManager.addNotification(
                         "Profile Error",
                         "Failed to fetch data from API.",
-                        org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                        NotificationType.ERROR);
                 return;
             }
 
             if (result.hasError()) {
                 String err = result.getError();
                 mc.gui.getChat()
-                        .addMessage(net.minecraft.network.chat.Component.literal("§c[BlackAddons] Error: " + err));
-                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        .addMessage(Component.literal("§c[BlackAddons] Error: " + err));
+                NotificationManager.addNotification(
                         "Profile Error",
                         err,
-                        org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                        NotificationType.ERROR);
                 return;
             }
 
-            com.google.gson.JsonObject data = result.getData();
+            JsonObject data = result.getData();
             if (data == null) {
                 mc.gui.getChat().addMessage(
-                        net.minecraft.network.chat.Component.literal("§c[BlackAddons] Invalid response format."));
-                org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        Component.literal("§c[BlackAddons] Invalid response format."));
+                NotificationManager.addNotification(
                         "Profile Error",
                         "Invalid response format.",
-                        org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                        NotificationType.ERROR);
                 return;
             }
 
-            final com.google.gson.JsonObject finalData = data;
+            final JsonObject finalData = data;
             mc.execute(() -> {
                 mc.setScreen(
-                        new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, force, finalData));
+                        new ProfileViewerScreen(null, player, force, finalData));
             });
         }).exceptionally(e -> {
             mc.gui.getChat().addMessage(
-                    net.minecraft.network.chat.Component.literal("§c[BlackAddons] Exception: " + e.getMessage()));
-            org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                    Component.literal("§c[BlackAddons] Exception: " + e.getMessage()));
+            NotificationManager.addNotification(
                     "Profile Exception",
                     e.getMessage(),
-                    org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                    NotificationType.ERROR);
             return null;
         });
     }

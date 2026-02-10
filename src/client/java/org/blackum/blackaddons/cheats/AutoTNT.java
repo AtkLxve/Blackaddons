@@ -13,7 +13,11 @@ import org.blackum.blackaddons.mixin.client.KeyBindingAccessor;
 import org.blackum.blackaddons.mixin.client.InventoryAccessor;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Random;
+
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.BlockPos;
 
 public class AutoTNT {
     private static final List<Block> TARGET_BLOCKS = List.of(
@@ -167,7 +171,7 @@ public class AutoTNT {
     }
 
     public static List<String> getDebugInfo() {
-        java.util.List<String> info = new java.util.ArrayList<>();
+        java.util.List<String> info = new ArrayList<>();
         if (!CheatsOptions.AutoTNTEnabled)
             return info;
 
@@ -181,7 +185,7 @@ public class AutoTNT {
             boolean isTarget = TARGET_BLOCKS.contains(block);
             double dist = client.player.distanceToSqr(blockHit.getLocation());
             info.add("Target: " + (isTarget ? "§aYES" : "§cNO") + " §r("
-                    + net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath() + ")");
+                    + BuiltInRegistries.BLOCK.getKey(block).getPath() + ")");
             info.add("Distance: " + String.format("%.2f", dist) + " (Limit: "
                     + String.format("%.2f", STATE.currentDistanceLimit * STATE.currentDistanceLimit) + ")");
         } else {
@@ -205,7 +209,7 @@ public class AutoTNT {
         double unequipDelay = 0;
         int originalItemSlot = -1;
         int lastKnownTntSlot = -1;
-        net.minecraft.core.BlockPos lastTargetPos = null;
+        BlockPos lastTargetPos = null;
         double currentDistanceLimit = BASE_DISTANCE_LIMIT;
 
         ModState() {

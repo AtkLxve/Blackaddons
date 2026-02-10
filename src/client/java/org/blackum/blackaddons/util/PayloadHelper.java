@@ -1,16 +1,22 @@
 package org.blackum.blackaddons.util;
 
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import org.blackum.blackaddons.Blackaddons;
 
 public class PayloadHelper {
+
+    private static final String TRY_PARSE_METHOD = "tryParse";
+    private static final String ERROR_TRY_PARSE_NOT_FOUND = "[ModHider] Could not find tryParse in ";
+    private static final String ERROR_REFLECTION_FAILED = "[ModHider] Failed to create payload via reflection";
+
     public static CustomPacketPayload createRegisterPayload(CustomPacketPayload original, Set<String> channels) {
         try {
             Class<?> clazz = original.getClass();
@@ -19,11 +25,11 @@ public class PayloadHelper {
 
             Method tryParse = null;
             try {
-                tryParse = idClass.getMethod("tryParse", String.class);
+                tryParse = idClass.getMethod(TRY_PARSE_METHOD, String.class);
             } catch (NoSuchMethodException e) {
-                org.blackum.blackaddons.Blackaddons.LOGGER
-                        .error("[ModHider] Could not find tryParse in " + idClass.getName());
+                Blackaddons.LOGGER.error(ERROR_TRY_PARSE_NOT_FOUND + idClass.getName());
                 ReflectionDump.dumpClass(idClass);
+
                 return null;
             }
 
@@ -37,7 +43,7 @@ public class PayloadHelper {
                             return null;
                         }
                     })
-                    .filter(java.util.Objects::nonNull)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             for (Constructor<?> c : clazz.getDeclaredConstructors()) {
@@ -61,7 +67,7 @@ public class PayloadHelper {
                 }
             }
         } catch (Exception e) {
-            org.blackum.blackaddons.Blackaddons.LOGGER.error("[ModHider] Failed to create payload via reflection", e);
+            Blackaddons.LOGGER.error(ERROR_REFLECTION_FAILED, e);
         }
         return null;
     }

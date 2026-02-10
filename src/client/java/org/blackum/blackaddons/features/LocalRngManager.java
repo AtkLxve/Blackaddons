@@ -12,12 +12,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import net.fabricmc.loader.api.FabricLoader;
 import java.util.HashMap;
 import java.util.Map;
 
 public class LocalRngManager {
     private static LocalRngManager instance;
-    private static final Path CONFIG_DIR = net.fabricmc.loader.api.FabricLoader.getInstance()
+    private static final Path CONFIG_DIR = FabricLoader.getInstance()
             .getConfigDir().resolve("blackaddons");
     private static final File DATA_FILE = CONFIG_DIR.resolve("rng_data.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

@@ -7,48 +7,53 @@ import net.minecraft.commands.CommandSourceStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import java.util.function.Consumer;
+import net.minecraft.network.chat.Component;
+
 public class Blackaddons implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger("blackaddons");
     public static Runnable guiOpener;
     public static Runnable testMenuOpener;
     public static Runnable mainGuiOpener;
-    public static java.util.function.Consumer<String> notificationTrigger;
+    public static Consumer<String> notificationTrigger;
 
     @Override
     public void onInitialize() {
         LOGGER.info("Initialization completed");
     }
 
-    private int executeStatus(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+    private int executeStatus(CommandContext<CommandSourceStack> context) {
         context.getSource().sendSystemMessage(
-                net.minecraft.network.chat.Component.literal("§0Black§7Addons is §arunning!"));
+                Component.literal("§0Black§7Addons is §arunning!"));
         return 1;
     }
 
-    private int executeOpenMainGui(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+    private int executeOpenMainGui(CommandContext<CommandSourceStack> context) {
         if (mainGuiOpener != null) {
             mainGuiOpener.run();
         }
         return 1;
     }
 
-    private int executeOpenGui(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+    private int executeOpenGui(CommandContext<CommandSourceStack> context) {
         if (guiOpener != null) {
             guiOpener.run();
         }
         return 1;
     }
 
-    private int executeOpenTestMenu(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+    private int executeOpenTestMenu(CommandContext<CommandSourceStack> context) {
         if (testMenuOpener != null) {
             testMenuOpener.run();
         }
         return 1;
     }
 
-    private int executeNotify(com.mojang.brigadier.context.CommandContext<CommandSourceStack> context) {
+    private int executeNotify(CommandContext<CommandSourceStack> context) {
         if (notificationTrigger != null) {
-            String message = com.mojang.brigadier.arguments.StringArgumentType.getString(context, "message");
+            String message = StringArgumentType.getString(context, "message");
             notificationTrigger.accept(message);
         }
         return 1;

@@ -5,6 +5,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
+import org.blackum.blackaddons.gui.util.ColorUtils;
+
+import java.util.Arrays;
 
 public class DemoScreen extends BaseScreen {
 
@@ -46,12 +49,12 @@ public class DemoScreen extends BaseScreen {
                                 checked -> sendMessage("Feature B: " + (checked ? "Enabled" : "Disabled"))), 1);
 
                 addToGrid(new Dropdown(0, 0, 0, "Select Option",
-                                java.util.Arrays.asList("Option 1", "Option 2", "Option 3"),
+                                Arrays.asList("Option 1", "Option 2", "Option 3"),
                                 selected -> sendMessage("Selected: " + selected)), 2);
 
                 addToGrid(new ColorPicker(0, 0,
                                 color -> sendMessage("Color changed: "
-                                                + org.blackum.blackaddons.gui.util.ColorUtils.toRGBA(color))),
+                                                + ColorUtils.toRGBA(color))),
                                 1);
 
                 currentGridRow += 4;

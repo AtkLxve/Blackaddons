@@ -3,6 +3,15 @@ package org.blackum.blackaddons.util;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.client.Minecraft;
+import org.blackum.blackaddons.Blackaddons;
+import org.blackum.blackaddons.config.ConfigManager;
+import org.blackum.blackaddons.features.LocalTeammateManager;
+import org.blackum.blackaddons.features.LocalRngManager;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.general.GeneralOptions;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -35,7 +44,7 @@ public class ProfileStateManager {
 
         CompletableFuture<JsonObject> future;
 
-        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+        if (ConfigManager.dataSource == ConfigManager.DataSource.LOCAL) {
             CompletableFuture<JsonObject> localFuture = LocalIntegration.getProfileStats(player, force);
             CompletableFuture<JsonObject> botFuture = getSafeBotProfile(player, force);
 
@@ -53,7 +62,7 @@ public class ProfileStateManager {
                     return CompletableFuture.completedFuture(bot);
                 }
 
-                String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+                String currentUser = Minecraft.getInstance().getUser().getName();
                 if (player.equalsIgnoreCase(currentUser)) {
                     return LocalIntegration.getProfileStats(player, force).thenApply(local -> {
                         if (local != null) {
@@ -100,7 +109,7 @@ public class ProfileStateManager {
                     JsonArray botTeammates = botTm.getAsJsonArray();
                     JsonArray localTeammates = local.has("teammates") ? local.getAsJsonArray("teammates")
                             : new JsonArray();
-                    JsonArray merged = org.blackum.blackaddons.features.LocalTeammateManager.getInstance()
+                    JsonArray merged = LocalTeammateManager.getInstance()
                             .mergeTeammates(localTeammates, botTeammates);
                     local.add("teammates", merged);
                 }
@@ -112,7 +121,7 @@ public class ProfileStateManager {
             if (botData.has("monthly_stats"))
                 local.add("monthly_stats", botData.get("monthly_stats"));
         } catch (Exception e) {
-            org.blackum.blackaddons.Blackaddons.LOGGER.error("Error merging bot data: " + e.getMessage());
+            Blackaddons.LOGGER.error("Error merging bot data: " + e.getMessage());
         }
     }
 
@@ -132,9 +141,9 @@ public class ProfileStateManager {
                 botData = json.getAsJsonObject("data");
             }
 
-            JsonObject localData = org.blackum.blackaddons.features.LocalRngManager.getInstance().getRngData();
+            JsonObject localData = LocalRngManager.getInstance().getRngData();
             JsonObject finalData;
-            String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
+            String currentUser = Minecraft.getInstance().getUser().getName();
             boolean isSelf = player.equalsIgnoreCase(currentUser);
 
             if (botData == null) {
@@ -180,9 +189,9 @@ public class ProfileStateManager {
 
     public CompletableFuture<Integer> updateRngCount(String player, String category, String item, String action,
             Integer count) {
-        String currentUser = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-        boolean isDev = org.blackum.blackaddons.config.ConfigManager.developerKey != null
-                && !org.blackum.blackaddons.config.ConfigManager.developerKey.isEmpty();
+        String currentUser = Minecraft.getInstance().getUser().getName();
+        boolean isDev = ConfigManager.developerKey != null
+                && !ConfigManager.developerKey.isEmpty();
 
         if (!isDev && !player.equalsIgnoreCase(currentUser)) {
             return CompletableFuture.completedFuture(null);
@@ -192,21 +201,21 @@ public class ProfileStateManager {
         if ("set".equals(action) && count != null) {
             fallbackCount = count;
         } else if ("increment".equals(action)) {
-            int current = org.blackum.blackaddons.features.LocalRngManager.getInstance().getDropCount(category, item);
+            int current = LocalRngManager.getInstance().getDropCount(category, item);
             fallbackCount = current + 1;
         } else if ("decrement".equals(action)) {
-            int current = org.blackum.blackaddons.features.LocalRngManager.getInstance().getDropCount(category, item);
+            int current = LocalRngManager.getInstance().getDropCount(category, item);
             fallbackCount = Math.max(0, current - 1);
         } else {
             fallbackCount = -1;
         }
 
         if ("set".equals(action) && count != null) {
-            org.blackum.blackaddons.features.LocalRngManager.getInstance().setDropCount(category, item, count);
+            LocalRngManager.getInstance().setDropCount(category, item, count);
         } else if ("increment".equals(action)) {
-            org.blackum.blackaddons.features.LocalRngManager.getInstance().addDrop(category, item, 1);
+            LocalRngManager.getInstance().addDrop(category, item, 1);
         } else if ("decrement".equals(action)) {
-            org.blackum.blackaddons.features.LocalRngManager.getInstance().addDrop(category, item, -1);
+            LocalRngManager.getInstance().addDrop(category, item, -1);
         }
 
         rngCache.remove(player.toLowerCase());
@@ -214,17 +223,17 @@ public class ProfileStateManager {
         return BotIntegration.updateRngDrop(player, category, item, action, count)
                 .thenApply(newCount -> {
                     if (newCount == null) {
-                        org.blackum.blackaddons.Blackaddons.LOGGER
+                        Blackaddons.LOGGER
                                 .warn("Failed to sync RNG drop with bot. Using local value.");
-                        org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                        NotificationManager.addNotification(
                                 "Rng Sync Failed",
                                 "Saved locally. Bot unreachable.",
-                                org.blackum.blackaddons.gui.notification.NotificationType.WARNING);
+                                NotificationType.WARNING);
                         return fallbackCount != -1 ? fallbackCount : null;
                     }
 
                     if (newCount != -1) {
-                        org.blackum.blackaddons.features.LocalRngManager.getInstance().setDropCount(category, item,
+                        LocalRngManager.getInstance().setDropCount(category, item,
                                 newCount);
                         return newCount;
                     }
@@ -232,12 +241,12 @@ public class ProfileStateManager {
                     return null;
                 })
                 .exceptionally(e -> {
-                    org.blackum.blackaddons.Blackaddons.LOGGER
+                    Blackaddons.LOGGER
                             .error("Error syncing RNG drop with bot: " + e.getMessage());
-                    org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+                    NotificationManager.addNotification(
                             "Rng Sync Error",
                             "Saved locally. Error: " + e.getMessage(),
-                            org.blackum.blackaddons.gui.notification.NotificationType.ERROR);
+                            NotificationType.ERROR);
                     return fallbackCount != -1 ? fallbackCount : null;
                 });
     }
@@ -257,7 +266,7 @@ public class ProfileStateManager {
         }
 
         boolean isExpired() {
-            long durationMs = org.blackum.blackaddons.general.GeneralOptions.CACHE_DURATION_MINUTES * 60 * 1000L;
+            long durationMs = GeneralOptions.CACHE_DURATION_MINUTES * 60 * 1000L;
             return System.currentTimeMillis() - timestamp > durationMs;
         }
     }

@@ -1,24 +1,35 @@
 package org.blackum.blackaddons.gui.screen;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import org.blackum.blackaddons.cheats.CheatsOptions;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
 import org.blackum.blackaddons.modhider.SpoofMode;
+import org.blackum.blackaddons.general.GeneralOptions;
+import org.blackum.blackaddons.legit.LegitOptions;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
-import org.blackum.blackaddons.general.GeneralOptions;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class BlackAddonsGUI extends BaseScreen {
 
     private TabPanel tabPanel;
     private static int lastTabIndex = 0;
     private String currentTooltip = null;
-    private final java.util.Map<String, Boolean> collapsedGroups = new java.util.HashMap<>();
+    private final Map<String, Boolean> collapsedGroups = new HashMap<>();
 
     private ResizableCard spoofModeCard;
     private ResizableCard customClientCard;
@@ -34,7 +45,7 @@ public class BlackAddonsGUI extends BaseScreen {
         this(null);
     }
 
-    public BlackAddonsGUI(net.minecraft.client.gui.screens.Screen parent) {
+    public BlackAddonsGUI(Screen parent) {
         super(Component.literal("BlackAddons Settings"), parent);
     }
 
@@ -77,7 +88,7 @@ public class BlackAddonsGUI extends BaseScreen {
 
         settingsTab.addWidget(new Label(contentX, contentY, "Data Source", Label.Style.TITLE));
 
-        java.util.List<String> dataSources = java.util.List.of("LOCAL", "BOT");
+        List<String> dataSources = List.of("LOCAL", "BOT");
         Dropdown dataSourceDropdown = new Dropdown(contentX, contentY + 30, 200, "Data Source", dataSources,
                 selected -> {
                     try {
@@ -141,7 +152,7 @@ public class BlackAddonsGUI extends BaseScreen {
         settingsTab
                 .addWidget(new Label(contentX, contentY + offsetY + 390, "Profile Cache Duration", Label.Style.BODY));
 
-        java.util.List<String> cacheOptions = java.util.List.of("1 Minute", "5 Minutes", "10 Minutes", "30 Minutes",
+        List<String> cacheOptions = List.of("1 Minute", "5 Minutes", "10 Minutes", "30 Minutes",
                 "1 Hour");
         Dropdown cacheDropdown = new Dropdown(contentX, contentY + offsetY + 410, tabPanel.getContentWidth() - 20, 20,
                 "Cache Duration", cacheOptions, selected -> {
@@ -183,7 +194,7 @@ public class BlackAddonsGUI extends BaseScreen {
 
         String version = "Unknown";
         try {
-            java.util.Optional<net.fabricmc.loader.api.ModContainer> mod = net.fabricmc.loader.api.FabricLoader
+            Optional<ModContainer> mod = FabricLoader
                     .getInstance().getModContainer("blackaddons");
             if (mod.isPresent()) {
                 version = mod.get().getMetadata().getVersion().getFriendlyString();
@@ -436,7 +447,7 @@ public class BlackAddonsGUI extends BaseScreen {
             }
 
             @Override
-            public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
+            public void render(GuiGraphics g, int mx, int my, float p) {
             }
         });
     }
@@ -486,9 +497,9 @@ public class BlackAddonsGUI extends BaseScreen {
         Button applyCustomClient = new Button(contentX + 190, contentY + 30, 70, "Apply", () -> {
             ModHiderOptions.CUSTOM_CLIENT = customClient.getText().isBlank() ? "fabric" : customClient.getText();
             ConfigManager.save();
-            org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+            NotificationManager.addNotification(
                     "BlackAddons", "Saved custom client brand!",
-                    org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
+                    NotificationType.SUCCESS);
         });
         customClientCard.addChild(applyCustomClient);
 
@@ -561,9 +572,9 @@ public class BlackAddonsGUI extends BaseScreen {
                 }
             }
             ConfigManager.save();
-            org.blackum.blackaddons.gui.notification.NotificationManager.addNotification(
+            NotificationManager.addNotification(
                     "BlackAddons", "Saved registered channels!",
-                    org.blackum.blackaddons.gui.notification.NotificationType.SUCCESS);
+                    NotificationType.SUCCESS);
         });
         allowedChannelsCard.addChild(saveBtn);
 
@@ -620,7 +631,7 @@ public class BlackAddonsGUI extends BaseScreen {
             }
 
             @Override
-            public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
+            public void render(GuiGraphics g, int mx, int my, float p) {
             }
         });
 
@@ -656,8 +667,8 @@ public class BlackAddonsGUI extends BaseScreen {
         ToggleSwitch fullbrightToggle = new ToggleSwitch(contentX, contentY + 30, contentWidth - 20,
                 "Enable Fullbright",
                 "Maximizes gamma (Night Vision)",
-                org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled, value -> {
-                    org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled = value;
+                LegitOptions.FullbrightEnabled, value -> {
+                    LegitOptions.FullbrightEnabled = value;
                     ConfigManager.save();
                 });
         legitTab.addWidget(fullbrightToggle);
@@ -671,8 +682,8 @@ public class BlackAddonsGUI extends BaseScreen {
         ToggleSwitch fullbrightToggle = new ToggleSwitch(contentX, contentY, 260,
                 "Enable Fullbright",
                 "Maximizes gamma (Night Vision)",
-                org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled, value -> {
-                    org.blackum.blackaddons.legit.LegitOptions.FullbrightEnabled = value;
+                LegitOptions.FullbrightEnabled, value -> {
+                    LegitOptions.FullbrightEnabled = value;
                     ConfigManager.save();
                 });
         fullbrightCard.addChild(fullbrightToggle);
@@ -806,7 +817,7 @@ public class BlackAddonsGUI extends BaseScreen {
 
         ModOrganizer.OrganizedMods organizedMods = ModOrganizer.organizeMods();
 
-        java.util.function.Consumer<String> enableDependencies = modId -> {
+        Consumer<String> enableDependencies = modId -> {
             ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
             if (info != null) {
                 for (String depId : info.dependencies) {
@@ -815,7 +826,7 @@ public class BlackAddonsGUI extends BaseScreen {
             }
         };
 
-        java.util.function.Consumer<String> disableDependents = modId -> {
+        Consumer<String> disableDependents = modId -> {
             ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
             if (info != null) {
                 for (String dependentId : info.dependents) {
@@ -842,8 +853,8 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private void addModGroupToList(ListView list, ModOrganizer.ModGroup group, String query,
-            java.util.function.Consumer<String> enableDependencies,
-            java.util.function.Consumer<String> disableDependencies,
+            Consumer<String> enableDependencies,
+            Consumer<String> disableDependencies,
             TextField searchField) {
         List<ModOrganizer.ModInfo> matchingMods = new ArrayList<>();
         for (ModOrganizer.ModInfo info : group.mods) {
@@ -906,8 +917,8 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     private void addModCheckboxToList(ListView list, ModOrganizer.ModInfo info,
-            java.util.function.Consumer<String> enableDependencies,
-            java.util.function.Consumer<String> disableDependencies,
+            Consumer<String> enableDependencies,
+            Consumer<String> disableDependencies,
             TextField searchField) {
         boolean checked = ModHiderOptions.ALLOWED_MODS.contains(info.id);
         String displayName = info.name + " (" + info.id + ")";
@@ -928,7 +939,7 @@ public class BlackAddonsGUI extends BaseScreen {
 
         Widget wrapper = new Widget(0, 0, 0, 0) {
             @Override
-            public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float p) {
+            public void render(GuiGraphics g, int mx, int my, float p) {
                 cb.setX(getX());
                 cb.setY(getY());
                 cb.setWidth(getWidth());
@@ -975,7 +986,7 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     @Override
-    protected void renderScrolledContent(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
+    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY,
             float partialTick) {
         String title = "BlackAddons Control Panel";
         int titleWidth = font.width(title);
@@ -985,7 +996,7 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     @Override
-    protected void renderTooltips(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY) {
+    protected void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
         if (currentTooltip != null && !currentTooltip.isEmpty()) {
             int tooltipWidth = font.width(currentTooltip) + 8;
             int tooltipXPos = mouseX + 10;
@@ -1025,14 +1036,14 @@ public class BlackAddonsGUI extends BaseScreen {
         this.init(this.width, this.height);
     }
 
-    private void addCardToMap(java.util.Map<String, ConfigManager.CardState> map, String id, ResizableCard card) {
+    private void addCardToMap(Map<String, ConfigManager.CardState> map, String id, ResizableCard card) {
         if (card != null)
             map.put(id, new ConfigManager.CardState(card.getX(), card.getY(), card.getWidth(), card.getHeight(),
                     card.isCollapsed(), card.getInitialWidth(), card.getExpandedHeight()));
     }
 
     private void saveCardLayout() {
-        java.util.Map<String, ConfigManager.CardState> states = new java.util.HashMap<>();
+        Map<String, ConfigManager.CardState> states = new HashMap<>();
         addCardToMap(states, "spoofMode", spoofModeCard);
         addCardToMap(states, "customClient", customClientCard);
         addCardToMap(states, "hideMods", hideModsCard);
