@@ -44,7 +44,7 @@ public class ProfileStateManager {
 
         CompletableFuture<JsonObject> future;
 
-        if (ConfigManager.dataSource == ConfigManager.DataSource.LOCAL) {
+        if (ConfigManager.data.dataSource == ConfigManager.DataSource.LOCAL) {
             CompletableFuture<JsonObject> localFuture = LocalIntegration.getProfileStats(player, force);
             CompletableFuture<JsonObject> botFuture = getSafeBotProfile(player, force);
 
@@ -190,8 +190,8 @@ public class ProfileStateManager {
     public CompletableFuture<Integer> updateRngCount(String player, String category, String item, String action,
             Integer count) {
         String currentUser = Minecraft.getInstance().getUser().getName();
-        boolean isDev = ConfigManager.developerKey != null
-                && !ConfigManager.developerKey.isEmpty();
+        boolean isDev = ConfigManager.data.developerKey != null
+                && !ConfigManager.data.developerKey.isEmpty();
 
         if (!isDev && !player.equalsIgnoreCase(currentUser)) {
             return CompletableFuture.completedFuture(null);

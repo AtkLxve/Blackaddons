@@ -3,7 +3,7 @@ package org.blackum.blackaddons.features;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.config.ConfigManagerV2;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.util.BotIntegration;
 import org.blackum.blackaddons.util.LocationUtils;
 
@@ -18,7 +18,7 @@ public class RngTracker {
     // §r§b\\(\\+§r§b([0-9,.]+)%? §r§b✯ Magic Find§r§b\\))?.*");
 
     public static void onChatMessage(Component message) {
-        if (!ConfigManagerV2.data.rngTrackerEnabled)
+        if (!ConfigManager.data.rngTrackerEnabled)
             return;
 
         String stripped = message.getString();

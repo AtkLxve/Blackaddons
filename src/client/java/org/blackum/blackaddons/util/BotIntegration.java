@@ -21,7 +21,7 @@ public class BotIntegration {
             .build();
 
     public static void sendRngDrop(String player, String item, String rarity, String floor) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return;
 
         JsonObject json = new JsonObject();
@@ -35,7 +35,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<Boolean> sendDailySync(String player) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(false);
 
         JsonObject json = new JsonObject();
@@ -47,7 +47,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<JsonObject> getProfileStats(String player, boolean force) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         String url = "/v1/profile?player=" + player;
@@ -70,7 +70,7 @@ public class BotIntegration {
 
     public static CompletableFuture<JsonObject> getRtcaStats(String player, String floor,
             Map<String, Double> bonuses) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         JsonObject json = new JsonObject();
@@ -99,7 +99,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<JsonObject> getRngData(String player) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         return sendGetRequest("/v1/rng?player=" + player).thenApply(res -> {
@@ -117,7 +117,7 @@ public class BotIntegration {
 
     public static CompletableFuture<Integer> updateRngDrop(String player, String category, String item, String action,
             Integer count) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         JsonObject json = new JsonObject();
@@ -146,7 +146,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<JsonObject> getLeaderboard(String period, String metric, int page) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         String endpoint = String.format("/v1/leaderboard?period=%s&metric=%s&page=%d", period, metric, page);
@@ -164,7 +164,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<JsonObject> getLeaderboardWithPlayer(String period, String metric, String player) {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         String endpoint = String.format("/v1/leaderboard?period=%s&metric=%s&find_player=%s", period, metric, player);
@@ -186,7 +186,7 @@ public class BotIntegration {
 
     private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody,
             boolean allowRetry) {
-        String url = ConfigManager.botUrl + endpoint;
+        String url = ConfigManager.data.botUrl + endpoint;
 
         String playerInit = "Unknown";
         String uuidInit = "Unknown";
@@ -215,8 +215,8 @@ public class BotIntegration {
 
         builder.POST(HttpRequest.BodyPublishers.ofString(jsonBody));
 
-        if (ConfigManager.developerKey != null && !ConfigManager.developerKey.isEmpty()) {
-            builder.header("X-Developer-Key", ConfigManager.developerKey);
+        if (ConfigManager.data.developerKey != null && !ConfigManager.data.developerKey.isEmpty()) {
+            builder.header("X-Developer-Key", ConfigManager.data.developerKey);
         }
 
         return client.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
@@ -245,7 +245,7 @@ public class BotIntegration {
     }
 
     private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint, boolean allowRetry) {
-        String url = ConfigManager.botUrl + endpoint;
+        String url = ConfigManager.data.botUrl + endpoint;
 
         String playerInit = "Unknown";
         String uuidInit = "Unknown";
@@ -274,8 +274,8 @@ public class BotIntegration {
 
         builder.GET();
 
-        if (ConfigManager.developerKey != null && !ConfigManager.developerKey.isEmpty()) {
-            builder.header("X-Developer-Key", ConfigManager.developerKey);
+        if (ConfigManager.data.developerKey != null && !ConfigManager.data.developerKey.isEmpty()) {
+            builder.header("X-Developer-Key", ConfigManager.data.developerKey);
         }
 
         return client.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
@@ -300,7 +300,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<Void> fetchVerificationKey() {
-        if (ConfigManager.botUrl.isEmpty())
+        if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         return sendGetRequest("/v1/key").thenAccept(res -> {

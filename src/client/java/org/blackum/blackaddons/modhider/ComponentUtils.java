@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.modhider;
 
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.mixin.LanguageAccessor;
 import org.blackum.blackaddons.mixin.client.LanguageManagerAccessor;
 
@@ -79,8 +80,8 @@ public class ComponentUtils {
         for (int i = 1; i < allPackResources.size(); i++) {
             PackResources packResource = allPackResources.get(i);
             PackSource source = packResource.location().source();
-            if (!ModHiderOptions.hideMods() ||
-                    ModHiderOptions.ALLOWED_MODS.contains(packResource.packId()) ||
+            if (!ConfigManager.data.modHiderConfig.hideMods() ||
+                    ConfigManager.data.modHiderConfig.ALLOWED_MODS.contains(packResource.packId()) ||
                     source == PackSource.FEATURE ||
                     source == PackSource.WORLD ||
                     source == PackSource.SERVER) {

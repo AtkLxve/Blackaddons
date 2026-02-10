@@ -1,6 +1,5 @@
 package org.blackum.blackaddons.mixin.client;
-
-import org.blackum.blackaddons.modhider.ModHiderOptions;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.modhider.SpoofMode;
 
 import io.netty.channel.ChannelFutureListener;
@@ -34,7 +33,7 @@ public class ConnectionMixin {
         if (packet instanceof ServerboundCustomPayloadPacket(CustomPacketPayload payload)) {
 
             if (!(payload instanceof DiscardedPayload) && !(payload instanceof BrandPayload)) {
-                if (ModHiderOptions.SPOOF_MODE == SpoofMode.OFF) {
+                if (ConfigManager.data.modHiderConfig.SPOOF_MODE == SpoofMode.OFF) {
                     return;
                 }
 
@@ -52,7 +51,7 @@ public class ConnectionMixin {
                 // return;
                 // }
 
-                if (ModHiderOptions.SPOOF_MODE == SpoofMode.VANILLA) {
+                if (ConfigManager.data.modHiderConfig.SPOOF_MODE == SpoofMode.VANILLA) {
                     PacketLogger.logBlockedPacket("ModHider (Vanilla)", payload);
                     Minecraft.getInstance().execute(() -> {
                         NotificationManager.addNotification(
@@ -63,17 +62,17 @@ public class ConnectionMixin {
                     ci.cancel();
                     return;
                 }
-                if (ModHiderOptions.SPOOF_MODE == SpoofMode.MODDED) {
+                if (ConfigManager.data.modHiderConfig.SPOOF_MODE == SpoofMode.MODDED) {
                     return;
                 }
-                if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM &&
-                        ModHiderOptions.DISABLE_CUSTOM_PAYLOADS) {
+                if (ConfigManager.data.modHiderConfig.SPOOF_MODE == SpoofMode.CUSTOM &&
+                        ConfigManager.data.modHiderConfig.DISABLE_CUSTOM_PAYLOADS) {
                     String id = payload.type().id().toString();
                     if (id.equals("minecraft:register") || id.equals("minecraft:unregister")) {
                         return;
                     }
 
-                    for (String channel : ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS) {
+                    for (String channel : ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS) {
                         if (id.toLowerCase().startsWith(channel.toLowerCase())) {
                             return;
                         }
@@ -96,10 +95,10 @@ public class ConnectionMixin {
         if (packet instanceof ServerboundCustomPayloadPacket(CustomPacketPayload payload)) {
             String id = payload.type().id().toString();
             if (id.equals("minecraft:register") || id.equals("minecraft:unregister")) {
-                if (ModHiderOptions.SPOOF_MODE == SpoofMode.CUSTOM && ModHiderOptions.DISABLE_CUSTOM_PAYLOADS) {
+                if (ConfigManager.data.modHiderConfig.SPOOF_MODE == SpoofMode.CUSTOM && ConfigManager.data.modHiderConfig.DISABLE_CUSTOM_PAYLOADS) {
                     CustomPacketPayload newPayload = PayloadHelper.createRegisterPayload(
                             payload,
-                            new HashSet<>(ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS));
+                            new HashSet<>(ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS));
                     if (newPayload != null) {
                         return new ServerboundCustomPayloadPacket(newPayload);
                     }

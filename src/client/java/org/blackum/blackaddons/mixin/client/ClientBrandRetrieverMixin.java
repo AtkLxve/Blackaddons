@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.mixin.client;
 
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
 
 import net.minecraft.client.ClientBrandRetriever;
@@ -12,10 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ClientBrandRetrieverMixin {
     @Inject(method = "getClientModName", at = @At("HEAD"), remap = false, cancellable = true)
     private static void getClientModName(CallbackInfoReturnable<String> cir) {
-        switch (ModHiderOptions.SPOOF_MODE) {
+        switch (ConfigManager.data.modHiderConfig.SPOOF_MODE) {
             case VANILLA -> cir.setReturnValue(ClientBrandRetriever.VANILLA_NAME);
             case MODDED -> cir.setReturnValue("fabric");
-            case CUSTOM -> cir.setReturnValue(ModHiderOptions.CUSTOM_CLIENT);
+            case CUSTOM -> cir.setReturnValue(ConfigManager.data.modHiderConfig.CUSTOM_CLIENT);
             case OFF -> {
                 // no spoofing
             }

@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.mixin.client.KeyBindingAccessor;
 import org.blackum.blackaddons.mixin.client.InventoryAccessor;
 
@@ -26,39 +27,38 @@ public class AutoTNT {
 
     private static final double BASE_DISTANCE_LIMIT = 3.3;
     private static final Random RANDOM = new Random();
-    private static final ModState STATE = new ModState();
 
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(AutoTNT::onClientTick);
     }
 
     private static void onClientTick(Minecraft client) {
-        if (!CheatsOptions.AutoTNTEnabled || client.player == null || client.level == null || client.screen != null) {
+        if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled || client.player == null || client.level == null || client.screen != null) {
             return;
         }
 
         if (client.hitResult instanceof BlockHitResult blockHit && client.hitResult.getType() == HitResult.Type.BLOCK) {
             if (isTargetBlock(client, blockHit)) {
-                if (!blockHit.getBlockPos().equals(STATE.lastTargetPos)) {
-                    STATE.lastTargetPos = blockHit.getBlockPos();
+                if (!blockHit.getBlockPos().equals(ConfigManager.data.autoTntConfig.lastTargetPos)) {
+                    ConfigManager.data.autoTntConfig.lastTargetPos = blockHit.getBlockPos();
                     if (true) {
-                        STATE.ticksSinceEquip = 0;
-                        STATE.updateDelays();
+                        ConfigManager.data.autoTntConfig.ticksSinceEquip = 0;
+                        ConfigManager.data.autoTntConfig.updateDelays();
                     }
                 }
 
                 int tntSlot = findTntHotbarSlot(client.player);
                 if (tntSlot != -1) {
-                    if (!STATE.hasClicked) {
+                    if (!ConfigManager.data.autoTntConfig.hasClicked) {
                         equipTnt(client.player, tntSlot);
                     }
 
-                    if (STATE.isTntEquipped && !STATE.hasClicked) {
-                        STATE.ticksSinceEquip++;
-                        if (STATE.ticksSinceEquip >= STATE.currentRandomDelay) {
+                    if (ConfigManager.data.autoTntConfig.isTntEquipped && !ConfigManager.data.autoTntConfig.hasClicked) {
+                        ConfigManager.data.autoTntConfig.ticksSinceEquip++;
+                        if (ConfigManager.data.autoTntConfig.ticksSinceEquip >= ConfigManager.data.autoTntConfig.currentRandomDelay) {
                             triggerAttack(client);
-                            STATE.hasClicked = true;
-                            if (CheatsOptions.SwapBack) {
+                            ConfigManager.data.autoTntConfig.hasClicked = true;
+                            if (ConfigManager.data.autoTntConfig.SwapBack) {
                                 unequipTnt(client.player, false);
                             }
                         }
@@ -73,13 +73,13 @@ public class AutoTNT {
     }
 
     private static void handleNotLooking(Player player) {
-        if (STATE.isTntEquipped || STATE.hasClicked) {
-            STATE.ticksSinceStopLooking++;
-            if (STATE.ticksSinceStopLooking >= STATE.unequipDelay) {
-                if (STATE.isTntEquipped) {
+        if (ConfigManager.data.autoTntConfig.isTntEquipped || ConfigManager.data.autoTntConfig.hasClicked) {
+            ConfigManager.data.autoTntConfig.ticksSinceStopLooking++;
+            if (ConfigManager.data.autoTntConfig.ticksSinceStopLooking >= ConfigManager.data.autoTntConfig.unequipDelay) {
+                if (ConfigManager.data.autoTntConfig.isTntEquipped) {
                     unequipTnt(player, true);
                 } else {
-                    STATE.fullReset();
+                    ConfigManager.data.autoTntConfig.fullReset();
                 }
             }
         }
@@ -93,7 +93,7 @@ public class AutoTNT {
 
     private static boolean isTargetBlock(Minecraft client, BlockHitResult blockHit) {
         double distanceSq = client.player.distanceToSqr(blockHit.getLocation());
-        double limit = STATE.currentDistanceLimit;
+        double limit = ConfigManager.data.autoTntConfig.currentDistanceLimit;
 
         if (distanceSq > (limit * limit))
             return false;
@@ -103,20 +103,20 @@ public class AutoTNT {
     }
 
     private static int findTntHotbarSlot(Player player) {
-        if (STATE.lastKnownTntSlot != -1) {
-            ItemStack stack = player.getInventory().getItem(STATE.lastKnownTntSlot);
+        if (ConfigManager.data.autoTntConfig.lastKnownTntSlot != -1) {
+            ItemStack stack = player.getInventory().getItem(ConfigManager.data.autoTntConfig.lastKnownTntSlot);
             if (isTnt(stack))
-                return STATE.lastKnownTntSlot;
+                return ConfigManager.data.autoTntConfig.lastKnownTntSlot;
         }
 
         for (int i = 0; i < 9; i++) {
             ItemStack stack = player.getInventory().getItem(i);
             if (isTnt(stack)) {
-                STATE.lastKnownTntSlot = i;
+                ConfigManager.data.autoTntConfig.lastKnownTntSlot = i;
                 return i;
             }
         }
-        STATE.lastKnownTntSlot = -1;
+        ConfigManager.data.autoTntConfig.lastKnownTntSlot = -1;
         return -1;
     }
 
@@ -128,24 +128,24 @@ public class AutoTNT {
     }
 
     private static void equipTnt(Player player, int slot) {
-        if (STATE.isTntEquipped)
+        if (ConfigManager.data.autoTntConfig.isTntEquipped)
             return;
         InventoryAccessor inv = (InventoryAccessor) player.getInventory();
-        STATE.originalItemSlot = inv.getBlackaddonsSelected();
+        ConfigManager.data.autoTntConfig.originalItemSlot = inv.getBlackaddonsSelected();
         inv.setBlackaddonsSelected(slot);
-        STATE.isTntEquipped = true;
-        STATE.ticksSinceEquip = 0;
-        STATE.ticksSinceStopLooking = 0;
+        ConfigManager.data.autoTntConfig.isTntEquipped = true;
+        ConfigManager.data.autoTntConfig.ticksSinceEquip = 0;
+        ConfigManager.data.autoTntConfig.ticksSinceStopLooking = 0;
     }
 
     private static void unequipTnt(Player player, boolean fullReset) {
-        if (!STATE.isTntEquipped || player == null)
+        if (!ConfigManager.data.autoTntConfig.isTntEquipped || player == null)
             return;
 
         InventoryAccessor inv = (InventoryAccessor) player.getInventory();
-        if (CheatsOptions.SwapBack && STATE.originalItemSlot != -1) {
-            if (STATE.originalItemSlot >= 0 && STATE.originalItemSlot < 9) {
-                inv.setBlackaddonsSelected(STATE.originalItemSlot);
+        if (ConfigManager.data.autoTntConfig.SwapBack && ConfigManager.data.autoTntConfig.originalItemSlot != -1) {
+            if (ConfigManager.data.autoTntConfig.originalItemSlot >= 0 && ConfigManager.data.autoTntConfig.originalItemSlot < 9) {
+                inv.setBlackaddonsSelected(ConfigManager.data.autoTntConfig.originalItemSlot);
             }
         } else {
             int nonTnt = findNonTntHotbarSlot(player);
@@ -155,9 +155,9 @@ public class AutoTNT {
         }
 
         if (fullReset) {
-            STATE.fullReset();
+            ConfigManager.data.autoTntConfig.fullReset();
         } else {
-            STATE.reset();
+            ConfigManager.data.autoTntConfig.reset();
         }
     }
 
@@ -172,7 +172,7 @@ public class AutoTNT {
 
     public static List<String> getDebugInfo() {
         java.util.List<String> info = new ArrayList<>();
-        if (!CheatsOptions.AutoTNTEnabled)
+        if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled)
             return info;
 
         info.add("");
@@ -187,20 +187,28 @@ public class AutoTNT {
             info.add("Target: " + (isTarget ? "§aYES" : "§cNO") + " §r("
                     + BuiltInRegistries.BLOCK.getKey(block).getPath() + ")");
             info.add("Distance: " + String.format("%.2f", dist) + " (Limit: "
-                    + String.format("%.2f", STATE.currentDistanceLimit * STATE.currentDistanceLimit) + ")");
+                    + String.format("%.2f", ConfigManager.data.autoTntConfig.currentDistanceLimit * ConfigManager.data.autoTntConfig.currentDistanceLimit) + ")");
         } else {
             info.add("Target: None");
         }
 
-        info.add("Equipped: " + STATE.isTntEquipped);
-        info.add("Has Clicked: " + STATE.hasClicked);
-        info.add("Ticks Eq: " + STATE.ticksSinceEquip + " / " + STATE.currentRandomDelay);
-        info.add("Ticks Look: " + STATE.ticksSinceStopLooking + " / " + STATE.unequipDelay);
+        info.add("Equipped: " + ConfigManager.data.autoTntConfig.isTntEquipped);
+        info.add("Has Clicked: " + ConfigManager.data.autoTntConfig.hasClicked);
+        info.add("Ticks Eq: " + ConfigManager.data.autoTntConfig.ticksSinceEquip + " / " + ConfigManager.data.autoTntConfig.currentRandomDelay);
+        info.add("Ticks Look: " + ConfigManager.data.autoTntConfig.ticksSinceStopLooking + " / " + ConfigManager.data.autoTntConfig.unequipDelay);
 
         return info;
     }
 
-    private static class ModState {
+    public static class FeatureConfig {
+        // Config
+        public boolean AutoTNTEnabled = false;
+        public int AutoTNTDelay = 5;
+        public int UnequipDelay = 8;
+
+        public boolean SwapBack = false;
+
+        // State
         boolean isTntEquipped = false;
         boolean hasClicked = false;
         int ticksSinceEquip = 0;
@@ -212,7 +220,7 @@ public class AutoTNT {
         BlockPos lastTargetPos = null;
         double currentDistanceLimit = BASE_DISTANCE_LIMIT;
 
-        ModState() {
+        public FeatureConfig() {
             fullReset();
         }
 
@@ -232,8 +240,8 @@ public class AutoTNT {
         }
 
         void updateDelays() {
-            this.currentRandomDelay = CheatsOptions.AutoTNTDelay + RANDOM.nextInt(2);
-            int baseUnequip = CheatsOptions.UnequipDelay;
+            this.currentRandomDelay = AutoTNTDelay + RANDOM.nextInt(2);
+            int baseUnequip = UnequipDelay;
             if (baseUnequip > 2) {
                 this.unequipDelay = baseUnequip + RANDOM.nextInt(3) - 1;
             } else {

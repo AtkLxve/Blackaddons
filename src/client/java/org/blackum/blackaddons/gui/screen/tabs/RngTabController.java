@@ -378,7 +378,7 @@ public class RngTabController extends ProfileTabController {
         double localPrice = org.blackum.blackaddons.util.LocalIntegration.getPrice(itemId);
         double botPrice = (rngPrices != null) ? rngPrices.getOrDefault(itemId, 0.0) : 0.0;
 
-        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+        if (org.blackum.blackaddons.config.ConfigManager.data.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
             return localPrice > 0 ? localPrice : botPrice;
         } else {
             return botPrice > 0 ? botPrice : localPrice;
@@ -608,8 +608,8 @@ public class RngTabController extends ProfileTabController {
             if (visible && isMouseOver(mouseX, mouseY) && button == 0) {
                 try {
                     String currentPlayer = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                    boolean isDev = org.blackum.blackaddons.config.ConfigManager.developerKey != null
-                            && !org.blackum.blackaddons.config.ConfigManager.developerKey.isEmpty();
+                    boolean isDev = org.blackum.blackaddons.config.ConfigManager.data.developerKey != null
+                            && !org.blackum.blackaddons.config.ConfigManager.data.developerKey.isEmpty();
 
                     if (isDev || currentPlayer.equalsIgnoreCase(RngTabController.this.playerName)) {
                         expanded = !expanded;

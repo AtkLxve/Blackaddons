@@ -130,7 +130,7 @@ public class ProfileViewerScreen extends BaseScreen {
             graphics.drawString(Minecraft.getInstance().font, label, x, y,
                     Theme.TEXT_SECONDARY);
 
-            String source = "Source: " + ConfigManager.dataSource.name();
+            String source = "Source: " + ConfigManager.data.dataSource.name();
             graphics.drawString(Minecraft.getInstance().font, source, x, y + 10,
                     Theme.TEXT_SECONDARY);
         }

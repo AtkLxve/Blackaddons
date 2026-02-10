@@ -291,7 +291,7 @@ public class RtcaTabController extends ProfileTabController {
         double[] mayorVals = { 1.0, 1.5, 1.55 };
         bonuses.put("mayor", mayorVals[simMayorIndex]);
 
-        if (org.blackum.blackaddons.config.ConfigManager.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+        if (org.blackum.blackaddons.config.ConfigManager.data.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
 
             Map<String, Double> currentClassXp = new HashMap<>();
             try {

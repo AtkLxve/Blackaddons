@@ -20,7 +20,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.cheats.AutoTNT;
-import org.blackum.blackaddons.config.ConfigManagerV2;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.features.CommandUtils;
 import org.blackum.blackaddons.features.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
@@ -40,7 +40,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         Blackaddons.LOGGER.info("Initializing client...");
         AutoTNT.register();
 
-        ConfigManagerV2.load();
+        ConfigManager.load();
 
         BotIntegration.fetchVerificationKey();
 
@@ -126,11 +126,11 @@ public class BlackaddonsClient implements ClientModInitializer {
 
                 debugInfo.add("");
                 debugInfo.add("§6[Mod Hider Status]");
-                debugInfo.add("Spoof Mode: " + ModHiderOptions.SPOOF_MODE.name());
-                debugInfo.add("Hide Mods: " + ModHiderOptions.hideMods());
-                debugInfo.add("Custom Client: " + ModHiderOptions.CUSTOM_CLIENT);
+                debugInfo.add("Spoof Mode: " + ConfigManager.data.modHiderConfig.SPOOF_MODE.name());
+                debugInfo.add("Hide Mods: " + ConfigManager.data.modHiderConfig.hideMods());
+                debugInfo.add("Custom Client: " + ConfigManager.data.modHiderConfig.CUSTOM_CLIENT);
                 debugInfo.add("Disable Payloads: "
-                        + ModHiderOptions.DISABLE_CUSTOM_PAYLOADS);
+                        + ConfigManager.data.modHiderConfig.DISABLE_CUSTOM_PAYLOADS);
 
                 List<String> allowedModIds = new ArrayList<>();
                 List<String> allowedLibIds = new ArrayList<>();
@@ -145,7 +145,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     String type = mod.getMetadata().getType();
                     boolean isLibrary = type.contains("library") || type.contains("api") ||
                             modId.contains("library") || modId.contains("api");
-                    boolean isAllowed = ModHiderOptions.ALLOWED_MODS.contains(modId);
+                    boolean isAllowed = ConfigManager.data.modHiderConfig.ALLOWED_MODS.contains(modId);
 
                     if (isLibrary) {
                         if (isAllowed) {
@@ -196,7 +196,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                 }
 
                 debugInfo.add("Allowed Channels: "
-                        + ModHiderOptions.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size());
+                        + ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size());
 
                 debugInfo.addAll(AutoTNT.getDebugInfo());
 
@@ -224,11 +224,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         });
 
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            ConfigManagerV2.save();
-
-            while (true) {
-                System.out.println("who's closing the game now bitch");
-            }
+            ConfigManager.save();
         });
 
         ClientCommandRegistrationCallback.EVENT

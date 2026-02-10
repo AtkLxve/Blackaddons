@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.mixin.client;
 
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.modhider.ComponentUtils;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
 import org.blackum.blackaddons.modhider.ToastUtils;
@@ -18,7 +19,7 @@ public abstract class AbstractSignEditScreenMixin {
     @Redirect(method = "<init>(Lnet/minecraft/world/level/block/entity/SignBlockEntity;ZZLnet/minecraft/network/chat/Component;)V", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;map(Ljava/util/function/Function;)Ljava/util/stream/Stream;"))
     public Stream<String> init(Stream<Component> instance, Function<Component, String> function) {
         return instance.map(message -> {
-            if (ModHiderOptions.hideMods()) {
+            if (ConfigManager.data.modHiderConfig.hideMods()) {
                 String str = ComponentUtils.getString(message);
                 if (!str.equals(message.getString())) {
                     ToastUtils.showServerAttemptedReadingModsToast();
