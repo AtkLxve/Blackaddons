@@ -10,7 +10,6 @@ import org.blackum.blackaddons.features.LocalTeammateManager;
 import org.blackum.blackaddons.features.LocalRngManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
-import org.blackum.blackaddons.general.GeneralOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -266,7 +265,7 @@ public class ProfileStateManager {
         }
 
         boolean isExpired() {
-            long durationMs = GeneralOptions.CACHE_DURATION_MINUTES * 60 * 1000L;
+            long durationMs = ConfigManager.data.cacheDurationMinutes * 60 * 1000L;
             return System.currentTimeMillis() - timestamp > durationMs;
         }
     }

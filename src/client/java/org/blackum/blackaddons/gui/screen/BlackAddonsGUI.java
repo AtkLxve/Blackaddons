@@ -9,8 +9,6 @@ import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.modhider.SpoofMode;
-import org.blackum.blackaddons.general.GeneralOptions;
-import org.blackum.blackaddons.legit.LegitOptions;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 
@@ -132,15 +130,15 @@ public class BlackAddonsGUI extends BaseScreen {
         settingsTab.addWidget(layoutToggle);
 
         Label durationLabel = new Label(contentX, contentY + offsetY + 320,
-                "Notification Duration: " + GeneralOptions.NOTIFICATION_DURATION + "ms", Label.Style.BODY);
+                "Notification Duration: " + ConfigManager.data.notificationDuration + "ms", Label.Style.BODY);
         settingsTab.addWidget(durationLabel);
 
         Slider durationSlider = new Slider(contentX, contentY + offsetY + 330, tabPanel.getContentWidth() - 20, 500f,
                 10000f,
-                GeneralOptions.NOTIFICATION_DURATION, val -> {
+                ConfigManager.data.notificationDuration, val -> {
                     int duration = Math.round(val);
-                    if (duration != GeneralOptions.NOTIFICATION_DURATION) {
-                        GeneralOptions.NOTIFICATION_DURATION = duration;
+                    if (duration != ConfigManager.data.notificationDuration) {
+                        ConfigManager.data.notificationDuration = duration;
                         durationLabel.setText("Notification Duration: " + duration + "ms");
                         ConfigManager.save();
                     }
@@ -166,16 +164,16 @@ public class BlackAddonsGUI extends BaseScreen {
                     else if (selected.contains("1 Hour"))
                         minutes = 60;
 
-                    if (GeneralOptions.CACHE_DURATION_MINUTES != minutes) {
-                        GeneralOptions.CACHE_DURATION_MINUTES = minutes;
+                    if (ConfigManager.data.cacheDurationMinutes != minutes) {
+                        ConfigManager.data.cacheDurationMinutes = minutes;
                         ConfigManager.save();
                     }
                 });
 
-        String currentOption = GeneralOptions.CACHE_DURATION_MINUTES + " Minutes";
-        if (GeneralOptions.CACHE_DURATION_MINUTES == 1)
+        String currentOption = ConfigManager.data.cacheDurationMinutes + " Minutes";
+        if (ConfigManager.data.cacheDurationMinutes == 1)
             currentOption = "1 Minute";
-        else if (GeneralOptions.CACHE_DURATION_MINUTES == 60)
+        else if (ConfigManager.data.cacheDurationMinutes == 60)
             currentOption = "1 Hour";
 
         cacheDropdown.setSelectedOption(currentOption);
@@ -665,8 +663,8 @@ public class BlackAddonsGUI extends BaseScreen {
         ToggleSwitch fullbrightToggle = new ToggleSwitch(contentX, contentY + 30, contentWidth - 20,
                 "Enable Fullbright",
                 "Maximizes gamma (Night Vision)",
-                LegitOptions.FullbrightEnabled, value -> {
-                    LegitOptions.FullbrightEnabled = value;
+                ConfigManager.data.legitFullbrightEnabled, value -> {
+                    ConfigManager.data.legitFullbrightEnabled = value;
                     ConfigManager.save();
                 });
         legitTab.addWidget(fullbrightToggle);
@@ -680,8 +678,8 @@ public class BlackAddonsGUI extends BaseScreen {
         ToggleSwitch fullbrightToggle = new ToggleSwitch(contentX, contentY, 260,
                 "Enable Fullbright",
                 "Maximizes gamma (Night Vision)",
-                LegitOptions.FullbrightEnabled, value -> {
-                    LegitOptions.FullbrightEnabled = value;
+                ConfigManager.data.legitFullbrightEnabled, value -> {
+                    ConfigManager.data.legitFullbrightEnabled = value;
                     ConfigManager.save();
                 });
         fullbrightCard.addChild(fullbrightToggle);

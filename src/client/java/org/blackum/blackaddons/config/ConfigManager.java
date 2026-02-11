@@ -19,11 +19,6 @@ public class ConfigManager {
     private static final File CONFIG_FILE = CONFIG_DIR.resolve("config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private static final String DEFAULT_BOT_URL = "http://hypixel-skyblock-socket.pegle.com:8080";
-    private static final String DEFAULT_CLIENT_NAME = "fabric";
-    private static final int DEFAULT_NOTIFICATION_DURATION = 4000;
-    private static final int DEFAULT_CACHE_DURATION_MINUTES = 5;
-
     public static class CardState {
         public int x;
         public int y;
@@ -62,14 +57,14 @@ public class ConfigManager {
         public Map<String, CardState> cardStates = new HashMap<>();
 
         // Bot
-        public String botUrl = DEFAULT_BOT_URL;
+        public String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
         public DataSource dataSource = DataSource.LOCAL;
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
 
         // Mod Hider (ported from ClientSpoofer)
         public String modHiderSpoofMode = SpoofMode.VANILLA.name();
-        public String modHiderCustomClient = DEFAULT_CLIENT_NAME;
+        public String modHiderCustomClient = "fabric";
         public boolean modHiderHideMods = true;
         public boolean modHiderDisableCustomPayloads = true;
         public ArrayList<String> modHiderAllowedMods = new ArrayList<>();
@@ -88,8 +83,8 @@ public class ConfigManager {
         public boolean legitFullbrightEnabled = false;
 
         // Settings
-        public int notificationDuration = DEFAULT_NOTIFICATION_DURATION;
-        public int cacheDurationMinutes = DEFAULT_CACHE_DURATION_MINUTES;
+        public int notificationDuration = 4000;
+        public int cacheDurationMinutes = 5;
 
         // Command aliases
         public Map<String, String> knownAliases = new HashMap<>();

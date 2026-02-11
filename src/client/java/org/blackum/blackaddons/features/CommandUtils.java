@@ -44,7 +44,6 @@ public class CommandUtils {
                 ConfigManager.data.knownAliases.put(name, desc);
                 ConfigManager.save();
 
-
                 ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
                     dispatcher.register(ClientCommandManager.literal(name).executes(context -> {
                         assert mc.player != null;

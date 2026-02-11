@@ -2,6 +2,7 @@ package org.blackum.blackaddons.gui.notification;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.theme.Theme;
@@ -15,7 +16,6 @@ public class Notification {
     private static final int MARGIN_Y = 8;
     private static final int TITLE_HEIGHT = 9;
     private static final int GAP_Y = 4;
-    private static final int LIFETIME = 2500;
 
     private final String title;
     private final List<net.minecraft.util.FormattedCharSequence> messageLines;
@@ -47,7 +47,7 @@ public class Notification {
 
     public void tick() {
         if (!expiring && System.currentTimeMillis()
-                - creationTime > org.blackum.blackaddons.general.GeneralOptions.NOTIFICATION_DURATION) {
+                - creationTime > ConfigManager.data.notificationDuration) {
             expiring = true;
             exitAnimation.start();
         }
