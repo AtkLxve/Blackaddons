@@ -39,3 +39,6 @@ https://github.com/BLACKUM/rtca-bot-hypixel (bot)
 - `/ba daily`: Sync daily stats for leaderboards.
 - `/ba test GiveTNT`: Give specific testing items for verifying AutoTNT functionality.
 - `/ba test rng [type] [magic_find] [item]`: Simulate an RNG drop event for testing the tracker.
+- `/ba commandalias add [alias] [original command]`: Creates a command alias, needs swapping lobbies to propagate
+- `/ba commandalias del [alias]`: Removes a command alias, needs swapping lobbies to propagate
+- `/ba commandalias list`: Lists all available aliases
