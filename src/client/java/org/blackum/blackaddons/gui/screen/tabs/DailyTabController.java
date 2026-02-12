@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.util.Util;
@@ -7,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
+import org.blackum.blackaddons.gui.util.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.util.BotIntegration;
 import org.blackum.blackaddons.util.DungeonFloor;
@@ -278,7 +280,7 @@ public class DailyTabController extends ProfileTabController {
             return;
         }
 
-        com.google.gson.JsonArray data = json.getAsJsonArray("data");
+        JsonArray data = json.getAsJsonArray("data");
         if (data.size() == 0) {
             addInfoRow(dailyLeaderboardList, "No entries yet.", "");
             return;
@@ -452,7 +454,7 @@ public class DailyTabController extends ProfileTabController {
         Widget w = new Widget(0, 0, list.getWidth(), 55) {
             @Override
             public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, x, y, width - 4, height - 2,
+                RenderHelper.renderRoundedRect(graphics, x, y, width - 4, height - 2,
                         3, Theme.BACKGROUND_SECONDARY);
                 Minecraft mc = Minecraft.getInstance();
                 graphics.drawString(mc.font, "§b" + title, x + 5, y + 5, 0xFFFFFFFF);
@@ -502,7 +504,7 @@ public class DailyTabController extends ProfileTabController {
         Widget w = new Widget(0, 0, list.getWidth(), 45) {
             @Override
             public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                org.blackum.blackaddons.gui.util.RenderHelper.renderRoundedRect(graphics, x, y, width - 4, height - 2,
+                RenderHelper.renderRoundedRect(graphics, x, y, width - 4, height - 2,
                         3, Theme.BACKGROUND_SECONDARY);
                 Minecraft mc = Minecraft.getInstance();
                 graphics.drawString(mc.font, "Daily: " + dText, x + 5, y + 8, 0xFFE0E0E0);

@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.blackum.blackaddons.Blackaddons;
+import org.blackum.blackaddons.features.LocalTeammateManager;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -35,7 +37,7 @@ public class LocalIntegration {
     private static final long PRICE_CACHE_DURATION_MS = 24 * 60 * 60 * 1000L; // 24 hours
     private static volatile boolean isRefreshing = false;
 
-    private static final java.nio.file.Path CONFIG_DIR = net.fabricmc.loader.api.FabricLoader.getInstance()
+    private static final java.nio.file.Path CONFIG_DIR = FabricLoader.getInstance()
             .getConfigDir().resolve("blackaddons");
     private static final File PRICES_FILE = CONFIG_DIR.resolve("prices.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -311,16 +313,16 @@ public class LocalIntegration {
                         }
                     }
                     if (minTs != Long.MAX_VALUE) {
-                        org.blackum.blackaddons.features.LocalTeammateManager.getInstance()
+                        LocalTeammateManager.getInstance()
                                 .setLocalRunWindowStart(minTs / 1000);
                     }
-                    org.blackum.blackaddons.features.LocalTeammateManager.getInstance().processRuns(uuid, recentRuns);
+                    LocalTeammateManager.getInstance().processRuns(uuid, recentRuns);
                 }
             }
 
             result.add("recent_runs", recentRuns);
             result.add("teammates",
-                    org.blackum.blackaddons.features.LocalTeammateManager.getInstance().getTeammates(uuid));
+                    LocalTeammateManager.getInstance().getTeammates(uuid));
             result.add("daily_stats", new JsonObject());
             result.add("monthly_stats", new JsonObject());
 

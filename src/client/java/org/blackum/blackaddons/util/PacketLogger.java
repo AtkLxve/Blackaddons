@@ -1,5 +1,8 @@
 package org.blackum.blackaddons.util;
 
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.blackum.blackaddons.Blackaddons;
 
@@ -7,11 +10,15 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class PacketLogger {
-    private static final java.nio.file.Path LOG_DIR = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir()
+    private static final Path LOG_DIR = FabricLoader.getInstance().getConfigDir()
             .resolve("blackaddons");
     private static final File LOG_FILE = LOG_DIR.resolve("blocked_packets.log").toFile();
 

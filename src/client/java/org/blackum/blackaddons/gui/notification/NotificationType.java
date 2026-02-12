@@ -1,5 +1,7 @@
 package org.blackum.blackaddons.gui.notification;
 
+import org.blackum.blackaddons.gui.theme.Theme;
+
 public enum NotificationType {
     INFO(0xFF50C8FF),
     SUCCESS(0xFF55FF55),
@@ -13,9 +15,13 @@ public enum NotificationType {
     }
 
     public int getColor() {
-        if (this == INFO) {
-            return org.blackum.blackaddons.gui.theme.Theme.ACCENT;
+        switch (this) {
+            case INFO:
+                return Theme.ACCENT;
+            case ERROR:
+                return Theme.ACCENT;
+            default:
+                return color;
         }
-        return color;
     }
 }

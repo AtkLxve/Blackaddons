@@ -112,11 +112,11 @@ public class ResizableCard extends Card {
             int titleColor = dragging ? Theme.ACCENT : Theme.TEXT_PRIMARY;
             String arrow = collapsed ? "◀" : "▼";
 
-            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font,
+            graphics.drawString(Minecraft.getInstance().font,
                     getTitle(), x + getPadding(), y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
 
-            int arrowWidth = net.minecraft.client.Minecraft.getInstance().font.width(arrow);
-            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font,
+            int arrowWidth = Minecraft.getInstance().font.width(arrow);
+            graphics.drawString(Minecraft.getInstance().font,
                     arrow, x + width - getPadding() - arrowWidth, y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
         }
 

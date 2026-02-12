@@ -3,14 +3,11 @@ package org.blackum.blackaddons.gui.screen.tabs;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.util.BotIntegration;
-import org.blackum.blackaddons.util.FormatUtils;
-import org.blackum.blackaddons.util.JsonUtils;
-import org.blackum.blackaddons.util.CatacombsUtils;
-import org.blackum.blackaddons.util.DungeonUtils;
+import org.blackum.blackaddons.util.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -291,7 +288,7 @@ public class RtcaTabController extends ProfileTabController {
         double[] mayorVals = { 1.0, 1.5, 1.55 };
         bonuses.put("mayor", mayorVals[simMayorIndex]);
 
-        if (org.blackum.blackaddons.config.ConfigManager.data.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+        if (ConfigManager.data.dataSource == ConfigManager.DataSource.LOCAL) {
 
             Map<String, Double> currentClassXp = new HashMap<>();
             try {
@@ -305,7 +302,7 @@ public class RtcaTabController extends ProfileTabController {
                 return;
             }
 
-            org.blackum.blackaddons.util.LocalRtcaService.simulate(rtcaFloor, currentClassXp, bonuses)
+            LocalRtcaService.simulate(rtcaFloor, currentClassXp, bonuses)
                     .thenAccept(json -> {
                         Minecraft.getInstance().execute(() -> {
                             if (simResultsList == null)
@@ -384,7 +381,7 @@ public class RtcaTabController extends ProfileTabController {
                 }
             });
 
-            com.google.gson.JsonObject results = JsonUtils.getObject(json, "results");
+            JsonObject results = JsonUtils.getObject(json, "results");
             List<String> sortedClasses = new ArrayList<>(results.keySet());
             sortedClasses.sort(String::compareTo);
 
@@ -397,7 +394,7 @@ public class RtcaTabController extends ProfileTabController {
             simResultsList.addItem(header);
 
             for (String cls : sortedClasses) {
-                com.google.gson.JsonObject clsData = JsonUtils.getObject(results, cls);
+                JsonObject clsData = JsonUtils.getObject(results, cls);
                 int runs = JsonUtils.getInt(clsData, "runs_done");
                 double remaining = JsonUtils.getDouble(clsData, "remaining_xp");
                 xpData.put(cls, remaining);

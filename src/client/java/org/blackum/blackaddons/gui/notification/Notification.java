@@ -2,6 +2,8 @@ package org.blackum.blackaddons.gui.notification;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
@@ -18,7 +20,7 @@ public class Notification {
     private static final int GAP_Y = 4;
 
     private final String title;
-    private final List<net.minecraft.util.FormattedCharSequence> messageLines;
+    private final List<FormattedCharSequence> messageLines;
     private final NotificationType type;
     private final int height;
 
@@ -34,7 +36,7 @@ public class Notification {
 
         Minecraft mc = Minecraft.getInstance();
         int maxTextWidth = WIDTH - (MARGIN_X * 2);
-        this.messageLines = mc.font.split(net.minecraft.network.chat.Component.literal(message), maxTextWidth);
+        this.messageLines = mc.font.split(Component.literal(message), maxTextWidth);
 
         int linesHeight = messageLines.size() * mc.font.lineHeight;
 
@@ -82,7 +84,7 @@ public class Notification {
 
         int textStart = y + MARGIN_Y + TITLE_HEIGHT + GAP_Y;
         int textY = textStart;
-        for (net.minecraft.util.FormattedCharSequence line : messageLines) {
+        for (FormattedCharSequence line : messageLines) {
             graphics.drawString(mc.font, line, renderX + MARGIN_X, textY, Theme.TEXT_SECONDARY, false);
             textY += mc.font.lineHeight;
         }

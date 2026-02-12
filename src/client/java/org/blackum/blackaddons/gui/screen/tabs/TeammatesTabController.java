@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.model.Teammate;
@@ -158,8 +160,8 @@ public class TeammatesTabController extends ProfileTabController {
                             }
                         }
                         Minecraft.getInstance().getSoundManager()
-                                .play(net.minecraft.client.resources.sounds.SimpleSoundInstance
-                                        .forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                                .play(SimpleSoundInstance
+                                        .forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                         updateTeammatesList();
                         return true;
                     }

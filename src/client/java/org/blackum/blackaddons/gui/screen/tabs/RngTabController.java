@@ -5,14 +5,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.util.BotIntegration;
-import org.blackum.blackaddons.util.JsonUtils;
+import org.blackum.blackaddons.util.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +57,7 @@ public class RngTabController extends ProfileTabController {
             return;
         }
 
-        org.blackum.blackaddons.util.ProfileStateManager.getInstance().getRngData(playerName).thenAccept(result -> {
+        ProfileStateManager.getInstance().getRngData(playerName).thenAccept(result -> {
             if (result == null || result.hasError()) {
                 Minecraft.getInstance().execute(() -> {
                     tab.widgets.clear();
@@ -375,10 +378,10 @@ public class RngTabController extends ProfileTabController {
         if (itemId == null)
             return 0;
 
-        double localPrice = org.blackum.blackaddons.util.LocalIntegration.getPrice(itemId);
+        double localPrice = LocalIntegration.getPrice(itemId);
         double botPrice = (rngPrices != null) ? rngPrices.getOrDefault(itemId, 0.0) : 0.0;
 
-        if (org.blackum.blackaddons.config.ConfigManager.data.dataSource == org.blackum.blackaddons.config.ConfigManager.DataSource.LOCAL) {
+        if (ConfigManager.data.dataSource == ConfigManager.DataSource.LOCAL) {
             return localPrice > 0 ? localPrice : botPrice;
         } else {
             return botPrice > 0 ? botPrice : localPrice;
@@ -426,7 +429,7 @@ public class RngTabController extends ProfileTabController {
             String cat = (RngTabController.this.rngGlobalDrops != null
                     && RngTabController.this.rngGlobalDrops.contains(itemName)) ? "Global" : subcategory;
 
-            org.blackum.blackaddons.util.ProfileStateManager.getInstance()
+            ProfileStateManager.getInstance()
                     .updateRngCount(RngTabController.this.playerName, cat, itemName, "increment", null)
                     .thenAccept(newCount -> {
                         if (newCount != null) {
@@ -444,7 +447,7 @@ public class RngTabController extends ProfileTabController {
             String cat = (RngTabController.this.rngGlobalDrops != null
                     && RngTabController.this.rngGlobalDrops.contains(itemName)) ? "Global" : subcategory;
 
-            org.blackum.blackaddons.util.ProfileStateManager.getInstance()
+            ProfileStateManager.getInstance()
                     .updateRngCount(RngTabController.this.playerName, cat, itemName, "decrement", null)
                     .thenAccept(newCount -> {
                         if (newCount != null) {
@@ -457,30 +460,29 @@ public class RngTabController extends ProfileTabController {
         }
 
         private void handleSet() {
-            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-            mc.setScreen(new net.minecraft.client.gui.screens.Screen(
-                    net.minecraft.network.chat.Component.literal("Set RNG Count")) {
+            Minecraft mc = Minecraft.getInstance();
+            mc.setScreen(new Screen(Component.literal("Set RNG Count")) {
 
-                private net.minecraft.client.gui.components.EditBox inputBox;
+                private EditBox inputBox;
 
                 @Override
                 protected void init() {
                     super.init();
 
-                    inputBox = new net.minecraft.client.gui.components.EditBox(
+                    inputBox = new EditBox(
                             mc.font,
                             width / 2 - 100,
                             height / 2 - 10,
                             200,
                             20,
-                            net.minecraft.network.chat.Component.literal("Count"));
+                            Component.literal("Count"));
                     inputBox.setMaxLength(10);
                     inputBox.setValue(String.valueOf(count));
                     inputBox.setFilter(s -> s.matches("[0-9]*"));
                     this.addRenderableWidget(inputBox);
 
                     this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
-                            net.minecraft.network.chat.Component.literal("Confirm"),
+                            Component.literal("Confirm"),
                             btn -> {
                                 try {
                                     int newCount = Integer.parseInt(inputBox.getValue());
@@ -489,7 +491,7 @@ public class RngTabController extends ProfileTabController {
                                                     ? "Global"
                                                     : subcategory;
 
-                                    org.blackum.blackaddons.util.ProfileStateManager.getInstance()
+                                    ProfileStateManager.getInstance()
                                             .updateRngCount(RngTabController.this.playerName, cat, itemName, "set",
                                                     newCount)
                                             .thenAccept(updatedCount -> {
@@ -507,7 +509,7 @@ public class RngTabController extends ProfileTabController {
                             }).bounds(width / 2 - 100, height / 2 + 20, 95, 20).build());
 
                     this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
-                            net.minecraft.network.chat.Component.literal("Cancel"),
+                            Component.literal("Cancel"),
                             btn -> mc.setScreen(RngTabController.this.screen))
                             .bounds(width / 2 + 5, height / 2 + 20, 95, 20).build());
 
@@ -515,7 +517,7 @@ public class RngTabController extends ProfileTabController {
                 }
 
                 @Override
-                public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
+                public void render(GuiGraphics graphics, int mouseX, int mouseY,
                         float partialTick) {
                     super.render(graphics, mouseX, mouseY, partialTick);
                     graphics.drawCenteredString(mc.font, "Set count for " + itemName, width / 2, height / 2 - 35,
@@ -607,9 +609,9 @@ public class RngTabController extends ProfileTabController {
 
             if (visible && isMouseOver(mouseX, mouseY) && button == 0) {
                 try {
-                    String currentPlayer = net.minecraft.client.Minecraft.getInstance().getUser().getName();
-                    boolean isDev = org.blackum.blackaddons.config.ConfigManager.data.developerKey != null
-                            && !org.blackum.blackaddons.config.ConfigManager.data.developerKey.isEmpty();
+                    String currentPlayer = Minecraft.getInstance().getUser().getName();
+                    boolean isDev = ConfigManager.data.developerKey != null
+                            && !ConfigManager.data.developerKey.isEmpty();
 
                     if (isDev || currentPlayer.equalsIgnoreCase(RngTabController.this.playerName)) {
                         expanded = !expanded;

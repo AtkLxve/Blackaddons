@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
@@ -42,7 +43,7 @@ public class Card extends Widget {
         int contentY = y + padding;
 
         if (title != null && !title.isEmpty()) {
-            graphics.drawString(net.minecraft.client.Minecraft.getInstance().font,
+            graphics.drawString(Minecraft.getInstance().font,
                     title, x + padding, contentY, Theme.TEXT_PRIMARY);
             contentY += 12;
         }

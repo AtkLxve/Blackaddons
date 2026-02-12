@@ -3,6 +3,8 @@ package org.blackum.blackaddons.modhider;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.blackum.blackaddons.config.ConfigManager;
+
 /**
  * Ported from ClientSpoofer-1.21.11. Backed by
  * {@link org.blackum.blackaddons.config.ConfigManager}.

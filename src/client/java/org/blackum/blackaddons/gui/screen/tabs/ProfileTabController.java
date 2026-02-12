@@ -6,6 +6,7 @@ import org.blackum.blackaddons.gui.widget.Label;
 import org.blackum.blackaddons.gui.widget.ListView;
 import org.blackum.blackaddons.gui.widget.TabPanel;
 import org.blackum.blackaddons.gui.theme.Theme;
+import org.blackum.blackaddons.gui.widget.SectionHeader;
 import org.blackum.blackaddons.util.FormatUtils;
 import org.blackum.blackaddons.util.JsonUtils;
 
@@ -29,7 +30,7 @@ public abstract class ProfileTabController {
     }
 
     protected void addSectionHeader(ListView list, String title) {
-        list.addItem(new org.blackum.blackaddons.gui.widget.SectionHeader(list.getWidth(), title));
+        list.addItem(new SectionHeader(list.getWidth(), title));
     }
 
     protected String formatMs(int ms) {
