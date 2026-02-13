@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.Blackaddons;
 
 public class PayloadHelper {
@@ -28,7 +29,9 @@ public class PayloadHelper {
                 tryParse = idClass.getMethod(TRY_PARSE_METHOD, String.class);
             } catch (NoSuchMethodException e) {
                 Blackaddons.LOGGER.error(ERROR_TRY_PARSE_NOT_FOUND + idClass.getName());
-                ReflectionDump.dumpClass(idClass);
+                if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+                    ReflectionDump.dumpClass(idClass);
+                }
 
                 return null;
             }
