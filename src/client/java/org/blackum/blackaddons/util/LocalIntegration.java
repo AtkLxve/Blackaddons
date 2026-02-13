@@ -20,27 +20,22 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.concurrent.CompletableFuture;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalIntegration {
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
-            .connectTimeout(Duration.ofSeconds(15))
+            .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
             .build();
-
-    // Cloudflare bypass
-    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64; x64; rv:136.0) Gecko/20100101 Firefox/136.0";
 
     private static Map<String, Double> priceCache = new HashMap<>();
     private static long priceCacheExpiry = 0;
-    private static final long PRICE_CACHE_DURATION_MS = 24 * 60 * 60 * 1000L; // 24 hours
     private static volatile boolean isRefreshing = false;
 
     private static final java.nio.file.Path CONFIG_DIR = FabricLoader.getInstance()
             .getConfigDir().resolve("blackaddons");
     private static final File PRICES_FILE = CONFIG_DIR.resolve("prices.json").toFile();
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private static class PricesData {
         long timestamp;
@@ -97,7 +92,7 @@ public class LocalIntegration {
                 }
 
                 priceCache = newPrices;
-                priceCacheExpiry = System.currentTimeMillis() + PRICE_CACHE_DURATION_MS;
+                priceCacheExpiry = System.currentTimeMillis() + Constants.PRICE_CACHE_DURATION_MS;
                 savePrices(newPrices);
                 Blackaddons.LOGGER.info("Local prices refreshed. Total items: " + newPrices.size());
             } catch (Exception e) {
@@ -109,7 +104,7 @@ public class LocalIntegration {
     }
 
     private static CompletableFuture<Map<String, Double>> getBazaarPrices() {
-        return sendGetRequest("https://api.hypixel.net/skyblock/bazaar").thenApply(res -> {
+        return sendGetRequest(Constants.HYPIXEL_BAZAAR_API).thenApply(res -> {
             Map<String, Double> prices = new HashMap<>();
             if (res != null && res.statusCode() == 200) {
                 try {
@@ -129,7 +124,7 @@ public class LocalIntegration {
     }
 
     private static CompletableFuture<Map<String, Double>> getAhPrices() {
-        return sendGetRequest("https://moulberry.codes/auction_averages_lbin/3day.json").thenApply(res -> {
+        return sendGetRequest(Constants.MOULBERRY_AH_API).thenApply(res -> {
             Map<String, Double> prices = new HashMap<>();
             if (res != null && res.statusCode() == 200) {
                 try {
@@ -147,19 +142,17 @@ public class LocalIntegration {
 
     private static CompletableFuture<Map<String, Double>> getSpecialPrices() {
         Map<String, String[]> specials = new HashMap<>();
-        specials.put("SHINY_NECRON_HANDLE",
-                new String[] { "https://sky.coflnet.com/api/item/price/NECRON_HANDLE?IsShiny=true" });
+        specials.put("SHINY_NECRON_HANDLE", new String[] { Constants.COFL_SHINY_NECRON_HANDLE });
         specials.put("SKELETON_MASTER_CHESTPLATE", new String[] {
-                "https://sky.coflnet.com/api/item/price/SKELETON_MASTER_CHESTPLATE?ItemTier=10-10&NoOtherValuableEnchants=true&BaseStatBoost=50",
-                "https://sky.coflnet.com/api/item/price/SKELETON_MASTER_CHESTPLATE?BaseStatBoost=50" // Fallback
+                Constants.COFL_SKELETON_MASTER_CHESTPLATE_MAX,
+                Constants.COFL_SKELETON_MASTER_CHESTPLATE_BASE // Fallback
         });
 
-        List<CompletableFuture<Void>> futures = new java.util.ArrayList<>();
-        Map<String, Double> results = new java.util.concurrent.ConcurrentHashMap<>();
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        Map<String, Double> results = new ConcurrentHashMap<>();
 
         for (Map.Entry<String, String[]> entry : specials.entrySet()) {
-            CompletableFuture<Void> itemFuture = CompletableFuture.runAsync(() -> {
-            });
+            CompletableFuture<Void> itemFuture = CompletableFuture.completedFuture(null);
 
             for (String url : entry.getValue()) {
                 itemFuture = itemFuture.thenCompose(v -> {
@@ -188,7 +181,7 @@ public class LocalIntegration {
     }
 
     private static CompletableFuture<String> getUuid(String name) {
-        String url = "https://playerdb.co/api/player/minecraft/" + name;
+        String url = Constants.PLAYER_DB_API + name;
         return sendGetRequest(url).thenApply(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
@@ -204,7 +197,7 @@ public class LocalIntegration {
     }
 
     private static CompletableFuture<JsonObject> getProfileData(String uuid) {
-        String url = "https://adjectilsbackend.adjectivenoun3215.workers.dev/v2/skyblock/profiles?uuid=" + uuid;
+        String url = Constants.ADJECTILS_PROFILE_API + uuid;
         return sendGetRequest(url).thenApply(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
@@ -222,107 +215,29 @@ public class LocalIntegration {
             if (!profileData.has("profiles") || profileData.get("profiles").isJsonNull())
                 return null;
 
-            var profiles = profileData.getAsJsonArray("profiles");
+            JsonArray profiles = profileData.getAsJsonArray("profiles");
             if (profiles.isEmpty())
                 return null;
 
-            JsonObject bestProfile = null;
-            for (JsonElement p : profiles) {
-                JsonObject obj = p.getAsJsonObject();
-                if (obj.has("selected") && obj.get("selected").getAsBoolean()) {
-                    bestProfile = obj;
-                    break;
-                }
-            }
-            if (bestProfile == null)
-                bestProfile = profiles.get(0).getAsJsonObject();
-
+            JsonObject bestProfile = getBestProfile(profiles);
             JsonObject members = bestProfile.getAsJsonObject("members");
+
             if (!members.has(uuid))
                 return null;
 
             JsonObject member = members.getAsJsonObject(uuid);
             JsonObject dungeons = member.has("dungeons") ? member.getAsJsonObject("dungeons") : new JsonObject();
-            JsonObject dungeonTypes = dungeons.has("dungeon_types") ? dungeons.getAsJsonObject("dungeon_types")
-                    : new JsonObject();
-
-            JsonObject catacombs = dungeonTypes.has("catacombs") ? dungeonTypes.getAsJsonObject("catacombs")
-                    : new JsonObject();
-            JsonObject masterCatacombs = dungeonTypes.has("master_catacombs")
-                    ? dungeonTypes.getAsJsonObject("master_catacombs")
-                    : new JsonObject();
-
-            double cataXp = catacombs.has("experience") ? catacombs.get("experience").getAsDouble() : 0.0;
-
-            int secrets = 0;
-            if (dungeons.has("secrets")) {
-                secrets = dungeons.get("secrets").getAsInt();
-            } else if (member.has("achievements")) {
-                JsonObject achievements = member.getAsJsonObject("achievements");
-                if (achievements.has("skyblock_treasure_hunter")) {
-                    secrets = achievements.get("skyblock_treasure_hunter").getAsInt();
-                }
-            }
-
-            int bloodMobKills = 0;
-            if (member.has("player_stats")) {
-                JsonObject stats = member.getAsJsonObject("player_stats");
-                if (stats.has("kills")) {
-                    JsonObject kills = stats.getAsJsonObject("kills");
-                    if (kills.has("watcher_summon_undead")) {
-                        bloodMobKills = kills.get("watcher_summon_undead").getAsInt();
-                    }
-                }
-            }
-
-            JsonObject playerClasses = dungeons.has("player_classes") ? dungeons.getAsJsonObject("player_classes")
-                    : new JsonObject();
-            JsonObject classXp = new JsonObject();
-            String[] classes = { "archer", "berserk", "healer", "mage", "tank" };
-            for (String cls : classes) {
-                double xp = 0;
-                if (playerClasses.has(cls)) {
-                    xp = playerClasses.getAsJsonObject(cls).get("experience").getAsDouble();
-                }
-                String capitalized = cls.substring(0, 1).toUpperCase() + cls.substring(1);
-                classXp.addProperty(capitalized, xp);
-            }
-
-            JsonObject floors = new JsonObject();
-            processTier(catacombs, "F", floors);
-            processTier(masterCatacombs, "M", floors);
 
             JsonObject result = new JsonObject();
-            result.addProperty("catacombs", cataXp);
-            result.addProperty("secrets", secrets);
-            result.addProperty("blood_mob_kills", bloodMobKills);
-            result.add("classes", classXp);
-            result.add("floors", floors);
+            result.addProperty("catacombs", extractCatacombsXp(dungeons));
+            result.addProperty("secrets", extractSecrets(dungeons, member));
+            result.addProperty("blood_mob_kills", extractBloodMobKills(member));
+            result.add("classes", extractClassXp(dungeons));
+            result.add("floors", extractFloorStats(dungeons));
 
-            JsonArray recentRuns = new JsonArray();
-            if (dungeons.has("treasures")) {
-                JsonObject treasures = dungeons.getAsJsonObject("treasures");
-                if (treasures.has("runs")) {
-                    recentRuns = treasures.getAsJsonArray("runs");
-                    long minTs = Long.MAX_VALUE;
-                    for (JsonElement run : recentRuns) {
-                        if (run.isJsonObject() && run.getAsJsonObject().has("completion_ts")) {
-                            long ts = run.getAsJsonObject().get("completion_ts").getAsLong();
-                            if (ts < minTs)
-                                minTs = ts;
-                        }
-                    }
-                    if (minTs != Long.MAX_VALUE) {
-                        LocalTeammateManager.getInstance()
-                                .setLocalRunWindowStart(minTs / 1000);
-                    }
-                    LocalTeammateManager.getInstance().processRuns(uuid, recentRuns);
-                }
-            }
-
+            JsonArray recentRuns = extractRecentRuns(dungeons, uuid);
             result.add("recent_runs", recentRuns);
-            result.add("teammates",
-                    LocalTeammateManager.getInstance().getTeammates(uuid));
+            result.add("teammates", LocalTeammateManager.getInstance().getTeammates(uuid));
             result.add("daily_stats", new JsonObject());
             result.add("monthly_stats", new JsonObject());
 
@@ -332,6 +247,106 @@ public class LocalIntegration {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static JsonObject getBestProfile(JsonArray profiles) {
+        JsonObject bestProfile = null;
+        for (JsonElement p : profiles) {
+            JsonObject obj = p.getAsJsonObject();
+            if (obj.has("selected") && obj.get("selected").getAsBoolean()) {
+                bestProfile = obj;
+                break;
+            }
+        }
+        return (bestProfile != null) ? bestProfile : profiles.get(0).getAsJsonObject();
+    }
+
+    private static double extractCatacombsXp(JsonObject dungeons) {
+        JsonObject dungeonTypes = dungeons.has("dungeon_types") ? dungeons.getAsJsonObject("dungeon_types")
+                : new JsonObject();
+        JsonObject catacombs = dungeonTypes.has("catacombs") ? dungeonTypes.getAsJsonObject("catacombs")
+                : new JsonObject();
+        return catacombs.has("experience") ? catacombs.get("experience").getAsDouble() : 0.0;
+    }
+
+    private static int extractSecrets(JsonObject dungeons, JsonObject member) {
+        if (dungeons.has("secrets")) {
+            return dungeons.get("secrets").getAsInt();
+        } else if (member.has("achievements")) {
+            JsonObject achievements = member.getAsJsonObject("achievements");
+            if (achievements.has("skyblock_treasure_hunter")) {
+                return achievements.get("skyblock_treasure_hunter").getAsInt();
+            }
+        }
+        return 0;
+    }
+
+    private static int extractBloodMobKills(JsonObject member) {
+        if (member.has("player_stats")) {
+            JsonObject stats = member.getAsJsonObject("player_stats");
+            if (stats.has("kills")) {
+                JsonObject kills = stats.getAsJsonObject("kills");
+                if (kills.has("watcher_summon_undead")) {
+                    return kills.get("watcher_summon_undead").getAsInt();
+                }
+            }
+        }
+        return 0;
+    }
+
+    private static JsonObject extractClassXp(JsonObject dungeons) {
+        JsonObject playerClasses = dungeons.has("player_classes") ? dungeons.getAsJsonObject("player_classes")
+                : new JsonObject();
+        JsonObject classXp = new JsonObject();
+        String[] classes = { "archer", "berserk", "healer", "mage", "tank" };
+        for (String cls : classes) {
+            double xp = 0;
+            if (playerClasses.has(cls)) {
+                xp = playerClasses.getAsJsonObject(cls).get("experience").getAsDouble();
+            }
+            String capitalized = cls.substring(0, 1).toUpperCase() + cls.substring(1);
+            classXp.addProperty(capitalized, xp);
+        }
+        return classXp;
+    }
+
+    private static JsonObject extractFloorStats(JsonObject dungeons) {
+        JsonObject dungeonTypes = dungeons.has("dungeon_types") ? dungeons.getAsJsonObject("dungeon_types")
+                : new JsonObject();
+        JsonObject catacombs = dungeonTypes.has("catacombs") ? dungeonTypes.getAsJsonObject("catacombs")
+                : new JsonObject();
+        JsonObject masterCatacombs = dungeonTypes.has("master_catacombs")
+                ? dungeonTypes.getAsJsonObject("master_catacombs")
+                : new JsonObject();
+
+        JsonObject floors = new JsonObject();
+        processTier(catacombs, "F", floors);
+        processTier(masterCatacombs, "M", floors);
+        return floors;
+    }
+
+    private static JsonArray extractRecentRuns(JsonObject dungeons, String uuid) {
+        JsonArray recentRuns = new JsonArray();
+        if (dungeons.has("treasures")) {
+            JsonObject treasures = dungeons.getAsJsonObject("treasures");
+            if (treasures.has("runs")) {
+                recentRuns = treasures.getAsJsonArray("runs");
+                long minTs = Long.MAX_VALUE;
+                for (JsonElement run : recentRuns) {
+                    if (run.isJsonObject() && run.getAsJsonObject().has("completion_ts")) {
+                        long ts = run.getAsJsonObject().get("completion_ts").getAsLong();
+                        if (ts < minTs)
+                            minTs = ts;
+                    }
+                }
+                if (minTs != Long.MAX_VALUE) {
+                    LocalTeammateManager.getInstance()
+                            .setLocalRunWindowStart(minTs / 1000);
+                }
+                LocalTeammateManager.getInstance().processRuns(uuid, recentRuns);
+            }
+        }
+        return recentRuns;
     }
 
     private static void processTier(JsonObject tierData, String prefix, JsonObject floors) {
@@ -375,8 +390,8 @@ public class LocalIntegration {
     private static CompletableFuture<HttpResponse<String>> sendGetRequest(String url) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(15))
-                .header("User-Agent", USER_AGENT)
+                .timeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
+                .header("User-Agent", Constants.BROWSER_USER_AGENT)
                 .header("Accept",
                         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
                 .header("Accept-Language", "en-US,en;q=0.5")
@@ -408,7 +423,7 @@ public class LocalIntegration {
         data.prices = prices;
 
         try (FileWriter writer = new FileWriter(PRICES_FILE)) {
-            GSON.toJson(data, writer);
+            Constants.GSON.toJson(data, writer);
         } catch (Exception e) {
             Blackaddons.LOGGER.error("Failed to save prices: " + e.getMessage());
         }
@@ -420,12 +435,12 @@ public class LocalIntegration {
         }
 
         try (FileReader reader = new FileReader(PRICES_FILE)) {
-            PricesData data = GSON.fromJson(reader, PricesData.class);
+            PricesData data = Constants.GSON.fromJson(reader, PricesData.class);
             if (data != null && data.prices != null) {
                 long age = System.currentTimeMillis() - data.timestamp;
-                if (age < PRICE_CACHE_DURATION_MS) {
+                if (age < Constants.PRICE_CACHE_DURATION_MS) {
                     priceCache = data.prices;
-                    priceCacheExpiry = data.timestamp + PRICE_CACHE_DURATION_MS;
+                    priceCacheExpiry = data.timestamp + Constants.PRICE_CACHE_DURATION_MS;
                     Blackaddons.LOGGER.info("Loaded prices from local cache. Age: " + (age / 1000 / 60) + "m");
                 } else {
                     Blackaddons.LOGGER.info("Local price cache expired.");

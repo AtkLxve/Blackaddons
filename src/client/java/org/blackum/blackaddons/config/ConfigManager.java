@@ -7,6 +7,7 @@ import org.blackum.blackaddons.cheats.AutoTNT;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.modhider.ModHiderOptions;
 import org.blackum.blackaddons.modhider.SpoofMode;
+import org.blackum.blackaddons.util.Constants;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -57,7 +58,7 @@ public class ConfigManager {
         public Map<String, CardState> cardStates = new HashMap<>();
 
         // Bot
-        public String botUrl = "http://hypixel-skyblock-socket.pegle.com:8080";
+        public String botUrl = Constants.DEFAULT_BOT_URL;
         public DataSource dataSource = DataSource.LOCAL;
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
@@ -97,7 +98,8 @@ public class ConfigManager {
 
     public static void save() {
         try {
-            if (!CONFIG_DIR.toFile().exists()) CONFIG_DIR.toFile().mkdirs();
+            if (!CONFIG_DIR.toFile().exists())
+                CONFIG_DIR.toFile().mkdirs();
 
             try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
                 GSON.toJson(data, writer);

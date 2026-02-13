@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public class BotIntegration {
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
-            .connectTimeout(Duration.ofSeconds(10))
+            .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
             .build();
 
     public static void sendRngDrop(String player, String item, String rarity, String floor) {
@@ -181,10 +181,14 @@ public class BotIntegration {
     }
 
     private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody) {
-        return sendPostRequest(endpoint, jsonBody, true);
+        return sendRequest("POST", endpoint, jsonBody, true);
     }
 
-    private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody,
+    private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint) {
+        return sendRequest("GET", endpoint, null, true);
+    }
+
+    private static CompletableFuture<HttpResponse<String>> sendRequest(String method, String endpoint, String jsonBody,
             boolean allowRetry) {
         String url = ConfigManager.data.botUrl + endpoint;
 
@@ -205,88 +209,33 @@ public class BotIntegration {
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
                 .header("Content-Type", "application/json")
-                .header("User-Agent", "BlackAddons/1.0");
+                .header("User-Agent", Constants.BOT_USER_AGENT);
 
         if (encryptedIdentity != null) {
             builder.header("X-Encrypted-Identity", encryptedIdentity);
         }
 
-        builder.POST(HttpRequest.BodyPublishers.ofString(jsonBody));
-
         if (ConfigManager.data.developerKey != null && !ConfigManager.data.developerKey.isEmpty()) {
             builder.header("X-Developer-Key", ConfigManager.data.developerKey);
+        }
+
+        if (method.equalsIgnoreCase("POST")) {
+            builder.POST(HttpRequest.BodyPublishers.ofString(jsonBody));
+        } else {
+            builder.GET();
         }
 
         return client.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
                 .thenCompose(res -> {
                     if (res.statusCode() == 403 && allowRetry) {
                         Blackaddons.LOGGER.info("Authentication failed. Refetching key and retrying...");
-                        return fetchVerificationKey().thenCompose(v -> sendPostRequest(endpoint, jsonBody, false));
+                        return fetchVerificationKey().thenCompose(v -> sendRequest(method, endpoint, jsonBody, false));
                     }
 
                     if (res.statusCode() >= 200 && res.statusCode() < 300) {
-                        Blackaddons.LOGGER.info("Successfully communicated with bot: " + endpoint);
-                    } else {
-                        Blackaddons.LOGGER
-                                .warn("Bot communication failed. Status: " + res.statusCode() + " Body: " + res.body());
-                    }
-                    return CompletableFuture.completedFuture(res);
-                })
-                .exceptionally(e -> {
-                    Blackaddons.LOGGER.error("Error communicating with bot: " + e.getMessage());
-                    return null;
-                });
-    }
-
-    private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint) {
-        return sendGetRequest(endpoint, true);
-    }
-
-    private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint, boolean allowRetry) {
-        String url = ConfigManager.data.botUrl + endpoint;
-
-        String playerInit = "Unknown";
-        String uuidInit = "Unknown";
-        try {
-            if (Minecraft.getInstance().getUser() != null) {
-                playerInit = Minecraft.getInstance().getUser().getName();
-                uuidInit = Minecraft.getInstance().getUser().getProfileId().toString();
-            }
-        } catch (Exception e) {
-        }
-        final String player = playerInit;
-        final String uuid = uuidInit;
-
-        String rawIdentity = uuid + ":" + player + ":" + System.currentTimeMillis();
-        String encryptedIdentity = EncryptionUtils.encrypt(rawIdentity);
-
-        HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .timeout(Duration.ofSeconds(10))
-                .header("Content-Type", "application/json")
-                .header("User-Agent", "BlackAddons/1.0");
-
-        if (encryptedIdentity != null) {
-            builder.header("X-Encrypted-Identity", encryptedIdentity);
-        }
-
-        builder.GET();
-
-        if (ConfigManager.data.developerKey != null && !ConfigManager.data.developerKey.isEmpty()) {
-            builder.header("X-Developer-Key", ConfigManager.data.developerKey);
-        }
-
-        return client.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
-                .thenCompose(res -> {
-                    if (res.statusCode() == 403 && allowRetry) {
-                        Blackaddons.LOGGER.info("Authentication failed. Refetching key and retrying...");
-                        return fetchVerificationKey().thenCompose(v -> sendGetRequest(endpoint, false));
-                    }
-
-                    if (res.statusCode() >= 200 && res.statusCode() < 300) {
-                        Blackaddons.LOGGER.info("Successfully communicated with bot: " + endpoint);
+                        Blackaddons.LOGGER.info("Successfully communicated with bot (" + method + "): " + endpoint);
                     } else {
                         Blackaddons.LOGGER
                                 .warn("Bot communication failed. Status: " + res.statusCode() + " Body: " + res.body());
@@ -303,7 +252,9 @@ public class BotIntegration {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        return sendGetRequest("/v1/key").thenAccept(res -> {
+        String endpoint = "/v1/key";
+
+        return sendRequest("GET", endpoint, null, false).thenAccept(res -> {
             if (res != null && res.statusCode() == 200) {
                 try {
                     JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
