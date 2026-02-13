@@ -5,20 +5,27 @@ import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.cheats.AutoTNT;
 import org.blackum.blackaddons.gui.theme.Theme;
-import org.blackum.blackaddons.modhider.ModHiderOptions;
+
 import org.blackum.blackaddons.modhider.SpoofMode;
 import org.blackum.blackaddons.util.Constants;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
+
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ConfigManager {
     private static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve("blackaddons");
     private static final File CONFIG_FILE = CONFIG_DIR.resolve("config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    public static final Set<String> FABRIC_DEFAULT_CHANNELS = Set.of(
+            "fabric:attachment_sync_v1",
+            "fabric:recipe_sync",
+            "fabric-screen-handler-api-v1:open_screen");
 
     public static class CardState {
         public int x;
@@ -64,12 +71,12 @@ public class ConfigManager {
         public String developerKey = "";
 
         // Mod Hider (ported from ClientSpoofer)
-        public String modHiderSpoofMode = SpoofMode.VANILLA.name();
+        public SpoofMode modHiderSpoofMode = SpoofMode.CUSTOM;
         public String modHiderCustomClient = "fabric";
         public boolean modHiderHideMods = true;
         public boolean modHiderDisableCustomPayloads = true;
-        public ArrayList<String> modHiderAllowedMods = new ArrayList<>();
-        public ArrayList<String> modHiderAllowedCustomPayloadChannels = new ArrayList<>();
+        public Set<String> modHiderAllowedMods = new HashSet<>();
+        public Set<String> modHiderAllowedCustomPayloadChannels = new HashSet<>(FABRIC_DEFAULT_CHANNELS);
 
         // Cheats
         public boolean AutoTNTEnabled = false;
@@ -78,7 +85,14 @@ public class ConfigManager {
         public boolean SwapBack = false;
 
         public AutoTNT.FeatureConfig autoTntConfig = new AutoTNT.FeatureConfig();
-        public ModHiderOptions modHiderConfig = new ModHiderOptions();
+
+        public boolean hideMods() {
+            return switch (modHiderSpoofMode) {
+                case VANILLA, MODDED -> true;
+                case CUSTOM -> modHiderHideMods;
+                case OFF -> false;
+            };
+        }
 
         // Legit
         public boolean legitFullbrightEnabled = false;

@@ -2,7 +2,7 @@ package org.blackum.blackaddons.mixin;
 
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.modhider.ComponentUtils;
-import org.blackum.blackaddons.modhider.ModHiderOptions;
+
 import org.blackum.blackaddons.modhider.ToastUtils;
 
 import net.minecraft.network.chat.Component;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class AnvilMenuMixin {
     @Redirect(method = "createResult", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/chat/Component;getString()Ljava/lang/String;"))
     public String getString(Component instance) {
-        if (ConfigManager.data.modHiderConfig.hideMods()) {
+        if (ConfigManager.data.hideMods()) {
             String str = ComponentUtils.getString(instance);
             if (!str.equals(instance.getString())) {
                 ToastUtils.showServerAttemptedReadingModsToast();

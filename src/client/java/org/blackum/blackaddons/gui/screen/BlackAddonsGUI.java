@@ -307,7 +307,7 @@ public class BlackAddonsGUI extends BaseScreen {
         int contentWidth = tabPanel.getContentWidth() - 20;
         int currentY = contentY;
 
-        SpoofMode mode = ConfigManager.data.modHiderConfig.SPOOF_MODE;
+        SpoofMode mode = ConfigManager.data.modHiderSpoofMode;
         boolean isCustom = mode == SpoofMode.CUSTOM;
         boolean isModdedOrCustom = mode == SpoofMode.MODDED || mode == SpoofMode.CUSTOM;
 
@@ -319,14 +319,15 @@ public class BlackAddonsGUI extends BaseScreen {
         Dropdown spoofModeDropdown = new Dropdown(contentX, currentY, contentWidth,
                 "Spoof Mode", spoofModes, selected -> {
                     try {
-                        ConfigManager.data.modHiderConfig.SPOOF_MODE = SpoofMode.valueOf(selected.toUpperCase(Locale.ROOT));
+                        ConfigManager.data.modHiderSpoofMode = SpoofMode
+                                .valueOf(selected.toUpperCase(Locale.ROOT));
                     } catch (IllegalArgumentException ignored) {
-                        ConfigManager.data.modHiderConfig.SPOOF_MODE = SpoofMode.VANILLA;
+                        ConfigManager.data.modHiderSpoofMode = SpoofMode.VANILLA;
                     }
                     ConfigManager.save();
                     this.init(this.width, this.height);
                 });
-        spoofModeDropdown.setSelectedOption(ConfigManager.data.modHiderConfig.SPOOF_MODE.name());
+        spoofModeDropdown.setSelectedOption(ConfigManager.data.modHiderSpoofMode.name());
         modHiderTab.addWidget(spoofModeDropdown);
         currentY += 45;
 
@@ -336,11 +337,13 @@ public class BlackAddonsGUI extends BaseScreen {
             currentY += 25;
 
             TextField customClient = new TextField(contentX, currentY, contentWidth - 90, "fabric");
-            customClient.setText(ConfigManager.data.modHiderConfig.CUSTOM_CLIENT == null ? "fabric" : ConfigManager.data.modHiderConfig.CUSTOM_CLIENT);
+            customClient.setText(ConfigManager.data.modHiderCustomClient == null ? "fabric"
+                    : ConfigManager.data.modHiderCustomClient);
             modHiderTab.addWidget(customClient);
 
             Button applyCustomClient = new Button(contentX + contentWidth - 80, currentY, 70, "Apply", () -> {
-                ConfigManager.data.modHiderConfig.CUSTOM_CLIENT = customClient.getText().isBlank() ? "fabric" : customClient.getText();
+                ConfigManager.data.modHiderCustomClient = customClient.getText().isBlank() ? "fabric"
+                        : customClient.getText();
                 ConfigManager.save();
             });
             modHiderTab.addWidget(applyCustomClient);
@@ -349,8 +352,8 @@ public class BlackAddonsGUI extends BaseScreen {
             ToggleSwitch hideModsToggle = new ToggleSwitch(contentX, currentY, contentWidth,
                     "Hide Mods",
                     "Prevent servers from reading mod info",
-                    ConfigManager.data.modHiderConfig.HIDE_MODS, value -> {
-                        ConfigManager.data.modHiderConfig.HIDE_MODS = value;
+                    ConfigManager.data.modHiderHideMods, value -> {
+                        ConfigManager.data.modHiderHideMods = value;
                         ConfigManager.save();
                     });
             modHiderTab.addWidget(hideModsToggle);
@@ -359,8 +362,8 @@ public class BlackAddonsGUI extends BaseScreen {
             ToggleSwitch disablePayloadsToggle = new ToggleSwitch(contentX, currentY, contentWidth,
                     "Disable Custom Payloads",
                     "Block custom payload channels unless allowed",
-                    ConfigManager.data.modHiderConfig.DISABLE_CUSTOM_PAYLOADS, value -> {
-                        ConfigManager.data.modHiderConfig.DISABLE_CUSTOM_PAYLOADS = value;
+                    ConfigManager.data.modHiderDisableCustomPayloads, value -> {
+                        ConfigManager.data.modHiderDisableCustomPayloads = value;
                         ConfigManager.save();
                     });
             modHiderTab.addWidget(disablePayloadsToggle);
@@ -386,7 +389,7 @@ public class BlackAddonsGUI extends BaseScreen {
             Button addChannel = new Button(contentX + contentWidth - 90, currentY, 80, "Add", () -> {
                 String val = channelField.getText() == null ? "" : channelField.getText().trim();
                 if (!val.isBlank()) {
-                    ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.add(val);
+                    ConfigManager.data.modHiderAllowedCustomPayloadChannels.add(val);
                     channelField.setText("");
                     ConfigManager.save();
                     rebuildChannelsList(finalChannelsList);
@@ -428,8 +431,10 @@ public class BlackAddonsGUI extends BaseScreen {
 
             @Override
             public void tick() {
-                if (channelsList != null && lastChannelSize != ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size()) {
-                    lastChannelSize = ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.size();
+                if (channelsList != null
+                        && lastChannelSize != ConfigManager.data.modHiderAllowedCustomPayloadChannels
+                                .size()) {
+                    lastChannelSize = ConfigManager.data.modHiderAllowedCustomPayloadChannels.size();
                     rebuildChannelsList(channelsList);
                 }
 
@@ -462,14 +467,15 @@ public class BlackAddonsGUI extends BaseScreen {
         Dropdown spoofModeDropdown = new Dropdown(contentX, contentY + 30, 260,
                 "Spoof Mode", spoofModes, selected -> {
                     try {
-                        ConfigManager.data.modHiderConfig.SPOOF_MODE = SpoofMode.valueOf(selected.toUpperCase(Locale.ROOT));
+                        ConfigManager.data.modHiderSpoofMode = SpoofMode
+                                .valueOf(selected.toUpperCase(Locale.ROOT));
                     } catch (IllegalArgumentException ignored) {
-                        ConfigManager.data.modHiderConfig.SPOOF_MODE = SpoofMode.VANILLA;
+                        ConfigManager.data.modHiderSpoofMode = SpoofMode.VANILLA;
                     }
                     ConfigManager.save();
                 });
         spoofModeDropdown.setHeight(24);
-        spoofModeDropdown.setSelectedOption(ConfigManager.data.modHiderConfig.SPOOF_MODE.name());
+        spoofModeDropdown.setSelectedOption(ConfigManager.data.modHiderSpoofMode.name());
         spoofModeCard.addChild(spoofModeDropdown);
 
         spoofModeCard.updateLayout();
@@ -487,11 +493,13 @@ public class BlackAddonsGUI extends BaseScreen {
         customClientCard.addChild(description);
 
         TextField customClient = new TextField(contentX, contentY + 30, 180, "fabric");
-        customClient.setText(ConfigManager.data.modHiderConfig.CUSTOM_CLIENT == null ? "fabric" : ConfigManager.data.modHiderConfig.CUSTOM_CLIENT);
+        customClient.setText(ConfigManager.data.modHiderCustomClient == null ? "fabric"
+                : ConfigManager.data.modHiderCustomClient);
         customClientCard.addChild(customClient);
 
         Button applyCustomClient = new Button(contentX + 190, contentY + 30, 70, "Apply", () -> {
-            ConfigManager.data.modHiderConfig.CUSTOM_CLIENT = customClient.getText().isBlank() ? "fabric" : customClient.getText();
+            ConfigManager.data.modHiderCustomClient = customClient.getText().isBlank() ? "fabric"
+                    : customClient.getText();
             ConfigManager.save();
             NotificationManager.addNotification(
                     "BlackAddons", "Saved custom client brand!",
@@ -512,8 +520,8 @@ public class BlackAddonsGUI extends BaseScreen {
         ToggleSwitch hideModsToggle = new ToggleSwitch(contentX, contentY, 260,
                 "Hide Mods",
                 "Prevent servers from reading mod info",
-                ConfigManager.data.modHiderConfig.HIDE_MODS, value -> {
-                    ConfigManager.data.modHiderConfig.HIDE_MODS = value;
+                ConfigManager.data.modHiderHideMods, value -> {
+                    ConfigManager.data.modHiderHideMods = value;
                     ConfigManager.save();
                 });
         hideModsCard.addChild(hideModsToggle);
@@ -531,8 +539,8 @@ public class BlackAddonsGUI extends BaseScreen {
         ToggleSwitch disablePayloadsToggle = new ToggleSwitch(contentX, contentY, 260,
                 "Disable Custom Payloads",
                 "Block custom payload channels unless allowed",
-                ConfigManager.data.modHiderConfig.DISABLE_CUSTOM_PAYLOADS, value -> {
-                    ConfigManager.data.modHiderConfig.DISABLE_CUSTOM_PAYLOADS = value;
+                ConfigManager.data.modHiderDisableCustomPayloads, value -> {
+                    ConfigManager.data.modHiderDisableCustomPayloads = value;
                     ConfigManager.save();
                 });
         disablePayloadsCard.addChild(disablePayloadsToggle);
@@ -552,18 +560,18 @@ public class BlackAddonsGUI extends BaseScreen {
         allowedChannelsCard.addChild(description);
 
         CodeEditorWidget codeEditor = new CodeEditorWidget(contentX, contentY + 30, 260, 170);
-        String initialText = String.join("\n", ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS);
+        String initialText = String.join("\n", ConfigManager.data.modHiderAllowedCustomPayloadChannels);
         codeEditor.setText(initialText);
         allowedChannelsCard.addChild(codeEditor);
 
         Button saveBtn = new Button(contentX, contentY + 210, 125, "Save", () -> {
             String text = codeEditor.getText();
-            ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.clear();
+            ConfigManager.data.modHiderAllowedCustomPayloadChannels.clear();
             if (text != null && !text.isBlank()) {
                 String[] lines = text.split("\n", -1);
                 for (String line : lines) {
                     if (!line.trim().isEmpty()) {
-                        ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.add(line.trim());
+                        ConfigManager.data.modHiderAllowedCustomPayloadChannels.add(line.trim());
                     }
                 }
             }
@@ -583,8 +591,8 @@ public class BlackAddonsGUI extends BaseScreen {
                 }
             }
 
-            for (String ch : ConfigManager.data.modHiderConfig.FABRIC_DEFAULT_CHANNELS) {
-                if (!ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.contains(ch)) {
+            for (String ch : ConfigManager.FABRIC_DEFAULT_CHANNELS) {
+                if (!ConfigManager.data.modHiderAllowedCustomPayloadChannels.contains(ch)) {
                     sb.append(ch).append("\n");
                 }
             }
@@ -702,7 +710,7 @@ public class BlackAddonsGUI extends BaseScreen {
                     "Enable AutoTnt",
                     "Automatically places TNT",
                     ConfigManager.data.autoTntConfig.AutoTNTEnabled, value -> {
-                ConfigManager.data.autoTntConfig.AutoTNTEnabled = value;
+                        ConfigManager.data.autoTntConfig.AutoTNTEnabled = value;
                         ConfigManager.save();
                     });
             cheatsTab.addWidget(enableToggle);
@@ -747,7 +755,7 @@ public class BlackAddonsGUI extends BaseScreen {
                 "Enable AutoTnt",
                 "Automatically places TNT",
                 ConfigManager.data.autoTntConfig.AutoTNTEnabled, value -> {
-            ConfigManager.data.autoTntConfig.AutoTNTEnabled = value;
+                    ConfigManager.data.autoTntConfig.AutoTNTEnabled = value;
                     ConfigManager.save();
                 });
         autoTntCard.addChild(enableToggle);
@@ -756,28 +764,30 @@ public class BlackAddonsGUI extends BaseScreen {
                 "Tick Delay: " + ConfigManager.data.autoTntConfig.AutoTNTDelay + " ticks", Label.Style.BODY);
         autoTntCard.addChild(tickLabel);
 
-        Slider tickSlider = new Slider(contentX, contentY + 70, 260, 5, 10, ConfigManager.data.autoTntConfig.AutoTNTDelay, val -> {
-            int ticks = Math.round(val);
-            if (ticks != ConfigManager.data.autoTntConfig.AutoTNTDelay) {
-                ConfigManager.data.autoTntConfig.AutoTNTDelay = ticks;
-                tickLabel.setText("Tick Delay: " + ticks + " ticks");
-                ConfigManager.save();
-            }
-        });
+        Slider tickSlider = new Slider(contentX, contentY + 70, 260, 5, 10,
+                ConfigManager.data.autoTntConfig.AutoTNTDelay, val -> {
+                    int ticks = Math.round(val);
+                    if (ticks != ConfigManager.data.autoTntConfig.AutoTNTDelay) {
+                        ConfigManager.data.autoTntConfig.AutoTNTDelay = ticks;
+                        tickLabel.setText("Tick Delay: " + ticks + " ticks");
+                        ConfigManager.save();
+                    }
+                });
         autoTntCard.addChild(tickSlider);
 
         Label unequipLabel = new Label(contentX, contentY + 100,
                 "Unequip Delay: " + ConfigManager.data.autoTntConfig.UnequipDelay + " ticks", Label.Style.BODY);
         autoTntCard.addChild(unequipLabel);
 
-        Slider unequipSlider = new Slider(contentX, contentY + 120, 260, 5, 10, ConfigManager.data.autoTntConfig.UnequipDelay, val -> {
-            int ticks = Math.round(val);
-            if (ticks != ConfigManager.data.autoTntConfig.UnequipDelay) {
-                ConfigManager.data.autoTntConfig.UnequipDelay = ticks;
-                unequipLabel.setText("Unequip Delay: " + ticks + " ticks");
-                ConfigManager.save();
-            }
-        });
+        Slider unequipSlider = new Slider(contentX, contentY + 120, 260, 5, 10,
+                ConfigManager.data.autoTntConfig.UnequipDelay, val -> {
+                    int ticks = Math.round(val);
+                    if (ticks != ConfigManager.data.autoTntConfig.UnequipDelay) {
+                        ConfigManager.data.autoTntConfig.UnequipDelay = ticks;
+                        unequipLabel.setText("Unequip Delay: " + ticks + " ticks");
+                        ConfigManager.save();
+                    }
+                });
         autoTntCard.addChild(unequipSlider);
 
         ToggleSwitch swapBackToggle = new ToggleSwitch(contentX, contentY + 150, 260,
@@ -795,11 +805,11 @@ public class BlackAddonsGUI extends BaseScreen {
 
     private void rebuildChannelsList(ListView channelsList) {
         channelsList.clearItems();
-        List<String> channels = new ArrayList<>(ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS);
+        List<String> channels = new ArrayList<>(ConfigManager.data.modHiderAllowedCustomPayloadChannels);
         channels.sort(String::compareToIgnoreCase);
         for (String ch : channels) {
             Button remove = new Button(0, 0, channelsList.getWidth() - 8, "Remove: " + ch, () -> {
-                ConfigManager.data.modHiderConfig.ALLOWED_CUSTOM_PAYLOAD_CHANNELS.remove(ch);
+                ConfigManager.data.modHiderAllowedCustomPayloadChannels.remove(ch);
                 ConfigManager.save();
                 rebuildChannelsList(channelsList);
             });
@@ -817,7 +827,7 @@ public class BlackAddonsGUI extends BaseScreen {
             ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
             if (info != null) {
                 for (String depId : info.dependencies) {
-                    ConfigManager.data.modHiderConfig.ALLOWED_MODS.add(depId);
+                    ConfigManager.data.modHiderAllowedMods.add(depId);
                 }
             }
         };
@@ -826,7 +836,7 @@ public class BlackAddonsGUI extends BaseScreen {
             ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
             if (info != null) {
                 for (String dependentId : info.dependents) {
-                    ConfigManager.data.modHiderConfig.ALLOWED_MODS.remove(dependentId);
+                    ConfigManager.data.modHiderAllowedMods.remove(dependentId);
                 }
             }
         };
@@ -874,7 +884,8 @@ public class BlackAddonsGUI extends BaseScreen {
         if (group.mods.size() > 1) {
             String groupKey = "mod_" + group.groupName;
             boolean isCollapsed = collapsedGroups.getOrDefault(groupKey, true);
-            boolean allSelected = matchingMods.stream().allMatch(m -> ConfigManager.data.modHiderConfig.ALLOWED_MODS.contains(m.id));
+            boolean allSelected = matchingMods.stream()
+                    .allMatch(m -> ConfigManager.data.modHiderAllowedMods.contains(m.id));
 
             String arrow = isCollapsed ? "▶" : "▼";
             Button groupHeader = new Button(0, 0, 0, arrow + " §b" + group.groupName + " (" + matchingMods.size() + ")",
@@ -889,10 +900,10 @@ public class BlackAddonsGUI extends BaseScreen {
                 Checkbox selectAll = new Checkbox(10, 0, "Select All", allSelected, value -> {
                     for (ModOrganizer.ModInfo info : matchingMods) {
                         if (value) {
-                            ConfigManager.data.modHiderConfig.ALLOWED_MODS.add(info.id);
+                            ConfigManager.data.modHiderAllowedMods.add(info.id);
                             enableDependencies.accept(info.id);
                         } else {
-                            ConfigManager.data.modHiderConfig.ALLOWED_MODS.remove(info.id);
+                            ConfigManager.data.modHiderAllowedMods.remove(info.id);
                             disableDependencies.accept(info.id);
                         }
                     }
@@ -916,17 +927,17 @@ public class BlackAddonsGUI extends BaseScreen {
             Consumer<String> enableDependencies,
             Consumer<String> disableDependencies,
             TextField searchField) {
-        boolean checked = ConfigManager.data.modHiderConfig.ALLOWED_MODS.contains(info.id);
+        boolean checked = ConfigManager.data.modHiderAllowedMods.contains(info.id);
         String displayName = info.name + " (" + info.id + ")";
         if (!info.dependents.isEmpty())
             displayName += " §7[Used by: " + info.dependents.size() + "]";
 
         Checkbox cb = new Checkbox(0, 0, displayName, checked, value -> {
             if (value) {
-                ConfigManager.data.modHiderConfig.ALLOWED_MODS.add(info.id);
+                ConfigManager.data.modHiderAllowedMods.add(info.id);
                 enableDependencies.accept(info.id);
             } else {
-                ConfigManager.data.modHiderConfig.ALLOWED_MODS.remove(info.id);
+                ConfigManager.data.modHiderAllowedMods.remove(info.id);
                 disableDependencies.accept(info.id);
             }
             ConfigManager.save();
@@ -973,7 +984,7 @@ public class BlackAddonsGUI extends BaseScreen {
     private void updateCardVisibility() {
         if (!ConfigManager.data.useCardLayout || customClientCard == null)
             return;
-        SpoofMode mode = ConfigManager.data.modHiderConfig.SPOOF_MODE;
+        SpoofMode mode = ConfigManager.data.modHiderSpoofMode;
         boolean isCustom = mode == SpoofMode.CUSTOM;
         boolean isModdedOrCustom = mode == SpoofMode.MODDED || mode == SpoofMode.CUSTOM;
         customClientCard.setVisible(isCustom);

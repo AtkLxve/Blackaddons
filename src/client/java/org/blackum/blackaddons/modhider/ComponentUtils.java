@@ -80,8 +80,8 @@ public class ComponentUtils {
         for (int i = 1; i < allPackResources.size(); i++) {
             PackResources packResource = allPackResources.get(i);
             PackSource source = packResource.location().source();
-            if (!ConfigManager.data.modHiderConfig.hideMods() ||
-                    ConfigManager.data.modHiderConfig.ALLOWED_MODS.contains(packResource.packId()) ||
+            if (!ConfigManager.data.hideMods() ||
+                    ConfigManager.data.modHiderAllowedMods.contains(packResource.packId()) ||
                     source == PackSource.FEATURE ||
                     source == PackSource.WORLD ||
                     source == PackSource.SERVER) {
@@ -93,7 +93,8 @@ public class ComponentUtils {
         String currentLanguageCode = minecraft.getLanguageManager().getSelected();
 
         LanguageInfo languageInfo;
-        Map<String, LanguageInfo> languages = LanguageManagerAccessor.invokeExtractLanguages(resourceManager.listPacks());
+        Map<String, LanguageInfo> languages = LanguageManagerAccessor
+                .invokeExtractLanguages(resourceManager.listPacks());
         List<String> list = new ArrayList<>(2);
         list.add("en_us");
         boolean bidirectional = LanguageManagerAccessor.getDefaultLanguage().bidirectional();
@@ -104,4 +105,3 @@ public class ComponentUtils {
         return ClientLanguage.loadFrom(resourceManager, list, bidirectional);
     }
 }
-

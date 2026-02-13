@@ -27,4 +27,3 @@ public class ToastUtils {
                 SystemToast.multiline(Minecraft.getInstance(), id, title, message));
     }
 }
-
