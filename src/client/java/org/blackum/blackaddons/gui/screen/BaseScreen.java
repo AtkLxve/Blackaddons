@@ -13,10 +13,15 @@ import org.blackum.blackaddons.gui.notification.NotificationManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import org.blackum.blackaddons.gui.widget.ResizableCard;
+import org.blackum.blackaddons.config.ConfigManager;
 
 @SuppressWarnings("all")
 public abstract class BaseScreen extends Screen {
     protected final List<Widget> widgets = new ArrayList<>();
+    protected final Map<String, ResizableCard> managedCards = new HashMap<>();
     private Widget focusedWidget = null;
 
     public static boolean showHitboxes = false;
@@ -118,7 +123,7 @@ public abstract class BaseScreen extends Screen {
     }
 
     @Override
-    protected void init() {
+    public void init() {
         super.init();
 
         this.containerWidth = (int) (this.width * 0.8);
@@ -397,5 +402,52 @@ public abstract class BaseScreen extends Screen {
 
     protected Widget getFocusedWidget() {
         return focusedWidget;
+    }
+
+    public ResizableCard createResizableCard(String id, int defaultX, int defaultY, int defaultW, int defaultH,
+            String title) {
+        ConfigManager.CardState state = ConfigManager.data.lastLoadedCardStates.get(id);
+        ResizableCard card;
+        if (state != null) {
+            card = new ResizableCard(state.x, state.y, state.width, state.height, title);
+            card.setCollapsed(state.collapsed);
+            if (state.initialWidth > 0) {
+                card.setInitialWidth(state.initialWidth);
+            }
+            if (state.expandedHeight > 0) {
+                card.setExpandedHeight(state.expandedHeight);
+            }
+        } else {
+            card = new ResizableCard(defaultX, defaultY, defaultW, defaultH, title);
+        }
+        card.setOnLayoutChange(this::saveCardLayout);
+        managedCards.put(id, card);
+        return card;
+    }
+
+    public void saveCardLayout() {
+        Map<String, ConfigManager.CardState> states = new HashMap<>();
+        for (Map.Entry<String, ResizableCard> entry : managedCards.entrySet()) {
+            ResizableCard card = entry.getValue();
+            if (card != null) {
+                states.put(entry.getKey(), new ConfigManager.CardState(
+                        card.getX(), card.getY(), card.getWidth(), card.getHeight(),
+                        card.isCollapsed(), card.getInitialWidth(), card.getExpandedHeight()));
+            }
+        }
+        // Merge with existing states to not lose cards not present in current view
+        ConfigManager.data.lastLoadedCardStates.putAll(states);
+        ConfigManager.data.cardStates = ConfigManager.data.lastLoadedCardStates;
+        ConfigManager.save();
+    }
+
+    public void resetCardStates(String... ids) {
+        for (String id : ids) {
+            ConfigManager.data.lastLoadedCardStates.remove(id);
+            managedCards.remove(id);
+        }
+        ConfigManager.data.cardStates = ConfigManager.data.lastLoadedCardStates;
+        ConfigManager.save();
+        this.init();
     }
 }

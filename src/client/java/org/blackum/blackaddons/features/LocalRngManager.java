@@ -2,7 +2,6 @@ package org.blackum.blackaddons.features;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -14,8 +13,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import net.fabricmc.loader.api.FabricLoader;
-import java.util.HashMap;
-import java.util.Map;
 
 public class LocalRngManager {
     private static LocalRngManager instance;
@@ -25,7 +22,6 @@ public class LocalRngManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private JsonObject data = new JsonObject();
-    private boolean dirty = false;
 
     private LocalRngManager() {
         load();
@@ -61,7 +57,7 @@ public class LocalRngManager {
             try (FileWriter writer = new FileWriter(DATA_FILE)) {
                 GSON.toJson(data, writer);
             }
-            dirty = false;
+
         } catch (IOException e) {
             Blackaddons.LOGGER.error("Failed to save local RNG data", e);
         }
@@ -81,7 +77,6 @@ public class LocalRngManager {
         int current = catDrops.has(item) ? catDrops.get(item).getAsInt() : 0;
         catDrops.addProperty(item, current + count);
 
-        dirty = true;
         save();
     }
 
@@ -98,7 +93,6 @@ public class LocalRngManager {
 
         catDrops.addProperty(item, count);
 
-        dirty = true;
         save();
     }
 

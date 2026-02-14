@@ -86,7 +86,7 @@ public class OverlayEditorScreen extends BaseScreen {
     }
 
     @Override
-    protected void init() {
+    public void init() {
         super.init();
         this.containerX = 0;
         this.containerY = 0;
