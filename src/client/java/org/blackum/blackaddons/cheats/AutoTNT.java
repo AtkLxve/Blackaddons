@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.cheats;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.world.entity.player.Player;
@@ -33,7 +34,8 @@ public class AutoTNT {
     }
 
     private static void onClientTick(Minecraft client) {
-        if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled || client.player == null || client.level == null || client.screen != null) {
+        if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled || client.player == null || client.level == null
+                || client.screen != null) {
             return;
         }
 
@@ -53,7 +55,8 @@ public class AutoTNT {
                         equipTnt(client.player, tntSlot);
                     }
 
-                    if (ConfigManager.data.autoTntConfig.isTntEquipped && !ConfigManager.data.autoTntConfig.hasClicked) {
+                    if (ConfigManager.data.autoTntConfig.isTntEquipped
+                            && !ConfigManager.data.autoTntConfig.hasClicked) {
                         ConfigManager.data.autoTntConfig.ticksSinceEquip++;
                         if (ConfigManager.data.autoTntConfig.ticksSinceEquip >= ConfigManager.data.autoTntConfig.currentRandomDelay) {
                             triggerAttack(client);
@@ -144,7 +147,8 @@ public class AutoTNT {
 
         InventoryAccessor inv = (InventoryAccessor) player.getInventory();
         if (ConfigManager.data.autoTntConfig.SwapBack && ConfigManager.data.autoTntConfig.originalItemSlot != -1) {
-            if (ConfigManager.data.autoTntConfig.originalItemSlot >= 0 && ConfigManager.data.autoTntConfig.originalItemSlot < 9) {
+            if (ConfigManager.data.autoTntConfig.originalItemSlot >= 0
+                    && ConfigManager.data.autoTntConfig.originalItemSlot < 9) {
                 inv.setBlackaddonsSelected(ConfigManager.data.autoTntConfig.originalItemSlot);
             }
         } else {
@@ -176,7 +180,7 @@ public class AutoTNT {
             return info;
 
         info.add("");
-        info.add("§c[AutoTNT Debug]");
+        info.add(ChatFormatting.RED + "[AutoTNT Debug]");
 
         Minecraft client = Minecraft.getInstance();
         if (client.level != null && client.player != null && client.hitResult instanceof BlockHitResult blockHit
@@ -184,18 +188,23 @@ public class AutoTNT {
             Block block = client.level.getBlockState(blockHit.getBlockPos()).getBlock();
             boolean isTarget = TARGET_BLOCKS.contains(block);
             double dist = client.player.distanceToSqr(blockHit.getLocation());
-            info.add("Target: " + (isTarget ? "§aYES" : "§cNO") + " §r("
+            info.add("Target: " + (isTarget ? ChatFormatting.GREEN + "YES" : ChatFormatting.RED + "NO") + " "
+                    + ChatFormatting.RESET + "("
                     + BuiltInRegistries.BLOCK.getKey(block).getPath() + ")");
             info.add("Distance: " + String.format("%.2f", dist) + " (Limit: "
-                    + String.format("%.2f", ConfigManager.data.autoTntConfig.currentDistanceLimit * ConfigManager.data.autoTntConfig.currentDistanceLimit) + ")");
+                    + String.format("%.2f", ConfigManager.data.autoTntConfig.currentDistanceLimit
+                            * ConfigManager.data.autoTntConfig.currentDistanceLimit)
+                    + ")");
         } else {
             info.add("Target: None");
         }
 
         info.add("Equipped: " + ConfigManager.data.autoTntConfig.isTntEquipped);
         info.add("Has Clicked: " + ConfigManager.data.autoTntConfig.hasClicked);
-        info.add("Ticks Eq: " + ConfigManager.data.autoTntConfig.ticksSinceEquip + " / " + ConfigManager.data.autoTntConfig.currentRandomDelay);
-        info.add("Ticks Look: " + ConfigManager.data.autoTntConfig.ticksSinceStopLooking + " / " + ConfigManager.data.autoTntConfig.unequipDelay);
+        info.add("Ticks Eq: " + ConfigManager.data.autoTntConfig.ticksSinceEquip + " / "
+                + ConfigManager.data.autoTntConfig.currentRandomDelay);
+        info.add("Ticks Look: " + ConfigManager.data.autoTntConfig.ticksSinceStopLooking + " / "
+                + ConfigManager.data.autoTntConfig.unequipDelay);
 
         return info;
     }

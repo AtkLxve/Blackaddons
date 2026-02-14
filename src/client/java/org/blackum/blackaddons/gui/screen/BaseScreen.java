@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.screen;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -258,7 +259,8 @@ public abstract class BaseScreen extends Screen {
         int button = event.button();
 
         if (showClickDebug && mc.player != null) {
-            String msg = String.format("§e[Click] Scaled: %.1f,%.1f (Raw: %.1f,%.1f)", mouseX, mouseY,
+            String msg = String.format("%s[Click] Scaled: %.1f,%.1f (Raw: %.1f,%.1f)", ChatFormatting.YELLOW, mouseX,
+                    mouseY,
                     mc.mouseHandler.xpos(), mc.mouseHandler.ypos());
             mc.player.displayClientMessage(Component.literal(msg), false);
         }

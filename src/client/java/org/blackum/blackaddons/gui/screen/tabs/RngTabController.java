@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.screen.tabs;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -66,7 +67,7 @@ public class RngTabController extends ProfileTabController {
                     tab.addWidget(list);
 
                     String errorMsg = (result != null && result.hasError()) ? result.getError() : "Unknown error";
-                    addInfoRow(list, "§cError", "");
+                    addInfoRow(list, ChatFormatting.RED + "Error", "");
                     addInfoRow(list, errorMsg, "");
                 });
                 return;
@@ -329,7 +330,9 @@ public class RngTabController extends ProfileTabController {
         }
 
         String profitStr = formatNumber(totalProfit);
-        String stats = String.format("§6Total Profit: §f%s §7| §6Items: §f%d", profitStr, totalItems);
+        String stats = String.format("%sTotal Profit: %s%s %s| %sItems: %s%d",
+                ChatFormatting.GOLD, ChatFormatting.WHITE, profitStr, ChatFormatting.GRAY,
+                ChatFormatting.GOLD, ChatFormatting.WHITE, totalItems);
 
         if ("Dungeons".equals(currentRngCategory) && rngRunCounts != null) {
             String floorKey = getFloorKey(currentRngSubcategory);
@@ -340,8 +343,9 @@ public class RngTabController extends ProfileTabController {
 
                 if (totalRuns > 0) {
                     double profitPerRun = totalProfit / totalRuns;
-                    stats += String.format(" §7| §6Runs: §f%,d §7| §6Profit/Run: §f%s", totalRuns,
-                            formatNumber(profitPerRun));
+                    stats += String.format(" %s| %sRuns: %s%,d %s| %sProfit/Run: %s%s",
+                            ChatFormatting.GRAY, ChatFormatting.GOLD, ChatFormatting.WHITE, totalRuns,
+                            ChatFormatting.GRAY, ChatFormatting.GOLD, ChatFormatting.WHITE, formatNumber(profitPerRun));
                 }
             }
         }
@@ -540,8 +544,11 @@ public class RngTabController extends ProfileTabController {
             double totalProfit = profit * count;
 
             String displayName = itemName;
-            String countStr = count > 0 ? "§a" + count : "§7" + count;
-            String profitStr = totalProfit > 0 ? " §6(" + RngTabController.this.formatNumber(totalProfit) + ")" : "";
+            String countStr = count > 0 ? ChatFormatting.GREEN + String.valueOf(count)
+                    : ChatFormatting.GRAY + String.valueOf(count);
+            String profitStr = totalProfit > 0
+                    ? " " + ChatFormatting.GOLD + "(" + RngTabController.this.formatNumber(totalProfit) + ")"
+                    : "";
 
             int textColor = count > 0 ? Theme.ACCENT : 0xFF888888;
             graphics.drawString(Minecraft.getInstance().font, displayName, x + 5, y + 8, textColor);

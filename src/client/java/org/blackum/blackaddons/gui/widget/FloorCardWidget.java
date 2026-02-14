@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.theme.Theme;
@@ -28,9 +29,9 @@ public class FloorCardWidget extends Widget {
 
         RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS, Theme.BACKGROUND_SECONDARY);
 
-        graphics.drawString(Minecraft.getInstance().font, "§l" + title, x + 6, y + 6, Theme.ACCENT);
+        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.BOLD + title, x + 6, y + 6, Theme.ACCENT);
 
-        String runsText = "§f" + runs + " Runs";
+        String runsText = ChatFormatting.WHITE + String.valueOf(runs) + " Runs";
         int runsWidth = Minecraft.getInstance().font.width(runsText);
         graphics.drawString(Minecraft.getInstance().font, runsText, x + width - runsWidth - 6, y + 6, 0xFFFFFFFF);
 
@@ -40,9 +41,12 @@ public class FloorCardWidget extends Widget {
         int col1X = x + 6;
         int col2X = x + width / 2 + 4;
 
-        graphics.drawString(Minecraft.getInstance().font, "§7Best Score: §f" + bestScore, col1X, statY, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font,
+                ChatFormatting.GRAY + "Best Score: " + ChatFormatting.WHITE + bestScore, col1X, statY, 0xFFFFFFFF);
 
-        graphics.drawString(Minecraft.getInstance().font, "§7S+: §f" + sPlus, col1X, statY + 12, 0xFFFFFFFF);
-        graphics.drawString(Minecraft.getInstance().font, "§7S: §f" + s, col2X, statY + 12, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.GRAY + "S+: " + ChatFormatting.WHITE + sPlus,
+                col1X, statY + 12, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.GRAY + "S: " + ChatFormatting.WHITE + s, col2X,
+                statY + 12, 0xFFFFFFFF);
     }
 }

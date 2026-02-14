@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.manager;
 
 import com.mojang.brigadier.Command;
+import net.minecraft.ChatFormatting;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -15,6 +16,7 @@ import org.blackum.blackaddons.features.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.Constants;
 import org.blackum.blackaddons.util.ProfileStateManager;
 
 public class CommandManager {
@@ -44,25 +46,39 @@ public class CommandManager {
                     }));
 
             testNode.then(ClientCommandManager.literal("rng")
-                    .then(ClientCommandManager.argument("type", StringArgumentType.string())
+                    .then(ClientCommandManager.argument(Constants.CMD_ARG_TYPE, StringArgumentType.string())
                             .suggests((context, builder) -> SharedSuggestionProvider
-                                    .suggest(new String[] { "rare", "crazy", "pray" }, builder))
-                            .then(ClientCommandManager.argument("magic_find", IntegerArgumentType.integer(0))
-                                    .then(ClientCommandManager.argument("item", StringArgumentType.greedyString())
+                                    .suggest(new String[] { Constants.DROP_TYPE_RARE, Constants.DROP_TYPE_CRAZY,
+                                            Constants.DROP_TYPE_PRAY }, builder))
+                            .then(ClientCommandManager
+                                    .argument(Constants.CMD_ARG_MAGIC_FIND, IntegerArgumentType.integer(0))
+                                    .then(ClientCommandManager
+                                            .argument(Constants.CMD_ARG_ITEM, StringArgumentType.greedyString())
                                             .executes(context -> {
-                                                String typeArg = StringArgumentType.getString(context, "type")
+                                                String typeArg = StringArgumentType
+                                                        .getString(context, Constants.CMD_ARG_TYPE)
                                                         .toLowerCase();
-                                                int mf = IntegerArgumentType.getInteger(context, "magic_find");
-                                                String item = StringArgumentType.getString(context, "item");
+                                                int mf = IntegerArgumentType.getInteger(context,
+                                                        Constants.CMD_ARG_MAGIC_FIND);
+                                                String item = StringArgumentType.getString(context,
+                                                        Constants.CMD_ARG_ITEM);
 
-                                                String typePrefix = "§6§lRARE";
-                                                if (typeArg.equals("crazy"))
-                                                    typePrefix = "§d§lCRAZY RARE";
-                                                else if (typeArg.equals("pray"))
-                                                    typePrefix = "§5§lPRAY TO RNGESUS";
+                                                String typePrefix = ChatFormatting.GOLD + "" + ChatFormatting.BOLD
+                                                        + "RARE";
+                                                if (typeArg.equals(Constants.DROP_TYPE_CRAZY))
+                                                    typePrefix = ChatFormatting.LIGHT_PURPLE + "" + ChatFormatting.BOLD
+                                                            + "CRAZY RARE";
+                                                else if (typeArg.equals(Constants.DROP_TYPE_PRAY))
+                                                    typePrefix = ChatFormatting.DARK_PURPLE + "" + ChatFormatting.BOLD
+                                                            + "PRAY TO RNGESUS";
 
-                                                String fakeMessage = typePrefix + " DROP! §r§f" + item + " §r§b(+§r§b"
-                                                        + mf + "% §r§b✯ Magic Find§r§b)";
+                                                String fakeMessage = typePrefix + " DROP! " + ChatFormatting.RESET + ""
+                                                        + ChatFormatting.WHITE + item + " " + ChatFormatting.RESET + ""
+                                                        + ChatFormatting.AQUA + "(+" + ChatFormatting.RESET + ""
+                                                        + ChatFormatting.AQUA
+                                                        + mf + "% " + ChatFormatting.RESET + "" + ChatFormatting.AQUA
+                                                        + "✯ Magic Find" + ChatFormatting.RESET + ""
+                                                        + ChatFormatting.AQUA + ")";
 
                                                 Minecraft.getInstance().gui.getChat()
                                                         .addMessage(Component.literal(fakeMessage));
@@ -97,15 +113,15 @@ public class CommandManager {
                         ProfileStateManager.getInstance().loadProfileAndOpen(player, false);
                         return 1;
                     })
-                    .then(ClientCommandManager.argument("ign", StringArgumentType.string())
+                    .then(ClientCommandManager.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
                             .executes(ctx -> {
-                                String player = StringArgumentType.getString(ctx, "ign");
+                                String player = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                                 ProfileStateManager.getInstance().loadProfileAndOpen(player, false);
                                 return 1;
                             })
                             .then(ClientCommandManager.literal("force")
                                     .executes(ctx -> {
-                                        String player = StringArgumentType.getString(ctx, "ign");
+                                        String player = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                                         ProfileStateManager.getInstance().loadProfileAndOpen(player, true);
                                         return 1;
                                     })));

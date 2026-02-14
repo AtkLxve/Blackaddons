@@ -262,8 +262,7 @@ public class ProfileStateManager {
 
         getProfile(player, force).thenAccept(result -> {
             if (result == null) {
-                mc.gui.getChat().addMessage(
-                        (net.minecraft.network.chat.Component) ChatUtils.getMessage("§cFailed to fetch data."));
+                mc.gui.getChat().addMessage(ChatUtils.error("Failed to fetch data."));
                 NotificationManager.addNotification("Profile Error", "Failed to fetch data from API.",
                         NotificationType.ERROR);
                 return;
@@ -271,16 +270,14 @@ public class ProfileStateManager {
 
             if (result.hasError()) {
                 String err = result.getError();
-                mc.gui.getChat()
-                        .addMessage((net.minecraft.network.chat.Component) ChatUtils.getMessage("§cError: " + err));
+                mc.gui.getChat().addMessage(ChatUtils.error(err));
                 NotificationManager.addNotification("Profile Error", err, NotificationType.ERROR);
                 return;
             }
 
             JsonObject data = result.getData();
             if (data == null) {
-                mc.gui.getChat().addMessage(
-                        (net.minecraft.network.chat.Component) ChatUtils.getMessage("§cInvalid response format."));
+                mc.gui.getChat().addMessage(ChatUtils.error("Invalid response format."));
                 NotificationManager.addNotification("Profile Error", "Invalid response format.",
                         NotificationType.ERROR);
                 return;
@@ -292,8 +289,7 @@ public class ProfileStateManager {
                         new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, force, finalData));
             });
         }).exceptionally(e -> {
-            mc.gui.getChat().addMessage(
-                    (net.minecraft.network.chat.Component) ChatUtils.getMessage("§cException: " + e.getMessage()));
+            mc.gui.getChat().addMessage(ChatUtils.error("Exception: " + e.getMessage()));
             NotificationManager.addNotification("Profile Exception", e.getMessage(), NotificationType.ERROR);
             return null;
         });

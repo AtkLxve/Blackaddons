@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.screen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.theme.Theme;
@@ -70,7 +71,7 @@ public class OverlayEditorScreen extends BaseScreen {
         int y = 0;
 
         List<String> debugInfo = new ArrayList<>();
-        debugInfo.add("§6[BlackAddons Debug]");
+        debugInfo.add(ChatFormatting.GOLD + "[BlackAddons Debug]");
         debugInfo.add("VSync: " + this.minecraft.options.enableVsync().get());
         debugInfo.add("Mouse: " + (int) this.minecraft.mouseHandler.xpos() + ", "
                 + (int) this.minecraft.mouseHandler.ypos());

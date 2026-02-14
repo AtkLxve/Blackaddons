@@ -9,6 +9,7 @@ import org.blackum.blackaddons.util.LocationUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.blackum.blackaddons.util.Constants;
 
 public class RngTracker {
 
@@ -23,13 +24,14 @@ public class RngTracker {
 
         String stripped = message.getString();
 
-        if (stripped.contains("RARE DROP!") || stripped.contains("PRAY TO RNGESUS DROP!")) {
+        if (stripped.contains(Constants.RARE_DROP_KEYWORD) || stripped.contains(Constants.PRAY_DROP_KEYWORD)) {
             handleDrop(stripped);
         }
     }
 
     private static final Pattern STRIPPED_PATTERN = Pattern.compile(
-            "(RARE|CRAZY RARE|PRAY TO RNGESUS) DROP! (.*?)(?: \\(\\+([0-9,.]+)%? ✯ Magic Find\\))?$");
+            "(RARE|CRAZY RARE|PRAY TO RNGESUS) DROP! (.*?)(?: \\(\\+([0-9,.]+)%? " + Constants.MAGIC_FIND_LABEL
+                    + "\\))?$");
 
     private static void handleDrop(String text) {
         Matcher matcher = STRIPPED_PATTERN.matcher(text);

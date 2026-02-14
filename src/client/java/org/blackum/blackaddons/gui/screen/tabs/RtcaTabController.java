@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
 import com.google.gson.JsonObject;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.config.ConfigManager;
@@ -43,7 +44,7 @@ public class RtcaTabController extends ProfileTabController {
         int cx = tab.getParent().getContentX();
         int cy = tab.getParent().getContentY();
 
-        Label settingsLabel = new Label(cx, cy, "§lConfiguration", Label.Style.TITLE);
+        Label settingsLabel = new Label(cx, cy, ChatFormatting.BOLD + "Configuration", Label.Style.TITLE);
         settingsLabel.setColor(Theme.ACCENT);
         tab.addWidget(settingsLabel);
 
@@ -349,7 +350,8 @@ public class RtcaTabController extends ProfileTabController {
                     @Override
                     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
                         graphics.drawCenteredString(Minecraft.getInstance().font,
-                                "§6§l🎉 Congratulations " + screen.getPlayer()
+                                ChatFormatting.GOLD.toString() + ChatFormatting.BOLD + "🎉 Congratulations "
+                                        + screen.getPlayer()
                                         + ", you already hit Class Average 50! 🎉",
                                 x + width / 2, y + 8, 0xFFFFFFFF);
                     }
@@ -358,7 +360,8 @@ public class RtcaTabController extends ProfileTabController {
                     @Override
                     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
                         graphics.drawCenteredString(Minecraft.getInstance().font,
-                                "§eYou don't need this simulation anymore. Go touch some grass! 🌱",
+                                ChatFormatting.YELLOW
+                                        + "You don't need this simulation anymore. Go touch some grass! 🌱",
                                 x + width / 2, y + 5, 0xFFFFD700);
                     }
                 });

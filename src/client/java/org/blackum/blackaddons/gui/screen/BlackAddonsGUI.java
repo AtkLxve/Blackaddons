@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.screen;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -841,7 +842,7 @@ public class BlackAddonsGUI extends BaseScreen {
             }
         };
 
-        Label modsSectionLabel = new Label(0, 0, "§6Mods", Label.Style.BODY);
+        Label modsSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Mods", Label.Style.BODY);
         modsSectionLabel.setHeight(20);
         allowedModsList.addItem(modsSectionLabel);
 
@@ -849,7 +850,7 @@ public class BlackAddonsGUI extends BaseScreen {
             addModGroupToList(allowedModsList, group, query, enableDependencies, disableDependents, modSearch);
         }
 
-        Label libsSectionLabel = new Label(0, 0, "§6Libraries", Label.Style.BODY);
+        Label libsSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Libraries", Label.Style.BODY);
         libsSectionLabel.setHeight(20);
         allowedModsList.addItem(libsSectionLabel);
 
@@ -888,7 +889,8 @@ public class BlackAddonsGUI extends BaseScreen {
                     .allMatch(m -> ConfigManager.data.modHiderAllowedMods.contains(m.id));
 
             String arrow = isCollapsed ? "▶" : "▼";
-            Button groupHeader = new Button(0, 0, 0, arrow + " §b" + group.groupName + " (" + matchingMods.size() + ")",
+            Button groupHeader = new Button(0, 0, 0,
+                    arrow + " " + ChatFormatting.AQUA + group.groupName + " (" + matchingMods.size() + ")",
                     () -> {
                         collapsedGroups.put(groupKey, !collapsedGroups.getOrDefault(groupKey, true));
                         rebuildAllowedModsList(list, searchField);
@@ -930,7 +932,7 @@ public class BlackAddonsGUI extends BaseScreen {
         boolean checked = ConfigManager.data.modHiderAllowedMods.contains(info.id);
         String displayName = info.name + " (" + info.id + ")";
         if (!info.dependents.isEmpty())
-            displayName += " §7[Used by: " + info.dependents.size() + "]";
+            displayName += " " + ChatFormatting.GRAY + "[Used by: " + info.dependents.size() + "]";
 
         Checkbox cb = new Checkbox(0, 0, displayName, checked, value -> {
             if (value) {

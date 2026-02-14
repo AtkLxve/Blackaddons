@@ -5,6 +5,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.blackum.blackaddons.Blackaddons;
+import org.blackum.blackaddons.util.Constants;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,8 +20,8 @@ import java.util.Date;
 
 public class PacketLogger {
     private static final Path LOG_DIR = FabricLoader.getInstance().getConfigDir()
-            .resolve("blackaddons");
-    private static final File LOG_FILE = LOG_DIR.resolve("blocked_packets.log").toFile();
+            .resolve(Constants.CONFIG_DIR_NAME);
+    private static final File LOG_FILE = LOG_DIR.resolve(Constants.BLOCKED_PACKETS_LOG_NAME).toFile();
 
     static {
         if (!LOG_DIR.toFile().exists()) {

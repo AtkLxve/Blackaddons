@@ -3,6 +3,7 @@ package org.blackum.blackaddons.manager;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.cheats.AutoTNT;
 import org.blackum.blackaddons.config.ConfigManager;
@@ -45,7 +46,7 @@ public class DebugOverlayManager {
 
     private static List<String> gatherDebugInfo(Minecraft mc) {
         List<String> debugInfo = new ArrayList<>();
-        debugInfo.add("§6[BlackAddons Debug]");
+        debugInfo.add(ChatFormatting.GOLD + "[BlackAddons Debug]");
         debugInfo.add("Nick: " + mc.getUser().getName());
         debugInfo.add("VSync: " + mc.options.enableVsync().get());
 
@@ -60,7 +61,7 @@ public class DebugOverlayManager {
         debugInfo.add("Screen: " + (mc.screen != null ? mc.screen.getClass().getSimpleName() : "None"));
 
         debugInfo.add("");
-        debugInfo.add("§6[Mod Hider Real Info]");
+        debugInfo.add(ChatFormatting.GOLD + "[Mod Hider Real Info]");
         debugInfo.add("Real Brand: fabric");
 
         int modCount = 0;
@@ -81,7 +82,7 @@ public class DebugOverlayManager {
         debugInfo.add("Real Libraries: " + libCount);
 
         debugInfo.add("");
-        debugInfo.add("§6[Mod Hider Status]");
+        debugInfo.add(ChatFormatting.GOLD + "[Mod Hider Status]");
         debugInfo.add("Spoof Mode: " + ConfigManager.data.modHiderSpoofMode.name());
         debugInfo.add("Hide Mods: " + ConfigManager.data.hideMods());
         debugInfo.add("Custom Client: " + ConfigManager.data.modHiderCustomClient);
@@ -126,23 +127,23 @@ public class DebugOverlayManager {
 
         if (!hiddenModIds.isEmpty()) {
             debugInfo.add("");
-            debugInfo.add("§cHidden Mods:");
+            debugInfo.add(ChatFormatting.RED + "Hidden Mods:");
             for (int i = 0; i < Math.min(5, hiddenModIds.size()); i++) {
                 debugInfo.add(" - " + hiddenModIds.get(i));
             }
             if (hiddenModIds.size() > 5) {
-                debugInfo.add("  §7and " + (hiddenModIds.size() - 5) + " more mods");
+                debugInfo.add("  " + ChatFormatting.GRAY + "and " + (hiddenModIds.size() - 5) + " more mods");
             }
         }
 
         if (!hiddenLibIds.isEmpty()) {
             debugInfo.add("");
-            debugInfo.add("§cHidden Libraries:");
+            debugInfo.add(ChatFormatting.RED + "Hidden Libraries:");
             for (int i = 0; i < Math.min(5, hiddenLibIds.size()); i++) {
                 debugInfo.add("  " + hiddenLibIds.get(i));
             }
             if (hiddenLibIds.size() > 5) {
-                debugInfo.add("  §7and " + (hiddenLibIds.size() - 5) + " more libraries");
+                debugInfo.add("  " + ChatFormatting.GRAY + "and " + (hiddenLibIds.size() - 5) + " more libraries");
             }
         }
 

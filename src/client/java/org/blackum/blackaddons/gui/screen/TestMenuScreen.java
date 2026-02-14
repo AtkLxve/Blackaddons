@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.screen;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -24,7 +25,8 @@ public class TestMenuScreen extends BaseScreen {
         private void sendMessage(String message) {
                 var player = Minecraft.getInstance().player;
                 if (player != null) {
-                        player.displayClientMessage(Component.literal("§b[Test] §f" + message), false);
+                        player.displayClientMessage(Component.literal(
+                                        ChatFormatting.AQUA + "[Test] " + ChatFormatting.WHITE + message), false);
                 }
         }
 

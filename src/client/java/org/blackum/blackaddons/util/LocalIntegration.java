@@ -34,8 +34,8 @@ public class LocalIntegration {
     private static volatile boolean isRefreshing = false;
 
     private static final java.nio.file.Path CONFIG_DIR = FabricLoader.getInstance()
-            .getConfigDir().resolve("blackaddons");
-    private static final File PRICES_FILE = CONFIG_DIR.resolve("prices.json").toFile();
+            .getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
+    private static final File PRICES_FILE = CONFIG_DIR.resolve(Constants.PRICES_FILE_NAME).toFile();
 
     private static class PricesData {
         long timestamp;

@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
 import com.google.gson.JsonObject;
+import net.minecraft.ChatFormatting;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.widget.Label;
 import org.blackum.blackaddons.gui.widget.ListView;
@@ -38,7 +39,7 @@ public abstract class ProfileTabController {
     }
 
     protected void addInfoRow(ListView list, String labelText, String valueText) {
-        String fullText = labelText + (valueText.isEmpty() ? "" : " §f" + valueText);
+        String fullText = labelText + (valueText.isEmpty() ? "" : " " + ChatFormatting.WHITE + valueText);
         Label label = new Label(0, 0, fullText, Label.Style.BODY);
         label.setHeight(15);
         list.addItem(label);

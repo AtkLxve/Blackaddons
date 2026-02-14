@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -116,7 +117,7 @@ public class Dropdown extends Widget {
                 }
 
                 if (i == selectedIndex) {
-                    graphics.drawString(Minecraft.getInstance().font, "§b" + option, x + 10,
+                    graphics.drawString(Minecraft.getInstance().font, ChatFormatting.AQUA + option, x + 10,
                             optY + (optionHeight - 8) / 2, Theme.ACCENT);
                 } else {
                     graphics.drawString(Minecraft.getInstance().font, option, x + 10, optY + (optionHeight - 8) / 2,

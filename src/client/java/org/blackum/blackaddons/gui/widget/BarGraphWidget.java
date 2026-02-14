@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.theme.Theme;
@@ -46,13 +47,13 @@ public class BarGraphWidget extends Widget {
         if (!visible)
             return;
 
-        graphics.drawString(Minecraft.getInstance().font, "§l" + title, x, y, Theme.ACCENT);
+        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.BOLD + title, x, y, Theme.ACCENT);
 
         int currentY = y + 20;
-        int barHeight = 12;
         int maxBarWidth = width - 120;
         for (BarEntry entry : entries) {
-            graphics.drawString(Minecraft.getInstance().font, "§f" + entry.label, x, currentY + 2, 0xFFFFFFFF);
+            graphics.drawString(Minecraft.getInstance().font, ChatFormatting.WHITE + entry.label, x, currentY + 2,
+                    0xFFFFFFFF);
 
             int barX = x + 60;
             RenderHelper.renderRoundedRect(graphics, barX, currentY + 4, maxBarWidth, 4, 2, Theme.BACKGROUND_TERTIARY);
@@ -62,7 +63,8 @@ public class BarGraphWidget extends Widget {
                 RenderHelper.renderRoundedRect(graphics, barX, currentY + 4, Math.max(4, fillWidth), 4, 2, color);
             }
             String valueText = formatValue(entry.value) + " " + unit;
-            graphics.drawString(Minecraft.getInstance().font, "§7" + valueText, barX + maxBarWidth + 5, currentY + 2,
+            graphics.drawString(Minecraft.getInstance().font, ChatFormatting.GRAY + valueText, barX + maxBarWidth + 5,
+                    currentY + 2,
                     0xFFFFFFFF);
 
             currentY += 20;

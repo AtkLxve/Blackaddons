@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.features;
 
+import org.blackum.blackaddons.util.Constants;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -23,8 +24,8 @@ import java.util.regex.Pattern;
 public class LocalTeammateManager {
     private static LocalTeammateManager instance;
     private static final Path CONFIG_DIR = FabricLoader.getInstance()
-            .getConfigDir().resolve("blackaddons");
-    private static final File DATA_FILE = CONFIG_DIR.resolve("teammates.json").toFile();
+            .getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
+    private static final File DATA_FILE = CONFIG_DIR.resolve(Constants.TEAMMATES_FILE_NAME).toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Pattern FORMATTING_CODE_PATTERN = Pattern.compile("§.");
 

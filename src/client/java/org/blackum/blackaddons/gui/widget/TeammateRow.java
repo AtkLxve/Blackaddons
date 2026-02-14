@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.animation.Animation;
@@ -53,18 +54,19 @@ public class TeammateRow extends Widget {
 
         graphics.drawString(Minecraft.getInstance().font, tm.ign, cx, cy, Theme.ACCENT);
         cx += COL_IGN;
-        graphics.drawString(Minecraft.getInstance().font, "§f" + tm.count, cx, cy, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.WHITE + String.valueOf(tm.count), cx, cy,
+                0xFFFFFFFF);
         cx += COL_RUNS;
 
-        String classText = String.format("§f%s %d", tm.lastClass, tm.lastClassLevel);
+        String classText = String.format("%s%s %d", ChatFormatting.WHITE, tm.lastClass, tm.lastClassLevel);
         graphics.drawString(Minecraft.getInstance().font, classText, cx, cy, 0xFFFFFFFF);
         cx += COL_CLASS;
 
-        graphics.drawString(Minecraft.getInstance().font, "§f" + tm.lastFloor, cx, cy, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.WHITE + tm.lastFloor, cx, cy, 0xFFFFFFFF);
         cx += COL_FLOOR;
 
         String timeAgo = FormatUtils.formatRelativeTime(tm.lastTs);
-        graphics.drawString(Minecraft.getInstance().font, "§7" + timeAgo, cx, cy, 0xFFFFFFFF);
+        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.GRAY + timeAgo, cx, cy, 0xFFFFFFFF);
 
         inviteBtn.render(graphics, mouseX, mouseY, partialTick);
     }

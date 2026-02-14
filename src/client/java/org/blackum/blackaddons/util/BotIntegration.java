@@ -31,7 +31,7 @@ public class BotIntegration {
         json.addProperty("floor", floor);
         json.addProperty("timestamp", System.currentTimeMillis() / 1000);
 
-        sendPostRequest("/v1/rng", json.toString());
+        sendPostRequest(Constants.BOT_API_RNG, json.toString());
     }
 
     public static CompletableFuture<Boolean> sendDailySync(String player) {
@@ -41,7 +41,7 @@ public class BotIntegration {
         JsonObject json = new JsonObject();
         json.addProperty("player", player);
 
-        return sendPostRequest("/v1/daily", json.toString()).thenApply(res -> {
+        return sendPostRequest(Constants.BOT_API_DAILY, json.toString()).thenApply(res -> {
             return res != null && res.statusCode() >= 200 && res.statusCode() < 300;
         });
     }
@@ -50,7 +50,7 @@ public class BotIntegration {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        String url = "/v1/profile?player=" + player;
+        String url = Constants.BOT_API_PROFILE + "?player=" + player;
         if (force) {
             url += "&force=true";
         }
@@ -86,7 +86,7 @@ public class BotIntegration {
             json.add("bonuses", bonusJson);
         }
 
-        return sendPostRequest("/v1/rtca", json.toString()).thenApply(res -> {
+        return sendPostRequest(Constants.BOT_API_RTCA, json.toString()).thenApply(res -> {
             if (res == null)
                 return null;
             if (res.statusCode() == 200 || res.statusCode() == 400 || res.statusCode() == 404) {
@@ -104,7 +104,7 @@ public class BotIntegration {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        return sendGetRequest("/v1/rng?player=" + player).thenApply(res -> {
+        return sendGetRequest(Constants.BOT_API_RNG + "?player=" + player).thenApply(res -> {
             if (res == null)
                 return null;
             if (res.statusCode() == 200 || res.statusCode() == 400 || res.statusCode() == 404) {
@@ -132,7 +132,7 @@ public class BotIntegration {
             json.addProperty("count", count);
         }
 
-        return sendPostRequest("/v1/rng", json.toString()).thenApply(res -> {
+        return sendPostRequest(Constants.BOT_API_RNG, json.toString()).thenApply(res -> {
             if (res != null && res.statusCode() >= 200 && res.statusCode() < 300) {
                 try {
                     JsonObject responseJson = JsonParser.parseString(res.body()).getAsJsonObject();
@@ -152,7 +152,8 @@ public class BotIntegration {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        String endpoint = String.format("/v1/leaderboard?period=%s&metric=%s&page=%d", period, metric, page);
+        String endpoint = String.format(Constants.BOT_API_LEADERBOARD + "?period=%s&metric=%s&page=%d", period, metric,
+                page);
         return sendGetRequest(endpoint).thenApply(res -> {
             if (res == null)
                 return null;
@@ -171,7 +172,8 @@ public class BotIntegration {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        String endpoint = String.format("/v1/leaderboard?period=%s&metric=%s&find_player=%s", period, metric, player);
+        String endpoint = String.format(Constants.BOT_API_LEADERBOARD + "?period=%s&metric=%s&find_player=%s", period,
+                metric, player);
         return sendGetRequest(endpoint).thenApply(res -> {
             if (res != null && (res.statusCode() == 200 || res.statusCode() == 404)) {
                 try {
@@ -218,11 +220,11 @@ public class BotIntegration {
                 .header("User-Agent", Constants.BOT_USER_AGENT);
 
         if (encryptedIdentity != null) {
-            builder.header("X-Encrypted-Identity", encryptedIdentity);
+            builder.header(Constants.HEADER_ENCRYPTED_IDENTITY, encryptedIdentity);
         }
 
         if (ConfigManager.data.developerKey != null && !ConfigManager.data.developerKey.isEmpty()) {
-            builder.header("X-Developer-Key", ConfigManager.data.developerKey);
+            builder.header(Constants.HEADER_DEVELOPER_KEY, ConfigManager.data.developerKey);
         }
 
         if (method.equalsIgnoreCase("POST")) {
@@ -256,7 +258,7 @@ public class BotIntegration {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
-        String endpoint = "/v1/key";
+        String endpoint = Constants.BOT_API_KEY;
 
         return sendRequest("GET", endpoint, null, false).thenAccept(res -> {
             if (res != null && res.statusCode() == 200) {

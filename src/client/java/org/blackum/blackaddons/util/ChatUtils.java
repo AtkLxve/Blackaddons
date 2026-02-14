@@ -55,7 +55,21 @@ public class ChatUtils {
     }
 
     public static MutableComponent getMessage(String text) {
-        return getPrefix().append(Component.literal(ChatFormatting.RESET + text));
+        if (text == null)
+            text = "";
+        return getPrefix().append(Component.literal(text).withStyle(ChatFormatting.GRAY));
+    }
+
+    public static MutableComponent error(String text) {
+        if (text == null)
+            text = "Unknown error";
+        return getPrefix().append(Component.literal(text).withStyle(ChatFormatting.RED));
+    }
+
+    public static MutableComponent success(String text) {
+        if (text == null)
+            text = "";
+        return getPrefix().append(Component.literal(text).withStyle(ChatFormatting.GREEN));
     }
 
     public static void send_debug(String txt) {

@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.theme.Theme;
@@ -24,7 +25,7 @@ public class StatBox extends Widget {
 
         Minecraft mc = Minecraft.getInstance();
         graphics.drawCenteredString(mc.font, label, x + width / 2, y + 10, Theme.ACCENT);
-        graphics.drawCenteredString(mc.font, "§f" + value, x + width / 2, y + 25, 0xFFFFFFFF);
+        graphics.drawCenteredString(mc.font, ChatFormatting.WHITE + value, x + width / 2, y + 25, 0xFFFFFFFF);
     }
 
     public void setLabel(String label) {

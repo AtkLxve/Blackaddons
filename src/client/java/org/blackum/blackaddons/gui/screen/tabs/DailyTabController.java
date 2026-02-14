@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.screen.tabs;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.ChatFormatting;
 import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,6 +12,7 @@ import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.Constants;
 import org.blackum.blackaddons.util.DungeonFloor;
 import org.blackum.blackaddons.util.FormatUtils;
 import org.blackum.blackaddons.util.JsonUtils;
@@ -318,10 +320,11 @@ public class DailyTabController extends ProfileTabController {
     }
 
     private void addDiscordLinkButton(ListView list) {
-        Button linkBtn = new Button(0, 0, list.getWidth() - 20, 20, "§bWant to be on leaderboard? Link Discord", () -> {
-            String url = "https://discord.com/oauth2/authorize?client_id=1134507219220713472";
-            Util.getPlatform().openUri(url);
-        });
+        Button linkBtn = new Button(0, 0, list.getWidth() - 20, 20,
+                ChatFormatting.AQUA + "Want to be on leaderboard? Link Discord", () -> {
+                    String url = Constants.DISCORD_AUTH_URL;
+                    Util.getPlatform().openUri(url);
+                });
 
         Widget wrapper = new Widget(0, 0, list.getWidth(), 30) {
             @Override
@@ -376,7 +379,8 @@ public class DailyTabController extends ProfileTabController {
         Widget header = new Widget(0, 0, dailyPersonalList.getWidth(), 30) {
             @Override
             public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                graphics.drawCenteredString(Minecraft.getInstance().font, "§l📊 Personal Stats: " + playerName,
+                graphics.drawCenteredString(Minecraft.getInstance().font,
+                        ChatFormatting.BOLD.toString() + "📊 Personal Stats: " + playerName,
                         x + width / 2, y + 10,
                         Theme.ACCENT);
             }
@@ -457,25 +461,27 @@ public class DailyTabController extends ProfileTabController {
                 RenderHelper.renderRoundedRect(graphics, x, y, width - 4, height - 2,
                         3, Theme.BACKGROUND_SECONDARY);
                 Minecraft mc = Minecraft.getInstance();
-                graphics.drawString(mc.font, "§b" + title, x + 5, y + 5, 0xFFFFFFFF);
+                graphics.drawString(mc.font, ChatFormatting.AQUA + title, x + 5, y + 5, 0xFFFFFFFF);
 
                 int rowY = y + 18;
                 if (fHasDaily) {
-                    String dStr = "Day: §a+" + String.format("%,.0f", fdGained) + " XP §7("
+                    String dStr = "Day: " + ChatFormatting.GREEN + "+" + String.format("%,.0f", fdGained) + " XP "
+                            + ChatFormatting.GRAY + "("
                             + String.format("%.2f", fdStart) + " ➤ " + String.format("%.2f", fdEnd) + ")";
                     graphics.drawString(mc.font, dStr, x + 10, rowY, 0xFFE0E0E0);
                     rowY += 12;
                 } else {
-                    graphics.drawString(mc.font, "Day: §7No Gain", x + 10, rowY, 0xFFAAAAAA);
+                    graphics.drawString(mc.font, "Day: " + ChatFormatting.GRAY + "No Gain", x + 10, rowY, 0xFFAAAAAA);
                     rowY += 12;
                 }
 
                 if (fHasMonthly) {
-                    String mStr = "Month: §a+" + String.format("%,.0f", fmGained) + " XP §7("
+                    String mStr = "Month: " + ChatFormatting.GREEN + "+" + String.format("%,.0f", fmGained) + " XP "
+                            + ChatFormatting.GRAY + "("
                             + String.format("%.2f", fmStart) + " ➤ " + String.format("%.2f", fmEnd) + ")";
                     graphics.drawString(mc.font, mStr, x + 10, rowY, 0xFFE0E0E0);
                 } else {
-                    graphics.drawString(mc.font, "Month: §7No Gain", x + 10, rowY, 0xFFAAAAAA);
+                    graphics.drawString(mc.font, "Month: " + ChatFormatting.GRAY + "No Gain", x + 10, rowY, 0xFFAAAAAA);
                 }
             }
         };
@@ -540,7 +546,7 @@ public class DailyTabController extends ProfileTabController {
                 if (m.has(key)) {
                     int val = m.get(key).getAsInt();
                     if (val > 0) {
-                        parts.add("§6M" + key + " (+" + val + ")§r");
+                        parts.add(ChatFormatting.GOLD + "M" + key + " (+" + val + ")" + ChatFormatting.RESET);
                     }
                 }
             }
@@ -553,7 +559,7 @@ public class DailyTabController extends ProfileTabController {
                 if (n.has(key)) {
                     int val = n.get(key).getAsInt();
                     if (val > 0) {
-                        parts.add("§fF" + key + " (+" + val + ")§r");
+                        parts.add(ChatFormatting.WHITE + "F" + key + " (+" + val + ")" + ChatFormatting.RESET);
                     }
                 }
             }
@@ -564,7 +570,7 @@ public class DailyTabController extends ProfileTabController {
             if (n.has("0")) {
                 int val = n.get("0").getAsInt();
                 if (val > 0) {
-                    parts.add("§7Entrance (+" + val + ")§r");
+                    parts.add(ChatFormatting.GRAY + "Entrance (+" + val + ")" + ChatFormatting.RESET);
                 }
             }
         }

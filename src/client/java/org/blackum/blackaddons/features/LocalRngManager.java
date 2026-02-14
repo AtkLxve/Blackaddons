@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.blackum.blackaddons.Blackaddons;
+import org.blackum.blackaddons.util.Constants;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -19,8 +20,8 @@ import java.util.Map;
 public class LocalRngManager {
     private static LocalRngManager instance;
     private static final Path CONFIG_DIR = FabricLoader.getInstance()
-            .getConfigDir().resolve("blackaddons");
-    private static final File DATA_FILE = CONFIG_DIR.resolve("rng_data.json").toFile();
+            .getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
+    private static final File DATA_FILE = CONFIG_DIR.resolve(Constants.RNG_DATA_FILE_NAME).toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private JsonObject data = new JsonObject();

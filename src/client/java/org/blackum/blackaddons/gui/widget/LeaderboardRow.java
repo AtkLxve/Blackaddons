@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
@@ -49,17 +50,17 @@ public class LeaderboardRow extends Widget {
         Minecraft mc = Minecraft.getInstance();
         String rankStr = "#" + rank;
         if (rank == 1)
-            rankStr = "§6🥇";
+            rankStr = ChatFormatting.GOLD + "🥇";
         else if (rank == 2)
-            rankStr = "§7🥈";
+            rankStr = ChatFormatting.GRAY + "🥈";
         else if (rank == 3)
-            rankStr = "§c🥉";
+            rankStr = ChatFormatting.RED + "🥉";
 
         graphics.drawString(mc.font, rankStr, x + 5, y + 6, 0xFFFFFFFF);
         graphics.drawString(mc.font, ign, x + 30, y + 6, isCurrentPlayer ? 0xFFFFFFFF : Theme.ACCENT);
 
         String valStr = isRuns ? String.format("%,.0f Runs", value) : String.format("%,.0f XP", value);
         int valW = mc.font.width(valStr);
-        graphics.drawString(mc.font, "§f" + valStr, x + width - valW - 5, y + 6, 0xFFFFFFFF);
+        graphics.drawString(mc.font, ChatFormatting.WHITE + valStr, x + width - valW - 5, y + 6, 0xFFFFFFFF);
     }
 }

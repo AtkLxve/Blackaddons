@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ConfigManager {
-    private static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve("blackaddons");
+    private static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File CONFIG_FILE = CONFIG_DIR.resolve("config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 

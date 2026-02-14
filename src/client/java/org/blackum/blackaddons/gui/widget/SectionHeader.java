@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.widget;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.theme.Theme;
@@ -9,7 +10,7 @@ public class SectionHeader extends Widget {
 
     public SectionHeader(int width, String title) {
         super(0, 0, width, 25);
-        this.title = "§l" + title;
+        this.title = ChatFormatting.BOLD + title;
     }
 
     @Override
