@@ -30,11 +30,13 @@ public class ProfileStateManager {
         return instance;
     }
 
-    public CompletableFuture<BotResult<JsonObject>> getProfile(String player, boolean force) {
+    public CompletableFuture<BotResult<JsonObject>> getProfile(String player, String profileName, boolean force) {
+        String cacheKey = player.toLowerCase() + ":" + (profileName != null ? profileName.toLowerCase() : "default");
+
         if (force) {
             clearCache(player);
-        } else if (profileCache.containsKey(player.toLowerCase())) {
-            CacheEntry<JsonObject> entry = profileCache.get(player.toLowerCase());
+        } else if (profileCache.containsKey(cacheKey)) {
+            CacheEntry<JsonObject> entry = profileCache.get(cacheKey);
             if (!entry.isExpired()) {
                 return CompletableFuture.completedFuture(BotResult.success(entry.data));
             }
@@ -43,8 +45,8 @@ public class ProfileStateManager {
         CompletableFuture<JsonObject> future;
 
         if (ConfigManager.data.dataSource == ConfigManager.DataSource.LOCAL) {
-            CompletableFuture<JsonObject> localFuture = LocalIntegration.getProfileStats(player, force);
-            CompletableFuture<JsonObject> botFuture = getSafeBotProfile(player, force);
+            CompletableFuture<JsonObject> localFuture = LocalIntegration.getProfileStats(player, profileName, force);
+            CompletableFuture<JsonObject> botFuture = getSafeBotProfile(player, profileName, force);
 
             future = localFuture.thenCombine(botFuture, (local, bot) -> {
                 if (local == null)
@@ -55,14 +57,14 @@ public class ProfileStateManager {
                 return local;
             });
         } else {
-            future = getSafeBotProfile(player, force).thenCompose(bot -> {
+            future = getSafeBotProfile(player, profileName, force).thenCompose(bot -> {
                 if (bot != null && !bot.has("error")) {
                     return CompletableFuture.completedFuture(bot);
                 }
 
                 String currentUser = Minecraft.getInstance().getUser().getName();
                 if (player.equalsIgnoreCase(currentUser)) {
-                    return LocalIntegration.getProfileStats(player, force).thenApply(local -> {
+                    return LocalIntegration.getProfileStats(player, profileName, force).thenApply(local -> {
                         if (local != null) {
                             return local;
                         }
@@ -86,15 +88,32 @@ public class ProfileStateManager {
             }
 
             if (data.has("catacombs") || data.has("members") || data.has("profiles")) {
-                profileCache.put(player.toLowerCase(), new CacheEntry<>(data));
+                profileCache.put(cacheKey, new CacheEntry<>(data));
+
+                if (data.has("profiles")) {
+                    JsonArray profiles = data.getAsJsonArray("profiles");
+                    for (JsonElement p : profiles) {
+                        JsonObject prof = p.getAsJsonObject();
+                        if (prof.has("stats") && prof.has("name")) {
+                            String pName = prof.get("name").getAsString();
+                            JsonObject pStats = prof.getAsJsonObject("stats");
+
+                            pStats.add("profiles", profiles);
+
+                            String pKey = player.toLowerCase() + ":" + pName.toLowerCase();
+                            profileCache.put(pKey, new CacheEntry<>(pStats));
+                        }
+                    }
+                }
+
                 return BotResult.success(data);
             }
             return BotResult.error("Invalid data");
         });
     }
 
-    private CompletableFuture<JsonObject> getSafeBotProfile(String player, boolean force) {
-        return BotIntegration.getProfileStats(player, force)
+    private CompletableFuture<JsonObject> getSafeBotProfile(String player, String profileName, boolean force) {
+        return BotIntegration.getProfileStats(player, profileName, force)
                 .exceptionally(e -> null);
     }
 
@@ -250,17 +269,24 @@ public class ProfileStateManager {
     }
 
     public void clearCache(String player) {
-        profileCache.remove(player.toLowerCase());
+        profileCache.entrySet().removeIf(entry -> entry.getKey().startsWith(player.toLowerCase() + (":")));
         rngCache.remove(player.toLowerCase());
     }
 
-    @SuppressWarnings("null")
-    public void loadProfileAndOpen(String player, boolean force) {
-        Minecraft mc = Minecraft.getInstance();
-        mc.gui.getChat()
-                .addMessage(ChatUtils.getMessage("Loading profile for " + player + (force ? " (Forced)" : "") + "..."));
+    public void loadProfileAndOpen(String player, String profileName, boolean force) {
+        loadProfileAndOpen(player, profileName, force, false);
+    }
 
-        getProfile(player, force).thenAccept(result -> {
+    @SuppressWarnings("null")
+    public void loadProfileAndOpen(String player, String profileName, boolean force, boolean quiet) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!quiet) {
+            mc.gui.getChat()
+                    .addMessage(
+                            ChatUtils.getMessage("Loading stats for " + player + (force ? " (Forced)" : "") + "..."));
+        }
+
+        getProfile(player, profileName, force).thenAccept(result -> {
             if (result == null) {
                 mc.gui.getChat().addMessage(ChatUtils.error("Failed to fetch data."));
                 NotificationManager.addNotification("Profile Error", "Failed to fetch data from API.",
@@ -286,7 +312,8 @@ public class ProfileStateManager {
             final JsonObject finalData = data;
             mc.execute(() -> {
                 mc.setScreen(
-                        new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, force, finalData));
+                        new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, profileName, force,
+                                finalData));
             });
         }).exceptionally(e -> {
             mc.gui.getChat().addMessage(ChatUtils.error("Exception: " + e.getMessage()));

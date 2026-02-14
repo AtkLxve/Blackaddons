@@ -318,7 +318,9 @@ public class RtcaTabController extends ProfileTabController {
             return;
         }
 
-        BotIntegration.getRtcaStats(playerName, rtcaFloor, bonuses).thenAccept(json -> {
+        String profileName = screen.getProfileName();
+
+        BotIntegration.getRtcaStats(playerName, profileName, rtcaFloor, bonuses).thenAccept(json -> {
             Minecraft.getInstance().execute(() -> {
                 if (simResultsList == null)
                     return;

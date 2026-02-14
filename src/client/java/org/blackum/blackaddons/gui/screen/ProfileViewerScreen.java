@@ -10,13 +10,15 @@ import org.blackum.blackaddons.gui.widget.Label;
 import org.blackum.blackaddons.gui.widget.TabPanel;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.util.ConfettiEffect;
-import org.blackum.blackaddons.util.BotIntegration;
 import org.blackum.blackaddons.util.ProfileStateManager;
 import org.blackum.blackaddons.config.ConfigManager;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.gui.screen.tabs.*;
 
 public class ProfileViewerScreen extends BaseScreen {
     private final String player;
+    private String profileName;
     private final boolean forceUpdate;
     private TabPanel tabPanel;
     private JsonObject profileData;
@@ -33,7 +35,7 @@ public class ProfileViewerScreen extends BaseScreen {
     @Override
     protected void initWidgets() {
         if (isLoading) {
-            ProfileStateManager.getInstance().getProfile(player, forceUpdate)
+            ProfileStateManager.getInstance().getProfile(player, profileName, forceUpdate)
                     .thenAccept(result -> {
                         isLoading = false;
                         if (result.isSuccess()) {
@@ -92,30 +94,114 @@ public class ProfileViewerScreen extends BaseScreen {
         }
         rtcaController.init(tabPanel.addTab("RTCA"));
 
+        if (profileData.has("profiles")) {
+            com.google.gson.JsonArray profiles = profileData.getAsJsonArray("profiles");
+            if (profiles.size() > 1) {
+                java.util.List<String> profileNames = new java.util.ArrayList<>();
+                String currentSelected = profileName;
+
+                String apiSelected = null;
+
+                for (com.google.gson.JsonElement p : profiles) {
+                    JsonObject prof = p.getAsJsonObject();
+                    String name = prof.get("name").getAsString();
+
+                    boolean isSelected;
+                    if (this.profileName != null) {
+                        isSelected = name.equalsIgnoreCase(this.profileName);
+                    } else {
+                        isSelected = prof.get("selected").getAsBoolean();
+                    }
+
+                    if (isSelected) {
+                        String display = name + " (Selected)";
+                        profileNames.add(display);
+                        apiSelected = display;
+                    } else {
+                        profileNames.add(name);
+                    }
+                }
+
+                if (apiSelected != null) {
+                    currentSelected = apiSelected;
+                }
+
+                org.blackum.blackaddons.gui.widget.Dropdown profileDropdown = new org.blackum.blackaddons.gui.widget.Dropdown(
+                        containerX + containerWidth - 160, containerY + 10, 150, 20,
+                        (currentSelected != null ? currentSelected : "Profile"),
+                        profileNames,
+                        this::switchProfile);
+
+                if (currentSelected != null) {
+                    profileDropdown.setSelectedOption(currentSelected);
+                }
+                addWidget(profileDropdown);
+            }
+        }
+
         tabPanel.selectTab(lastTabIndex);
     }
 
     public ProfileViewerScreen(Screen parent, String player) {
-        this(parent, player, false, null);
+        this(parent, player, null, false, null);
     }
 
     public ProfileViewerScreen(Screen parent, String player, boolean force) {
-        this(parent, player, force, null);
+        this(parent, player, null, force, null);
+    }
+
+    public ProfileViewerScreen(Screen parent, String player, String profileName, boolean force,
+            JsonObject data) {
+        super(Component.literal("Profile: " + player), parent);
+        this.player = player;
+        this.profileName = profileName;
+        this.forceUpdate = force;
+        if (data != null) {
+            this.profileData = data;
+            this.isLoading = false;
+        }
     }
 
     public String getPlayer() {
         return player;
     }
 
-    public ProfileViewerScreen(Screen parent, String player, boolean force,
-            JsonObject data) {
-        super(Component.literal("Profile: " + player), parent);
-        this.player = player;
-        this.forceUpdate = force;
-        if (data != null) {
-            this.profileData = data;
-            this.isLoading = false;
+    public String getProfileName() {
+        return profileName;
+    }
+
+    private void switchProfile(String newProfile) {
+        if (newProfile.endsWith(" (Selected)")) {
+            newProfile = newProfile.replace(" (Selected)", "");
         }
+
+        if (newProfile.equals(this.profileName))
+            return;
+
+        NotificationManager.addNotification("Profile", "Switching to " + newProfile + "...", NotificationType.INFO);
+
+        final String targetProfile = newProfile;
+
+        ProfileStateManager.getInstance().getProfile(player, targetProfile, false)
+                .thenAccept(result -> {
+                    if (result.isSuccess() && result.getData() != null) {
+                        this.profileData = result.getData();
+                        this.profileName = targetProfile;
+
+                        this.dungeonsController = null;
+                        this.teammatesController = null;
+                        this.rngController = null;
+                        this.dailyController = null;
+                        this.rtcaController = null;
+
+                        Minecraft.getInstance().execute(() -> {
+                            this.init(this.width, this.height);
+                        });
+                    } else {
+                        String err = result.getError() != null ? result.getError() : "Unknown error";
+                        NotificationManager.addNotification("Switch Failed", err, NotificationType.ERROR);
+                    }
+                });
     }
 
     @Override

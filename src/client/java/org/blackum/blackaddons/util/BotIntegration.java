@@ -46,11 +46,14 @@ public class BotIntegration {
         });
     }
 
-    public static CompletableFuture<JsonObject> getProfileStats(String player, boolean force) {
+    public static CompletableFuture<JsonObject> getProfileStats(String player, String profileName, boolean force) {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         String url = Constants.BOT_API_PROFILE + "?player=" + player;
+        if (profileName != null) {
+            url += "&profile=" + profileName;
+        }
         if (force) {
             url += "&force=true";
         }
@@ -69,13 +72,16 @@ public class BotIntegration {
         });
     }
 
-    public static CompletableFuture<JsonObject> getRtcaStats(String player, String floor,
+    public static CompletableFuture<JsonObject> getRtcaStats(String player, String profileName, String floor,
             Map<String, Double> bonuses) {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         JsonObject json = new JsonObject();
         json.addProperty("player", player);
+        if (profileName != null) {
+            json.addProperty("profile", profileName);
+        }
         json.addProperty("floor", floor);
 
         if (bonuses != null && !bonuses.isEmpty()) {

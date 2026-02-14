@@ -110,19 +110,19 @@ public class CommandManager {
             var pvNode = ClientCommandManager.literal("pv")
                     .executes(ctx -> {
                         String player = Minecraft.getInstance().getUser().getName();
-                        ProfileStateManager.getInstance().loadProfileAndOpen(player, false);
+                        ProfileStateManager.getInstance().loadProfileAndOpen(player, null, false);
                         return 1;
                     })
                     .then(ClientCommandManager.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
                             .executes(ctx -> {
-                                String player = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
-                                ProfileStateManager.getInstance().loadProfileAndOpen(player, false);
+                                String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
+                                ProfileStateManager.getInstance().loadProfileAndOpen(ign, null, false);
                                 return 1;
                             })
                             .then(ClientCommandManager.literal("force")
                                     .executes(ctx -> {
-                                        String player = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
-                                        ProfileStateManager.getInstance().loadProfileAndOpen(player, true);
+                                        String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
+                                        ProfileStateManager.getInstance().loadProfileAndOpen(ign, null, true);
                                         return 1;
                                     })));
 

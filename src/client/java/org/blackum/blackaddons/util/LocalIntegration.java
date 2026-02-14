@@ -49,7 +49,7 @@ public class LocalIntegration {
         return priceCache.getOrDefault(itemId, 0.0);
     }
 
-    public static CompletableFuture<JsonObject> getProfileStats(String player, boolean force) {
+    public static CompletableFuture<JsonObject> getProfileStats(String player, String profileName, boolean force) {
         checkAndRefreshPrices();
         return getUuid(player)
                 .thenCompose(uuid -> {
@@ -59,7 +59,7 @@ public class LocalIntegration {
                     return getProfileData(uuid).thenApply(profileData -> {
                         if (profileData == null)
                             return null;
-                        return processProfileData(uuid, profileData);
+                        return processProfileData(uuid, profileData, profileName);
                     });
                 });
     }
@@ -210,7 +210,7 @@ public class LocalIntegration {
         });
     }
 
-    private static JsonObject processProfileData(String uuid, JsonObject profileData) {
+    private static JsonObject processProfileData(String uuid, JsonObject profileData, String profileName) {
         try {
             if (!profileData.has("profiles") || profileData.get("profiles").isJsonNull())
                 return null;
@@ -219,8 +219,21 @@ public class LocalIntegration {
             if (profiles.isEmpty())
                 return null;
 
-            JsonObject bestProfile = getBestProfile(profiles);
-            JsonObject members = bestProfile.getAsJsonObject("members");
+            JsonArray profilesList = new JsonArray();
+            for (JsonElement p : profiles) {
+                JsonObject obj = p.getAsJsonObject();
+                JsonObject pData = new JsonObject();
+                pData.addProperty("name", obj.get("cute_name").getAsString());
+                pData.addProperty("id", obj.get("profile_id").getAsString());
+                pData.addProperty("selected", obj.has("selected") && obj.get("selected").getAsBoolean());
+                profilesList.add(pData);
+            }
+
+            JsonObject selectedProfile = getSelectedProfile(profiles, profileName);
+            if (selectedProfile == null)
+                return null;
+
+            JsonObject members = selectedProfile.getAsJsonObject("members");
 
             if (!members.has(uuid))
                 return null;
@@ -240,6 +253,7 @@ public class LocalIntegration {
             result.add("teammates", LocalTeammateManager.getInstance().getTeammates(uuid));
             result.add("daily_stats", new JsonObject());
             result.add("monthly_stats", new JsonObject());
+            result.add("profiles", profilesList);
 
             return result;
         } catch (Exception e) {
@@ -249,8 +263,18 @@ public class LocalIntegration {
         }
     }
 
-    private static JsonObject getBestProfile(JsonArray profiles) {
+    private static JsonObject getSelectedProfile(JsonArray profiles, String profileName) {
         JsonObject bestProfile = null;
+
+        if (profileName != null) {
+            for (JsonElement p : profiles) {
+                JsonObject obj = p.getAsJsonObject();
+                if (obj.has("cute_name") && obj.get("cute_name").getAsString().equalsIgnoreCase(profileName)) {
+                    return obj;
+                }
+            }
+        }
+
         for (JsonElement p : profiles) {
             JsonObject obj = p.getAsJsonObject();
             if (obj.has("selected") && obj.get("selected").getAsBoolean()) {
