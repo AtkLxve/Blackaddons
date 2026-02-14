@@ -90,44 +90,103 @@ public class BlackAddonsGUI extends BaseScreen {
 
         ModOrganizer.OrganizedMods organizedMods = ModOrganizer.organizeMods();
 
-        Consumer<String> enableDependencies = modId -> {
-            ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
-            if (info != null) {
+        Consumer<String> enableDependencies = new Consumer<String>() {
+            @Override
+            public void accept(String modId) {
+                ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
+                if (info != null) {
+                    ConfigManager.data.modHiderAllowedMods.add(modId);
+                    for (String depId : info.dependencies) {
+                        if (organizedMods.allMods.containsKey(depId)
+                                && !ConfigManager.data.modHiderAllowedMods.contains(depId)) {
+                            this.accept(depId);
+                        }
+                    }
+                }
+            }
+        };
+
+        Consumer<String> disableDependents = new Consumer<String>() {
+            @Override
+            public void accept(String modId) {
+                ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
+                if (info != null) {
+                    ConfigManager.data.modHiderAllowedMods.remove(modId);
+                    for (String dependentId : info.dependents) {
+                        if (ConfigManager.data.modHiderAllowedMods.contains(dependentId)) {
+                            this.accept(dependentId);
+                        }
+                    }
+                }
+            }
+        };
+
+        Consumer<String> disableUnusedDependencies = new Consumer<String>() {
+            @Override
+            public void accept(String modId) {
+                ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
+                if (info == null)
+                    return;
+
                 for (String depId : info.dependencies) {
-                    ConfigManager.data.modHiderAllowedMods.add(depId);
+                    if ("minecraft".equals(depId) || "java".equals(depId) || "fabricloader".equals(depId)) {
+                        continue;
+                    }
+
+                    ModOrganizer.ModInfo depInfo = organizedMods.allMods.get(depId);
+                    if (depInfo == null)
+                        continue;
+
+                    boolean stillNeeded = false;
+                    for (String otherDependentId : depInfo.dependents) {
+                        if (ConfigManager.data.modHiderAllowedMods.contains(otherDependentId)) {
+                            stillNeeded = true;
+                            break;
+                        }
+                    }
+
+                    if (!stillNeeded && ConfigManager.data.modHiderAllowedMods.contains(depId)) {
+                        ConfigManager.data.modHiderAllowedMods.remove(depId);
+                        this.accept(depId);
+                    }
                 }
             }
         };
 
-        Consumer<String> disableDependents = modId -> {
-            ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
-            if (info != null) {
-                for (String dependentId : info.dependents) {
-                    ConfigManager.data.modHiderAllowedMods.remove(dependentId);
-                }
-            }
-        };
-
-        Label modsSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Mods", Label.Style.BODY);
-        modsSectionLabel.setHeight(20);
-        allowedModsList.addItem(modsSectionLabel);
-
-        for (ModOrganizer.ModGroup group : organizedMods.modGroups) {
-            addModGroupToList(allowedModsList, group, query, enableDependencies, disableDependents, modSearch);
+        if (organizedMods.minecraftGroup != null) {
+            Label mcSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Minecraft", Label.Style.BODY);
+            mcSectionLabel.setHeight(20);
+            allowedModsList.addItem(mcSectionLabel);
+            addModGroupToList(allowedModsList, organizedMods.minecraftGroup, query, enableDependencies,
+                    disableDependents, disableUnusedDependencies,
+                    modSearch);
         }
 
-        Label libsSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Libraries", Label.Style.BODY);
-        libsSectionLabel.setHeight(20);
-        allowedModsList.addItem(libsSectionLabel);
+        if (organizedMods.userGroups.size() > 0) {
+            Label userSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "User Mods", Label.Style.BODY);
+            userSectionLabel.setHeight(20);
+            allowedModsList.addItem(userSectionLabel);
+            for (ModOrganizer.ModGroup group : organizedMods.userGroups) {
+                addModGroupToList(allowedModsList, group, query, enableDependencies, disableDependents,
+                        disableUnusedDependencies, modSearch);
+            }
+        }
 
-        for (ModOrganizer.ModGroup group : organizedMods.libraryGroups) {
-            addModGroupToList(allowedModsList, group, query, enableDependencies, disableDependents, modSearch);
+        if (organizedMods.libraryGroups.size() > 0) {
+            Label libsSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Libraries", Label.Style.BODY);
+            libsSectionLabel.setHeight(20);
+            allowedModsList.addItem(libsSectionLabel);
+            for (ModOrganizer.ModGroup group : organizedMods.libraryGroups) {
+                addModGroupToList(allowedModsList, group, query, enableDependencies, disableDependents,
+                        disableUnusedDependencies, modSearch);
+            }
         }
     }
 
     private void addModGroupToList(ListView list, ModOrganizer.ModGroup group, String query,
             Consumer<String> enableDependencies,
-            Consumer<String> disableDependencies,
+            Consumer<String> disableDependents,
+            Consumer<String> disableUnusedDependencies,
             TextField searchField) {
         List<ModOrganizer.ModInfo> matchingMods = new ArrayList<>();
         for (ModOrganizer.ModInfo info : group.mods) {
@@ -155,7 +214,7 @@ public class BlackAddonsGUI extends BaseScreen {
                     .allMatch(m -> ConfigManager.data.modHiderAllowedMods.contains(m.id));
 
             String arrow = isCollapsed ? "▶" : "▼";
-            Button groupHeader = new Button(0, 0, 0,
+            Button groupHeader = new Button(0, 0, list.getWidth() - 8,
                     arrow + " " + ChatFormatting.AQUA + group.groupName + " (" + matchingMods.size() + ")",
                     () -> {
                         collapsedGroups.put(groupKey, !collapsedGroups.getOrDefault(groupKey, true));
@@ -172,7 +231,8 @@ public class BlackAddonsGUI extends BaseScreen {
                             enableDependencies.accept(info.id);
                         } else {
                             ConfigManager.data.modHiderAllowedMods.remove(info.id);
-                            disableDependencies.accept(info.id);
+                            disableDependents.accept(info.id);
+                            disableUnusedDependencies.accept(info.id);
                         }
                     }
                     ConfigManager.save();
@@ -181,19 +241,22 @@ public class BlackAddonsGUI extends BaseScreen {
                 list.addItem(selectAll);
 
                 for (ModOrganizer.ModInfo info : matchingMods) {
-                    addModCheckboxToList(list, info, enableDependencies, disableDependencies, searchField);
+                    addModCheckboxToList(list, info, enableDependencies, disableDependents, disableUnusedDependencies,
+                            searchField);
                 }
             }
         } else {
             for (ModOrganizer.ModInfo info : matchingMods) {
-                addModCheckboxToList(list, info, enableDependencies, disableDependencies, searchField);
+                addModCheckboxToList(list, info, enableDependencies, disableDependents, disableUnusedDependencies,
+                        searchField);
             }
         }
     }
 
     private void addModCheckboxToList(ListView list, ModOrganizer.ModInfo info,
             Consumer<String> enableDependencies,
-            Consumer<String> disableDependencies,
+            Consumer<String> disableDependents,
+            Consumer<String> disableUnusedDependencies,
             TextField searchField) {
         boolean checked = ConfigManager.data.modHiderAllowedMods.contains(info.id);
         String displayName = info.name + " (" + info.id + ")";
@@ -206,7 +269,8 @@ public class BlackAddonsGUI extends BaseScreen {
                 enableDependencies.accept(info.id);
             } else {
                 ConfigManager.data.modHiderAllowedMods.remove(info.id);
-                disableDependencies.accept(info.id);
+                disableDependents.accept(info.id);
+                disableUnusedDependencies.accept(info.id);
             }
             ConfigManager.save();
             rebuildAllowedModsList(list, searchField);

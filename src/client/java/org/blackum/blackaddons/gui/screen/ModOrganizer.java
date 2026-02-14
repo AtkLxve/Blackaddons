@@ -36,20 +36,7 @@ public class ModOrganizer {
             this.id = mod.getMetadata().getId();
             this.name = mod.getMetadata().getName();
 
-            String type = mod.getMetadata().getType();
-            String lowerId = id.toLowerCase();
-            String lowerName = name.toLowerCase();
-            boolean basicLibCheck = "builtin".equals(type) ||
-                    lowerId.contains("library") ||
-                    lowerId.contains("api") ||
-                    lowerId.contains("lib") ||
-                    lowerName.contains("library") ||
-                    lowerName.contains("api") ||
-                    lowerId.contains("kotlin") ||
-                    lowerName.contains("kotlin");
-
-            this.isLibrary = basicLibCheck;
-
+            this.isLibrary = checkLibrary(mod);
             this.parentId = findParent(mod);
 
             for (ModDependency dep : mod.getMetadata().getDependencies()) {
@@ -58,6 +45,57 @@ public class ModOrganizer {
                     dependencies.add(dep.getModId());
                 }
             }
+        }
+
+        private boolean checkLibrary(ModContainer mod) {
+            ModMetadata metadata = mod.getMetadata();
+            String id = metadata.getId();
+            String name = metadata.getName();
+
+            CustomValue modMenuValue = metadata.getCustomValue("modmenu");
+            if (modMenuValue != null && modMenuValue.getType() == CustomValue.CvType.OBJECT) {
+                CustomValue.CvObject modMenuObject = modMenuValue.getAsObject();
+                CustomValue badgesCv = modMenuObject.get("badges");
+                if (badgesCv != null && badgesCv.getType() == CustomValue.CvType.ARRAY) {
+                    for (CustomValue badge : badgesCv.getAsArray()) {
+                        if (badge.getType() == CustomValue.CvType.STRING && "library".equals(badge.getAsString())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            if (metadata.containsCustomValue("fabric-api:module-lifecycle")) {
+                return true;
+            }
+            if (id.startsWith("fabric-") && id.contains("-api")) {
+                return true;
+            }
+
+            if (metadata.containsCustomValue("fabric-loom:generated")) {
+                return true;
+            }
+            if ("java".equals(id)) {
+                return true;
+            }
+
+            if (id.startsWith("mm_") || id.contains("shedaniel") || id.contains("jarvis")
+                    || id.contains("cloth-config")) {
+                return true;
+            }
+            String lowerId = id.toLowerCase(Locale.ROOT);
+            String lowerName = name.toLowerCase(Locale.ROOT);
+            String type = metadata.getType();
+
+            return "builtin".equals(type) ||
+                    lowerId.contains("library") ||
+                    lowerId.contains("api") ||
+                    lowerId.contains("lib") ||
+                    lowerId.contains("config") ||
+                    lowerName.contains("library") ||
+                    lowerName.contains("api") ||
+                    lowerName.contains("config") ||
+                    lowerId.contains("kotlin") ||
+                    lowerName.contains("kotlin");
         }
 
         private String findParent(ModContainer mod) {
@@ -102,7 +140,8 @@ public class ModOrganizer {
     }
 
     public static class OrganizedMods {
-        public final List<ModGroup> modGroups = new ArrayList<>();
+        public ModGroup minecraftGroup = null;
+        public final List<ModGroup> userGroups = new ArrayList<>();
         public final List<ModGroup> libraryGroups = new ArrayList<>();
         public final Map<String, ModInfo> allMods = new HashMap<>();
         public final Map<String, ModGroup> groupMap = new HashMap<>();
@@ -113,9 +152,6 @@ public class ModOrganizer {
 
         List<ModInfo> allModInfos = new ArrayList<>();
         for (ModContainer mod : FabricLoader.getInstance().getAllMods()) {
-            if ("builtin".equals(mod.getMetadata().getType())) {
-                continue;
-            }
             ModInfo info = new ModInfo(mod);
             allModInfos.add(info);
             result.allMods.put(info.id, info);
@@ -130,8 +166,6 @@ public class ModOrganizer {
             }
         }
 
-        boolean fabricApiLoaded = result.allMods.containsKey("fabric-api");
-
         for (ModInfo info : allModInfos) {
             String parentId = info.parentId;
 
@@ -140,50 +174,45 @@ public class ModOrganizer {
             }
 
             String groupKey = (parentId == null) ? info.id : parentId;
-
-            boolean isGroupLibrary = false;
             ModInfo parentInfo = result.allMods.get(groupKey);
-            if (parentInfo != null) {
-                isGroupLibrary = parentInfo.isLibrary;
-            } else {
-                isGroupLibrary = info.isLibrary;
-            }
-
-            if ("fabric-api".equals(groupKey) || "fabric".equals(groupKey)) {
-                isGroupLibrary = true;
-            }
 
             ModGroup group;
             if (result.groupMap.containsKey(groupKey)) {
                 group = result.groupMap.get(groupKey);
             } else {
                 String groupName = (parentInfo != null) ? parentInfo.name : info.name;
-                if ("fabric-api".equals(groupKey) && parentInfo == null && fabricApiLoaded) {
-                    groupName = result.allMods.get("fabric-api").name;
-                }
-
                 group = new ModGroup(groupName, groupKey);
                 result.groupMap.put(groupKey, group);
 
-                if (isGroupLibrary) {
-                    result.libraryGroups.add(group);
+                if ("minecraft".equals(groupKey)) {
+                    result.minecraftGroup = group;
                 } else {
-                    result.modGroups.add(group);
+                    boolean isLibrary = (parentInfo != null) ? parentInfo.isLibrary : info.isLibrary;
+
+                    if (groupKey.startsWith("fabric") || "fabricloader".equals(groupKey) || "java".equals(groupKey)) {
+                        isLibrary = true;
+                    }
+
+                    if (isLibrary) {
+                        result.libraryGroups.add(group);
+                    } else {
+                        result.userGroups.add(group);
+                    }
                 }
             }
 
             group.mods.add(info);
         }
 
-        result.modGroups.sort(Comparator.comparing(g -> g.groupName.toLowerCase()));
-        result.libraryGroups.sort(Comparator.comparing(g -> g.groupName.toLowerCase()));
+        result.userGroups.sort(Comparator.comparing(g -> g.groupName.toLowerCase(Locale.ROOT)));
+        result.libraryGroups.sort(Comparator.comparing(g -> g.groupName.toLowerCase(Locale.ROOT)));
 
-        for (ModGroup group : result.modGroups) {
+        for (ModGroup group : result.userGroups)
             sortGroupMods(group);
-        }
-        for (ModGroup group : result.libraryGroups) {
+        for (ModGroup group : result.libraryGroups)
             sortGroupMods(group);
-        }
+        if (result.minecraftGroup != null)
+            sortGroupMods(result.minecraftGroup);
 
         return result;
     }

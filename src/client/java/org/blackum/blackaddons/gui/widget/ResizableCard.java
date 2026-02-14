@@ -228,6 +228,22 @@ public class ResizableCard extends Card {
                 return true;
             }
         }
+
+        if (collapsed)
+            return false;
+
+        float scale = (float) width / initialWidth;
+        int contentX = getContentX();
+        int contentY = getContentY();
+        double scaledMouseX = (mouseX - contentX) / scale + contentX;
+        double scaledMouseY = (mouseY - contentY) / scale + contentY;
+
+        for (Widget child : getChildren()) {
+            if (child.mouseReleased(scaledMouseX, scaledMouseY, button)) {
+                return true;
+            }
+        }
+
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
@@ -391,6 +407,19 @@ public class ResizableCard extends Card {
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (collapsed)
             return false;
+
+        float scale = (float) width / initialWidth;
+        int contentX = getContentX();
+        int contentY = getContentY();
+        double scaledMouseX = (mouseX - contentX) / scale + contentX;
+        double scaledMouseY = (mouseY - contentY) / scale + contentY;
+
+        for (Widget child : getChildren()) {
+            if (child.mouseScrolled(scaledMouseX, scaledMouseY, scrollX, scrollY)) {
+                return true;
+            }
+        }
+
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
