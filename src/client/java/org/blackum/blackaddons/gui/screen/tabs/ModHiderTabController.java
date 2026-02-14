@@ -10,14 +10,18 @@ import org.blackum.blackaddons.modhider.SpoofMode;
 import java.util.List;
 import java.util.Locale;
 import java.util.ArrayList;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
+import org.blackum.blackaddons.gui.screen.ModOrganizer;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.function.Consumer;
+import net.minecraft.ChatFormatting;
 
 public class ModHiderTabController extends SimpleTabController {
     private ResizableCard spoofModeCard;
     private ResizableCard hideModsCard;
     private ResizableCard disablePayloadsCard;
     private ResizableCard allowedModsCard;
+    private final Map<String, Boolean> collapsedGroups = new HashMap<>();
 
     public ModHiderTabController(BlackAddonsGUI screen) {
         super(screen);
@@ -340,30 +344,165 @@ public class ModHiderTabController extends SimpleTabController {
 
     private void rebuildAllowedModsList(ListView list, TextField searchField) {
         list.clearItems();
-        String search = searchField.getText() == null ? "" : searchField.getText().toLowerCase(Locale.ROOT);
+        String query = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
 
-        List<ModContainer> mods = new ArrayList<>(FabricLoader.getInstance().getAllMods());
-        mods.sort((m1, m2) -> m1.getMetadata().getName().compareToIgnoreCase(m2.getMetadata().getName()));
+        ModOrganizer.OrganizedMods organizedMods = ModOrganizer.organizeMods();
 
-        for (ModContainer mod : mods) {
-            String id = mod.getMetadata().getId();
-            String name = mod.getMetadata().getName();
+        Consumer<String> enableDependencies = modId -> {
+            ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
+            if (info != null) {
+                for (String depId : info.dependencies) {
+                    ConfigManager.data.modHiderAllowedMods.add(depId);
+                }
+            }
+        };
 
-            if (!search.isEmpty() && !id.toLowerCase().contains(search) && !name.toLowerCase().contains(search)) {
-                continue;
+        Consumer<String> disableDependents = modId -> {
+            ModOrganizer.ModInfo info = organizedMods.allMods.get(modId);
+            if (info != null) {
+                for (String dependentId : info.dependents) {
+                    ConfigManager.data.modHiderAllowedMods.remove(dependentId);
+                }
+            }
+        };
+
+        Label modsSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Mods", Label.Style.BODY);
+        modsSectionLabel.setHeight(20);
+        list.addItem(modsSectionLabel);
+
+        for (ModOrganizer.ModGroup group : organizedMods.modGroups) {
+            addModGroupToList(list, group, query, enableDependencies, disableDependents, searchField);
+        }
+
+        Label libsSectionLabel = new Label(0, 0, ChatFormatting.GOLD + "Libraries", Label.Style.BODY);
+        libsSectionLabel.setHeight(20);
+        list.addItem(libsSectionLabel);
+
+        for (ModOrganizer.ModGroup group : organizedMods.libraryGroups) {
+            addModGroupToList(list, group, query, enableDependencies, disableDependents, searchField);
+        }
+    }
+
+    private void addModGroupToList(ListView list, ModOrganizer.ModGroup group, String query,
+            Consumer<String> enableDependencies,
+            Consumer<String> disableDependencies,
+            TextField searchField) {
+        List<ModOrganizer.ModInfo> matchingMods = new ArrayList<>();
+        for (ModOrganizer.ModInfo info : group.mods) {
+            boolean matches = true;
+            for (String term : query.split(" ")) {
+                if (term.isBlank())
+                    continue;
+                if (!info.name.toLowerCase(Locale.ROOT).contains(term) &&
+                        !info.id.toLowerCase(Locale.ROOT).contains(term)) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches)
+                matchingMods.add(info);
+        }
+
+        if (matchingMods.isEmpty())
+            return;
+
+        if (group.mods.size() > 1 || !query.isEmpty()) {
+            String groupKey = "mod_" + group.groupName;
+            boolean isCollapsed = collapsedGroups.getOrDefault(groupKey, true);
+            if (!query.isEmpty())
+                isCollapsed = false;
+
+            boolean allSelected = matchingMods.stream()
+                    .allMatch(m -> ConfigManager.data.modHiderAllowedMods.contains(m.id));
+
+            String arrow = isCollapsed ? "▶" : "▼";
+            Button groupHeader = new Button(0, 0, 0,
+                    arrow + " " + ChatFormatting.AQUA + group.groupName + " (" + matchingMods.size() + ")",
+                    () -> {
+                        collapsedGroups.put(groupKey, !collapsedGroups.getOrDefault(groupKey, true));
+                        rebuildAllowedModsList(list, searchField);
+                    });
+            groupHeader.setHeight(20);
+            list.addItem(groupHeader);
+
+            if (!isCollapsed) {
+                Checkbox selectAll = new Checkbox(10, 0, "Select All", allSelected, value -> {
+                    for (ModOrganizer.ModInfo info : matchingMods) {
+                        if (value) {
+                            ConfigManager.data.modHiderAllowedMods.add(info.id);
+                            enableDependencies.accept(info.id);
+                        } else {
+                            ConfigManager.data.modHiderAllowedMods.remove(info.id);
+                            disableDependencies.accept(info.id);
+                        }
+                    }
+                    ConfigManager.save();
+                    rebuildAllowedModsList(list, searchField);
+                });
+                list.addItem(selectAll);
+
+                for (ModOrganizer.ModInfo info : matchingMods) {
+                    addModCheckboxToList(list, info, enableDependencies, disableDependencies, searchField);
+                }
+            }
+        } else {
+            for (ModOrganizer.ModInfo info : matchingMods) {
+                addModCheckboxToList(list, info, enableDependencies, disableDependencies, searchField);
+            }
+        }
+    }
+
+    private void addModCheckboxToList(ListView list, ModOrganizer.ModInfo info,
+            Consumer<String> enableDependencies,
+            Consumer<String> disableDependencies,
+            TextField searchField) {
+        boolean checked = ConfigManager.data.modHiderAllowedMods.contains(info.id);
+        String displayName = info.name + " (" + info.id + ")";
+        if (!info.dependents.isEmpty())
+            displayName += " " + ChatFormatting.GRAY + "[Used by: " + info.dependents.size() + "]";
+
+        Checkbox cb = new Checkbox(0, 0, displayName, checked, value -> {
+            if (value) {
+                ConfigManager.data.modHiderAllowedMods.add(info.id);
+                enableDependencies.accept(info.id);
+            } else {
+                ConfigManager.data.modHiderAllowedMods.remove(info.id);
+                disableDependencies.accept(info.id);
+            }
+            ConfigManager.save();
+            rebuildAllowedModsList(list, searchField);
+        });
+
+        Widget wrapper = new Widget(0, 0, 0, 0) {
+            @Override
+            public void render(GuiGraphics g, int mx, int my, float p) {
+                cb.setX(getX());
+                cb.setY(getY());
+                cb.setWidth(getWidth());
+                cb.render(g, mx, my, p);
             }
 
-            ToggleSwitch toggle = new ToggleSwitch(0, 0, list.getWidth() - 20, name, id,
-                    ConfigManager.data.modHiderAllowedMods.contains(id), value -> {
-                        if (value) {
-                            ConfigManager.data.modHiderAllowedMods.add(id);
-                        } else {
-                            ConfigManager.data.modHiderAllowedMods.remove(id);
-                        }
-                        ConfigManager.save();
-                    });
-            list.addItem(toggle);
-        }
+            @Override
+            public void updateHoverState(int mx, int my) {
+                cb.setX(getX());
+                cb.setY(getY());
+                cb.setWidth(getWidth());
+                cb.updateHoverState(mx, my);
+                super.updateHoverState(mx, my);
+            }
+
+            @Override
+            public boolean mouseClicked(double mx, double my, int b) {
+                return cb.mouseClicked(mx, my, b);
+            }
+
+            @Override
+            public void tick() {
+                cb.tick();
+            }
+        };
+        wrapper.setHeight(cb.getHeight());
+        list.addItem(wrapper);
     }
 
     private void rebuildChannelsList(ListView list) {
