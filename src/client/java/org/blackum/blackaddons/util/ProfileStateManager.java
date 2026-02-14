@@ -10,7 +10,6 @@ import org.blackum.blackaddons.features.LocalTeammateManager;
 import org.blackum.blackaddons.features.LocalRngManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -253,6 +252,51 @@ public class ProfileStateManager {
     public void clearCache(String player) {
         profileCache.remove(player.toLowerCase());
         rngCache.remove(player.toLowerCase());
+    }
+
+    @SuppressWarnings("null")
+    public void loadProfileAndOpen(String player, boolean force) {
+        Minecraft mc = Minecraft.getInstance();
+        mc.gui.getChat()
+                .addMessage(ChatUtils.getMessage("Loading profile for " + player + (force ? " (Forced)" : "") + "..."));
+
+        getProfile(player, force).thenAccept(result -> {
+            if (result == null) {
+                mc.gui.getChat().addMessage(
+                        (net.minecraft.network.chat.Component) ChatUtils.getMessage("§cFailed to fetch data."));
+                NotificationManager.addNotification("Profile Error", "Failed to fetch data from API.",
+                        NotificationType.ERROR);
+                return;
+            }
+
+            if (result.hasError()) {
+                String err = result.getError();
+                mc.gui.getChat()
+                        .addMessage((net.minecraft.network.chat.Component) ChatUtils.getMessage("§cError: " + err));
+                NotificationManager.addNotification("Profile Error", err, NotificationType.ERROR);
+                return;
+            }
+
+            JsonObject data = result.getData();
+            if (data == null) {
+                mc.gui.getChat().addMessage(
+                        (net.minecraft.network.chat.Component) ChatUtils.getMessage("§cInvalid response format."));
+                NotificationManager.addNotification("Profile Error", "Invalid response format.",
+                        NotificationType.ERROR);
+                return;
+            }
+
+            final JsonObject finalData = data;
+            mc.execute(() -> {
+                mc.setScreen(
+                        new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, force, finalData));
+            });
+        }).exceptionally(e -> {
+            mc.gui.getChat().addMessage(
+                    (net.minecraft.network.chat.Component) ChatUtils.getMessage("§cException: " + e.getMessage()));
+            NotificationManager.addNotification("Profile Exception", e.getMessage(), NotificationType.ERROR);
+            return null;
+        });
     }
 
     private static class CacheEntry<T> {

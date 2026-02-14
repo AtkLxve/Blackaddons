@@ -56,12 +56,13 @@ public class BotIntegration {
         }
 
         return sendGetRequest(url).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
+            if (res == null)
+                return null;
+            if (res.statusCode() == 200 || res.statusCode() == 400 || res.statusCode() == 404) {
                 try {
                     return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
-                    Blackaddons.LOGGER.error("Failed to parse profile stats: " + e.getMessage());
-                    return null;
+                    Blackaddons.LOGGER.error("Failed to parse profile stats response: " + e.getMessage());
                 }
             }
             return null;
@@ -86,12 +87,13 @@ public class BotIntegration {
         }
 
         return sendPostRequest("/v1/rtca", json.toString()).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
+            if (res == null)
+                return null;
+            if (res.statusCode() == 200 || res.statusCode() == 400 || res.statusCode() == 404) {
                 try {
                     return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
-                    Blackaddons.LOGGER.error("Failed to parse RTCA stats: " + res.body());
-                    return null;
+                    Blackaddons.LOGGER.error("Failed to parse RTCA stats response: " + e.getMessage());
                 }
             }
             return null;
@@ -103,12 +105,13 @@ public class BotIntegration {
             return CompletableFuture.completedFuture(null);
 
         return sendGetRequest("/v1/rng?player=" + player).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
+            if (res == null)
+                return null;
+            if (res.statusCode() == 200 || res.statusCode() == 400 || res.statusCode() == 404) {
                 try {
                     return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
-                    Blackaddons.LOGGER.error("Failed to parse RNG data: " + e.getMessage());
-                    return null;
+                    Blackaddons.LOGGER.error("Failed to parse RNG data response: " + e.getMessage());
                 }
             }
             return null;
@@ -151,12 +154,13 @@ public class BotIntegration {
 
         String endpoint = String.format("/v1/leaderboard?period=%s&metric=%s&page=%d", period, metric, page);
         return sendGetRequest(endpoint).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
+            if (res == null)
+                return null;
+            if (res.statusCode() == 200 || res.statusCode() == 400 || res.statusCode() == 404) {
                 try {
                     return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
-                    Blackaddons.LOGGER.error("Failed to parse leaderboard stats: " + e.getMessage());
-                    return null;
+                    Blackaddons.LOGGER.error("Failed to parse leaderboard stats response: " + e.getMessage());
                 }
             }
             return null;

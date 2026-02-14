@@ -11,7 +11,6 @@ import static org.blackum.blackaddons.util.MinecraftInstance.mc;
 
 public class ChatUtils {
 
-
     static MutableComponent BuildGradient(String text, int startRgb, int endRgb) {
         MutableComponent result = Component.empty();
         int length = text.length();
@@ -29,7 +28,7 @@ public class ChatUtils {
         int eb = endRgb & 0xFF;
 
         for (int i = 0; i < text.length(); ++i) {
-            float ratio = (float)i / (length - 1);
+            float ratio = (float) i / (length - 1);
 
             int r = Math.round(sr + ratio * (er - sr));
             int g = Math.round(sg + ratio * (eg - sg));
@@ -46,13 +45,20 @@ public class ChatUtils {
         return result;
     }
 
+    private static final MutableComponent PREFIX = Component.empty()
+            .append(ChatFormatting.BLACK + "[")
+            .append(BuildGradient("BlackAddons", 0x332640, 0x623d94))
+            .append(ChatFormatting.BLACK + "] ");
 
-    private static MutableComponent prefix = Component.empty()
-                    .append(ChatFormatting.BLACK + "[")
-                    .append(BuildGradient("BlackAddons", 0x332640, 0x623d94))
-                    .append(ChatFormatting.BLACK + "] ");
+    public static MutableComponent getPrefix() {
+        return PREFIX.copy();
+    }
+
+    public static MutableComponent getMessage(String text) {
+        return getPrefix().append(Component.literal(ChatFormatting.RESET + text));
+    }
 
     public static void send_debug(String txt) {
-        mc.gui.getChat().addMessage(Component.empty().append(prefix).append(Component.literal(ChatFormatting.RESET + txt)));
+        mc.gui.getChat().addMessage(getMessage(txt));
     }
 }
