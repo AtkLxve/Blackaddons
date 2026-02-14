@@ -8,7 +8,6 @@ permissions:
 on:
   push:
     branches:
-      - "1.21.11"
       - "1.21.10"
   workflow_dispatch:
     inputs:
@@ -37,12 +36,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
-            BRANCH_NAME=${GITHUB_REF#refs/heads/}
-            echo "matrix=[\"$BRANCH_NAME\"]" >> $GITHUB_OUTPUT
-          else
-            echo "matrix=[\"1.21.10\", \"1.21.11\"]" >> $GITHUB_OUTPUT
-          fi
+          echo "matrix=[\"1.21.10\", \"1.21.11\"]" >> $GITHUB_OUTPUT
 
   build:
     needs: setup
