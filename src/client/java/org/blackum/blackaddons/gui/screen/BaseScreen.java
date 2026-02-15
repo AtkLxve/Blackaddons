@@ -48,6 +48,7 @@ public abstract class BaseScreen extends Screen {
 
     protected double scrollOffset = 0;
     protected int contentHeight = 0;
+    protected int baseContentHeight = 0;
     protected double maxScroll = 0;
     protected boolean canScroll = false;
 
@@ -142,7 +143,8 @@ public abstract class BaseScreen extends Screen {
                 maxWidgetY = relativeBottom;
             }
         }
-        this.contentHeight = Math.max(this.contentHeight, maxWidgetY + 20);
+        this.baseContentHeight = Math.max(0, maxWidgetY + 20);
+        this.contentHeight = this.baseContentHeight;
     }
 
     protected abstract void initWidgets();
@@ -156,8 +158,13 @@ public abstract class BaseScreen extends Screen {
         return widgets;
     }
 
+    protected int getContentHeight() {
+        return this.baseContentHeight;
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.contentHeight = getContentHeight();
         Minecraft mc = Minecraft.getInstance();
         double windowWidth = mc.getWindow().getScreenWidth();
         double windowHeight = mc.getWindow().getScreenHeight();
@@ -174,6 +181,10 @@ public abstract class BaseScreen extends Screen {
                 Theme.BORDER_RADIUS_LARGE, false);
 
         maxScroll = Math.max(0, contentHeight - (containerHeight - 40));
+        
+        if (maxScroll < 32)
+            maxScroll = 0;
+
         canScroll = maxScroll > 0;
 
         if (scrollOffset < 0)
@@ -435,7 +446,6 @@ public abstract class BaseScreen extends Screen {
                         card.isCollapsed(), card.getInitialWidth(), card.getExpandedHeight()));
             }
         }
-        // Merge with existing states to not lose cards not present in current view
         ConfigManager.data.lastLoadedCardStates.putAll(states);
         ConfigManager.data.cardStates = ConfigManager.data.lastLoadedCardStates;
         ConfigManager.save();

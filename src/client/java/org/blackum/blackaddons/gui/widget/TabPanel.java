@@ -171,7 +171,7 @@ public class TabPanel extends Widget {
                 }
             }
         }
-        return Math.max(height, maxY + 40);
+        return Math.max(height, maxY + 5);
     }
 
     @Override

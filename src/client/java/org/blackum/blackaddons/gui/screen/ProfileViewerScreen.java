@@ -223,6 +223,11 @@ public class ProfileViewerScreen extends BaseScreen {
     }
 
     @Override
+    protected int getContentHeight() {
+        return tabPanel != null ? tabPanel.getMaxContentHeight() : super.getContentHeight();
+    }
+
+    @Override
     public void tick() {
         super.tick();
         tickConfetti();

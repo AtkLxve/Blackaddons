@@ -60,9 +60,6 @@ public class DailyTabController extends ProfileTabController {
                 () -> setDailyMode("personal", "daily"));
         dailyModeButtons[3] = new Button(cx + (btnW + gap) * 3, cy, btnW, btnH, "Runs", this::toggleDailyMetric);
 
-        for (Button b : dailyModeButtons)
-            tab.addWidget(b);
-
         int searchY = cy + 25;
 
         dailySearchTypeDropdown = new Dropdown(cx, searchY, 60, 20, "Search By", List.of("IGN", "Page"),
@@ -108,10 +105,6 @@ public class DailyTabController extends ProfileTabController {
             }
         });
 
-        tab.addWidget(dailySearchField);
-        tab.addWidget(dailyShowMeBtn);
-        tab.addWidget(dailySearchTypeDropdown);
-
         dailyFloorDropdown = new Dropdown(cx, cy + 50, w - 20, 20, "Floor: M7", DungeonFloor.getDisplayNames(),
                 (val) -> {
                     dailyFloorValue = DungeonFloor.fromDisplayName(val);
@@ -122,12 +115,12 @@ public class DailyTabController extends ProfileTabController {
                 });
         dailyFloorDropdown.setVisible(false);
         dailyFloorDropdown.setSelectedOption("M7");
-        tab.addWidget(dailyFloorDropdown);
+        dailyFloorDropdown.setSelectedOption("M7");
 
         int listY = cy + 75;
         int listH = tab.getParent().getMaxContentHeight() - 75;
 
-        dailyLeaderboardList = new ListView(cx, listY, w - 20, listH - 30);
+        dailyLeaderboardList = new ListView(cx, listY, w - 20, listH - 105);
         dailyPersonalList = new ListView(cx, listY, w - 20, listH);
         dailyPersonalList.setVisible(false);
 
@@ -135,10 +128,19 @@ public class DailyTabController extends ProfileTabController {
             this.dailyPage = page;
             fetchDailyData();
         });
-        tab.addWidget(paginationWidget);
 
         tab.addWidget(dailyLeaderboardList);
         tab.addWidget(dailyPersonalList);
+
+        for (Button b : dailyModeButtons)
+            tab.addWidget(b);
+
+        tab.addWidget(dailySearchField);
+        tab.addWidget(dailyShowMeBtn);
+        tab.addWidget(paginationWidget);
+
+        tab.addWidget(dailySearchTypeDropdown);
+        tab.addWidget(dailyFloorDropdown);
 
         updateDailyButtons();
         if (!dailyDataLoaded) {

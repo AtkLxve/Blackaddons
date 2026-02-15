@@ -62,12 +62,13 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     @Override
+    protected int getContentHeight() {
+        return tabPanel != null ? tabPanel.getMaxContentHeight() : super.getContentHeight();
+    }
+
+    @Override
     public void tick() {
         super.tick();
-        if (tabPanel != null) {
-            int tabContentHeight = tabPanel.getMaxContentHeight();
-            this.contentHeight = Math.max(this.contentHeight, tabContentHeight + 40);
-        }
     }
 
     public void rebuildChannelsList(ListView channelsList) {
