@@ -12,7 +12,7 @@
     "LanguageManagerAccessor",
     "KeyBindingAccessor",
     "InventoryAccessor",
-    "LightTextureMixin"
+    "FullbrightMixin"
   ],
   "injectors": {
     "defaultRequire": 1
