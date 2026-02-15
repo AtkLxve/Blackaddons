@@ -12,7 +12,8 @@
     "LanguageManagerAccessor",
     "KeyBindingAccessor",
     "InventoryAccessor",
-    "FullbrightMixin"
+    "FullbrightMixin",
+    "GameRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
