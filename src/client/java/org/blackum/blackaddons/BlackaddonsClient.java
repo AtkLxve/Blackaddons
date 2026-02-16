@@ -14,6 +14,7 @@ import org.blackum.blackaddons.manager.DebugOverlayManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
+import org.blackum.blackaddons.gui.screen.BaseScreen;
 import org.blackum.blackaddons.gui.screen.DemoScreen;
 import org.blackum.blackaddons.gui.screen.TestMenuScreen;
 import org.blackum.blackaddons.util.BotIntegration;
@@ -51,7 +52,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         CommandManager.register();
 
         HudRenderCallback.EVENT.register((graphics, partialTick) -> {
-            if (!(Minecraft.getInstance().screen instanceof org.blackum.blackaddons.gui.screen.BaseScreen)) {
+            if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
                 NotificationManager.getInstance().render(graphics);
             }
         });

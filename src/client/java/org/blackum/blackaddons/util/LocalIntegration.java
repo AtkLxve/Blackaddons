@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.file.Path;
 
 public class LocalIntegration {
     private static final HttpClient client = HttpClient.newBuilder()
@@ -33,7 +34,7 @@ public class LocalIntegration {
     private static long priceCacheExpiry = 0;
     private static volatile boolean isRefreshing = false;
 
-    private static final java.nio.file.Path CONFIG_DIR = FabricLoader.getInstance()
+    private static final Path CONFIG_DIR = FabricLoader.getInstance()
             .getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File PRICES_FILE = CONFIG_DIR.resolve(Constants.PRICES_FILE_NAME).toFile();
 
