@@ -221,8 +221,8 @@ public class AutoTNT {
     public static class FeatureConfig {
         // Config
         public boolean AutoTNTEnabled = false;
-        public int AutoTNTDelay = 5;
-        public int UnequipDelay = 8;
+        public int AutoTNTDelay = 4;
+        public int UnequipDelay = 5;
 
         public boolean SwapBack = false;
 

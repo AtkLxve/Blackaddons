@@ -33,7 +33,7 @@ public class CheatsTabController extends SimpleTabController {
                     "Tick Delay: " + ConfigManager.data.autoTntConfig.AutoTNTDelay + " ticks", Label.Style.BODY);
             cheatsTab.addWidget(tickLabel);
 
-            Slider tickSlider = new Slider(contentX, contentY + 100, contentWidth - 20, 5, 10,
+            Slider tickSlider = new Slider(contentX, contentY + 100, contentWidth - 20, 3, 10,
                     ConfigManager.data.autoTntConfig.AutoTNTDelay, val -> {
                         int ticks = Math.round(val);
                         if (ticks != ConfigManager.data.autoTntConfig.AutoTNTDelay) {
@@ -78,7 +78,7 @@ public class CheatsTabController extends SimpleTabController {
                 "Tick Delay: " + ConfigManager.data.autoTntConfig.AutoTNTDelay + " ticks", Label.Style.BODY);
         autoTntCard.addChild(tickLabel);
 
-        Slider tickSlider = new Slider(contentX, contentY + 70, 260, 5, 10,
+        Slider tickSlider = new Slider(contentX, contentY + 70, 260, 3, 10,
                 ConfigManager.data.autoTntConfig.AutoTNTDelay, val -> {
                     int ticks = Math.round(val);
                     if (ticks != ConfigManager.data.autoTntConfig.AutoTNTDelay) {
@@ -93,7 +93,7 @@ public class CheatsTabController extends SimpleTabController {
                 "Unequip Delay: " + ConfigManager.data.autoTntConfig.UnequipDelay + " ticks", Label.Style.BODY);
         autoTntCard.addChild(unequipLabel);
 
-        Slider unequipSlider = new Slider(contentX, contentY + 120, 260, 5, 10,
+        Slider unequipSlider = new Slider(contentX, contentY + 120, 260, 3, 10,
                 ConfigManager.data.autoTntConfig.UnequipDelay, val -> {
                     int ticks = Math.round(val);
                     if (ticks != ConfigManager.data.autoTntConfig.UnequipDelay) {
