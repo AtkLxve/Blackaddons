@@ -23,4 +23,8 @@ public class LocationUtils {
         }
         return false;
     }
+
+    public static boolean inDungeons() {
+        return getLocation().contains("Catacombs");
+    }
 }

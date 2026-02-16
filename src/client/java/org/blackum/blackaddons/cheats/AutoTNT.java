@@ -13,6 +13,7 @@ import net.minecraft.world.phys.HitResult;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.mixin.client.KeyBindingAccessor;
 import org.blackum.blackaddons.mixin.client.InventoryAccessor;
+import org.blackum.blackaddons.util.LocationUtils;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class AutoTNT {
 
     private static void onClientTick(Minecraft client) {
         if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled || client.player == null || client.level == null
-                || client.screen != null) {
+                || client.screen != null || !LocationUtils.inDungeons()) {
             return;
         }
 
