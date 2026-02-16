@@ -13,6 +13,7 @@ import net.minecraft.world.phys.HitResult;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.mixin.client.KeyBindingAccessor;
 import org.blackum.blackaddons.mixin.client.InventoryAccessor;
+import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.util.LocationUtils;
 
 import java.util.List;
@@ -29,14 +30,31 @@ public class AutoTNT {
 
     private static final double BASE_DISTANCE_LIMIT = 3.3;
     private static final Random RANDOM = new Random();
+    private static int debugTicks = 0;
 
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(AutoTNT::onClientTick);
     }
 
     private static void onClientTick(Minecraft client) {
-        if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled || client.player == null || client.level == null
-                || client.screen != null || !LocationUtils.inDungeons()) {
+        if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled || client.player == null || client.level == null) {
+            return;
+        }
+        
+        // Debug every 2 seconds (40 ticks)
+        if (debugTicks++ % 40 == 0) {
+            String loc = LocationUtils.getLocation();
+            boolean inDung = LocationUtils.inDungeons();
+            int slot = findTntHotbarSlot(client.player);
+            boolean noScreen = client.screen == null;
+            
+            client.player.displayClientMessage(Component.literal(
+                String.format("§e[AutoTNT Debug] Loc: '%s' | InDungeon: %b | TNT Slot: %d | ScreenNull: %b", 
+                loc, inDung, slot, noScreen)
+            ), false);
+        }
+
+        if (client.screen != null || !LocationUtils.inDungeons()) {
             return;
         }
 
