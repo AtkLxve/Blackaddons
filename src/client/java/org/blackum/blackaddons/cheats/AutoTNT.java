@@ -30,7 +30,6 @@ public class AutoTNT {
 
     private static final double BASE_DISTANCE_LIMIT = 3.3;
     private static final Random RANDOM = new Random();
-    private static int debugTicks = 0;
 
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(AutoTNT::onClientTick);
@@ -41,19 +40,6 @@ public class AutoTNT {
             return;
         }
         
-        // Debug every 2 seconds (40 ticks)
-        if (debugTicks++ % 40 == 0) {
-            String loc = LocationUtils.getLocation();
-            boolean inDung = LocationUtils.inDungeons();
-            int slot = findTntHotbarSlot(client.player);
-            boolean noScreen = client.screen == null;
-            
-            client.player.displayClientMessage(Component.literal(
-                String.format("§e[AutoTNT Debug] Loc: '%s' | InDungeon: %b | TNT Slot: %d | ScreenNull: %b", 
-                loc, inDung, slot, noScreen)
-            ), false);
-        }
-
         if (client.screen != null || !LocationUtils.inDungeons()) {
             return;
         }
@@ -84,7 +70,7 @@ public class AutoTNT {
                             }
                         } else if (ConfigManager.data.autoTntConfig.SwapBack) {
                             ConfigManager.data.autoTntConfig.ticksSinceClick++;
-                            if (ConfigManager.data.autoTntConfig.ticksSinceClick >= 3) {
+                            if (ConfigManager.data.autoTntConfig.ticksSinceClick >= ConfigManager.data.autoTntConfig.currentSwapDelay) {
                                 unequipTnt(client.player, false);
                             }
                         }
@@ -226,7 +212,6 @@ public class AutoTNT {
         info.add("Has Clicked: " + ConfigManager.data.autoTntConfig.hasClicked);
         info.add("Ticks Eq: " + ConfigManager.data.autoTntConfig.ticksSinceEquip + " / "
                 + ConfigManager.data.autoTntConfig.currentRandomDelay);
-        info.add("Ticks Click: " + ConfigManager.data.autoTntConfig.ticksSinceClick);
         info.add("Ticks Look: " + ConfigManager.data.autoTntConfig.ticksSinceStopLooking + " / "
                 + ConfigManager.data.autoTntConfig.unequipDelay);
 
@@ -248,6 +233,7 @@ public class AutoTNT {
         int ticksSinceClick = 0;
         int ticksSinceStopLooking = 0;
         double currentRandomDelay = 0;
+        int currentSwapDelay = 3;
         double unequipDelay = 0;
         int originalItemSlot = -1;
         int lastKnownTntSlot = -1;
@@ -282,6 +268,7 @@ public class AutoTNT {
             } else {
                 this.unequipDelay = baseUnequip;
             }
+            this.currentSwapDelay = 2 + RANDOM.nextInt(3);
             this.currentDistanceLimit = BASE_DISTANCE_LIMIT + (RANDOM.nextFloat() * 0.06 - 0.03);
         }
     }
