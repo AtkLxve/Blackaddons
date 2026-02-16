@@ -99,8 +99,10 @@ jobs:
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
           echo "Current Pushed Branch: $BRANCH_NAME"
           
-          # Remove old assets for THIS branch from previous_assets
-          find previous_assets -name "*$BRANCH_NAME*" -delete
+          # Remove old assets for ALL branches in the matrix from previous_assets
+          echo '${{ needs.setup.outputs.matrix }}' | jq -r '.[]' | while read branch; do
+            find previous_assets -name "*$branch*" -delete
+          done
           
           # Move remaining (unrelated branch) assets to artifacts/ folder to be re-uploaded
           cp -n previous_assets/*.jar artifacts/ || true
