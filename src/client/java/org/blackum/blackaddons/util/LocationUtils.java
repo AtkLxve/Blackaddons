@@ -25,6 +25,7 @@ public class LocationUtils {
     }
 
     public static boolean inDungeons() {
-        return getLocation().contains("Catacombs");
+        String loc = getLocation().toLowerCase().replaceAll("[^a-z0-9]", "");
+        return loc.contains("catacombs");
     }
 }
