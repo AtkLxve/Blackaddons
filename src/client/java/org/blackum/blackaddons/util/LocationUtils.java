@@ -25,6 +25,12 @@ public class LocationUtils {
     }
 
     public static boolean inDungeons() {
-        return getLocation().contains("Catacombs");
+        String loc = getLocation();
+        for (int i = 1; i <= 7; i++) {
+            if (loc.contains("(F" + i + ")") || loc.contains("(M" + i + ")")) {
+                return true;
+            }
+        }
+        return loc.contains("(E)") || loc.contains("Catacombs");
     }
 }
