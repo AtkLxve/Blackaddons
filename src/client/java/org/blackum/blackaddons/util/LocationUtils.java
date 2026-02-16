@@ -25,17 +25,6 @@ public class LocationUtils {
     }
 
     public static boolean inDungeons() {
-        String raw = getLocation();
-        String normalized = raw.toLowerCase().replaceAll("[^a-z0-9]", "");
-        
-        // Temporary excessive debug
-        if (net.minecraft.client.Minecraft.getInstance().player != null) {
-             net.minecraft.client.Minecraft.getInstance().player.displayClientMessage(
-                net.minecraft.network.chat.Component.literal("§d[LocUtils] Raw: '" + raw + "' -> Norm: '" + normalized + "' | Contains 'catacombs': " + normalized.contains("catacombs")), 
-                false
-            );
-        }
-        
-        return normalized.contains("catacombs");
+        return getLocation().contains("Catacombs");
     }
 }
