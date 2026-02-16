@@ -74,13 +74,17 @@ public class AutoTNT {
                         equipTnt(client.player, tntSlot);
                     }
 
-                    if (ConfigManager.data.autoTntConfig.isTntEquipped
-                            && !ConfigManager.data.autoTntConfig.hasClicked) {
-                        ConfigManager.data.autoTntConfig.ticksSinceEquip++;
-                        if (ConfigManager.data.autoTntConfig.ticksSinceEquip >= ConfigManager.data.autoTntConfig.currentRandomDelay) {
-                            triggerAttack(client);
-                            ConfigManager.data.autoTntConfig.hasClicked = true;
-                            if (ConfigManager.data.autoTntConfig.SwapBack) {
+                    if (ConfigManager.data.autoTntConfig.isTntEquipped) {
+                        if (!ConfigManager.data.autoTntConfig.hasClicked) {
+                            ConfigManager.data.autoTntConfig.ticksSinceEquip++;
+                            if (ConfigManager.data.autoTntConfig.ticksSinceEquip >= ConfigManager.data.autoTntConfig.currentRandomDelay) {
+                                triggerAttack(client);
+                                ConfigManager.data.autoTntConfig.hasClicked = true;
+                                ConfigManager.data.autoTntConfig.ticksSinceClick = 0;
+                            }
+                        } else if (ConfigManager.data.autoTntConfig.SwapBack) {
+                            ConfigManager.data.autoTntConfig.ticksSinceClick++;
+                            if (ConfigManager.data.autoTntConfig.ticksSinceClick >= 3) {
                                 unequipTnt(client.player, false);
                             }
                         }
@@ -222,6 +226,7 @@ public class AutoTNT {
         info.add("Has Clicked: " + ConfigManager.data.autoTntConfig.hasClicked);
         info.add("Ticks Eq: " + ConfigManager.data.autoTntConfig.ticksSinceEquip + " / "
                 + ConfigManager.data.autoTntConfig.currentRandomDelay);
+        info.add("Ticks Click: " + ConfigManager.data.autoTntConfig.ticksSinceClick);
         info.add("Ticks Look: " + ConfigManager.data.autoTntConfig.ticksSinceStopLooking + " / "
                 + ConfigManager.data.autoTntConfig.unequipDelay);
 
@@ -240,6 +245,7 @@ public class AutoTNT {
         boolean isTntEquipped = false;
         boolean hasClicked = false;
         int ticksSinceEquip = 0;
+        int ticksSinceClick = 0;
         int ticksSinceStopLooking = 0;
         double currentRandomDelay = 0;
         double unequipDelay = 0;
@@ -263,6 +269,7 @@ public class AutoTNT {
         void fullReset() {
             reset();
             hasClicked = false;
+            ticksSinceClick = 0;
             lastKnownTntSlot = -1;
             lastTargetPos = null;
         }
