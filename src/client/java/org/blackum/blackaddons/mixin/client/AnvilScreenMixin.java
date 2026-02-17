@@ -3,13 +3,13 @@ package org.blackum.blackaddons.mixin.client;
 import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.modhider.ComponentUtils;
 
-import org.blackum.blackaddons.modhider.ToastUtils;
-
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
 import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import static org.blackum.blackaddons.mixin.client.AbstractSignEditScreenMixin.Helper.showServerAttemptedReadingModsNotification;
 
 @Mixin(AnvilScreen.class)
 public class AnvilScreenMixin {
@@ -18,7 +18,7 @@ public class AnvilScreenMixin {
         if (ConfigManager.data.hideMods()) {
             String str = ComponentUtils.getString(instance);
             if (!str.equals(instance.getString())) {
-                ToastUtils.showServerAttemptedReadingModsToast();
+                showServerAttemptedReadingModsNotification();
             }
             return str;
         }
@@ -30,7 +30,7 @@ public class AnvilScreenMixin {
         if (ConfigManager.data.hideMods()) {
             String str = ComponentUtils.getString(instance);
             if (!str.equals(instance.getString())) {
-                ToastUtils.showServerAttemptedReadingModsToast();
+                showServerAttemptedReadingModsNotification();
             }
             return str;
         }

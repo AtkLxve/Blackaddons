@@ -20,6 +20,10 @@ public final class Constants {
         public static final String BOT_USER_AGENT = "BlackAddons/1.0";
         public static final int HTTP_TIMEOUT_SECONDS = 15;
 
+        // Notifications
+        public static final String MOD_DETECTION_TITLE = "BlackAddons";
+        public static final String MOD_DETECTION_MESSAGE = "Server attempted to read your mod list.";
+
         // Mod Metadata
         public static final String MOD_ID = "blackaddons";
         public static final String CONFIG_DIR_NAME = MOD_ID; // bruh
