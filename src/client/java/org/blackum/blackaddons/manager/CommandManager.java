@@ -107,6 +107,19 @@ public class CommandManager {
                         return 1;
                     }));
 
+            testNode.then(ClientCommandManager.literal("dungeonjoin")
+                    .then(ClientCommandManager.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
+                            .executes(ctx -> {
+                                String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
+                                String fakeMessage = "Party Finder > " + ign
+                                        + " joined the dungeon group! (Berserk Level 1)";
+                                net.minecraft.network.chat.Component component = net.minecraft.network.chat.Component
+                                        .literal(fakeMessage);
+                                Minecraft.getInstance().gui.getChat().addMessage(component);
+                                org.blackum.blackaddons.features.DungeonJoinHandler.onChatMessage(component);
+                                return 1;
+                            })));
+
             var pvNode = ClientCommandManager.literal("pv")
                     .executes(ctx -> {
                         String player = Minecraft.getInstance().getUser().getName();

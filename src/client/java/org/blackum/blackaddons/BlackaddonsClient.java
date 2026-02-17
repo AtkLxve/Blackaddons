@@ -60,7 +60,10 @@ public class BlackaddonsClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> NotificationManager.getInstance().tick());
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
 
-        ClientReceiveMessageEvents.GAME.register((message, overlay) -> RngTracker.onChatMessage(message));
+        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            RngTracker.onChatMessage(message);
+            org.blackum.blackaddons.features.DungeonJoinHandler.onChatMessage(message);
+        });
 
         Blackaddons.LOGGER.info("Client initialization completed");
     }
