@@ -42,3 +42,10 @@ https://github.com/BLACKUM/rtca-bot-hypixel (bot)
 - `/ba commandalias add [alias] [original command]`: Creates a command alias, needs swapping lobbies to propagate
 - `/ba commandalias del [alias]`: Removes a command alias, needs swapping lobbies to propagate
 - `/ba commandalias list`: Lists all available aliases
+
+## Credits
+
+- **Blackum**: Erm that's me hello
+- **AtkLxve**: Cheats
+- **Autismo**: Helped me with rewriting, understanding java and a lot more stuff
+

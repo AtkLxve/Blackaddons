@@ -4,7 +4,13 @@
   "version": "${version}",
   "name": "BlackAddons",
   "description": "Adds some neat features for Hypixel Skyblock",
-  "authors": [],
+  "authors": [
+    "Blackum"
+  ],
+  "contributors": [
+    "AtkLxve",
+    "Autismo"
+  ],
   "contact": {
     "homepage": "https://github.com/BLACKUM/BlackAddons",
     "sources": "https://github.com/BLACKUM/BlackAddons",
