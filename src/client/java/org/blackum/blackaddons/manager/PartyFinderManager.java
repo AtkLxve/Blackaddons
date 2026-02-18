@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,12 +42,11 @@ public class PartyFinderManager {
         return inQueue;
     }
 
-    public void sendJoinRequest(String leaderName) {
+    public void sendJoinRequest(String leaderName, String partyId) {
         if (MinecraftInstance.mc.player == null || MinecraftInstance.mc.player.connection == null)
             return;
 
-        String requestId = UUID.randomUUID().toString().substring(0, 8);
-        String msg = String.format(Constants.JOIN_REQUEST_TEMPLATE, requestId);
+        String msg = String.format(Constants.JOIN_REQUEST_TEMPLATE, partyId);
 
         MinecraftInstance.mc.player.connection.sendCommand("msg " + leaderName + " " + msg);
         pendingRequests.put(leaderName, System.currentTimeMillis());
@@ -67,7 +65,7 @@ public class PartyFinderManager {
             String sender = requestMatcher.group(1) != null ? requestMatcher.group(1) : requestMatcher.group(2);
             String requestId = requestMatcher.group(3);
 
-            if (currentPartyId == null || !currentPartyId.equals(requestId)) {
+            if (currentPartyId != null && !currentPartyId.equals(requestId)) {
                 return;
             }
 

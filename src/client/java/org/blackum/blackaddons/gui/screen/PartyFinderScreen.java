@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -128,6 +127,7 @@ public class PartyFinderScreen extends BaseScreen {
     }
 
     private static class PartyWidget extends Widget {
+        private final String id;
         private final String leader;
         private final String note;
         private final int memberCount;
@@ -135,6 +135,7 @@ public class PartyFinderScreen extends BaseScreen {
 
         public PartyWidget(int x, int y, int width, JsonObject data) {
             super(x, y, width, 50);
+            this.id = JsonUtils.getString(data, "id", "");
             this.leader = JsonUtils.getString(data, "leader_name", "Unknown");
             this.note = JsonUtils.getString(data, "note", "");
             this.memberCount = JsonUtils.getInt(data, "member_count");
@@ -166,7 +167,7 @@ public class PartyFinderScreen extends BaseScreen {
         @Override
         public boolean mouseClicked(double mx, double my, int b) {
             if (mx >= x + width - 70 && mx <= x + width - 10 && my >= y + 15 && my <= y + 35) {
-                PartyFinderManager.getInstance().sendJoinRequest(leader);
+                PartyFinderManager.getInstance().sendJoinRequest(leader, id);
                 return true;
             }
             return false;
