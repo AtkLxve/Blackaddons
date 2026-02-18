@@ -62,7 +62,7 @@ jobs:
           gradle-version: '9.2.1'
 
       - name: Build with Gradle
-        run: ./gradlew build -Pmod_version=${{ needs.setup.outputs.version }}
+        run: gradle build -Pmod_version=${{ needs.setup.outputs.version }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
