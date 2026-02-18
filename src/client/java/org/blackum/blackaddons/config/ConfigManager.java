@@ -68,6 +68,7 @@ public class ConfigManager {
         public DataSource dataSource = DataSource.LOCAL;
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
+        public boolean autoInvite = true;
 
         // Mod Hider (ported from ClientSpoofer)
         public SpoofMode modHiderSpoofMode = SpoofMode.CUSTOM;

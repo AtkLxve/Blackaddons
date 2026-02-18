@@ -23,6 +23,9 @@ public class Dropdown extends Widget {
 
     private Animation hoverAnimation;
     private Animation expandAnimation;
+    private double menuScrollOffset = 0;
+    private static final int MAX_MENU_HEIGHT = 130;
+    private static final int OPTION_HEIGHT = 25;
 
     public Dropdown(int x, int y, int width, String label, List<String> options, Consumer<String> onSelect) {
         this(x, y, width, Theme.BUTTON_HEIGHT, label, options, onSelect);
@@ -93,37 +96,58 @@ public class Dropdown extends Widget {
         int arrowWidth = Minecraft.getInstance().font.width(arrow);
         graphics.drawString(Minecraft.getInstance().font, arrow, x + width - 15 - arrowWidth / 2, textY,
                 Theme.TEXT_SECONDARY);
+    }
 
-        if (expanded) {
-            int optionHeight = 25;
-            int totalHeight = options.size() * optionHeight;
-            int menuY = y + height + 2;
+    @Override
+    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (!visible || !expanded)
+            return;
 
-            graphics.fill(x - 3, menuY - 3, x + width + 3, menuY + totalHeight + 3, 0xFF000000);
-            RenderHelper.renderSurface(graphics, x, menuY, width, totalHeight, Theme.BORDER_RADIUS_SMALL, false);
-            RenderHelper.renderRoundedOutline(graphics, x, menuY, width, totalHeight, Theme.BORDER_RADIUS_SMALL,
-                    Theme.withAlpha(Theme.BORDER, 0.5f));
+        int totalHeight = options.size() * OPTION_HEIGHT;
+        int menuHeight = Math.min(totalHeight, MAX_MENU_HEIGHT);
+        int menuY = y + height + 2;
 
-            for (int i = 0; i < options.size(); i++) {
-                String option = options.get(i);
-                int optY = menuY + (i * optionHeight);
+        graphics.fill(x - 3, menuY - 3, x + width + 3, menuY + menuHeight + 3, 0xFF000000);
+        RenderHelper.renderSurface(graphics, x, menuY, width, menuHeight, Theme.BORDER_RADIUS_SMALL, false);
+        RenderHelper.renderRoundedOutline(graphics, x, menuY, width, menuHeight, Theme.BORDER_RADIUS_SMALL,
+                Theme.withAlpha(Theme.BORDER, 0.5f));
 
-                boolean isOptHovered = mouseX >= x && mouseX <= x + width && mouseY >= optY
-                        && mouseY < optY + optionHeight;
+        graphics.enableScissor(x, menuY, x + width, menuY + menuHeight);
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(0f, (float) -menuScrollOffset);
 
-                if (isOptHovered) {
-                    graphics.fill(x + 2, optY, x + width - 2, optY + optionHeight,
-                            Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.2f));
-                }
+        for (int i = 0; i < options.size(); i++) {
+            String option = options.get(i);
+            int optY = menuY + (i * OPTION_HEIGHT);
 
-                if (i == selectedIndex) {
-                    graphics.drawString(Minecraft.getInstance().font, ChatFormatting.AQUA + option, x + 10,
-                            optY + (optionHeight - 8) / 2, Theme.ACCENT);
-                } else {
-                    graphics.drawString(Minecraft.getInstance().font, option, x + 10, optY + (optionHeight - 8) / 2,
-                            Theme.TEXT_PRIMARY);
-                }
+            boolean isOptHovered = mouseX >= x && mouseX <= x + width && mouseY >= optY - menuScrollOffset
+                    && mouseY < optY + OPTION_HEIGHT - menuScrollOffset;
+
+            if (isOptHovered) {
+                graphics.fill(x + 2, optY, x + width - 2, optY + OPTION_HEIGHT,
+                        Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.2f));
             }
+
+            if (i == selectedIndex) {
+                graphics.drawString(Minecraft.getInstance().font, ChatFormatting.AQUA + option, x + 10,
+                        optY + (OPTION_HEIGHT - 8) / 2, Theme.ACCENT);
+            } else {
+                graphics.drawString(Minecraft.getInstance().font, option, x + 10, optY + (OPTION_HEIGHT - 8) / 2,
+                        Theme.TEXT_PRIMARY);
+            }
+        }
+
+        graphics.pose().popMatrix();
+        graphics.disableScissor();
+
+        if (totalHeight > MAX_MENU_HEIGHT) {
+            int scrollBarWidth = 2;
+            int scrollBarX = x + width - 4;
+            int scrollBarHeight = (int) ((menuHeight / (double) totalHeight) * menuHeight);
+            double progress = menuScrollOffset / (totalHeight - menuHeight);
+            int scrollBarY = (int) (menuY + progress * (menuHeight - scrollBarHeight));
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + scrollBarWidth, scrollBarY + scrollBarHeight,
+                    0x88FFFFFF);
         }
     }
 
@@ -134,18 +158,20 @@ public class Dropdown extends Widget {
 
         if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
             expanded = !expanded;
+            if (expanded)
+                menuScrollOffset = 0;
             Minecraft.getInstance().getSoundManager()
                     .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             return true;
         }
 
         if (expanded) {
-            int optionHeight = 25;
             int menuY = y + height + 2;
-            int totalHeight = options.size() * optionHeight;
+            int totalHeight = options.size() * OPTION_HEIGHT;
+            int menuHeight = Math.min(totalHeight, MAX_MENU_HEIGHT);
 
-            if (mouseX >= x && mouseX <= x + width && mouseY >= menuY && mouseY <= menuY + totalHeight) {
-                int clickedIndex = (int) ((mouseY - menuY) / optionHeight);
+            if (mouseX >= x && mouseX <= x + width && mouseY >= menuY && mouseY <= menuY + menuHeight) {
+                int clickedIndex = (int) ((mouseY - menuY + menuScrollOffset) / OPTION_HEIGHT);
                 if (clickedIndex >= 0 && clickedIndex < options.size()) {
                     selectedIndex = clickedIndex;
                     if (onSelect != null) {
@@ -167,6 +193,22 @@ public class Dropdown extends Widget {
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (expanded && isMouseOver(mouseX, mouseY)) {
+            int totalHeight = options.size() * OPTION_HEIGHT;
+            if (totalHeight > MAX_MENU_HEIGHT) {
+                menuScrollOffset -= scrollY * 15;
+                if (menuScrollOffset < 0)
+                    menuScrollOffset = 0;
+                if (menuScrollOffset > totalHeight - MAX_MENU_HEIGHT)
+                    menuScrollOffset = totalHeight - MAX_MENU_HEIGHT;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         if (!visible)
             return false;
@@ -175,9 +217,9 @@ public class Dropdown extends Widget {
             return true;
 
         if (expanded) {
-            int optionHeight = 25;
+            int totalHeight = options.size() * OPTION_HEIGHT;
+            int menuHeight = Math.min(totalHeight, MAX_MENU_HEIGHT);
             int menuY = y + height + 2;
-            int menuHeight = options.size() * optionHeight;
             return mouseX >= x && mouseX <= x + width && mouseY >= menuY && mouseY <= menuY + menuHeight;
         }
         return false;

@@ -56,6 +56,17 @@ public class Card extends Widget {
     }
 
     @Override
+    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (!visible)
+            return;
+        for (Widget child : children) {
+            if (child.isVisible()) {
+                child.renderOverlay(graphics, mouseX, mouseY, partialTick);
+            }
+        }
+    }
+
+    @Override
     public void tick() {
         for (Widget child : children) {
             child.tick();
@@ -67,7 +78,8 @@ public class Card extends Widget {
         if (!enabled || !visible)
             return false;
 
-        for (Widget child : children) {
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
             if (child.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }

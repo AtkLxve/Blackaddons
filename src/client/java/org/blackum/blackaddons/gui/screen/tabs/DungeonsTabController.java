@@ -69,10 +69,7 @@ public class DungeonsTabController extends ProfileTabController {
         }
 
         String entranceKey = null;
-        if (normalFloors.contains("F0")) {
-            entranceKey = "F0";
-            normalFloors.remove("F0");
-        } else if (normalFloors.contains("Entrance")) {
+        if (normalFloors.contains("Entrance")) {
             entranceKey = "Entrance";
             normalFloors.remove("Entrance");
         }
@@ -171,7 +168,7 @@ public class DungeonsTabController extends ProfileTabController {
             java.util.Map<String, Double> formattedRunDist = new java.util.LinkedHashMap<>();
             for (Map.Entry<String, Double> entry : runDistribution.entrySet()) {
                 String k = entry.getKey();
-                String label = (k.equals("F0") || k.equals("Entrance")) ? "Entrance" : k;
+                String label = k.equals("Entrance") ? "Entrance" : k;
                 formattedRunDist.put(label, entry.getValue());
             }
 
@@ -207,7 +204,7 @@ public class DungeonsTabController extends ProfileTabController {
     }
 
     private int getFloorNum(String key) {
-        if (key.equals("F0") || key.equals("Entrance"))
+        if (key.equals("Entrance"))
             return 0;
         try {
             return Integer.parseInt(key.substring(1));

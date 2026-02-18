@@ -150,6 +150,30 @@ public class ResizableCard extends Card {
     }
 
     @Override
+    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (!visible || collapsed)
+            return;
+
+        float scale = (float) width / initialWidth;
+        int contentX = getContentX();
+        int contentY = getContentY();
+
+        graphics.pose().pushMatrix();
+        graphics.pose().translate((float) contentX, (float) contentY);
+        graphics.pose().scale(scale, scale);
+        graphics.pose().translate((float) -contentX, (float) -contentY);
+
+        for (Widget child : getChildren()) {
+            if (child.isVisible()) {
+                child.renderOverlay(graphics, (int) ((mouseX - contentX) / scale + contentX),
+                        (int) ((mouseY - contentY) / scale + contentY), partialTick);
+            }
+        }
+
+        graphics.pose().popMatrix();
+    }
+
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!enabled || !visible)
             return false;
@@ -202,7 +226,9 @@ public class ResizableCard extends Card {
         double scaledMouseX = (mouseX - contentX) / scale + contentX;
         double scaledMouseY = (mouseY - contentY) / scale + contentY;
 
-        for (Widget child : getChildren()) {
+        java.util.List<Widget> children = getChildren();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
             if (child.mouseClicked(scaledMouseX, scaledMouseY, button)) {
                 return true;
             }
@@ -238,7 +264,9 @@ public class ResizableCard extends Card {
         double scaledMouseX = (mouseX - contentX) / scale + contentX;
         double scaledMouseY = (mouseY - contentY) / scale + contentY;
 
-        for (Widget child : getChildren()) {
+        java.util.List<Widget> children = getChildren();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
             if (child.mouseReleased(scaledMouseX, scaledMouseY, button)) {
                 return true;
             }
@@ -318,7 +346,9 @@ public class ResizableCard extends Card {
         double scaledDragX = dragX / scale;
         double scaledDragY = dragY / scale;
 
-        for (Widget child : getChildren()) {
+        java.util.List<Widget> children = getChildren();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
             if (child.mouseDragged(scaledMouseX, scaledMouseY, button, scaledDragX, scaledDragY)) {
                 return true;
             }
@@ -414,7 +444,9 @@ public class ResizableCard extends Card {
         double scaledMouseX = (mouseX - contentX) / scale + contentX;
         double scaledMouseY = (mouseY - contentY) / scale + contentY;
 
-        for (Widget child : getChildren()) {
+        java.util.List<Widget> children = getChildren();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
             if (child.mouseScrolled(scaledMouseX, scaledMouseY, scrollX, scrollY)) {
                 return true;
             }

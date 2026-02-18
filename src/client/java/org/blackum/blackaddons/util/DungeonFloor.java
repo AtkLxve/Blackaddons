@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum DungeonFloor {
-    ENTRANCE("normal_0", "Entrance", "F0"),
+    ENTRANCE("normal_0", "Entrance", "Entrance"),
     F1("normal_1", "F1", "F1"),
     F2("normal_2", "F2", "F2"),
     F3("normal_3", "F3", "F3"),

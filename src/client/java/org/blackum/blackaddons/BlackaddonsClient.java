@@ -63,6 +63,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
             RngTracker.onChatMessage(message);
             org.blackum.blackaddons.features.DungeonJoinHandler.onChatMessage(message);
+            org.blackum.blackaddons.manager.PartyFinderManager.getInstance().onChatMessage(message);
         });
 
         Blackaddons.LOGGER.info("Client initialization completed");

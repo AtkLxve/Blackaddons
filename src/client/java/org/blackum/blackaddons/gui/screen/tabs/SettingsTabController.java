@@ -1,13 +1,18 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
+import java.util.List;
 import org.blackum.blackaddons.config.ConfigManager;
+import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.theme.Theme;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
-
-import java.util.List;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.util.*;
 
 public class SettingsTabController extends SimpleTabController {
+
+    private static final int DROPDOWN_WIDTH = 200;
+    private static final int COLOR_PICKER_HEIGHT = 210;
 
     public SettingsTabController(BlackAddonsGUI screen) {
         super(screen);
@@ -17,83 +22,46 @@ public class SettingsTabController extends SimpleTabController {
     public void init(TabPanel.Tab settingsTab) {
         int contentX = settingsTab.getParent().getContentX();
         int contentY = settingsTab.getParent().getContentY();
+        int currentY = contentY + Theme.PADDING_MEDIUM;
 
-        settingsTab.addWidget(new Label(contentX, contentY, "Data Source", Label.Style.TITLE));
+        settingsTab.addWidget(new Label(contentX, currentY, "General Settings", Label.Style.TITLE));
+        currentY += Theme.SPACING_NORMAL;
 
-        List<String> dataSources = List.of("LOCAL", "BOT");
-        Dropdown dataSourceDropdown = new Dropdown(contentX, contentY + 30, 200, "Data Source", dataSources,
-                selected -> {
-                    try {
-                        ConfigManager.data.dataSource = ConfigManager.DataSource.valueOf(selected);
-                        ConfigManager.save();
-                    } catch (Exception e) {
-                        ConfigManager.data.dataSource = ConfigManager.DataSource.LOCAL;
-                    }
+        settingsTab.addWidget(new Label(contentX, currentY, "Data Source", Label.Style.BODY));
+        currentY += Theme.SPACING_NORMAL;
+
+        List<String> dataSources = List.of("BOT", "LOCAL");
+        Dropdown dataSourceDropdown = new Dropdown(contentX, currentY, DROPDOWN_WIDTH, Theme.BUTTON_HEIGHT,
+                "Data Source",
+                dataSources, (selected) -> {
+                    ConfigManager.data.dataSource = ConfigManager.DataSource.valueOf(selected);
+                    ConfigManager.save();
                 });
         dataSourceDropdown.setSelectedOption(ConfigManager.data.dataSource.name());
         settingsTab.addWidget(dataSourceDropdown);
+        currentY += Theme.BUTTON_HEIGHT + Theme.SPACING_NORMAL;
 
-        settingsTab.addWidget(new Label(contentX, contentY + 80, "Developer Key", Label.Style.TITLE));
-        TextField devKeyField = new TextField(contentX, contentY + 110, 200, "Enter key...");
-        devKeyField.setText(ConfigManager.data.developerKey);
-        settingsTab.addWidget(devKeyField);
-
-        Button saveKeyBtn = new Button(contentX + 210, contentY + 110, 60, "Save", () -> {
-            ConfigManager.data.developerKey = devKeyField.getText();
-            ConfigManager.save();
-        });
-        settingsTab.addWidget(saveKeyBtn);
-
-        int offsetY = 160;
-
-        settingsTab.addWidget(new Label(contentX, contentY + offsetY, "App Appearance", Label.Style.TITLE));
-
-        settingsTab
-                .addWidget(new Label(contentX, contentY + offsetY + 30, "Accent Color (Main Theme)", Label.Style.BODY));
-
-        ColorPicker accentPicker = new ColorPicker(contentX, contentY + offsetY + 50, color -> Theme.ACCENT = color);
-
-        settingsTab.addWidget(accentPicker);
-
-        ToggleSwitch layoutToggle = new ToggleSwitch(contentX, contentY + offsetY + 280, 400,
-                "Use Card Layout",
-                "Enable resizable card-based layout for Mod Hider",
-                ConfigManager.data.useCardLayout, value -> {
-                    ConfigManager.data.useCardLayout = value;
+        ToggleSwitch autoInviteToggle = new ToggleSwitch(contentX, currentY, DROPDOWN_WIDTH,
+                "Auto-Invite Join Requests",
+                "Automatically invite players who send a join request",
+                ConfigManager.data.autoInvite, (val) -> {
+                    ConfigManager.data.autoInvite = val;
                     ConfigManager.save();
-                    screen.init();
                 });
-        settingsTab.addWidget(layoutToggle);
+        settingsTab.addWidget(autoInviteToggle);
+        currentY += Theme.SPACING_LARGE;
 
-        Label durationLabel = new Label(contentX, contentY + offsetY + 320,
-                "Notification Duration: " + ConfigManager.data.notificationDuration + "ms", Label.Style.BODY);
-        settingsTab.addWidget(durationLabel);
+        settingsTab.addWidget(new Label(contentX, currentY, "Profiles & Cache", Label.Style.TITLE));
+        currentY += Theme.SPACING_NORMAL;
 
-        Slider durationSlider = new Slider(contentX, contentY + offsetY + 330,
-                settingsTab.getParent().getContentWidth() - 20, 500f,
-                10000f,
-                ConfigManager.data.notificationDuration, val -> {
-                    int duration = Math.round(val);
-                    if (duration != ConfigManager.data.notificationDuration) {
-                        ConfigManager.data.notificationDuration = duration;
-                        durationLabel.setText("Notification Duration: " + duration + "ms");
-                        ConfigManager.save();
-                    }
-                });
-        settingsTab.addWidget(durationSlider);
+        settingsTab.addWidget(new Label(contentX, currentY, "Cache Duration", Label.Style.BODY));
+        currentY += Theme.SPACING_NORMAL;
 
-        settingsTab
-                .addWidget(new Label(contentX, contentY + offsetY + 390, "Profile Cache Duration", Label.Style.BODY));
-
-        List<String> cacheOptions = List.of("1 Minute", "5 Minutes", "10 Minutes", "30 Minutes",
-                "1 Hour");
-        Dropdown cacheDropdown = new Dropdown(contentX, contentY + offsetY + 410,
-                settingsTab.getParent().getContentWidth() - 20, 20,
-                "Cache Duration", cacheOptions, selected -> {
+        List<String> cacheOptions = List.of("5 Minutes", "10 Minutes", "30 Minutes", "1 Hour");
+        Dropdown cacheDropdown = new Dropdown(contentX, currentY, DROPDOWN_WIDTH, Theme.BUTTON_HEIGHT, "Cache Duration",
+                cacheOptions, (selected) -> {
                     int minutes = 5;
-                    if (selected.contains("1 Minute"))
-                        minutes = 1;
-                    else if (selected.contains("5 Minutes"))
+                    if (selected.contains("5 Minutes"))
                         minutes = 5;
                     else if (selected.contains("10 Minutes"))
                         minutes = 10;
@@ -101,20 +69,72 @@ public class SettingsTabController extends SimpleTabController {
                         minutes = 30;
                     else if (selected.contains("1 Hour"))
                         minutes = 60;
-
-                    if (ConfigManager.data.cacheDurationMinutes != minutes) {
-                        ConfigManager.data.cacheDurationMinutes = minutes;
-                        ConfigManager.save();
-                    }
+                    ConfigManager.data.cacheDurationMinutes = minutes;
+                    ConfigManager.save();
                 });
 
-        String currentOption = ConfigManager.data.cacheDurationMinutes + " Minutes";
-        if (ConfigManager.data.cacheDurationMinutes == 1)
-            currentOption = "1 Minute";
-        else if (ConfigManager.data.cacheDurationMinutes == 60)
-            currentOption = "1 Hour";
-
-        cacheDropdown.setSelectedOption(currentOption);
+        String currentCache = ConfigManager.data.cacheDurationMinutes + " Minutes";
+        if (ConfigManager.data.cacheDurationMinutes == 60)
+            currentCache = "1 Hour";
+        cacheDropdown.setSelectedOption(currentCache);
         settingsTab.addWidget(cacheDropdown);
+        currentY += Theme.BUTTON_HEIGHT + Theme.SPACING_LARGE;
+
+        settingsTab.addWidget(new Label(contentX, currentY, "Appearance", Label.Style.TITLE));
+        currentY += Theme.SPACING_NORMAL;
+
+        settingsTab.addWidget(new Label(contentX, currentY, "Accent Color", Label.Style.BODY));
+        currentY += Theme.SPACING_NORMAL;
+
+        ColorPicker accentPicker = new ColorPicker(contentX, currentY, (color) -> {
+            ConfigManager.data.accentColor = color;
+            Theme.ACCENT = color;
+            ConfigManager.save();
+        });
+        settingsTab.addWidget(accentPicker);
+        currentY += COLOR_PICKER_HEIGHT + Theme.SPACING_NORMAL;
+
+        ToggleSwitch layoutToggle = new ToggleSwitch(contentX, currentY, DROPDOWN_WIDTH, "Use Card Layout",
+                "Enable card-based layout for various mod screens", ConfigManager.data.useCardLayout,
+                (val) -> {
+                    ConfigManager.data.useCardLayout = val;
+                    ConfigManager.save();
+                });
+        settingsTab.addWidget(layoutToggle);
+        currentY += Theme.SPACING_LARGE;
+
+        settingsTab.addWidget(new Label(contentX, currentY, "Interface", Label.Style.TITLE));
+        currentY += Theme.SPACING_NORMAL;
+
+        Label durationLabel = new Label(contentX, currentY,
+                "Notification Duration: " + ConfigManager.data.notificationDuration + "ms", Label.Style.BODY);
+        settingsTab.addWidget(durationLabel);
+        currentY += Theme.SPACING_NORMAL;
+
+        Slider durationSlider = new Slider(contentX, currentY, DROPDOWN_WIDTH, 1000f, 10000f,
+                ConfigManager.data.notificationDuration, (val) -> {
+                    int duration = Math.round(val);
+                    ConfigManager.data.notificationDuration = duration;
+                    durationLabel.setText("Notification Duration: " + duration + "ms");
+                    ConfigManager.save();
+                });
+        settingsTab.addWidget(durationSlider);
+        currentY += Theme.SPACING_LARGE;
+
+        settingsTab.addWidget(new Label(contentX, currentY, "Developer", Label.Style.TITLE));
+        currentY += Theme.SPACING_NORMAL;
+
+        TextField devKeyField = new TextField(contentX, currentY, DROPDOWN_WIDTH, Theme.TEXTFIELD_HEIGHT,
+                "Developer Key");
+        devKeyField.setText(ConfigManager.data.developerKey != null ? ConfigManager.data.developerKey : "");
+        settingsTab.addWidget(devKeyField);
+        currentY += Theme.TEXTFIELD_HEIGHT + Theme.SPACING_SMALL;
+
+        Button saveKeyBtn = new Button(contentX, currentY, 100, Theme.BUTTON_HEIGHT, "Save Key", () -> {
+            ConfigManager.data.developerKey = devKeyField.getText();
+            ConfigManager.save();
+            NotificationManager.addNotification("Config", "Developer key saved.", NotificationType.SUCCESS);
+        });
+        settingsTab.addWidget(saveKeyBtn);
     }
 }

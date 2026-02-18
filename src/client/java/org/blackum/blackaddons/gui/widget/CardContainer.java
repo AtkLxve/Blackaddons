@@ -64,6 +64,17 @@ public class CardContainer extends Widget {
     }
 
     @Override
+    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (!visible)
+            return;
+        for (ResizableCard card : cards) {
+            if (card.isVisible()) {
+                card.renderOverlay(graphics, mouseX, mouseY, partialTick);
+            }
+        }
+    }
+
+    @Override
     public void tick() {
         for (ResizableCard card : cards) {
             card.tick();

@@ -23,6 +23,9 @@ public class DungeonJoinHandler {
 
         if (matcher.find()) {
             String nickname = matcher.group(1);
+            if (nickname.equalsIgnoreCase(mc.getUser().getName())) {
+                return;
+            }
             String className = matcher.group(2);
             String classLevel = matcher.group(3);
 
@@ -30,7 +33,7 @@ public class DungeonJoinHandler {
         }
     }
 
-    private static void fetchAndShowStats(String nickname, String className, String classLevel) {
+    public static void fetchAndShowStats(String nickname, String className, String classLevel) {
         ProfileStateManager.getInstance().getProfile(nickname, null, false).thenAccept(result -> {
             if (result == null || result.hasError() || result.getData() == null) {
                 return;

@@ -49,6 +49,10 @@ public final class Constants {
         public static final String BOT_API_RTCA = "/v1/rtca";
         public static final String BOT_API_LEADERBOARD = "/v1/leaderboard";
         public static final String BOT_API_KEY = "/v1/key";
+        public static final String BOT_API_PARTY_CREATE = "/v1/party/create";
+        public static final String BOT_API_PARTY_UNQUEUE = "/v1/party/unqueue";
+        public static final String BOT_API_PARTY_UPDATE = "/v1/party/update";
+        public static final String BOT_API_PARTY_LIST = "/v1/party/list";
 
         // API Headers
         public static final String HEADER_ENCRYPTED_IDENTITY = "X-Encrypted-Identity";
@@ -91,4 +95,26 @@ public final class Constants {
         // Caching
         public static final long DAY_IN_MS = 24 * 60 * 60 * 1000L;
         public static final long PRICE_CACHE_DURATION_MS = DAY_IN_MS;
+
+        // Party Finder
+        public static final String JOIN_REQUEST_TEMPLATE = "[BlackAddons] join party request - id:%s";
+        public static final String JOIN_REQUEST_WHISPER_REGEX = "^(?:From (?:\\[.+\\] )?(\\w+):|(\\w+) whispers to you:) \\[BlackAddons\\] join party request - id:(.+)$";
+        public static final String PARTY_INVITE_REGEX = "^(?:(?:\\[.+\\] )?(\\w+) has invited you to join their party!.*|§9§m-{10,}.*?§e(?:\\[.+\\] )?(\\w+) has invited you to join their party!.*)$";
+        public static final String PARTY_JOINED_REGEX = "^(?:\\[.+\\] )?(\\w+) joined the party\\.$";
+        public static final String PARTY_LEFT_REGEX = "^(?:\\[.+\\] )?(\\w+) left the party\\.$";
+        public static final String PARTY_REMOVED_REGEX = "^(?:\\[.+\\] )?(\\w+) was removed from the party\\.$";
+        public static final String PARTY_JOINED_OTHERS_REGEX = "^You joined (?:\\[.+\\] )?(\\w+)'s party!$";
+        public static final String PARTY_DISBANDED_REGEX = "^The party was disbanded\\.$";
+        public static final String PARTY_LEAVE_REGEX = "^You left the party\\.$";
+        public static final String PARTY_FINDER_TITLE = "Party Finder";
+        public static final String MSG_ALREADY_IN_QUEUE = "You are already in queue!";
+        public static final String MSG_WANTS_TO_JOIN = "§ewants to join your party.";
+        public static final String LABEL_INVITE = "§7[§aInvite§7]";
+        public static final String LABEL_PROFILE = "§7[§eProfile§7]";
+        public static final String HOVER_INVITE = "Click to invite";
+        public static final String HOVER_PROFILE = "Check player profile";
+        public static final String MSG_AUTO_ACCEPT = "Auto-accepting invite from %s";
+        public static final String MSG_QUEUE_STARTED = "Party finder queue started for %s";
+        public static final String MSG_REMOVED_QUEUE = "Removed from party finder queue.";
+        public static final String DEFAULT_PARTY_NOTE = "BlackAddons Party";
 }

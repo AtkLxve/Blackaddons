@@ -181,7 +181,7 @@ public abstract class BaseScreen extends Screen {
                 Theme.BORDER_RADIUS_LARGE, false);
 
         maxScroll = Math.max(0, contentHeight - (containerHeight - 40));
-        
+
         if (maxScroll < 32)
             maxScroll = 0;
 
@@ -199,9 +199,21 @@ public abstract class BaseScreen extends Screen {
 
         renderScrolledContent(graphics, mouseX, (int) (mouseY + scrollOffset), partialTick);
 
+        boolean mouseCaptured = false;
+        for (int i = widgets.size() - 1; i >= 0; i--) {
+            Widget widget = widgets.get(i);
+            if (widget.isVisible()) {
+                if (!mouseCaptured && widget.isMouseOver(mouseX, mouseY + scrollOffset)) {
+                    widget.updateHoverState(mouseX, (int) (mouseY + scrollOffset));
+                    mouseCaptured = true;
+                } else {
+                    widget.setHovered(false);
+                }
+            }
+        }
+
         for (Widget widget : widgets) {
             if (widget.isVisible()) {
-                widget.updateHoverState(mouseX, (int) (mouseY + scrollOffset));
                 widget.render(graphics, mouseX, (int) (mouseY + scrollOffset), partialTick);
 
                 if (showHitboxes) {
@@ -219,6 +231,15 @@ public abstract class BaseScreen extends Screen {
 
         graphics.pose().popMatrix();
         graphics.disableScissor();
+
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(0f, (float) -scrollOffset);
+        for (Widget widget : widgets) {
+            if (widget.isVisible()) {
+                widget.renderOverlay(graphics, mouseX, (int) (mouseY + scrollOffset), partialTick);
+            }
+        }
+        graphics.pose().popMatrix();
 
         if (canScroll) {
             int scrollBarHeight = (int) ((containerHeight / (double) contentHeight) * containerHeight);
@@ -290,17 +311,12 @@ public abstract class BaseScreen extends Screen {
             }
         }
 
-        boolean insideContainer = mouseX >= containerX && mouseX <= containerX + containerWidth &&
-                rawMouseY >= containerY && rawMouseY <= containerY + containerHeight;
-
-        if (insideContainer) {
-            for (int i = widgets.size() - 1; i >= 0; i--) {
-                Widget widget = widgets.get(i);
-                if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY)) {
-                    if (widget.mouseClicked(mouseX, mouseY, button)) {
-                        setFocusedWidget(widget);
-                        return true;
-                    }
+        for (int i = widgets.size() - 1; i >= 0; i--) {
+            Widget widget = widgets.get(i);
+            if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY)) {
+                if (widget.mouseClicked(mouseX, mouseY, button)) {
+                    setFocusedWidget(widget);
+                    return true;
                 }
             }
         }
@@ -318,9 +334,12 @@ public abstract class BaseScreen extends Screen {
         double mouseY = rawMouseY + scrollOffset;
         int button = event.button();
 
-        for (Widget widget : widgets) {
+        for (int i = widgets.size() - 1; i >= 0; i--) {
+            Widget widget = widgets.get(i);
             if (widget.isVisible() && widget.isEnabled()) {
-                widget.mouseReleased(mouseX, mouseY, button);
+                if (widget.mouseReleased(mouseX, mouseY, button)) {
+                    return true;
+                }
             }
         }
         return super.mouseReleased(event);
@@ -358,7 +377,8 @@ public abstract class BaseScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        for (Widget widget : widgets) {
+        for (int i = widgets.size() - 1; i >= 0; i--) {
+            Widget widget = widgets.get(i);
             if (widget.isVisible() && widget.isEnabled() && widget.isMouseOver(mouseX, mouseY + scrollOffset)) {
                 if (widget.mouseScrolled(mouseX, mouseY + scrollOffset, scrollX, scrollY)) {
                     return true;

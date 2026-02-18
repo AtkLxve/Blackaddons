@@ -45,6 +45,7 @@ public class TabPanel extends Widget {
 
     private Map<Integer, Animation> tabHoverAnimations = new HashMap<>();
     private Animation selectionAnimation;
+    private double tabScrollOffset = 0;
 
     public TabPanel(int x, int y, int width, int height) {
         super(x, y, width, height);
@@ -94,23 +95,28 @@ public class TabPanel extends Widget {
         int tabX = x;
         int tabY = y;
 
+        graphics.enableScissor(tabX, tabY, tabX + tabWidth, tabY + height);
+        graphics.pose().pushMatrix();
+        graphics.pose().translate(0f, (float) -tabScrollOffset);
+
         float selectionY = tabY + selectionAnimation.getValue() * tabHeight;
         int selectionColor = Theme.withAlpha(Theme.ACCENT, 0.2f);
         RenderHelper.renderRoundedRect(graphics, tabX, (int) selectionY, tabWidth, tabHeight,
                 Theme.BORDER_RADIUS_SMALL, selectionColor);
 
+        int currentY = tabY;
         for (int i = 0; i < tabs.size(); i++) {
             Tab tab = tabs.get(i);
             boolean isSelected = i == selectedTabIndex;
             boolean isHovered = mouseX >= tabX && mouseX <= tabX + tabWidth &&
-                    mouseY >= tabY && mouseY <= tabY + tabHeight;
+                    mouseY >= currentY - tabScrollOffset && mouseY <= currentY + tabHeight - tabScrollOffset;
 
             Animation hoverAnim = tabHoverAnimations.computeIfAbsent(i,
                     k -> new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut));
 
             if (isHovered && !isSelected) {
                 int hoverColor = Theme.withAlpha(Theme.SURFACE_LIGHT, 0.5f);
-                graphics.fill(tabX, tabY, tabX + tabWidth, tabY + tabHeight, hoverColor);
+                graphics.fill(tabX, currentY, tabX + tabWidth, currentY + tabHeight, hoverColor);
             }
 
             int textColor = isSelected ? Theme.ACCENT : Theme.TEXT_SECONDARY;
@@ -119,16 +125,19 @@ public class TabPanel extends Widget {
             }
 
             int textX = tabX + (tabWidth - Minecraft.getInstance().font.width(tab.name)) / 2;
-            int textY = tabY + (tabHeight - 8) / 2;
+            int textY = currentY + (tabHeight - 8) / 2;
             graphics.drawString(Minecraft.getInstance().font, tab.name, textX, textY, textColor);
 
             if (isSelected) {
                 int lineX = tabX + tabWidth - 3;
-                graphics.fill(lineX, tabY + 5, lineX + 3, tabY + tabHeight - 5, Theme.ACCENT);
+                graphics.fill(lineX, currentY + 5, lineX + 3, currentY + tabHeight - 5, Theme.ACCENT);
             }
 
-            tabY += tabHeight;
+            currentY += tabHeight;
         }
+
+        graphics.pose().popMatrix();
+        graphics.disableScissor();
     }
 
     private void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
@@ -136,20 +145,24 @@ public class TabPanel extends Widget {
             return;
 
         Tab currentTab = tabs.get(selectedTabIndex);
-        List<Widget> expandedDropdowns = new ArrayList<>();
         for (Widget widget : currentTab.widgets) {
             if (widget.isVisible()) {
-                if (widget instanceof Dropdown && ((Dropdown) widget).isExpanded()) {
-                    expandedDropdowns.add(widget);
-                } else {
-                    widget.render(graphics, mouseX, mouseY, partialTick);
-                }
+                widget.render(graphics, mouseX, mouseY, partialTick);
             }
         }
+    }
 
-        for (Widget widget : expandedDropdowns) {
-            if (widget.isVisible()) {
-                widget.render(graphics, mouseX, mouseY, partialTick);
+    @Override
+    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (!visible)
+            return;
+
+        if (selectedTabIndex >= 0 && selectedTabIndex < tabs.size()) {
+            Tab currentTab = tabs.get(selectedTabIndex);
+            for (Widget widget : currentTab.widgets) {
+                if (widget.isVisible()) {
+                    widget.renderOverlay(graphics, mouseX, mouseY, partialTick);
+                }
             }
         }
     }
@@ -196,20 +209,22 @@ public class TabPanel extends Widget {
             return false;
 
         int tabX = x;
-        int tabY = y;
+        int currentY = y;
 
         for (int i = 0; i < tabs.size(); i++) {
             if (mouseX >= tabX && mouseX <= tabX + tabWidth &&
-                    mouseY >= tabY && mouseY <= tabY + tabHeight) {
+                    mouseY >= currentY - tabScrollOffset && mouseY <= currentY + tabHeight - tabScrollOffset) {
                 selectTab(i);
                 return true;
             }
-            tabY += tabHeight;
+            currentY += tabHeight;
         }
 
         if (selectedTabIndex >= 0 && selectedTabIndex < tabs.size()) {
             Tab currentTab = tabs.get(selectedTabIndex);
-            for (Widget widget : currentTab.widgets) {
+            java.util.List<Widget> tabWidgets = currentTab.widgets;
+            for (int i = tabWidgets.size() - 1; i >= 0; i--) {
+                Widget widget = tabWidgets.get(i);
                 if (widget.mouseClicked(mouseX, mouseY, button)) {
                     return true;
                 }
@@ -248,11 +263,12 @@ public class TabPanel extends Widget {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (mouseX >= x && mouseX <= x + tabWidth && mouseY >= y && mouseY <= y + height) {
-            int direction = scrollY > 0 ? -1 : 1;
-            int newIndex = selectedTabIndex + direction;
-            if (newIndex >= 0 && newIndex < tabs.size()) {
-                selectTab(newIndex);
-            }
+            double maxTabScroll = Math.max(0, tabs.size() * tabHeight - height);
+            tabScrollOffset -= scrollY * 20;
+            if (tabScrollOffset < 0)
+                tabScrollOffset = 0;
+            if (tabScrollOffset > maxTabScroll)
+                tabScrollOffset = maxTabScroll;
             return true;
         }
 
@@ -303,6 +319,15 @@ public class TabPanel extends Widget {
 
             if (onTabChange != null) {
                 onTabChange.accept(index);
+            }
+        }
+    }
+
+    public void selectTabByName(String name) {
+        for (int i = 0; i < tabs.size(); i++) {
+            if (tabs.get(i).name.equalsIgnoreCase(name)) {
+                selectTab(i);
+                return;
             }
         }
     }

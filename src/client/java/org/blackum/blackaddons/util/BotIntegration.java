@@ -2,16 +2,16 @@ package org.blackum.blackaddons.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.config.ConfigManager;
-import java.util.Map;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class BotIntegration {
@@ -192,6 +192,74 @@ public class BotIntegration {
         });
     }
 
+    public static CompletableFuture<JsonObject> createParty(String floor, String note, JsonObject reqs, int maxSize) {
+        if (ConfigManager.data.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("player", MinecraftInstance.mc.getUser().getName());
+        json.addProperty("floor", floor);
+        json.addProperty("note", note);
+        json.add("reqs", reqs);
+        json.addProperty("max_size", maxSize);
+
+        return sendPostRequest(Constants.BOT_API_PARTY_CREATE, json.toString()).thenApply(res -> {
+            if (res != null && (res.statusCode() == 200 || res.statusCode() == 400)) {
+                try {
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
+    public static CompletableFuture<Boolean> unqueueParty() {
+        if (ConfigManager.data.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(false);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("player", MinecraftInstance.mc.getUser().getName());
+
+        return sendPostRequest(Constants.BOT_API_PARTY_UNQUEUE, json.toString()).thenApply(res -> {
+            return res != null && res.statusCode() == 200;
+        });
+    }
+
+    public static CompletableFuture<Boolean> updateParty(int memberCount, String note) {
+        if (ConfigManager.data.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(false);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("player", MinecraftInstance.mc.getUser().getName());
+        json.addProperty("member_count", memberCount);
+        if (note != null) {
+            json.addProperty("note", note);
+        }
+
+        return sendPostRequest(Constants.BOT_API_PARTY_UPDATE, json.toString()).thenApply(res -> {
+            return res != null && res.statusCode() == 200;
+        });
+    }
+
+    public static CompletableFuture<JsonObject> getParties(String floor) {
+        if (ConfigManager.data.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        String url = Constants.BOT_API_PARTY_LIST + (floor != null ? "?floor=" + floor : "");
+        return sendGetRequest(url).thenApply(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
     private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody) {
         return sendRequest("POST", endpoint, jsonBody, true);
     }
@@ -207,9 +275,9 @@ public class BotIntegration {
         String playerInit = "Unknown";
         String uuidInit = "Unknown";
         try {
-            if (Minecraft.getInstance().getUser() != null) {
-                playerInit = Minecraft.getInstance().getUser().getName();
-                uuidInit = Minecraft.getInstance().getUser().getProfileId().toString();
+            if (MinecraftInstance.mc.getUser() != null) {
+                playerInit = MinecraftInstance.mc.getUser().getName();
+                uuidInit = MinecraftInstance.mc.getUser().getProfileId().toString();
             }
         } catch (Exception e) {
         }

@@ -357,5 +357,4 @@ public class BlackAddonsGUI extends BaseScreen {
         }
         super.onClose();
     }
-
 }

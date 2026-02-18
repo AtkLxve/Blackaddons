@@ -21,6 +21,9 @@ public abstract class Widget {
 
     public abstract void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick);
 
+    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    }
+
     public void tick() {
     }
 
@@ -106,6 +109,10 @@ public abstract class Widget {
 
     public boolean isHovered() {
         return hovered;
+    }
+
+    public void setHovered(boolean hovered) {
+        this.hovered = hovered;
     }
 
     public boolean isFocused() {
