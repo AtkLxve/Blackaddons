@@ -45,6 +45,9 @@ public class Theme {
     public static final int SLIDER_HEIGHT = 6;
     public static final int SLIDER_THUMB_SIZE = 16;
     public static final int SCROLLBAR_WIDTH = 8;
+    public static final int DROPDOWN_WIDTH = 200;
+    public static final int COLOR_PICKER_HEIGHT = 210;
+    public static final int TOGGLE_HEIGHT = 20;
 
     public static final int PADDING_SMALL = 8;
     public static final int PADDING_MEDIUM = 12;

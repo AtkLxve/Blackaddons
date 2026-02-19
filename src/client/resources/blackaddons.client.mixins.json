@@ -13,7 +13,8 @@
     "KeyBindingAccessor",
     "InventoryAccessor",
     "FullbrightMixin",
-    "GameRendererMixin"
+    "GameRendererMixin",
+    "ChatComponentMixin"
   ],
   "injectors": {
     "defaultRequire": 1

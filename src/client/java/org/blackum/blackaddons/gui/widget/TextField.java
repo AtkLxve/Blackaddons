@@ -353,7 +353,7 @@ public class TextField extends Widget {
         triggerChange();
     }
 
-    private void insertText(String str) {
+    public void insertText(String str) {
         StringBuilder filtered = new StringBuilder();
         for (char c : str.toCharArray()) {
             if (c >= 32 && charFilter.test(c) && text.length() + filtered.length() < maxLength) {

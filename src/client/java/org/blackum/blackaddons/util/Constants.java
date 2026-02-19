@@ -18,7 +18,7 @@ public final class Constants {
         // Cloudflare bypass
         public static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64; x64; rv:136.0) Gecko/20100101 Firefox/136.0";
         public static final String BOT_USER_AGENT = "BlackAddons/1.0";
-        public static final int HTTP_TIMEOUT_SECONDS = 15;
+        public static final int HTTP_TIMEOUT_SECONDS = 30;
 
         // Notifications
         public static final String MOD_DETECTION_TITLE = "BlackAddons";
@@ -34,6 +34,7 @@ public final class Constants {
 
         // APIs
         public static final String DEFAULT_BOT_URL = "http://hypixel-skyblock-socket.pegle.com:8080";
+        public static final String BOT_IRC_WS_URL = "ws://hypixel-skyblock-socket.pegle.com:8080/v1/irc";
         public static final String HYPIXEL_BAZAAR_API = "https://api.hypixel.net/skyblock/bazaar";
         public static final String MOULBERRY_AH_API = "https://moulberry.codes/auction_averages_lbin/3day.json";
         public static final String PLAYER_DB_API = "https://playerdb.co/api/player/minecraft/";
@@ -117,4 +118,11 @@ public final class Constants {
         public static final String MSG_QUEUE_STARTED = "Party finder queue started for %s";
         public static final String MSG_REMOVED_QUEUE = "Removed from party finder queue.";
         public static final String DEFAULT_PARTY_NOTE = "BlackAddons Party";
+
+        // Discord Image Preview
+        public static final String DISCORD_IMAGE_REGEX = "https://(?:(?:www\\.)?tenor\\.com/view/[a-zA-Z0-9-]+-\\d+(?![a-zA-Z0-9-])|[^\\s§\\[\\]]+?\\.(?:png|jpg|jpeg|webp|gif)(?![\\w-]))(?:\\?[^\\s§\\[\\]]*)?";
+        public static final String PREVIEW_LABEL = " §7[§bPreview§7]";
+        public static final String PREVIEW_HOVER = "Click to preview image";
+        public static final int BUFFER_SIZE = 8192;
+        public static final int DEFAULT_GIF_DELAY = 100;
 }

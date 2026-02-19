@@ -74,7 +74,7 @@ public class PartyFinderManager {
                         .addMessage(ChatUtils.getMessage("§aJoin request from " + sender));
             });
 
-            if (ConfigManager.data.autoInvite) {
+            if (ConfigManager.data.partyFinderAutoInvite) {
                 MinecraftInstance.mc.execute(() -> {
                     if (MinecraftInstance.mc.player != null && MinecraftInstance.mc.player.connection != null) {
                         MinecraftInstance.mc.player.connection.sendCommand("party invite " + sender);
@@ -92,7 +92,9 @@ public class PartyFinderManager {
                                                     .withHoverEvent(new HoverEvent.ShowText(
                                                             Component.literal(Constants.HOVER_INVITE))))));
                 });
-                org.blackum.blackaddons.features.DungeonJoinHandler.fetchAndShowStats(sender, "N/A", "0");
+                if (ConfigManager.data.partyFinderShowStatsOnRequest) {
+                    org.blackum.blackaddons.features.DungeonJoinHandler.fetchAndShowStats(sender, "N/A", "0");
+                }
             }
             return;
         }
@@ -101,7 +103,7 @@ public class PartyFinderManager {
                 .matcher(text);
         if (inviteMatcher.find()) {
             String inviter = inviteMatcher.group(1) != null ? inviteMatcher.group(1) : inviteMatcher.group(2);
-            if (pendingRequests.containsKey(inviter)) {
+            if (ConfigManager.data.partyFinderAutoAcceptInvite && pendingRequests.containsKey(inviter)) {
                 long time = pendingRequests.get(inviter);
                 if (System.currentTimeMillis() - time < 60000) {
                     MinecraftInstance.mc.execute(() -> {

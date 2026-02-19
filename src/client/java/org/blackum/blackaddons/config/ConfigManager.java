@@ -11,8 +11,10 @@ import org.blackum.blackaddons.util.Constants;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,7 +70,12 @@ public class ConfigManager {
         public DataSource dataSource = DataSource.LOCAL;
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
-        public boolean autoInvite = true;
+        public boolean partyFinderAutoInvite = true;
+        public boolean partyFinderAutoAcceptInvite = true;
+        public boolean partyFinderShowStatsOnJoin = true;
+        public boolean partyFinderShowStatsOnRequest = true;
+        public boolean ircEnabled = true;
+        public List<String> ircChannels = new ArrayList<>(List.of("general", "announcements", "admin"));
 
         // Mod Hider (ported from ClientSpoofer)
         public SpoofMode modHiderSpoofMode = SpoofMode.CUSTOM;

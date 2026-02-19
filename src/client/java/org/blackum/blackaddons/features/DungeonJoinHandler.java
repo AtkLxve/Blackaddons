@@ -6,6 +6,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import org.blackum.blackaddons.config.ConfigManager;
 import org.blackum.blackaddons.util.*;
 
 import java.util.regex.Matcher;
@@ -21,7 +22,7 @@ public class DungeonJoinHandler {
         String content = message.getString();
         Matcher matcher = JOIN_PATTERN.matcher(content);
 
-        if (matcher.find()) {
+        if (matcher.find() && ConfigManager.data.partyFinderShowStatsOnJoin) {
             String nickname = matcher.group(1);
             if (nickname.equalsIgnoreCase(mc.getUser().getName())) {
                 return;

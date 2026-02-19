@@ -14,6 +14,7 @@ public class Button extends Widget {
     private Animation hoverAnimation;
     private Animation pressAnimation;
     private boolean pressed = false;
+    private Integer customTextColor = null;
 
     public Button(int x, int y, int width, String text, Runnable onClick) {
         this(x, y, width, Theme.BUTTON_HEIGHT, text, onClick);
@@ -36,6 +37,10 @@ public class Button extends Widget {
         this.text = text;
     }
 
+    public void setTextColor(int color) {
+        this.customTextColor = color;
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
@@ -52,7 +57,8 @@ public class Button extends Widget {
             RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS, highlightColor);
         }
 
-        int textColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
+        int textColor = customTextColor != null ? customTextColor
+                : (enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY);
         int textWidth = Minecraft.getInstance().font.width(text);
         int textX = x + (width - textWidth) / 2;
         int textY = y + (height - 8) / 2;

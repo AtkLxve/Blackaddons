@@ -47,22 +47,16 @@ public class ListView extends Widget {
             return;
 
         graphics.enableScissor(x, y, x + width, y + height);
-
         int currentY = y - scrollOffset;
         for (Widget item : items) {
-            if (item.isVisible()) {
-                item.setX(x);
-                item.setY(currentY);
-                item.setWidth(width - scrollbarWidth - 4);
+            item.setX(x);
+            item.setY(currentY);
+            item.setWidth(width - scrollbarWidth - 4);
 
-                if (currentY + item.getHeight() >= y && currentY <= y + height) {
-                    item.render(graphics, mouseX, mouseY, partialTick);
-                }
+            item.render(graphics, mouseX, mouseY, partialTick);
 
-                currentY += item.getHeight() + itemSpacing;
-            }
+            currentY += item.getHeight() + itemSpacing;
         }
-
         graphics.disableScissor();
 
         renderScrollbar(graphics, mouseX, mouseY);
@@ -214,7 +208,9 @@ public class ListView extends Widget {
                 totalHeight += item.getHeight() + itemSpacing;
             }
         }
-        totalHeight -= itemSpacing;
+        if (totalHeight > 0) {
+            totalHeight -= itemSpacing;
+        }
         maxScroll = Math.max(0, totalHeight - height);
     }
 
@@ -240,5 +236,22 @@ public class ListView extends Widget {
 
     public void setItemSpacing(int itemSpacing) {
         this.itemSpacing = itemSpacing;
+    }
+
+    public int getMaxScroll() {
+        updateMaxScroll();
+        return maxScroll;
+    }
+
+    public void setScrollOffset(int scrollOffset) {
+        this.scrollOffset = scrollOffset;
+    }
+
+    public int getScrollOffset() {
+        return scrollOffset;
+    }
+
+    public boolean isAtBottom() {
+        return scrollOffset >= getMaxScroll();
     }
 }

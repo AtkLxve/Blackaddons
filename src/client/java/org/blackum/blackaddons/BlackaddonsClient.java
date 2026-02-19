@@ -18,6 +18,7 @@ import org.blackum.blackaddons.gui.screen.BaseScreen;
 import org.blackum.blackaddons.gui.screen.DemoScreen;
 import org.blackum.blackaddons.gui.screen.TestMenuScreen;
 import org.blackum.blackaddons.util.BotIntegration;
+import org.blackum.blackaddons.util.IrcClient;
 
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
@@ -27,6 +28,7 @@ public class BlackaddonsClient implements ClientModInitializer {
 
         ConfigManager.load();
         BotIntegration.fetchVerificationKey();
+        IrcClient.getInstance().connect();
 
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
@@ -61,15 +63,19 @@ public class BlackaddonsClient implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
 
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
-            RngTracker.onChatMessage(message);
-            org.blackum.blackaddons.features.DungeonJoinHandler.onChatMessage(message);
-            org.blackum.blackaddons.manager.PartyFinderManager.getInstance().onChatMessage(message);
+            net.minecraft.network.chat.Component handled = org.blackum.blackaddons.util.ChatImageHandler
+                    .handleMessage(message);
+            RngTracker.onChatMessage(handled);
+            org.blackum.blackaddons.features.DungeonJoinHandler.onChatMessage(handled);
+            org.blackum.blackaddons.manager.PartyFinderManager.getInstance().onChatMessage(handled);
         });
 
         ClientReceiveMessageEvents.CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
-            RngTracker.onChatMessage(message);
-            org.blackum.blackaddons.features.DungeonJoinHandler.onChatMessage(message);
-            org.blackum.blackaddons.manager.PartyFinderManager.getInstance().onChatMessage(message);
+            net.minecraft.network.chat.Component handled = org.blackum.blackaddons.util.ChatImageHandler
+                    .handleMessage(message);
+            RngTracker.onChatMessage(handled);
+            org.blackum.blackaddons.features.DungeonJoinHandler.onChatMessage(handled);
+            org.blackum.blackaddons.manager.PartyFinderManager.getInstance().onChatMessage(handled);
         });
 
         Blackaddons.LOGGER.info("Client initialization completed");

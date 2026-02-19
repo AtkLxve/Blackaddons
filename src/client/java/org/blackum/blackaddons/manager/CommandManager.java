@@ -19,6 +19,8 @@ import org.blackum.blackaddons.util.BotIntegration;
 import org.blackum.blackaddons.util.Constants;
 import org.blackum.blackaddons.util.ProfileStateManager;
 import org.blackum.blackaddons.gui.screen.PartyFinderScreen;
+import org.blackum.blackaddons.gui.screen.IrcScreen;
+import org.blackum.blackaddons.util.IrcClient;
 
 public class CommandManager {
 
@@ -277,12 +279,31 @@ public class CommandManager {
                                                 return 1;
                                         });
 
+                        var ircNode = ClientCommandManager.literal("irc")
+                                        .then(ClientCommandManager
+                                                        .argument("message", StringArgumentType.greedyString())
+                                                        .executes(ctx -> {
+                                                                String messageArg = StringArgumentType.getString(ctx,
+                                                                                "message");
+                                                                if (messageArg != null) {
+                                                                        IrcClient.getInstance().sendMessage(messageArg);
+                                                                }
+                                                                return 1;
+                                                        }))
+                                        .executes(ctx -> {
+                                                Minecraft.getInstance().execute(() -> {
+                                                        Minecraft.getInstance().setScreen(new IrcScreen());
+                                                });
+                                                return 1;
+                                        });
+
                         CommandUtils.register(dispatcher);
                         for (String alias : new String[] { "ba", "black", "blackaddons" }) {
                                 var cmd = ClientCommandManager.literal(alias).executes(openGui);
                                 cmd.then(testNode);
                                 cmd.then(pvNode);
                                 cmd.then(dailyNode);
+                                cmd.then(ircNode);
                                 cmd.then(ClientCommandManager.literal("pf").executes(ctx -> {
                                         Minecraft.getInstance().execute(() -> {
                                                 Minecraft.getInstance().setScreen(new PartyFinderScreen());
@@ -292,6 +313,19 @@ public class CommandManager {
                                 cmd.then(CommandUtils.subcommand);
                                 dispatcher.register(cmd);
                         }
+
+                        dispatcher.register(ClientCommandManager.literal("ba_preview")
+                                        .then(ClientCommandManager.argument("url", StringArgumentType.greedyString())
+                                                        .executes(ctx -> {
+                                                                String url = StringArgumentType.getString(ctx, "url");
+                                                                Minecraft.getInstance().execute(() -> {
+                                                                        Minecraft.getInstance().setScreen(
+                                                                                        new org.blackum.blackaddons.gui.screen.ImagePreviewScreen(
+                                                                                                        url,
+                                                                                                        Minecraft.getInstance().screen));
+                                                                });
+                                                                return 1;
+                                                        })));
                 });
         }
 }
