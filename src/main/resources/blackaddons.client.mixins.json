@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.blackum.blackaddons.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "core.ClientBrandRetrieverMixin",
+    "core.ConnectionMixin",
+    "core.KnownPacksManagerMixin",
+    "gui.AnvilScreenMixin",
+    "gui.AbstractSignEditScreenMixin",
+    "core.LanguageManagerAccessor",
+    "core.KeyBindingAccessor",
+    "core.InventoryAccessor",
+    "render.FullbrightMixin",
+    "render.GameRendererMixin",
+    "gui.ChatComponentMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

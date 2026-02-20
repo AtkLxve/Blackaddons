@@ -1,0 +1,88 @@
+package org.blackum.blackaddons.client;
+
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.Minecraft;
+import org.blackum.blackaddons.feature.cheat.AutoTNT;
+import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.feature.rng.RngTracker;
+import org.blackum.blackaddons.core.manager.CommandManager;
+import org.blackum.blackaddons.core.manager.DebugOverlayManager;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
+import org.blackum.blackaddons.gui.screen.BaseScreen;
+import org.blackum.blackaddons.gui.screen.DemoScreen;
+import org.blackum.blackaddons.gui.screen.TestMenuScreen;
+import org.blackum.blackaddons.integration.BotIntegration;
+import org.blackum.blackaddons.feature.chat.IrcClient;
+import net.minecraft.network.chat.Component;
+import org.blackum.blackaddons.feature.chat.ChatImageHandler;
+import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
+import org.blackum.blackaddons.core.manager.PartyFinderManager;
+import org.blackum.blackaddons.Blackaddons;
+
+public class BlackaddonsClient implements ClientModInitializer {
+    @Override
+    public void onInitializeClient() {
+        Blackaddons.LOGGER.info("Initializing client...");
+        AutoTNT.register();
+
+        ConfigManager.load();
+        BotIntegration.fetchVerificationKey();
+        IrcClient.getInstance().connect();
+
+        Blackaddons.guiOpener = () -> {
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> client.setScreen(new DemoScreen()));
+        };
+
+        Blackaddons.testMenuOpener = () -> {
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> client.setScreen(new TestMenuScreen()));
+        };
+
+        Blackaddons.mainGuiOpener = () -> {
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> client.setScreen(new BlackAddonsGUI()));
+        };
+
+        Blackaddons.notificationTrigger = (message) -> {
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> NotificationManager.addNotification("Notification", message, NotificationType.INFO));
+        };
+
+        DebugOverlayManager.register();
+        CommandManager.register();
+
+        HudRenderCallback.EVENT.register((graphics, partialTick) -> {
+            if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
+                NotificationManager.getInstance().render(graphics);
+            }
+        });
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> NotificationManager.getInstance().tick());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
+
+        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            Component handled = ChatImageHandler
+                    .handleMessage(message);
+            RngTracker.onChatMessage(handled);
+            DungeonJoinHandler.onChatMessage(handled);
+            PartyFinderManager.getInstance().onChatMessage(handled);
+        });
+
+        ClientReceiveMessageEvents.CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
+            Component handled = ChatImageHandler
+                    .handleMessage(message);
+            RngTracker.onChatMessage(handled);
+            DungeonJoinHandler.onChatMessage(handled);
+            PartyFinderManager.getInstance().onChatMessage(handled);
+        });
+
+        Blackaddons.LOGGER.info("Client initialization completed");
+    }
+}

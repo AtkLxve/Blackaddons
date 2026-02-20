@@ -27,10 +27,10 @@
       "org.blackum.blackaddons.Blackaddons"
     ],
     "client": [
-      "org.blackum.blackaddons.BlackaddonsClient"
+      "org.blackum.blackaddons.client.BlackaddonsClient"
     ],
     "modmenu": [
-      "org.blackum.blackaddons.compatibility.ModMenuIntegration"
+      "org.blackum.blackaddons.integration.ModMenuIntegration"
     ]
   },
   "mixins": [

@@ -11,12 +11,9 @@ base {
 }
 
 loom {
-    splitEnvironmentSourceSets()
-
     mods {
         "blackaddons" {
             sourceSet sourceSets.main
-            sourceSet sourceSets.client
         }
     }
 }

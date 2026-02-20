@@ -4,8 +4,8 @@
   "package": "org.blackum.blackaddons.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "AnvilMenuMixin",
-    "LanguageAccessor"
+    "gui.AnvilMenuMixin",
+    "core.LanguageAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
