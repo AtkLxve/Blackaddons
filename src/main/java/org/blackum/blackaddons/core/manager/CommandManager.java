@@ -332,6 +332,7 @@ public class CommandManager {
 
                                 cmd.then(pvNode);
                                 cmd.then(ircNode);
+                                cmd.then(CommandUtils.subcommand);
                                 cmd.then(ClientCommandManager.literal("pf").executes(ctx -> {
                                         Minecraft.getInstance().execute(() -> {
                                                 Minecraft.getInstance().setScreen(new PartyFinderScreen());
