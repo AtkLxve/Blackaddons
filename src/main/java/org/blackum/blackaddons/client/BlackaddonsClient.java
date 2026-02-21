@@ -26,6 +26,7 @@ import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
 import org.blackum.blackaddons.core.manager.PartyFinderManager;
 import org.blackum.blackaddons.core.manager.CustomNameManager;
 import org.blackum.blackaddons.Blackaddons;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
 public class BlackaddonsClient implements ClientModInitializer {
     @Override
@@ -36,7 +37,14 @@ public class BlackaddonsClient implements ClientModInitializer {
         ConfigManager.load();
         BotIntegration.fetchVerificationKey();
         CustomNameManager.getInstance().fetch();
-        IrcClient.getInstance().connect();
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            IrcClient.getInstance().connect();
+        });
+
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            IrcClient.getInstance().disconnect();
+        });
 
         Blackaddons.guiOpener = () -> {
             Minecraft client = Minecraft.getInstance();
