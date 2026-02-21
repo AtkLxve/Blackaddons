@@ -115,47 +115,61 @@ public class IrcClient implements WebSocket.Listener {
             return;
         }
 
-        String processedMessage = EmojiUtils.replaceEmojis(message);
-        String username = MinecraftInstance.mc.getUser().getName();
+        CompletableFuture.runAsync(() -> {
+            String processedMessage = processMessageText(message);
+            String username = MinecraftInstance.mc.getUser().getName();
 
-        IrcMessage ircMsg = new IrcMessage(username, processedMessage, channel);
-        synchronized (messageBuffer) {
-            if (messageBuffer.size() >= BUFFER_SIZE) {
-                messageBuffer.remove(0);
+            IrcMessage ircMsg = new IrcMessage(username, processedMessage, channel);
+            synchronized (messageBuffer) {
+                if (messageBuffer.size() >= BUFFER_SIZE) {
+                    messageBuffer.remove(0);
+                }
+                messageBuffer.add(ircMsg);
             }
-            messageBuffer.add(ircMsg);
-        }
-        for (IrcMessageListener listener : listeners) {
-            listener.onMessageReceived(ircMsg);
-        }
+            for (IrcMessageListener listener : listeners) {
+                listener.onMessageReceived(ircMsg);
+            }
 
-        JsonObject json = new JsonObject();
-        json.addProperty("user", username);
-        json.addProperty("uuid", MinecraftInstance.mc.getUser().getProfileId().toString());
-        json.addProperty("message", processedMessage);
-        json.addProperty("channel", channel);
-        json.addProperty("timestamp", ircMsg.timestamp());
+            JsonObject json = new JsonObject();
+            json.addProperty("user", username);
+            json.addProperty("uuid", MinecraftInstance.mc.getUser().getProfileId().toString());
+            json.addProperty("message", processedMessage);
+            json.addProperty("channel", channel);
+            json.addProperty("timestamp", ircMsg.timestamp());
 
-        webSocket.sendText(json.toString(), true);
+            webSocket.sendText(json.toString(), true).exceptionally(ex -> {
+                Blackaddons.LOGGER.error("Failed to send IRC message", ex);
+                return null;
+            });
+        });
     }
 
     public void sendMessage(String message) {
         sendMessage(message, "general");
     }
 
+    private final StringBuilder incomingMessageBuffer = new StringBuilder();
+
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
+        incomingMessageBuffer.append(data);
+        if (!last) {
+            return WebSocket.Listener.super.onText(webSocket, data, last);
+        }
+
+        String fullMessage = incomingMessageBuffer.toString();
+        incomingMessageBuffer.setLength(0);
+
         try {
-            JsonObject json = JsonParser.parseString(data.toString()).getAsJsonObject();
+            JsonObject json = JsonParser.parseString(fullMessage).getAsJsonObject();
             String type = json.get("type").getAsString();
 
             if (type.equals("chat")) {
                 String user = json.get("user").getAsString();
-                String message = EmojiUtils.replaceEmojis(json.get("message").getAsString());
+                String message = processMessageText(json.get("message").getAsString());
                 String channel = json.has("channel") ? json.get("channel").getAsString() : "general";
                 long timestamp = json.has("timestamp") ? json.get("timestamp").getAsLong() : System.currentTimeMillis();
 
-                Blackaddons.LOGGER.info("IRC Parsed Message from " + user + " in " + channel + ": " + message);
                 IrcMessage ircMsg = new IrcMessage(user, message, channel, timestamp);
 
                 synchronized (messageBuffer) {
@@ -165,7 +179,6 @@ public class IrcClient implements WebSocket.Listener {
                     messageBuffer.add(ircMsg);
                 }
 
-                Blackaddons.LOGGER.info("Notifying " + listeners.size() + " IRC listeners");
                 for (IrcMessageListener listener : listeners) {
                     try {
                         listener.onMessageReceived(ircMsg);
@@ -183,7 +196,7 @@ public class IrcClient implements WebSocket.Listener {
                     for (JsonElement el : messages) {
                         JsonObject msgObj = el.getAsJsonObject();
                         String user = msgObj.get("user").getAsString();
-                        String message = EmojiUtils.replaceEmojis(msgObj.get("message").getAsString());
+                        String message = processMessageText(msgObj.get("message").getAsString());
                         long timestamp = msgObj.has("timestamp") ? msgObj.get("timestamp").getAsLong()
                                 : System.currentTimeMillis();
                         messageBuffer.add(new IrcMessage(user, message, channel, timestamp));
@@ -194,7 +207,6 @@ public class IrcClient implements WebSocket.Listener {
                     }
                 }
 
-                Blackaddons.LOGGER.info("Received history for #" + channel + " (" + messages.size() + " messages)");
                 for (IrcMessageListener listener : listeners) {
                     listener.onMessageReceived(null);
                 }
@@ -215,16 +227,35 @@ public class IrcClient implements WebSocket.Listener {
     }
 
     private void displayMessage(String user, String message) {
-        if (user == null || message == null)
+        if (user == null || message == null || message.isEmpty())
             return;
-        MinecraftInstance.mc.execute(() -> {
-            MutableComponent component = Component.literal("§d[IRC] ")
-                    .append(Component.literal(user).withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(": ").withStyle(ChatFormatting.WHITE))
-                    .append(Component.literal(message).withStyle(ChatFormatting.WHITE));
 
-            if (MinecraftInstance.mc.player != null) {
-                MinecraftInstance.mc.player.displayClientMessage(component, false);
+        MinecraftInstance.mc.execute(() -> {
+            if (MinecraftInstance.mc.player == null)
+                return;
+
+            String[] lines = message.split("\\n");
+            boolean firstLine = true;
+
+            for (String rawLine : lines) {
+                String line = rawLine;
+                while (!line.isEmpty()) {
+                    int chunkSize = Math.min(line.length(), 256);
+                    String chunk = line.substring(0, chunkSize);
+                    line = line.substring(chunkSize);
+
+                    MutableComponent component = Component.literal("");
+                    if (firstLine) {
+                        component.append(Component.literal("§d[IRC] "))
+                                .append(Component.literal(user).withStyle(ChatFormatting.GRAY))
+                                .append(Component.literal(": ").withStyle(ChatFormatting.WHITE));
+                        firstLine = false;
+                    } else {
+                        component.append(Component.literal("  ").withStyle(ChatFormatting.WHITE));
+                    }
+                    component.append(Component.literal(chunk).withStyle(ChatFormatting.WHITE));
+                    MinecraftInstance.mc.player.displayClientMessage(component, false);
+                }
             }
         });
     }
@@ -271,5 +302,32 @@ public class IrcClient implements WebSocket.Listener {
 
     public interface IrcAuthListener extends IrcMessageListener {
         void onAuthStatusChanged(boolean isAdmin);
+    }
+
+    private String processMessageText(String message) {
+        String processed = EmojiUtils.replaceEmojis(message);
+        if (processed.length() > 2000) {
+            processed = processed.substring(0, 2000) + " [truncated]";
+        }
+
+        if (processed.length() > 200) {
+            StringBuilder spacedText = new StringBuilder();
+            int currentWordLength = 0;
+            for (int i = 0; i < processed.length(); i++) {
+                char c = processed.charAt(i);
+                spacedText.append(c);
+                if (c == ' ') {
+                    currentWordLength = 0;
+                } else {
+                    currentWordLength++;
+                    if (currentWordLength >= 60) {
+                        spacedText.append(" ");
+                        currentWordLength = 0;
+                    }
+                }
+            }
+            return spacedText.toString();
+        }
+        return processed;
     }
 }
