@@ -41,16 +41,13 @@ BlackAddons is a utility and quality-of-life mod for Minecraft, designed to enha
 - `/ba irc`: Open the IRC chat interface.
 - `/ba pv [player] [force]`: Open the Profile Viewer for a specific player. Use the force argument to refresh cached data.
 - `/ba preview [url]`: Open a full-screen preview for a direct image or Discord media link.
-- `/ba daily`: Sync your daily stats for leaderboards.
-- `/ba test GiveTNT`: Get specific items for testing AutoTNT functionality.
-- `/ba test rng [type] [magic_find] [item]`: Simulate an RNG drop event to test the tracker.
-- `/ba commandaliases add [alias] [original command]`: Create a custom command alias. You may need to swap lobbies to see changes.
+- `/ba commandaliases add [alias] [original command]`: Create a custom command alias.
 - `/ba commandaliases del [alias]`: Remove a command alias.
 - `/ba commandaliases list`: List all currently configured aliases.
 
 ## Credits
 
-- **Blackum**: Lead developer
-- **AtkLxve**: Cheats implementation
-- **Autismo**: Assistance with architecture, Java development, and general mod improvements
+- **Blackum**: Erm that's me hello
+- **AtkLxve**: Cheats
+- **Autismo**: Helped me with rewriting, understanding java and a lot more stuff
 
