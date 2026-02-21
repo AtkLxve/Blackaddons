@@ -93,6 +93,9 @@ public class ProfileService {
             result.addProperty("secrets", extractSecrets(dungeons, member));
             result.addProperty("blood_mob_kills", extractBloodMobKills(member));
             result.add("classes", extractClassXp(dungeons));
+            result.add("accessory_bag_storage",
+                    member.has("accessory_bag_storage") ? member.getAsJsonObject("accessory_bag_storage")
+                            : new JsonObject());
             result.add("floors", extractFloorStats(dungeons));
 
             JsonArray recentRuns = extractRecentRuns(dungeons, uuid);
