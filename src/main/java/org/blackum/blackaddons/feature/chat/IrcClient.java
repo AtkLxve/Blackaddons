@@ -16,12 +16,16 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class IrcClient implements WebSocket.Listener {
     private static IrcClient instance;
@@ -29,6 +33,9 @@ public class IrcClient implements WebSocket.Listener {
     private final HttpClient client;
     private boolean connecting = false;
     private boolean isAdmin = false;
+
+    private ScheduledExecutorService keepAliveExecutor;
+    private long lastMessageTime = System.currentTimeMillis();
 
     private final List<IrcMessageListener> listeners = new ArrayList<>();
     private final List<IrcMessage> messageBuffer = new ArrayList<>();
@@ -70,6 +77,7 @@ public class IrcClient implements WebSocket.Listener {
         }
 
         connecting = true;
+        lastMessageTime = System.currentTimeMillis();
 
         client.newWebSocketBuilder()
                 .buildAsync(URI.create(wsUrl), this)
@@ -81,14 +89,53 @@ public class IrcClient implements WebSocket.Listener {
                     } else {
                         this.webSocket = ws;
                         Blackaddons.LOGGER.info("Connected to IRC");
+                        startKeepAlive();
                     }
                 });
     }
 
     public void disconnect() {
+        stopKeepAlive();
         if (webSocket != null) {
-            webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "Disconnecting");
+            try {
+                webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "Disconnecting");
+            } catch (Exception ignored) {
+            }
             webSocket = null;
+        }
+    }
+
+    private void startKeepAlive() {
+        stopKeepAlive();
+        keepAliveExecutor = Executors.newSingleThreadScheduledExecutor();
+        keepAliveExecutor.scheduleAtFixedRate(() -> {
+            if (webSocket != null) {
+                if (System.currentTimeMillis() - lastMessageTime > 30000) {
+                    Blackaddons.LOGGER.warn("IRC connection timed out, reconnecting...");
+                    disconnect();
+                    scheduleReconnect();
+                    return;
+                }
+                try {
+                    webSocket.sendPing(ByteBuffer.allocate(0)).exceptionally(ex -> {
+                        Blackaddons.LOGGER.error("Failed to send ping", ex);
+                        disconnect();
+                        scheduleReconnect();
+                        return null;
+                    });
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Ping error", e);
+                    disconnect();
+                    scheduleReconnect();
+                }
+            }
+        }, 15, 15, TimeUnit.SECONDS);
+    }
+
+    private void stopKeepAlive() {
+        if (keepAliveExecutor != null && !keepAliveExecutor.isShutdown()) {
+            keepAliveExecutor.shutdownNow();
+            keepAliveExecutor = null;
         }
     }
 
@@ -152,6 +199,7 @@ public class IrcClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
+        lastMessageTime = System.currentTimeMillis();
         incomingMessageBuffer.append(data);
         if (!last) {
             return WebSocket.Listener.super.onText(webSocket, data, last);
@@ -262,6 +310,7 @@ public class IrcClient implements WebSocket.Listener {
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+        stopKeepAlive();
         this.webSocket = null;
         Blackaddons.LOGGER.info("IRC connection closed: " + reason);
         scheduleReconnect();
@@ -270,9 +319,16 @@ public class IrcClient implements WebSocket.Listener {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
+        stopKeepAlive();
         this.webSocket = null;
         Blackaddons.LOGGER.error("IRC WebSocket error: " + error.getMessage());
         scheduleReconnect();
+    }
+
+    @Override
+    public CompletionStage<?> onPong(WebSocket webSocket, ByteBuffer message) {
+        lastMessageTime = System.currentTimeMillis();
+        return WebSocket.Listener.super.onPong(webSocket, message);
     }
 
     private void scheduleReconnect() {
