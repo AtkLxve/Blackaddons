@@ -23,6 +23,7 @@ import java.io.FileWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.nio.file.Path;
 
 public class LocalIntegration {
@@ -31,8 +32,8 @@ public class LocalIntegration {
             .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
             .build();
 
-    private static Map<String, Double> priceCache = new HashMap<>();
-    private static long priceCacheExpiry = 0;
+    private static Map<String, Double> priceCache = new ConcurrentHashMap<>();
+    private static final AtomicLong priceCacheExpiry = new AtomicLong(0);
     private static volatile boolean isRefreshing = false;
 
     private static final Path CONFIG_DIR = FabricLoader.getInstance()
@@ -45,7 +46,7 @@ public class LocalIntegration {
     }
 
     public static Double getPrice(String itemId) {
-        if (System.currentTimeMillis() > priceCacheExpiry) {
+        if (System.currentTimeMillis() > priceCacheExpiry.get()) {
             checkAndRefreshPrices();
         }
         return priceCache.getOrDefault(itemId, 0.0);
@@ -70,7 +71,7 @@ public class LocalIntegration {
         if (priceCache.isEmpty()) {
             loadPrices();
         }
-        if (!isRefreshing && System.currentTimeMillis() > priceCacheExpiry) {
+        if (!isRefreshing && System.currentTimeMillis() > priceCacheExpiry.get()) {
             refreshPrices();
         }
     }
@@ -93,8 +94,8 @@ public class LocalIntegration {
                     newPrices.put("SKELETON_MASTER_CHESTPLATE_50", newPrices.get("SKELETON_MASTER_CHESTPLATE"));
                 }
 
-                priceCache = newPrices;
-                priceCacheExpiry = System.currentTimeMillis() + Constants.PRICE_CACHE_DURATION_MS;
+                priceCache = new ConcurrentHashMap<>(newPrices);
+                priceCacheExpiry.set(System.currentTimeMillis() + Constants.PRICE_CACHE_DURATION_MS);
                 savePrices(newPrices);
                 Blackaddons.LOGGER.info("Local prices refreshed. Total items: " + newPrices.size());
             } catch (Exception e) {
@@ -465,8 +466,8 @@ public class LocalIntegration {
             if (data != null && data.prices != null) {
                 long age = System.currentTimeMillis() - data.timestamp;
                 if (age < Constants.PRICE_CACHE_DURATION_MS) {
-                    priceCache = data.prices;
-                    priceCacheExpiry = data.timestamp + Constants.PRICE_CACHE_DURATION_MS;
+                    priceCache = new ConcurrentHashMap<>(data.prices);
+                    priceCacheExpiry.set(data.timestamp + Constants.PRICE_CACHE_DURATION_MS);
                     Blackaddons.LOGGER.info("Loaded prices from local cache. Age: " + (age / 1000 / 60) + "m");
                 } else {
                     Blackaddons.LOGGER.info("Local price cache expired.");

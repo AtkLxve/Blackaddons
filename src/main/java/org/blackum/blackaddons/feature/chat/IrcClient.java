@@ -2,6 +2,8 @@ package org.blackum.blackaddons.feature.chat;
 
 import org.blackum.blackaddons.core.util.MinecraftInstance;
 import org.blackum.blackaddons.feature.chat.EmojiUtils;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.ChatFormatting;
@@ -175,10 +177,10 @@ public class IrcClient implements WebSocket.Listener {
                 displayMessage(user, message);
             } else if (type.equals("history")) {
                 String channel = json.get("channel").getAsString();
-                com.google.gson.JsonArray messages = json.get("messages").getAsJsonArray();
+                JsonArray messages = json.get("messages").getAsJsonArray();
 
                 synchronized (messageBuffer) {
-                    for (com.google.gson.JsonElement el : messages) {
+                    for (JsonElement el : messages) {
                         JsonObject msgObj = el.getAsJsonObject();
                         String user = msgObj.get("user").getAsString();
                         String message = EmojiUtils.replaceEmojis(msgObj.get("message").getAsString());
