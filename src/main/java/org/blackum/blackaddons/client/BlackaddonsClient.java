@@ -24,6 +24,7 @@ import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.ChatSoundAlertManager;
 import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
 import org.blackum.blackaddons.core.manager.PartyFinderManager;
+import org.blackum.blackaddons.core.manager.CustomNameManager;
 import org.blackum.blackaddons.Blackaddons;
 
 public class BlackaddonsClient implements ClientModInitializer {
@@ -34,6 +35,7 @@ public class BlackaddonsClient implements ClientModInitializer {
 
         ConfigManager.load();
         BotIntegration.fetchVerificationKey();
+        CustomNameManager.getInstance().fetch();
         IrcClient.getInstance().connect();
 
         Blackaddons.guiOpener = () -> {

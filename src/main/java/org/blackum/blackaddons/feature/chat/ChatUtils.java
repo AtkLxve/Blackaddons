@@ -11,7 +11,7 @@ import static org.blackum.blackaddons.core.util.MinecraftInstance.mc;
 
 public class ChatUtils {
 
-    static MutableComponent BuildGradient(String text, int startRgb, int endRgb) {
+    public static MutableComponent BuildGradient(String text, int startRgb, int endRgb) {
         MutableComponent result = Component.empty();
         int length = text.length();
 
