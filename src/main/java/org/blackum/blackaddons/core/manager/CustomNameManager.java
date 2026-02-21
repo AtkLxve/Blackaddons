@@ -20,7 +20,11 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class CustomNameManager {
     private static CustomNameManager instance;
@@ -72,18 +76,46 @@ public class CustomNameManager {
                                     String displayName = data.get("display").getAsString();
                                     String color = data.has("color") ? data.get("color").getAsString() : "";
 
-                                    String gradientStart = "";
-                                    String gradientEnd = "";
+                                    List<ChatUtils.ColorStop> gradientStops = new ArrayList<>();
                                     if (data.has("gradient")) {
-                                        JsonArray gradient = data.getAsJsonArray("gradient");
-                                        if (gradient.size() >= 2) {
-                                            gradientStart = gradient.get(0).getAsString();
-                                            gradientEnd = gradient.get(1).getAsString();
+                                        JsonElement gradientElement = data.get("gradient");
+
+                                        if (gradientElement.isJsonArray()) {
+                                            JsonArray gradient = gradientElement.getAsJsonArray();
+                                            if (gradient.size() >= 2) {
+                                                try {
+                                                    int start = Integer.parseInt(
+                                                            gradient.get(0).getAsString().replace("#", ""), 16);
+                                                    int end = Integer.parseInt(
+                                                            gradient.get(1).getAsString().replace("#", ""), 16);
+                                                    gradientStops.add(new ChatUtils.ColorStop(start, 0.0f));
+                                                    gradientStops.add(new ChatUtils.ColorStop(end, 1.0f));
+                                                } catch (NumberFormatException ignored) {
+                                                }
+                                            }
+                                        } else if (gradientElement.isJsonPrimitive()) {
+                                            String gradientStr = gradientElement.getAsString();
+                                            if (gradientStr.startsWith("linear-gradient")) {
+                                                Matcher m = Pattern.compile(
+                                                        "rgba\\(\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*[^)]*\\)\\s*(\\d+)%")
+                                                        .matcher(gradientStr);
+                                                while (m.find()) {
+                                                    int r = Integer.parseInt(m.group(1));
+                                                    int g = Integer.parseInt(m.group(2));
+                                                    int b = Integer.parseInt(m.group(3));
+                                                    float fraction = Float.parseFloat(m.group(4)) / 100.0f;
+
+                                                    int rgb = (r << 16) | (g << 8) | b;
+                                                    gradientStops.add(new ChatUtils.ColorStop(rgb, fraction));
+                                                }
+                                                Collections.sort(gradientStops,
+                                                        (a, b) -> Float.compare(a.fraction(), b.fraction()));
+                                            }
                                         }
                                     }
 
                                     customNames.put(entry.getKey().toLowerCase(),
-                                            new CustomName(displayName, color, gradientStart, gradientEnd));
+                                            new CustomName(displayName, color, gradientStops));
                                 }
                                 Blackaddons.LOGGER
                                         .info("Successfully fetched " + customNames.size() + " custom names.");
@@ -156,12 +188,9 @@ public class CustomNameManager {
             return originalComponent;
         }
 
-        if (custom.gradientStart() != null && !custom.gradientStart().isEmpty() &&
-                custom.gradientEnd() != null && !custom.gradientEnd().isEmpty()) {
+        if (custom.gradientStops() != null && !custom.gradientStops().isEmpty()) {
             try {
-                int start = Integer.parseInt(custom.gradientStart().replace("#", ""), 16);
-                int end = Integer.parseInt(custom.gradientEnd().replace("#", ""), 16);
-                return ChatUtils.BuildGradient(custom.display(), start, end);
+                return ChatUtils.BuildMultiGradient(custom.display(), custom.gradientStops());
             } catch (Exception e) {
             }
         }
@@ -185,6 +214,6 @@ public class CustomNameManager {
         return customNames.get(username.toLowerCase());
     }
 
-    public record CustomName(String display, String color, String gradientStart, String gradientEnd) {
+    public record CustomName(String display, String color, List<ChatUtils.ColorStop> gradientStops) {
     }
 }

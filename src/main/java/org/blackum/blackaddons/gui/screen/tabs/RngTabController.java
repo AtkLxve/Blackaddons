@@ -2,7 +2,8 @@ package org.blackum.blackaddons.gui.screen.tabs;
 
 import org.blackum.blackaddons.core.manager.ProfileStateManager;
 import org.blackum.blackaddons.core.util.JsonUtils;
-import org.blackum.blackaddons.integration.LocalIntegration;
+import org.blackum.blackaddons.integration.PriceService;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -19,7 +20,6 @@ import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -385,7 +385,7 @@ public class RngTabController extends ProfileTabController {
         if (itemId == null)
             return 0;
 
-        double localPrice = LocalIntegration.getPrice(itemId);
+        double localPrice = PriceService.getPrice(itemId);
         double botPrice = (rngPrices != null) ? rngPrices.getOrDefault(itemId, 0.0) : 0.0;
 
         if (ConfigManager.data.dataSource == ConfigManager.DataSource.LOCAL) {
