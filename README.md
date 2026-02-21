@@ -50,4 +50,11 @@ BlackAddons is a utility and quality-of-life mod for Minecraft, designed to enha
 - **Blackum**: Erm that's me hello
 - **AtkLxve**: Cheats
 - **Autismo**: Helped me with rewriting, understanding java and a lot more stuff
+- **adjectiven0un**: Original XP calculation logic and API inspiration from [adjectils](https://adjectils.com/dungeon.html).
 
+## Powered By
+
+- **Player Data**: UUID lookup provided by [PlayerDB](https://playerdb.co/).
+- **Hypixel Data**: Official [Hypixel API](https://api.hypixel.net/) for Bazaar prices.
+- **Auction House**: Price data provided by [Moulberry's Codes](https://moulberry.codes/).
+- **Pricing for stuff like Shiny necron's handle**: Item market data from [Coflnet](https://sky.coflnet.com/).
