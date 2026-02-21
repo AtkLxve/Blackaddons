@@ -44,39 +44,17 @@ public class ProfileStateManager {
             }
         }
 
-        CompletableFuture<JsonObject> future;
+        CompletableFuture<JsonObject> localFuture = ProfileService.getProfileStats(player, profileName, force);
+        CompletableFuture<JsonObject> botFuture = getSafeBotProfile(player, profileName, force);
 
-        if (ConfigManager.data.dataSource == ConfigManager.DataSource.LOCAL) {
-            CompletableFuture<JsonObject> localFuture = ProfileService.getProfileStats(player, profileName, force);
-            CompletableFuture<JsonObject> botFuture = getSafeBotProfile(player, profileName, force);
-
-            future = localFuture.thenCombine(botFuture, (local, bot) -> {
-                if (local == null)
-                    return bot;
-                if (bot != null && !bot.has("error")) {
-                    mergeBotDataIntoLocal(local, bot);
-                }
-                return local;
-            });
-        } else {
-            future = getSafeBotProfile(player, profileName, force).thenCompose(bot -> {
-                if (bot != null && !bot.has("error")) {
-                    return CompletableFuture.completedFuture(bot);
-                }
-
-                String currentUser = Minecraft.getInstance().getUser().getName();
-                if (player.equalsIgnoreCase(currentUser)) {
-                    return ProfileService.getProfileStats(player, profileName, force).thenApply(local -> {
-                        if (local != null) {
-                            return local;
-                        }
-                        return bot;
-                    });
-                }
-
-                return CompletableFuture.completedFuture(bot);
-            });
-        }
+        CompletableFuture<JsonObject> future = localFuture.thenCombine(botFuture, (local, bot) -> {
+            if (local == null)
+                return bot;
+            if (bot != null && !bot.has("error")) {
+                mergeBotDataIntoLocal(local, bot);
+            }
+            return local;
+        });
 
         return future.thenApply(json -> {
             if (json == null)

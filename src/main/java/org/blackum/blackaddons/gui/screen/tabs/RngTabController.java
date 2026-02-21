@@ -388,11 +388,7 @@ public class RngTabController extends ProfileTabController {
         double localPrice = PriceService.getPrice(itemId);
         double botPrice = (rngPrices != null) ? rngPrices.getOrDefault(itemId, 0.0) : 0.0;
 
-        if (ConfigManager.data.dataSource == ConfigManager.DataSource.LOCAL) {
-            return localPrice > 0 ? localPrice : botPrice;
-        } else {
-            return botPrice > 0 ? botPrice : localPrice;
-        }
+        return localPrice > 0 ? localPrice : botPrice;
     }
 
     private int getChestCost(String itemName) {
