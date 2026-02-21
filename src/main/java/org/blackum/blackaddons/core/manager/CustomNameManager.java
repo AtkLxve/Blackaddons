@@ -136,50 +136,65 @@ public class CustomNameManager {
             return component;
         }
 
-        String text = component.getString();
-        String lowerText = text.toLowerCase();
-        boolean found = false;
+        return processComponent(component);
+    }
 
-        for (String ign : customNames.keySet()) {
-            if (lowerText.contains(ign)) {
-                found = true;
-                break;
-            }
-        }
+    private Component processComponent(Component component) {
+        MutableComponent newComponent = Component.empty();
+        newComponent.setStyle(component.getStyle());
 
-        if (!found) {
-            return component;
-        }
-
-        MutableComponent result = Component.empty();
-        int currentPos = 0;
-
-        while (currentPos < text.length()) {
-            String earliestIgn = null;
-            int earliestIdx = -1;
+        if (component.getContents() instanceof net.minecraft.network.chat.contents.PlainTextContents literal) {
+            String text = literal.text();
+            String lowerText = text.toLowerCase();
+            boolean found = false;
 
             for (String ign : customNames.keySet()) {
-                int idx = lowerText.indexOf(ign, currentPos);
-                if (idx != -1 && (earliestIdx == -1 || idx < earliestIdx)) {
-                    earliestIdx = idx;
-                    earliestIgn = ign;
+                if (lowerText.contains(ign)) {
+                    found = true;
+                    break;
                 }
             }
 
-            if (earliestIgn == null) {
-                result.append(Component.literal(text.substring(currentPos)));
-                break;
-            }
+            if (!found) {
+                newComponent = component.plainCopy();
+                newComponent.setStyle(component.getStyle());
+            } else {
+                int currentPos = 0;
+                while (currentPos < text.length()) {
+                    String earliestIgn = null;
+                    int earliestIdx = -1;
 
-            if (earliestIdx > currentPos) {
-                result.append(Component.literal(text.substring(currentPos, earliestIdx)));
-            }
+                    for (String ign : customNames.keySet()) {
+                        int idx = lowerText.indexOf(ign, currentPos);
+                        if (idx != -1 && (earliestIdx == -1 || idx < earliestIdx)) {
+                            earliestIdx = idx;
+                            earliestIgn = ign;
+                        }
+                    }
 
-            result.append(applyCustomName(earliestIgn, Component.literal(earliestIgn)));
-            currentPos = earliestIdx + earliestIgn.length();
+                    if (earliestIgn == null) {
+                        newComponent.append(Component.literal(text.substring(currentPos)));
+                        break;
+                    }
+
+                    if (earliestIdx > currentPos) {
+                        newComponent.append(Component.literal(text.substring(currentPos, earliestIdx)));
+                    }
+
+                    newComponent.append(applyCustomName(earliestIgn, Component.literal(earliestIgn)));
+                    currentPos = earliestIdx + earliestIgn.length();
+                }
+            }
+        } else {
+            newComponent = component.plainCopy();
+            newComponent.setStyle(component.getStyle());
         }
 
-        return result;
+        for (Component sibling : component.getSiblings()) {
+            newComponent.append(processComponent(sibling));
+        }
+
+        return newComponent;
     }
 
     public Component applyCustomName(String username, Component originalComponent) {
