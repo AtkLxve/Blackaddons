@@ -187,7 +187,7 @@ public class IrcClient implements WebSocket.Listener {
                     }
                 }
 
-                displayMessage(user, message);
+                displayMessage(user, message, channel);
             } else if (type.equals("history")) {
                 String channel = json.get("channel").getAsString();
                 JsonArray messages = json.get("messages").getAsJsonArray();
@@ -226,7 +226,7 @@ public class IrcClient implements WebSocket.Listener {
         return WebSocket.Listener.super.onText(webSocket, data, last);
     }
 
-    private void displayMessage(String user, String message) {
+    private void displayMessage(String user, String message, String channel) {
         if (user == null || message == null || message.isEmpty())
             return;
 
@@ -246,7 +246,7 @@ public class IrcClient implements WebSocket.Listener {
 
                     MutableComponent component = Component.literal("");
                     if (firstLine) {
-                        component.append(Component.literal("§d[IRC] "))
+                        component.append(Component.literal("§d[IRC-" + channel.toUpperCase() + "] "))
                                 .append(Component.literal(user).withStyle(ChatFormatting.GRAY))
                                 .append(Component.literal(": ").withStyle(ChatFormatting.WHITE));
                         firstLine = false;
@@ -313,14 +313,30 @@ public class IrcClient implements WebSocket.Listener {
         if (processed.length() > 200) {
             StringBuilder spacedText = new StringBuilder();
             int currentWordLength = 0;
+            boolean inUrl = false;
+
             for (int i = 0; i < processed.length(); i++) {
                 char c = processed.charAt(i);
                 spacedText.append(c);
                 if (c == ' ') {
                     currentWordLength = 0;
+                    inUrl = false;
                 } else {
                     currentWordLength++;
-                    if (currentWordLength >= 60) {
+
+                    if (currentWordLength == 7) {
+                        String currentWord = processed.substring(i - 6, i + 1);
+                        if (currentWord.equals("http://")) {
+                            inUrl = true;
+                        }
+                    } else if (currentWordLength == 8) {
+                        String currentWord = processed.substring(i - 7, i + 1);
+                        if (currentWord.equals("https://")) {
+                            inUrl = true;
+                        }
+                    }
+
+                    if (currentWordLength >= 60 && !inUrl) {
                         spacedText.append(" ");
                         currentWordLength = 0;
                     }
