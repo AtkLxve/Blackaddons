@@ -23,6 +23,7 @@ import org.blackum.blackaddons.core.manager.ProfileStateManager;
 import org.blackum.blackaddons.gui.screen.PartyFinderScreen;
 import org.blackum.blackaddons.gui.screen.IrcScreen;
 import org.blackum.blackaddons.gui.screen.ImagePreviewScreen;
+import org.blackum.blackaddons.feature.chat.ChatSoundAlertManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import net.fabricmc.loader.api.FabricLoader;
 import java.util.UUID;
