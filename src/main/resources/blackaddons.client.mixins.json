@@ -19,7 +19,9 @@
     "gui.ScreenMixin",
     "core.PlayerNameMixin",
     "core.PlayerTeamMixin",
-    "gui.PlayerTabListMixin"
+    "gui.PlayerTabListMixin",
+    "core.TextColorMixin",
+    "core.TextColorAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
