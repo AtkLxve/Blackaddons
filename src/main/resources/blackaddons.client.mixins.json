@@ -14,7 +14,8 @@
     "core.InventoryAccessor",
     "render.FullbrightMixin",
     "render.GameRendererMixin",
-    "gui.ChatComponentMixin"
+    "gui.ChatComponentMixin",
+    "gui.ScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1
