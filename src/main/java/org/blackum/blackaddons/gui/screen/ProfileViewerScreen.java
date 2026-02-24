@@ -95,8 +95,7 @@ public class ProfileViewerScreen extends BaseScreen {
         }
         rtcaController.init(tabPanel.addTab("RTCA"));
 
-        String currentUser = Minecraft.getInstance().getUser().getName();
-        if (player.equalsIgnoreCase(currentUser) && profileData.has("profiles")) {
+        if (profileData.has("profiles")) {
             com.google.gson.JsonArray profiles = profileData.getAsJsonArray("profiles");
             if (profiles.size() > 1) {
                 java.util.List<String> profileNames = new java.util.ArrayList<>();
