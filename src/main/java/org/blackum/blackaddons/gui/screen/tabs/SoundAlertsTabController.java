@@ -76,8 +76,8 @@ public class SoundAlertsTabController extends SimpleTabController {
                     Theme.TEXTFIELD_HEIGHT,
                     "e.g., entity.cat.ambient", () -> {
                         List<String> sounds = new ArrayList<>();
-                        for (Identifier id : BuiltInRegistries.SOUND_EVENT.keySet()) {
-                            sounds.add(id.toString());
+                        for (Object idObj : BuiltInRegistries.SOUND_EVENT.keySet()) {
+                            sounds.add(idObj.toString());
                         }
                         return sounds;
                     });
