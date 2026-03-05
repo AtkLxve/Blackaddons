@@ -99,8 +99,8 @@ public class SoundAlertsTabController extends SimpleTabController {
                             Minecraft client = Minecraft.getInstance();
                             client.getSoundManager().play(SimpleSoundInstance.forUI(event, alert.pitch, alert.volume));
 
-                            if (alert.title != null && !alert.title.isEmpty() && client.gui != null) {
-                                client.gui.setTimes(10, alert.durationSeconds * 20, 20);
+                            if (alert.durationSeconds > 0 && alert.title != null && !alert.title.isEmpty() && client.gui != null) {
+                                client.gui.setTimes(10, (int) (alert.durationSeconds * 20), 20);
                                 client.gui.setTitle(net.minecraft.network.chat.Component
                                         .literal(org.blackum.blackaddons.core.util.FormatUtils
                                                 .formatColor(alert.title)));
@@ -164,14 +164,14 @@ public class SoundAlertsTabController extends SimpleTabController {
 
             SettingWrapper[] durWrap = new SettingWrapper[1];
             Slider durationSlider = new Slider(0, 0, itemWidth, 0.0f, 10.0f, alert.durationSeconds, val -> {
-                alert.durationSeconds = Math.round(val);
+                alert.durationSeconds = val;
                 if (durWrap[0] != null)
-                    durWrap[0].setRightLabel(alert.durationSeconds + "s");
+                    durWrap[0].setRightLabel(String.format("%.2f seconds", val));
                 ConfigManager.save();
             });
             durWrap[0] = new SettingWrapper(0, 0, itemWidth, "Display Duration",
                     "How long the title and subtitle stay on screen", durationSlider);
-            durWrap[0].setRightLabel(alert.durationSeconds + "s");
+            durWrap[0].setRightLabel(String.format("%.2f seconds", alert.durationSeconds));
             alertWidgets.add(durWrap[0]);
 
             ToggleSwitch regexToggle = new ToggleSwitch(0, 0, itemWidth, "Is Regex",
@@ -206,7 +206,7 @@ public class SoundAlertsTabController extends SimpleTabController {
                     ConfigManager.data.chatSoundAlerts
                             .add(new ConfigManager.SoundAlert("", true, "entity.experience_orb.pickup", 1.0f, 1.0f,
                                     true, "",
-                                    "", 2));
+                                    "", 2.0f));
                     ConfigManager.save();
                     screen.init();
                 });

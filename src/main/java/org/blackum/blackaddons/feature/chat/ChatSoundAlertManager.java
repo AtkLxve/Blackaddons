@@ -71,7 +71,7 @@ public class ChatSoundAlertManager {
                     final String[] finalGroups = groups;
                     client.execute(() -> {
                         client.getSoundManager().play(SimpleSoundInstance.forUI(event, alert.pitch, alert.volume));
-                        if (alert.title != null && !alert.title.isEmpty() && client.gui != null) {
+                        if (alert.durationSeconds > 0 && alert.title != null && !alert.title.isEmpty() && client.gui != null) {
                             String fTitle = alert.title;
                             String fSubtitle = alert.subtitle != null ? alert.subtitle : "";
 
@@ -83,7 +83,7 @@ public class ChatSoundAlertManager {
                                 }
                             }
 
-                            client.gui.setTimes(10, alert.durationSeconds * 20, 20);
+                            client.gui.setTimes(10, (int) (alert.durationSeconds * 20), 20);
                             client.gui.setTitle(net.minecraft.network.chat.Component
                                     .literal(org.blackum.blackaddons.core.util.FormatUtils.formatColor(fTitle)));
                             if (!fSubtitle.isEmpty()) {
