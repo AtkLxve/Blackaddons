@@ -31,6 +31,7 @@ repositories {
     maven { url "https://maven.architectury.dev/" }
     maven { url "https://repo.hypixel.net/repository/Hypixel/" }
     maven { url "https://repo.nea.moe/releases/" }
+    maven { url "https://www.cursemaven.com" }
     flatDir {
         dirs 'libs'
     }
@@ -57,6 +58,9 @@ dependencies {
 
     modCompileOnly "com.terraformersmc:modmenu:17.0.0-beta.2"
     modLocalRuntime "com.terraformersmc:modmenu:17.0.0-beta.2"
+    modLocalRuntime "curse.maven:auth-me-356643:7327836"
+    modLocalRuntime "curse.maven:resourceful-config-714059:7314640"
+    modLocalRuntime "org.apache.httpcomponents:httpclient:4.5.14"
 }
 
 processResources {
