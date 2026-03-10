@@ -24,6 +24,7 @@ import org.blackum.blackaddons.feature.chat.IrcPrefixManager;
 import org.blackum.blackaddons.feature.cheat.AutoSS;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.feature.cheat.FastLeap;
+import org.blackum.blackaddons.core.util.Scheduler;
 import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
@@ -44,6 +45,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         AutoTNT.register();
         FastLeap.register();
         AutoSS.register();
+        Scheduler.register();
 
         ConfigManager.load();
         BotIntegration.fetchVerificationKey();
