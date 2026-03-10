@@ -312,6 +312,8 @@ public class ConfigManager {
                     loadedData.modHiderAllowedMods.addAll(DEFAULT_ALLOWED_MODS);
                 }
                 data = loadedData;
+                Theme.ACCENT = data.accentColor;
+                Theme.refreshColors();
             }
         } catch (IOException e) {
             e.printStackTrace();

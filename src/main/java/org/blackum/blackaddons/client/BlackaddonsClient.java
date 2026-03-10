@@ -17,6 +17,7 @@ import org.blackum.blackaddons.core.manager.CommandManager;
 import org.blackum.blackaddons.core.manager.CustomNameManager;
 import org.blackum.blackaddons.core.manager.DebugOverlayManager;
 import org.blackum.blackaddons.core.manager.PartyFinderManager;
+import org.blackum.blackaddons.core.manager.UpdateManager;
 import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.ChatTriggerManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
@@ -54,6 +55,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             IrcPrefixManager.resetCache();
             IrcClient.getInstance().connect();
+            UpdateManager.check();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
