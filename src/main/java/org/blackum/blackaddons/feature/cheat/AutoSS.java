@@ -204,11 +204,11 @@ public class AutoSS {
                 if (autoStartTriggered && client.level.getBlockState(startButton).getBlock() == Blocks.STONE_BUTTON) {
                     float maxDist = ConfigManager.data.AutoSSDistanceLimit;
                     if (client.player.distanceToSqr(startButton.getX() + 0.5, client.player.getY(), startButton.getZ() + 0.5) <= maxDist * maxDist) {
-                        if (ConfigManager.data.AutoSSAutoStart || ConfigManager.data.AutoSSTrySkip) {
+                        if (ConfigManager.data.AutoSSAutoStart) {
                             if (isLookingAtTarget(startButton.east())) {
                                 if (ConfigManager.data.AutoSSTrySkip) {
                                     skipClicksRemaining = 3;
-                                } else if (ConfigManager.data.AutoSSAutoStart) {
+                                } else {
                                     skipClicksRemaining = 1;
                                 }
                                 if (ssStartTime == 0) ssStartTime = System.currentTimeMillis();
