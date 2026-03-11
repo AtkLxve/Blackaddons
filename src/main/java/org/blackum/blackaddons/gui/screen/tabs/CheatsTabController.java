@@ -67,7 +67,7 @@ public class CheatsTabController extends SimpleTabController {
             cheatsTab.addWidget(ssEnableToggle);
 
             Label ssTickLabel = new Label(contentX, contentY + 220,
-                    "Action Delay: " + ConfigManager.data.AutoSSDelay + " ticks", Label.Style.BODY);
+                    delayLabel(ConfigManager.data.AutoSSDelay), Label.Style.BODY);
             cheatsTab.addWidget(ssTickLabel);
 
             Slider ssTickSlider = new Slider(contentX, contentY + 240, contentWidth - 20, 0, 20,
@@ -75,7 +75,7 @@ public class CheatsTabController extends SimpleTabController {
                         int ticks = Math.round(val);
                         if (ticks != ConfigManager.data.AutoSSDelay) {
                             ConfigManager.data.AutoSSDelay = ticks;
-                            ssTickLabel.setText("Action Delay: " + ticks + " ticks");
+                            ssTickLabel.setText(delayLabel(ticks));
                             ConfigManager.save();
                         }
                     });
@@ -217,15 +217,15 @@ public class CheatsTabController extends SimpleTabController {
         listView.addItem(enableToggle);
 
         Label tickLabel = new Label(0, 0,
-                "Action Delay: " + ConfigManager.data.AutoSSDelay + " ticks", Label.Style.BODY);
+                delayLabel(ConfigManager.data.AutoSSDelay), Label.Style.BODY);
         listView.addItem(tickLabel);
 
-        Slider tickSlider = new Slider(0, 0, 260, 0, 200,
+        Slider tickSlider = new Slider(0, 0, 260, 0, 20,
                 ConfigManager.data.AutoSSDelay, val -> {
             int ticks = Math.round(val);
             if (ticks != ConfigManager.data.AutoSSDelay) {
                 ConfigManager.data.AutoSSDelay = ticks;
-                tickLabel.setText("Action Delay: " + ticks + " ticks");
+                tickLabel.setText(delayLabel(ticks));
                 ConfigManager.save();
             }
         });
@@ -266,15 +266,6 @@ public class CheatsTabController extends SimpleTabController {
             ConfigManager.save();
         });
         listView.addItem(curveSlider);
-
-        ToggleSwitch instantToggle = new ToggleSwitch(0, 0, 260,
-                "Instant Snap",
-                "Instantly snaps to targets",
-                ConfigManager.data.AutoSSInstantSnap, value -> {
-            ConfigManager.data.AutoSSInstantSnap = value;
-            ConfigManager.save();
-        });
-        listView.addItem(instantToggle);
 
         ToggleSwitch trySkipToggle = new ToggleSwitch(0, 0, 260,
                 "Try SS Skip",
@@ -530,6 +521,9 @@ public class CheatsTabController extends SimpleTabController {
         rotationCard.updateLayout();
         return rotationCard;
     }
-
+    private static String delayLabel(int ticks) {
+        String base = "Action Delay: " + ticks + (ticks == 1 ? " tick" : " ticks");
+        return ticks <= 1 ? base + " (can be broken)" : base;
+    }
 
 }
