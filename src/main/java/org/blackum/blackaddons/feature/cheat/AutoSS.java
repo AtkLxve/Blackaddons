@@ -81,6 +81,7 @@ public class AutoSS {
     private static boolean isPreAiming = false;
     private static boolean autoStartTriggered = false;
     private static boolean settingsOverridden = false;
+    private static boolean wasAutoSSEnabled = false;
     private static int solvingIndex = 0;
     private static BlockPos preAimTarget = null;
     private static boolean waitingForRotation = false;
@@ -159,7 +160,13 @@ public class AutoSS {
     }
 
     private static void onClientTick(Minecraft client) {
-        if (!ConfigManager.data.AutoSSEnabled || client.player == null || client.level == null) return;
+        boolean isEnabled = ConfigManager.data.AutoSSEnabled;
+        if (isEnabled && !wasAutoSSEnabled) {
+            resetSolver();
+        }
+        wasAutoSSEnabled = isEnabled;
+
+        if (!isEnabled || client.player == null || client.level == null) return;
         if (!LocationUtils.inDungeons()) return;
 
         boolean deviceActive = false;
@@ -382,10 +389,12 @@ public class AutoSS {
                     }
                 }
             }
+        }
 
+        if (buttonsExist) {
             float maxDist = ConfigManager.data.AutoSSDistanceLimit;
             if (client.player.distanceToSqr(START_POS.getX(), client.player.getY(), START_POS.getZ()) > maxDist * maxDist) {
-                lastExisted = false;
+                if (lastExisted) lastExisted = false;
                 return;
             }
 
