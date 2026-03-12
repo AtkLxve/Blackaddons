@@ -798,8 +798,6 @@ public class AutoSS {
         KeyMapping[] hotbarKeys = mc.options.keyHotbarSlots;
         if (hotbarKeys != null && slot < hotbarKeys.length) {
             KeyMapping.click(((KeyBindingAccessor) hotbarKeys[slot]).getBoundKey());
-        } else {
-            ((InventoryAccessor) mc.player.getInventory()).setBlackaddonsSelected(slot);
         }
     }
 }
