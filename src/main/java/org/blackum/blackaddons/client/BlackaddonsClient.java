@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.core.config.ConfigManager;
@@ -18,6 +19,7 @@ import org.blackum.blackaddons.core.manager.CustomNameManager;
 import org.blackum.blackaddons.core.manager.DebugOverlayManager;
 import org.blackum.blackaddons.core.manager.PartyFinderManager;
 import org.blackum.blackaddons.core.manager.UpdateManager;
+import org.blackum.blackaddons.gui.render.WaypointRenderer;
 import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
@@ -93,7 +95,14 @@ public class BlackaddonsClient implements ClientModInitializer {
             }
         });
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> NotificationManager.getInstance().tick());
+        WorldRenderEvents.BEFORE_TRANSLUCENT.register(context -> {
+            WaypointRenderer.render(context.matrices().last().pose(), context.consumers(), 0.0f);
+        });
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            NotificationManager.getInstance().tick();
+            org.blackum.blackaddons.feature.waypoint.WaypointActionManager.getInstance().tick(org.blackum.blackaddons.core.waypoint.WaypointManager.getInstance().getWaypoints());
+        });
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
 
         ClientSendMessageEvents.ALLOW_CHAT.register(message -> {

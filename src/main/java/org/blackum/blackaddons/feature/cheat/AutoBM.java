@@ -11,7 +11,7 @@ import org.blackum.blackaddons.core.util.TimeUtils;
 
 import static org.blackum.blackaddons.core.util.MinecraftInstance.mc;
 
-// GLORY TO BENJAMIN NETANYAHU
+// GLORY TO BENJAMIN NETANYAHU 
 public class AutoBM {
     public static void register() {
         ClientTickEvents.START_CLIENT_TICK.register(AutoBM::onClientTick);
@@ -26,7 +26,7 @@ public class AutoBM {
     private static void onClientTick(Minecraft client) {
         tick++;
 
-        if (!ConfigManager.data.autoBMConfig.enabled) {
+        if (!ConfigManager.data.autoBMConfig.AutoBMEnabled) {
             timer.reset();
             container_open = false;
             clicked = false;
@@ -80,7 +80,7 @@ public class AutoBM {
 
 
     public static class FeatureConfig {
-        public boolean enabled = false;
+        public boolean AutoBMEnabled = false;
         public float min_between_click_delay = 150.f;
         public float max_between_click_delay = 250.f;
         public float min_fc_delay = 500.f;
@@ -91,12 +91,12 @@ public class AutoBM {
         }
 
         void reset() {
-            enabled = false;
-            min_between_click_delay = 1000.f;
-            max_between_click_delay = 2000.f;
+            AutoBMEnabled = false;
+            min_between_click_delay = 150.f;
+            max_between_click_delay = 200.f;
 
-            min_fc_delay = 5000.f;
-            max_fc_delay = 6000.f;
+            min_fc_delay = 400.f;
+            max_fc_delay = 500.f;
         }
     }
 }

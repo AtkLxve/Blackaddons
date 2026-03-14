@@ -95,12 +95,23 @@ public class CheatsTabController extends SimpleTabController {
                         ConfigManager.save();
                     });
             cheatsTab.addWidget(ssDistSlider);
+            
+            cheatsTab.addWidget(new Label(contentX, contentY + 360, "Auto Ballista Mechanic", Label.Style.TITLE));
+            
+            ToggleSwitch bmEnableToggle = new ToggleSwitch(contentX, contentY + 390, contentWidth - 20,
+                    "Enable AutoBM",
+                    "Automatically clicks ballista upgrades",
+                    ConfigManager.data.autoBMConfig.AutoBMEnabled, value -> {
+                        ConfigManager.data.autoBMConfig.AutoBMEnabled = value;
+                        ConfigManager.save();
+                    });
+            cheatsTab.addWidget(bmEnableToggle);
 
             return;
         }
 
         Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("autoTnt", "autoSS", "fastLeap", "rotationSet");
+            screen.resetCardStates("autoTnt", "autoSS", "fastLeap", "rotationSet", "autoBM");
         });
         cheatsTab.addWidget(resetLayout);
 
@@ -126,7 +137,7 @@ public class CheatsTabController extends SimpleTabController {
             currentY += rotationCard.getHeight() + 10;
 
             autoBMCard = createAutoBM(col1X, currentY);
-            //currentY += autoBMCard.getHeight() + 10;
+            currentY += autoBMCard.getHeight() + 10;
         } else {
             int currentY1 = containerY + 20;
             int currentY2 = containerY + 20;
@@ -135,15 +146,16 @@ public class CheatsTabController extends SimpleTabController {
             currentY1 += autoTntCard.getHeight() + 10;
 
             fastLeapCard = createFastLeapCard(col1X, currentY1);
+            currentY1 += fastLeapCard.getHeight() + 10;
+
+            autoBMCard = createAutoBM(col1X, currentY1);
+            currentY1 += autoBMCard.getHeight() + 10;
 
             autoSSCard = createAutoSSCard(col2X, currentY2);
             currentY2 += autoSSCard.getHeight() + 10;
 
             rotationCard = createRotationCard(col2X, currentY2);
             currentY2 += rotationCard.getHeight() + 10;
-
-            autoBMCard = createAutoBM(col2X, currentY2);
-            //currentY2 += autoBMCard.getHeight() + 10;
         }
 
         cheatsCardContainer.addCard(autoTntCard);
@@ -443,7 +455,7 @@ public class CheatsTabController extends SimpleTabController {
 
     private ResizableCard createAutoBM(int x, int y) {
         // 1. Initialize the correct variable
-        autoBMCard = screen.createResizableCard("autoBMSet", x, y, 300, 310, "Auto Ballista Mechanic");
+        autoBMCard = screen.createResizableCard("autoBM", x, y, 300, 310, "Auto Ballista Mechanic");
 
         int contentX = autoBMCard.getContentX();
         int contentY = autoBMCard.getContentY();
@@ -455,8 +467,8 @@ public class CheatsTabController extends SimpleTabController {
         ToggleSwitch enabled = new ToggleSwitch(0, 0, 260,
                 "Enabled",
                 "Enabled and disables auto BM",
-                ConfigManager.data.autoBMConfig.enabled, value -> {
-            ConfigManager.data.autoBMConfig.enabled = value;
+                ConfigManager.data.autoBMConfig.AutoBMEnabled, value -> {
+            ConfigManager.data.autoBMConfig.AutoBMEnabled = value;
             ConfigManager.save();
         }
         );
