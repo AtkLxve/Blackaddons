@@ -3,6 +3,7 @@ package org.blackum.blackaddons.core.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
+import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.gui.render.Theme;
 
@@ -205,6 +206,7 @@ public class ConfigManager {
         public boolean SwapBack = true;
 
         public AutoTNT.FeatureConfig autoTntConfig = new AutoTNT.FeatureConfig();
+        public AutoBM.FeatureConfig autoBMConfig = new AutoBM.FeatureConfig();
 
         public boolean AutoSSEnabled = false;
         public int AutoSSDelay = 2;

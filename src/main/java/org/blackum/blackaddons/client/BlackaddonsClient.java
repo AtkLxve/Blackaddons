@@ -22,6 +22,7 @@ import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import org.blackum.blackaddons.feature.chat.IrcPrefixManager;
+import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoSS;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.feature.cheat.FastLeap;
@@ -46,6 +47,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         AutoTNT.register();
         FastLeap.register();
         AutoSS.register();
+        AutoBM.register();
         Scheduler.register();
 
         ConfigManager.load();

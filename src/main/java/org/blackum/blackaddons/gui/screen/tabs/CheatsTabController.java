@@ -13,6 +13,7 @@ public class CheatsTabController extends SimpleTabController {
     private ResizableCard autoSSCard;
     private ResizableCard fastLeapCard;
     private ResizableCard rotationCard;
+    private ResizableCard autoBMCard;
     private Dropdown s1Dropdown;
     private Dropdown s2Dropdown;
     private Dropdown s3Dropdown;
@@ -122,6 +123,10 @@ public class CheatsTabController extends SimpleTabController {
             currentY += fastLeapCard.getHeight() + 10;
 
             rotationCard = createRotationCard(col1X, currentY);
+            currentY += rotationCard.getHeight() + 10;
+
+            autoBMCard = createAutoBM(col1X, currentY);
+            //currentY += autoBMCard.getHeight() + 10;
         } else {
             int currentY1 = containerY + 20;
             int currentY2 = containerY + 20;
@@ -135,12 +140,17 @@ public class CheatsTabController extends SimpleTabController {
             currentY2 += autoSSCard.getHeight() + 10;
 
             rotationCard = createRotationCard(col2X, currentY2);
+            currentY2 += rotationCard.getHeight() + 10;
+
+            autoBMCard = createAutoBM(col2X, currentY2);
+            //currentY2 += autoBMCard.getHeight() + 10;
         }
 
         cheatsCardContainer.addCard(autoTntCard);
         cheatsCardContainer.addCard(autoSSCard);
         cheatsCardContainer.addCard(fastLeapCard);
         cheatsCardContainer.addCard(rotationCard);
+        cheatsCardContainer.addCard(autoBMCard);
     }
 
     private ResizableCard createAutoTntCard(int x, int y) {
@@ -429,6 +439,90 @@ public class CheatsTabController extends SimpleTabController {
         if (s2Dropdown != null && s2Dropdown != active) s2Dropdown.collapse();
         if (s3Dropdown != null && s3Dropdown != active) s3Dropdown.collapse();
         if (s4Dropdown != null && s4Dropdown != active) s4Dropdown.collapse();
+    }
+
+    private ResizableCard createAutoBM(int x, int y) {
+        // 1. Initialize the correct variable
+        autoBMCard = screen.createResizableCard("autoBMSet", x, y, 300, 310, "Auto Ballista Mechanic");
+
+        int contentX = autoBMCard.getContentX();
+        int contentY = autoBMCard.getContentY();
+
+        // Use a ListView to handle the multiple sliders/labels
+        ListView listView = new ListView(contentX, contentY, 260, 260);
+
+        // Toggle
+        ToggleSwitch enabled = new ToggleSwitch(0, 0, 260,
+                "Enabled",
+                "Enabled and disables auto BM",
+                ConfigManager.data.autoBMConfig.enabled, value -> {
+            ConfigManager.data.autoBMConfig.enabled = value;
+            ConfigManager.save();
+        }
+        );
+        listView.addItem(enabled);
+
+        // Min FC Delay
+        Label min_fc_label = new Label(0, 0,
+                String.format("Min first click delay: %.0fms", ConfigManager.data.autoBMConfig.min_fc_delay),
+                Label.Style.BODY);
+        listView.addItem(min_fc_label);
+
+        Slider min_fc_slider = new Slider(0, 0, 260, 10.f, 1000.f,
+                ConfigManager.data.autoBMConfig.min_fc_delay, val -> {
+            ConfigManager.data.autoBMConfig.min_fc_delay = val;
+            min_fc_label.setText(String.format("Min first click delay: %.0fms", val));
+            ConfigManager.save();
+        });
+        listView.addItem(min_fc_slider);
+
+        // Max FC Delay
+        Label max_fc_label = new Label(0, 0,
+                String.format("Max first click delay: %.0fms", ConfigManager.data.autoBMConfig.max_fc_delay),
+                Label.Style.BODY);
+        listView.addItem(max_fc_label);
+
+        Slider max_fc_slider = new Slider(0, 0, 260, 10.f, 1000.f,
+                ConfigManager.data.autoBMConfig.max_fc_delay, val -> {
+            ConfigManager.data.autoBMConfig.max_fc_delay = val;
+            max_fc_label.setText(String.format("Max first click delay: %.0fms", val));
+            ConfigManager.save();
+        });
+        listView.addItem(max_fc_slider);
+
+        // Min Between Click
+        Label min_between_click_label = new Label(0, 0,
+                String.format("Min between click delay: %.0fms", ConfigManager.data.autoBMConfig.min_between_click_delay),
+                Label.Style.BODY);
+        listView.addItem(min_between_click_label);
+
+        Slider min_between_click_slider = new Slider(0, 0, 260, 10.f, 1000.f,
+                ConfigManager.data.autoBMConfig.min_between_click_delay, val -> {
+            ConfigManager.data.autoBMConfig.min_between_click_delay = val;
+            min_between_click_label.setText(String.format("Min between click delay: %.0fms", val));
+            ConfigManager.save();
+        });
+        listView.addItem(min_between_click_slider);
+
+        // Max Between Click
+        Label max_between_click_label = new Label(0, 0,
+                String.format("Max between click delay: %.0fms", ConfigManager.data.autoBMConfig.max_between_click_delay),
+                Label.Style.BODY);
+        listView.addItem(max_between_click_label);
+
+        Slider max_between_click_slider = new Slider(0, 0, 260, 10.f, 1000.f,
+                ConfigManager.data.autoBMConfig.max_between_click_delay, val -> {
+            ConfigManager.data.autoBMConfig.max_between_click_delay = val;
+            max_between_click_label.setText(String.format("Max between click delay: %.0fms", val));
+            ConfigManager.save();
+        });
+        listView.addItem(max_between_click_slider);
+
+        // Add the list to the card and update
+        autoBMCard.addChild(listView);
+        autoBMCard.updateLayout();
+
+        return autoBMCard;
     }
 
     private ResizableCard createRotationCard(int x, int y) {
