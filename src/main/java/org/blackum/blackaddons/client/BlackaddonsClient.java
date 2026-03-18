@@ -118,7 +118,6 @@ public class BlackaddonsClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             NotificationManager.getInstance().tick();
-            org.blackum.blackaddons.feature.waypoint.WaypointActionManager.getInstance().tick(org.blackum.blackaddons.core.waypoint.WaypointManager.getInstance().getWaypoints());
         });
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
 
