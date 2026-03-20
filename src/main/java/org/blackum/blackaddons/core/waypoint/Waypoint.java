@@ -18,6 +18,7 @@ public class Waypoint {
     public boolean showFullShape = false;
     public WaypointAnimation animation = WaypointAnimation.STATIC;
     public float reuseCooldownSeconds = 0.0f;
+    public boolean align = false;
     public java.util.List<org.blackum.blackaddons.core.config.ConfigManager.WaypointAction> actions = new java.util.ArrayList<>();
 
     public Waypoint() {

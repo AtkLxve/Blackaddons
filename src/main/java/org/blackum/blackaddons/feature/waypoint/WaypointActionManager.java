@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.feature.waypoint;
 
+import org.blackum.blackaddons.core.util.MovementUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -33,6 +34,7 @@ public class WaypointActionManager {
     private double lastPlayerX;
     private double lastPlayerY;
     private double lastPlayerZ;
+    private boolean isChecking = false;
 
     private WaypointActionManager() {
     }
@@ -45,7 +47,13 @@ public class WaypointActionManager {
     }
 
     public void onPlayerPositionChanged() {
-        checkWaypoints(WaypointManager.getInstance().getWaypoints());
+        if (isChecking) return;
+        isChecking = true;
+        try {
+            checkWaypoints(WaypointManager.getInstance().getWaypoints());
+        } finally {
+            isChecking = false;
+        }
     }
 
     public void onGuiClosed() {
@@ -84,6 +92,7 @@ public class WaypointActionManager {
             playerInsideWaypoint.clear();
             lastTriggerTimes.clear();
             hasLastPosition = false;
+            MovementUtils.cancel();
             return;
         }
 
@@ -92,6 +101,7 @@ public class WaypointActionManager {
             playerInsideWaypoint.clear();
             lastTriggerTimes.clear();
             hasLastPosition = false;
+            MovementUtils.cancel();
             return;
         }
 
@@ -129,8 +139,15 @@ public class WaypointActionManager {
             }
 
             if (!previouslyInside && (currentlyInside || intersectedDuringMove)) {
+                if (waypoint.align && !isOnCooldown(waypoint)) {
+                    MovementUtils.alignToCenter(waypoint);
+                    noteTriggered(waypoint);
+                }
                 triggerActions(waypoint, TriggerType.ENTRY);
             } else if (!currentlyInside && previouslyInside) {
+                if (waypoint.align && MovementUtils.isActive()) {
+                    MovementUtils.cancel();
+                }
                 triggerActions(waypoint, TriggerType.EXIT);
             }
 
@@ -314,7 +331,13 @@ public class WaypointActionManager {
             }
         }
 
-        if (triggered && waypoint.id != null) {
+        if (triggered) {
+            noteTriggered(waypoint);
+        }
+    }
+
+    private void noteTriggered(Waypoint waypoint) {
+        if (waypoint != null && waypoint.id != null) {
             lastTriggerTimes.put(waypoint.id, System.currentTimeMillis());
         }
     }
