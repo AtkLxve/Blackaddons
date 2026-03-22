@@ -29,6 +29,7 @@ import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoSS;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.feature.cheat.FastLeap;
+import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.core.util.LocationUtils;
 import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.core.util.Scheduler;
@@ -53,6 +54,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         FastLeap.register();
         AutoSS.register();
         AutoBM.register();
+        Freecam.register();
         Scheduler.register();
         LocationUtils.register();
         AlignUtils.register();
