@@ -7,6 +7,7 @@ import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 
+import java.util.LinkedList;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -507,7 +508,7 @@ public class TextField extends Widget {
         }
     }
 
-    private java.util.LinkedList<State> history = new java.util.LinkedList<>();
+    private LinkedList<State> history = new LinkedList<>();
     private int historyIndex = -1;
 
     private void pushHistory() {
