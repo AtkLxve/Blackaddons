@@ -5,9 +5,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
-import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
@@ -339,7 +339,7 @@ public class DailyTabController extends ProfileTabController {
         Button linkBtn = new Button(0, 0, list.getWidth() - 20, 20,
                 ChatFormatting.AQUA + "Want to be on leaderboard? Link Discord", () -> {
                     String url = Constants.DISCORD_AUTH_URL;
-                    Util.getPlatform().openUri(url);
+                    McCompat.openUri(url);
                 });
 
         Widget wrapper = new Widget(0, 0, list.getWidth(), 30) {

@@ -144,6 +144,12 @@ public class ColorPicker extends Widget {
         int cursorX = x + (int) (saturation * width);
         int cursorY = y + (int) ((1f - brightness) * height);
 
+        //? if < 1.21.11 {
+        /*graphics.fill(cursorX - 4, cursorY - 4, cursorX + 4, cursorY - 3, Theme.TEXT_PRIMARY);
+        graphics.fill(cursorX - 4, cursorY + 3, cursorX + 4, cursorY + 4, Theme.TEXT_PRIMARY);
+        graphics.fill(cursorX - 4, cursorY - 3, cursorX - 3, cursorY + 3, Theme.TEXT_PRIMARY);
+        graphics.fill(cursorX + 3, cursorY - 3, cursorX + 4, cursorY + 3, Theme.TEXT_PRIMARY);
+        *///?} else
         graphics.renderOutline(cursorX - 4, cursorY - 4, 8, 8, Theme.TEXT_PRIMARY);
     }
 

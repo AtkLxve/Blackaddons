@@ -46,6 +46,19 @@ public class OverlayEditorScreen extends BaseScreen {
         int boxWidth = (int) (150 * scale);
         int boxHeight = (int) (50 * scale);
 
+        //? if < 1.21.11 {
+        /*/^
+        graphics.fill(x - 2, y - 2, x + boxWidth + 2, y - 1, 0xFF00FF00); // top
+        graphics.fill(x - 2, y + boxHeight + 1, x + boxWidth + 2, y + boxHeight + 2, 0xFF00FF00); // bottom
+        graphics.fill(x - 2, y - 1, x - 1, y + boxHeight + 1, 0xFF00FF00); // left
+        graphics.fill(x + boxWidth + 1, y - 1, x + boxWidth + 2, y + boxHeight + 1, 0xFF00FF00); // right
+        ^/
+        graphics.fill(x - 2, y - 2, x + boxWidth + 2, y + boxHeight + 2, 0x0100FF00);
+        graphics.fill(x - 2, y - 2, x + boxWidth + 2, y - 1, 0xFF00FF00);
+        graphics.fill(x - 2, y + boxHeight + 1, x + boxWidth + 2, y + boxHeight + 2, 0xFF00FF00);
+        graphics.fill(x - 2, y - 1, x - 1, y + boxHeight + 1, 0xFF00FF00);
+        graphics.fill(x + boxWidth + 1, y - 1, x + boxWidth + 2, y + boxHeight + 1, 0xFF00FF00);
+        *///?} else
         graphics.renderOutline(x - 2, y - 2, boxWidth + 4, boxHeight + 4, 0xFF00FF00);
 
         int handleSize = 8;

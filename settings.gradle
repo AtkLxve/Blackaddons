@@ -4,6 +4,22 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+        maven {
+            name = 'Stonecutter'
+            url = 'https://maven.kikugie.dev/snapshots'
+        }
         gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'dev.kikugie.stonecutter' version '0.9'
+}
+
+rootProject.name = 'BlackAddons'
+
+stonecutter {
+    create(rootProject) {
+        versions '1.21.10', '1.21.11'
     }
 }

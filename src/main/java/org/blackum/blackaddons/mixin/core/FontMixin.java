@@ -18,9 +18,25 @@ public class FontMixin {
         return CustomNameManager.getInstance().replaceInString(text);
     }
 
-    @ModifyVariable(method = "prepareText(Lnet/minecraft/util/FormattedCharSequence;FFIZZI)Lnet/minecraft/client/gui/Font$PreparedText;",
-            at = @At("HEAD"), argsOnly = true, index = 1)
-    private FormattedCharSequence onDrawSequence(FormattedCharSequence text) {
+    @ModifyVariable(
+            method = "prepareText(Lnet/minecraft/util/FormattedCharSequence;FFIZI)Lnet/minecraft/client/gui/Font$PreparedText;",
+            at = @At("HEAD"),
+            argsOnly = true,
+            index = 1,
+            require = 0
+    )
+    private FormattedCharSequence onDrawSequence12110(FormattedCharSequence text) {
+        return CustomNameManager.getInstance().replaceInSequence(text);
+    }
+
+    @ModifyVariable(
+            method = "prepareText(Lnet/minecraft/util/FormattedCharSequence;FFIZZI)Lnet/minecraft/client/gui/Font$PreparedText;",
+            at = @At("HEAD"),
+            argsOnly = true,
+            index = 1,
+            require = 0
+    )
+    private FormattedCharSequence onDrawSequence12111(FormattedCharSequence text) {
         return CustomNameManager.getInstance().replaceInSequence(text);
     }
 

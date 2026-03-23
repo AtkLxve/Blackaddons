@@ -19,7 +19,7 @@ public final class DebugBoxRenderer {
     public static void render(Matrix4f matrix, MultiBufferSource bufferSource, Vec3 cameraPos, List<BoxSpec> boxes) {
         if (boxes == null || boxes.isEmpty()) return;
 
-        VertexConsumer buffer = bufferSource.getBuffer(BlackaddonsRenderTypes.getWaypoint());
+        VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(bufferSource);
         for (BoxSpec box : boxes) {
             double minX = Math.min(box.minX(), box.maxX()) - cameraPos.x;
             double minY = Math.min(box.minY(), box.maxY()) - cameraPos.y;

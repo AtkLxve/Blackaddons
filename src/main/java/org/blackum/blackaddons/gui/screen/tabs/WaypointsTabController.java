@@ -5,6 +5,7 @@ import org.blackum.blackaddons.core.waypoint.Waypoint;
 import org.blackum.blackaddons.core.waypoint.WaypointDragState;
 import org.blackum.blackaddons.core.waypoint.WaypointGroup;
 import org.blackum.blackaddons.core.waypoint.WaypointManager;
+import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.WaypointEditScreen;
@@ -77,7 +78,7 @@ public class WaypointsTabController extends SimpleTabController {
                         x = mc.player.getX();
                         y = mc.player.getY();
                         z = mc.player.getZ();
-                        dim = mc.level.dimension().identifier().toString();
+                        dim = McCompat.dimensionId(mc.level.dimension());
                     }
                     final double fx = x, fy = y, fz = z;
                     final String fdim = dim;
@@ -109,7 +110,7 @@ public class WaypointsTabController extends SimpleTabController {
                 x = mc.player.getX();
                 y = mc.player.getY();
                 z = mc.player.getZ();
-                dim = mc.level.dimension().identifier().toString();
+                dim = McCompat.dimensionId(mc.level.dimension());
             }
             final double fx = x, fy = y, fz = z;
             final String fdim = dim;

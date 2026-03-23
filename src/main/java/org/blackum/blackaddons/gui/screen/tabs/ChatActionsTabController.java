@@ -2,10 +2,10 @@ package org.blackum.blackaddons.gui.screen.tabs;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvent;
 import org.blackum.blackaddons.core.config.ActionManager;
 import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.ChatActionEditScreen;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -105,10 +105,10 @@ public class ChatActionsTabController extends SimpleTabController {
                     "Test", () -> {
                         try {
                             if (trigger.soundId != null && !trigger.soundId.isEmpty()) {
-                                Identifier location = Identifier.tryParse(trigger.soundId);
+                                Object location = McCompat.tryParseResource(trigger.soundId);
                                 if (location == null)
-                                    location = Identifier.fromNamespaceAndPath("minecraft", trigger.soundId);
-                                SoundEvent event = SoundEvent.createVariableRangeEvent(location);
+                                    location = McCompat.resource("minecraft", trigger.soundId);
+                                SoundEvent event = McCompat.createVariableRangeEvent(location);
                                 Minecraft client = Minecraft.getInstance();
                                 client.getSoundManager().play(SimpleSoundInstance.forUI(event, trigger.pitch, trigger.volume));
                             }

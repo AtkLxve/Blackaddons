@@ -2,6 +2,9 @@ package org.blackum.blackaddons.mixin.render;
 
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
+//? if < 1.21.11 {
+import net.minecraft.world.level.BlockGetter;
+//?} else
 import net.minecraft.world.level.Level;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,6 +21,9 @@ public abstract class CameraMixin {
     @Shadow protected abstract void setPosition(double x, double y, double z);
 
     @Inject(method = "setup", at = @At("TAIL"))
+    //? if < 1.21.11 {
+    /*private void onSetupTail(BlockGetter level, Entity entity, boolean detached, boolean flipped, float tickDelta, CallbackInfo ci) {
+    *///?} else
     private void onSetupTail(Level level, Entity entity, boolean detached, boolean flipped, float tickDelta, CallbackInfo ci) {
         if (Freecam.getInstance().isActive()) {
             this.detached = true;

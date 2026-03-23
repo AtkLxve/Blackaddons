@@ -26,6 +26,7 @@ import net.minecraft.world.phys.HitResult;
 
 import org.blackum.blackaddons.core.waypoint.WaypointAnimation;
 import org.blackum.blackaddons.core.waypoint.WaypointShape;
+import org.blackum.blackaddons.core.util.McCompat;
 
 public class WaypointEditScreen extends BaseScreen {
     private static final int CUSTOM_INPUT_WIDTH = 90;
@@ -242,7 +243,8 @@ public class WaypointEditScreen extends BaseScreen {
                 waypoint.showFullShape = showFullShapeCheckbox.isChecked();
 
                 if (waypoint.dimension == null && Minecraft.getInstance().level != null) {
-                    waypoint.dimension = Minecraft.getInstance().level.dimension().identifier().toString();
+                    Minecraft mc = Minecraft.getInstance();
+                    waypoint.dimension = McCompat.dimensionId(mc.level.dimension());
                 }
                 onSave.accept(waypoint);
                 minecraft.setScreen(parent);

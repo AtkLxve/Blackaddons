@@ -5,11 +5,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderTypes;
+import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.core.waypoint.Waypoint;
 import org.blackum.blackaddons.core.waypoint.WaypointAnimation;
 import org.blackum.blackaddons.core.waypoint.WaypointGroup;
@@ -35,7 +35,10 @@ public class WaypointRenderer {
                 WaypointGroup group = WaypointManager.getInstance().getGroup(waypoint.groupId);
                 if (group != null && !group.isActive()) continue;
             }
-            if (waypoint.dimension != null && !waypoint.dimension.equals(mc.level.dimension().identifier().toString())) continue;
+            if (waypoint.dimension != null) {
+                String dim = McCompat.dimensionId(mc.level.dimension());
+                if (!waypoint.dimension.equals(dim)) continue;
+            }
             renderWaypoint(matrix, bufferSource, waypoint, camPos);
         }
         if (count > 0 && System.currentTimeMillis() % 5000 < 50) {
@@ -56,7 +59,7 @@ public class WaypointRenderer {
     }
 
     private static void renderAnimatedWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
-        VertexConsumer buffer = bufferSource.getBuffer(BlackaddonsRenderTypes.getWaypoint());
+        VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(bufferSource);
 
         float r = color.getRed() / 255f;
         float g = color.getGreen() / 255f;

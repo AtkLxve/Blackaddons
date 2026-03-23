@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.core.util.Constants;
+import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.core.util.MinecraftInstance;
 import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.IrcClient;
@@ -196,7 +197,7 @@ public class IrcScreen extends BaseScreen implements IrcClient.IrcAuthListener {
             @SuppressWarnings("null")
             String url = uri.toString();
             if (url != null) {
-                net.minecraft.util.Util.getPlatform().openUri(url);
+                McCompat.openUri(url);
             }
             return true;
         } else if (event instanceof ClickEvent.RunCommand runCommand) {

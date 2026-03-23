@@ -6,6 +6,7 @@ import org.blackum.blackaddons.gui.render.Theme;
 import net.minecraft.ChatFormatting;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.feature.chat.ImageHelper;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -89,8 +90,8 @@ public class ImagePreviewScreen extends BaseScreen {
             int x = (this.width - drawW) / 2;
             int y = (this.height - drawH) / 2;
 
-            graphics.blit(RenderPipelines.GUI_TEXTURED, currentFrame.location(), x, y, 0f, 0f, drawW, drawH, imgW, imgH,
-                    imgW, imgH);
+            McCompat.blitGuiTexture(graphics, RenderPipelines.GUI_TEXTURED, currentFrame.location(), x, y, 0f, 0f,
+                    drawW, drawH, imgW, imgH, imgW, imgH);
         }
     }
 

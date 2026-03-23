@@ -1,19 +1,65 @@
 plugins {
     id 'fabric-loom' version '1.15-SNAPSHOT'
     id 'maven-publish'
+    id 'dev.kikugie.stonecutter'
 }
 
-version = project.mod_version
-group = project.maven_group
+if (project == rootProject) {
+    stonecutter {
+        active "1.21.11"
+    }
+}
+
+def versionProps = [
+    "1.21.10": [
+        minecraft: "1.21.10",
+        yarn: "1.21.10+build.3",
+        loader: "0.18.1",
+        fabric: "0.138.4+1.21.10",
+        modmenu: "16.0.0",
+        ias: "LgfVj4KS",
+        jarvis: "2.1.0"
+    ],
+    "1.21.11": [
+        minecraft: "1.21.11",
+        yarn: "1.21.11+build.1",
+        loader: "0.18.1",
+        fabric: "0.141.2+1.21.11",
+        modmenu: "17.0.0-beta.2",
+        ias: "oSzaukGT",
+        jarvis: "2.1.0"
+    ]
+]
+
+def currentStonecutterVersion = versionProps[stonecutter.current.version]
+
+project.ext.minecraft_version = currentStonecutterVersion.minecraft
+project.ext.yarn_mappings = currentStonecutterVersion.yarn
+project.ext.loader_version = currentStonecutterVersion.loader
+project.ext.fabric_version = currentStonecutterVersion.fabric
+project.ext.modmenu_version = currentStonecutterVersion.modmenu
+project.ext.ias_version = currentStonecutterVersion.ias
+project.ext.jarvis_version = currentStonecutterVersion.jarvis
+
+version = rootProject.mod_version
+group = rootProject.maven_group
 
 base {
-    archivesName = "${project.archives_base_name}-${project.minecraft_version}"
+    archivesName = "${rootProject.archives_base_name}-${project.minecraft_version}"
 }
 
 loom {
     mods {
         "blackaddons" {
             sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "versions/${project.minecraft_version}/src/main/java"
         }
     }
 }
@@ -26,6 +72,7 @@ repositories {
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
     mavenCentral()
+    mavenLocal()
     maven { url "https://maven.terraformersmc.com/releases/" }
     maven { url "https://maven.shedaniel.me/" }
     maven { url "https://maven.architectury.dev/" }
@@ -33,13 +80,13 @@ repositories {
     maven { url "https://repo.nea.moe/releases/" }
     maven { url "https://www.cursemaven.com" }
     maven { url "https://api.modrinth.com/maven" }
+    maven { url "https://maven.gegy.dev/releases/" }
     flatDir {
         dirs 'libs'
     }
 }
 
 dependencies {
-    // To change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings loom.officialMojangMappings()
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
@@ -50,15 +97,17 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    // Dependencies
-    modImplementation "moe.nea.jarvis:jarvis-fabric:2.1.0"
     modImplementation "net.hypixel:mod-api:1.0.1"
     modImplementation "me.shedaniel.cloth:basic-math:0.6.1"
     modImplementation "me.shedaniel:mm:2.4.1"
 
-    modCompileOnly "com.terraformersmc:modmenu:17.0.0-beta.2"
-    modLocalRuntime "com.terraformersmc:modmenu:17.0.0-beta.2"
-    modLocalRuntime "maven.modrinth:in-game-account-switcher:oSzaukGT"
+    if (project.jarvis_version != null) {
+        modImplementation "moe.nea.jarvis:jarvis-fabric:${project.jarvis_version}"
+    }
+
+    modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modLocalRuntime "maven.modrinth:in-game-account-switcher:${project.ias_version}"
 }
 
 processResources {
@@ -99,7 +148,7 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archives_base_name}" }
+        rename { "${it}_${rootProject.archives_base_name}" }
     }
 }
 
@@ -107,7 +156,7 @@ jar {
 publishing {
     publications {
         create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
+            artifactId = rootProject.archives_base_name
             from components.java
         }
     }
