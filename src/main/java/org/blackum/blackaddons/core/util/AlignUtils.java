@@ -65,10 +65,12 @@ public class AlignUtils {
     private static final boolean[] debugPredictedStepAvailable = new boolean[DEBUG_STEP_COUNT];
     private static final boolean[] debugActualStepAvailable = new boolean[DEBUG_STEP_COUNT];
     private static int debugPendingStepIndex = -1;
-    private static double debugPendingExpectedX;
-    private static double debugPendingExpectedZ;
-    private static int sessionAlignCount = 0;
     private static double sessionTotalError = 0.0D;
+    private static int sessionAlignCount = 0;
+    private static final double TICK_PRECISION = 9.0E-6D;
+    private static final double SNAP_THRESHOLD = 0.003D;
+
+    private static double[] lastSimPos = new double[2];
 
     public static void register() {
         HudRenderCallback.EVENT.register((graphics, partialTick) -> renderOverlay(graphics));
@@ -154,18 +156,15 @@ public class AlignUtils {
             float speedMultiplier = 0.21600002F / (slipperiness * slipperiness * slipperiness);
             double a = (double) player.getSpeed() * (double) speedMultiplier * 0.9800000190734863D;
             
-            double d_walk = a / (1.0D - (double) f);
-            
             double vx = player.getDeltaMovement().x;
             double vz = player.getDeltaMovement().z;
             
-            double driftX = vx / (1.0D - (double) f);
-            double driftZ = vz / (1.0D - (double) f);
-            double predictedX = player.getX() + driftX;
-            double predictedZ = player.getZ() + driftZ;
+            double[] drift = predictDrift2D(vx, vz, (double) f);
+            double predX = player.getX() + drift[0];
+            double predZ = player.getZ() + drift[1];
             
-            double rx = targetX - predictedX;
-            double rz = targetZ - predictedZ;
+            double rx = targetX - predX;
+            double rz = targetZ - predZ;
             double L = Math.hypot(rx, rz);
             double phi = Math.toDegrees(Math.atan2(rz, rx)) - 90.0D;
             phi = Mth.wrapDegrees(phi);
@@ -175,39 +174,56 @@ public class AlignUtils {
                 return;
             }
 
+            double d_walk = predictDrift(a, (double) f);
             if (L > (2.0D * d_walk) - ALIGN_EPSILON) {
                 applyMovement(mc, player, (float) phi, false);
                 return;
             }
 
-            double clampRatio = Math.max(-1.0D, Math.min(1.0D, L / (2.0D * d_walk)));
-            double theta = Math.toDegrees(Math.acos(clampRatio));
-            float candidate1 = (float) Mth.wrapDegrees(phi + theta);
-            float candidate2 = (float) Mth.wrapDegrees(phi - theta);
+            double bestTheta = 0;
+            double minErr = Double.MAX_VALUE;
+            double low = 0, high = 180;
+            
+            for (int i = 0; i < 30; i++) {
+                double mid = (low + high) / 2.0;
+                double[] p = simulateFinalPosition(player.getX(), player.getZ(), vx, vz, a, (double)f, (float)(phi + mid), (float)(phi - mid));
+                double distToTarget = Math.hypot(targetX - p[0], targetZ - p[1]);
+                if (distToTarget < minErr) {
+                    minErr = distToTarget;
+                    bestTheta = mid;
+                }
+                
+                double unitX = yawUnitX((float)phi);
+                double unitZ = yawUnitZ((float)phi);
+                double dImpX = p[0] - predX;
+                double dImpZ = p[1] - predZ;
+                double prog = dImpX * unitX + dImpZ * unitZ;
+                
+                if (prog > L) low = mid;
+                else high = mid;
+            }
 
-            yaw1 = chooseNearestYaw(player.getYRot(), candidate1, candidate2);
-            yaw2 = (float) Mth.wrapDegrees(2.0D * phi - yaw1);
+            yaw1 = (float) Mth.wrapDegrees(phi + bestTheta);
+            yaw2 = (float) Mth.wrapDegrees(phi - bestTheta);
+            
             storeExpectedAlignment(player.getX(), player.getZ(), vx, vz, a, (double) f, yaw1, yaw2);
-
             alignState = 1;
         }
 
         if (alignState == 1) {
             alignState = 2;
-            markPendingStep(0);
             applyMovement(mc, player, yaw1, false);
         } else if (alignState == 2) {
+            capturePendingStep(player, 0);
             alignState = 3;
-            markPendingStep(1);
             applyMovement(mc, player, yaw2, false);
         } else if (alignState == 3) {
-            capturePendingStep(player);
+            capturePendingStep(player, 1);
             finish(mc);
         }
     }
 
     private static void applyMovement(Minecraft mc, LocalPlayer player, float targetYaw, boolean sneak) {
-        capturePendingStep(player);
         applyExactYaw(player, targetYaw);
         forcedForward = true;
         forcedSneak = sneak;
@@ -456,28 +472,18 @@ public class AlignUtils {
         sessionTotalError += debugMeasuredError;
     }
 
-    private static void markPendingStep(int stepIndex) {
-        if (stepIndex < 0 || stepIndex >= DEBUG_STEP_COUNT || !debugPredictedStepAvailable[stepIndex]) {
+    private static void capturePendingStep(LocalPlayer player, int stepIndex) {
+        if (player == null || stepIndex < 0 || stepIndex >= DEBUG_STEP_COUNT) {
             return;
         }
-        debugPendingStepIndex = stepIndex;
-        debugPendingExpectedX = debugPredictedStepX[stepIndex];
-        debugPendingExpectedZ = debugPredictedStepZ[stepIndex];
-    }
-
-    private static void capturePendingStep(LocalPlayer player) {
-        if (player == null || debugPendingStepIndex < 0 || debugPendingStepIndex >= DEBUG_STEP_COUNT) {
-            return;
-        }
-        debugActualStepX[debugPendingStepIndex] = player.getX();
-        debugActualStepZ[debugPendingStepIndex] = player.getZ();
-        debugStepDrift[debugPendingStepIndex] = Math.hypot(
-                debugActualStepX[debugPendingStepIndex] - debugPendingExpectedX,
-                debugActualStepZ[debugPendingStepIndex] - debugPendingExpectedZ
+        debugActualStepX[stepIndex] = player.getX();
+        debugActualStepZ[stepIndex] = player.getZ();
+        debugStepDrift[stepIndex] = Math.hypot(
+                debugActualStepX[stepIndex] - debugPredictedStepX[stepIndex],
+                debugActualStepZ[stepIndex] - debugPredictedStepZ[stepIndex]
         );
-        debugActualStepAvailable[debugPendingStepIndex] = true;
-        debugCompletedSteps = Math.max(debugCompletedSteps, debugPendingStepIndex + 1);
-        debugPendingStepIndex = -1;
+        debugActualStepAvailable[stepIndex] = true;
+        debugCompletedSteps = Math.max(debugCompletedSteps, stepIndex + 1);
     }
 
     private static double predictDrift(double velocity, double friction) {
@@ -493,13 +499,40 @@ public class AlignUtils {
     private static double[] predictDrift2D(double vx, double vz, double friction) {
         double driftX = 0.0D;
         double driftZ = 0.0D;
-        while (vx * vx + vz * vz >= 9.0E-6D) {
+        while (vx * vx + vz * vz >= TICK_PRECISION) {
             driftX += vx;
             driftZ += vz;
             vx *= friction;
             vz *= friction;
         }
         return new double[]{driftX, driftZ};
+    }
+
+    private static double[] simulateFinalPosition(double startX, double startZ, double vx, double vz, double a, double f, float yaw1, float yaw2) {
+        double v1x = vx;
+        double v1z = vz;
+        if (v1x * v1x + v1z * v1z < TICK_PRECISION) {
+            v1x = 0; v1z = 0;
+        }
+        v1x += a * yawUnitX(yaw1);
+        v1z += a * yawUnitZ(yaw1);
+        double x1 = startX + v1x;
+        double z1 = startZ + v1z;
+
+        double v2x = v1x * f;
+        double v2z = v1z * f;
+        if (v2x * v2x + v2z * v2z < TICK_PRECISION) {
+            v2x = 0; v2z = 0;
+        }
+        v2x += a * yawUnitX(yaw2);
+        v2z += a * yawUnitZ(yaw2);
+        double x2 = x1 + v2x;
+        double z2 = z1 + v2z;
+
+        double v3x = v2x * f;
+        double v3z = v2z * f;
+        double[] drift = predictDrift2D(v3x, v3z, f);
+        return new double[]{x2 + drift[0], z2 + drift[1]};
     }
 
     private static double yawUnitX(float yaw) {
