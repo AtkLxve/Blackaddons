@@ -152,22 +152,23 @@ public class AlignUtils {
             float slipperiness = getSurfaceSlipperiness(player, mc);
             float f = slipperiness * 0.91F;
             float speedMultiplier = 0.21600002F / (slipperiness * slipperiness * slipperiness);
-            double a = (double) player.getSpeed() * (double) speedMultiplier;
+            double a = (double) player.getSpeed() * (double) speedMultiplier * 0.9800000190734863D;
             
-            double d_walk = predictDrift(a, (double) f);
+            double d_walk = a / (1.0D - (double) f);
             
             double vx = player.getDeltaMovement().x;
             double vz = player.getDeltaMovement().z;
             
-            double[] drift = predictDrift2D(vx, vz, (double) f);
-            double predictedX = player.getX() + drift[0];
-            double predictedZ = player.getZ() + drift[1];
+            double driftX = vx / (1.0D - (double) f);
+            double driftZ = vz / (1.0D - (double) f);
+            double predictedX = player.getX() + driftX;
+            double predictedZ = player.getZ() + driftZ;
             
             double rx = targetX - predictedX;
             double rz = targetZ - predictedZ;
             double L = Math.hypot(rx, rz);
-            double phi = (float) (Math.atan2(rz, rx) * 57.2957763671875D) - 90.0F;
-            phi = normalizeYaw((float) phi);
+            double phi = Math.toDegrees(Math.atan2(rz, rx)) - 90.0D;
+            phi = Mth.wrapDegrees(phi);
 
             if (L <= ALIGN_EPSILON) {
                 finish(mc);
@@ -181,12 +182,12 @@ public class AlignUtils {
 
             double clampRatio = Math.max(-1.0D, Math.min(1.0D, L / (2.0D * d_walk)));
             double theta = Math.toDegrees(Math.acos(clampRatio));
-            float candidate1 = normalizeYaw((float) (phi + theta));
-            float candidate2 = normalizeYaw((float) (phi - theta));
+            float candidate1 = (float) Mth.wrapDegrees(phi + theta);
+            float candidate2 = (float) Mth.wrapDegrees(phi - theta);
 
             yaw1 = chooseNearestYaw(player.getYRot(), candidate1, candidate2);
-            yaw2 = normalizeYaw((float) (2.0D * phi - yaw1));
-            storeExpectedAlignment(predictedX, predictedZ, d_walk, yaw1, yaw2);
+            yaw2 = (float) Mth.wrapDegrees(2.0D * phi - yaw1);
+            storeExpectedAlignment(player.getX(), player.getZ(), vx, vz, a, (double) f, yaw1, yaw2);
 
             alignState = 1;
         }
@@ -273,15 +274,15 @@ public class AlignUtils {
         }
         if (debugAwaitingSample) {
             double remainingMs = Math.max(0L, debugSampleAtMs - System.currentTimeMillis());
-            info.add(String.format(Locale.US, "Actual@+0.5s: pending (%.0fms)", remainingMs));
+            info.add(String.format(Locale.US, "Actual@+1.0s: pending (%.0fms)", remainingMs));
         } else if (debugMeasuredAvailable) {
-            info.add(String.format(Locale.US, "Actual@+0.5s: %.4f %.4f", debugMeasuredX, debugMeasuredZ));
+            info.add(String.format(Locale.US, "Actual@+1.0s: %.4f %.4f", debugMeasuredX, debugMeasuredZ));
             info.add(String.format(Locale.US, "Actual err: %.6f", debugMeasuredError));
             if (debugExpectedAvailable) {
                 info.add(String.format(Locale.US, "Math vs actual: %.6f", Math.hypot(debugMeasuredX - debugExpectedX, debugMeasuredZ - debugExpectedZ)));
             }
         } else {
-            info.add("Actual@+0.5s: n/a");
+            info.add("Actual@+1.0s: n/a");
         }
         if (sessionAlignCount > 0) {
             info.add(String.format(Locale.US, "Session Avg Err: %.6f (%d)", sessionTotalError / sessionAlignCount, sessionAlignCount));
@@ -315,7 +316,7 @@ public class AlignUtils {
 
     private static float getSurfaceSlipperiness(LocalPlayer player, Minecraft mc) {
         if (mc.level == null) return 0.6F;
-        BlockPos groundPos = BlockPos.containing(player.getX(), player.getBoundingBox().minY - 0.05D, player.getZ());
+        BlockPos groundPos = BlockPos.containing(player.getX(), player.getY() - 0.5000001D, player.getZ());
         return mc.level.getBlockState(groundPos).getBlock().getFriction();
     }
 
@@ -331,7 +332,7 @@ public class AlignUtils {
     }
 
     private static void applyExactYaw(LocalPlayer player, float targetYaw) {
-        float yaw = normalizeYaw(targetYaw);
+        float yaw = (float) Mth.wrapDegrees((double) targetYaw);
         player.setYRot(yaw);
         player.setYHeadRot(yaw);
         player.setYBodyRot(yaw);
@@ -399,23 +400,43 @@ public class AlignUtils {
     }
 
     private static float normalizeYaw(float yaw) {
-        yaw = yaw % 360.0f;
-        if (yaw > 180.0f) yaw -= 360.0f;
-        if (yaw < -180.0f) yaw += 360.0f;
-        return yaw;
+        return (float) Mth.wrapDegrees((double) yaw);
     }
 
-    private static void storeExpectedAlignment(double predictedX, double predictedZ, double walkDistance, float firstYaw, float secondYaw) {
-        debugExpectedX = predictedX + walkDistance * yawUnitX(firstYaw) + walkDistance * yawUnitX(secondYaw);
-        debugExpectedZ = predictedZ + walkDistance * yawUnitZ(firstYaw) + walkDistance * yawUnitZ(secondYaw);
+    private static void storeExpectedAlignment(double startX, double startZ, double vx, double vz, double a, double f, float firstYaw, float secondYaw) {
+        if (vx * vx + vz * vz < 9.0E-6D) { vx = 0; vz = 0; }
+        double ax1 = a * yawUnitX(firstYaw);
+        double az1 = a * yawUnitZ(firstYaw);
+        double vx1 = vx + ax1;
+        double vz1 = vz + az1;
+        double x1 = startX + vx1;
+        double z1 = startZ + vz1;
+
+        double vxm1 = vx1 * f;
+        double vzm1 = vz1 * f;
+        if (vxm1 * vxm1 + vzm1 * vzm1 < 9.0E-6D) { vxm1 = 0; vzm1 = 0; }
+        double ax2 = a * yawUnitX(secondYaw);
+        double az2 = a * yawUnitZ(secondYaw);
+        double vx2 = vxm1 + ax2;
+        double vz2 = vzm1 + az2;
+        double x2 = x1 + vx2;
+        double z2 = z1 + vz2;
+
+        double finalVx = vx2 * f;
+        double finalVz = vz2 * f;
+        double[] finalDrift = predictDrift2D(finalVx, finalVz, f);
+        
+        debugExpectedX = x2 + finalDrift[0];
+        debugExpectedZ = z2 + finalDrift[1];
         debugExpectedAvailable = true;
-        debugPlannedSteps = 2;
-        debugPredictedStepX[0] = predictedX + walkDistance * yawUnitX(firstYaw);
-        debugPredictedStepZ[0] = predictedZ + walkDistance * yawUnitZ(firstYaw);
-        debugPredictedStepX[1] = debugExpectedX;
-        debugPredictedStepZ[1] = debugExpectedZ;
+        
+        debugPredictedStepX[0] = x1;
+        debugPredictedStepZ[0] = z1;
+        debugPredictedStepX[1] = x2;
+        debugPredictedStepZ[1] = z2;
         debugPredictedStepAvailable[0] = true;
         debugPredictedStepAvailable[1] = true;
+        debugPlannedSteps = 2;
     }
 
     private static void updateDebugMeasurement(Minecraft mc) {
@@ -482,12 +503,10 @@ public class AlignUtils {
     }
 
     private static double yawUnitX(float yaw) {
-        float f = yaw * 0.017453292F;
-        return -Math.sin(f);
+        return (double)(-Mth.sin(yaw * 0.017453292F));
     }
 
     private static double yawUnitZ(float yaw) {
-        float f = yaw * 0.017453292F;
-        return Math.cos(f);
+        return (double)Mth.cos(yaw * 0.017453292F);
     }
 }
