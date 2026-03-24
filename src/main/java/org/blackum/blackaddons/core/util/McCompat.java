@@ -15,15 +15,19 @@ import net.minecraft.world.level.Level;
 public final class McCompat {
     private static final String[] RESOURCE_CLASSES = {
             "net.minecraft.resources.Identifier",
-            "net.minecraft.resources.ResourceLocation"
+            "net.minecraft.resources.ResourceLocation",
+            "net.minecraft.class_2960"
     };
     private static final String[] UTIL_CLASSES = {
             "net.minecraft.util.Util",
-            "net.minecraft.Util"
+            "net.minecraft.Util",
+            "net.minecraft.class_156"
     };
     private static final String[] RENDER_TYPE_CLASSES = {
             "net.minecraft.client.renderer.rendertype.RenderTypes",
-            "net.minecraft.client.renderer.RenderType"
+            "net.minecraft.client.renderer.RenderType",
+            "net.minecraft.class_12249",
+            "net.minecraft.class_1921"
     };
 
     private McCompat() {
@@ -34,9 +38,9 @@ public final class McCompat {
             Class<?> type = findClass(name);
             if (type == null) continue;
             try {
-                Method tryParse = type.getMethod("tryParse", String.class);
-                return tryParse.invoke(null, value);
-            } catch (ReflectiveOperationException ignored) {
+                Object parsed = invokeStaticBest(type, new String[] { "tryParse", "method_12829" }, value);
+                if (parsed != null) return parsed;
+            } catch (IllegalStateException ignored) {
             }
         }
         return null;
@@ -47,16 +51,15 @@ public final class McCompat {
             Class<?> type = findClass(name);
             if (type == null) continue;
             try {
-                Method method = type.getMethod("fromNamespaceAndPath", String.class, String.class);
-                return method.invoke(null, namespace, path);
-            } catch (ReflectiveOperationException ignored) {
+                return invokeStaticBest(type, new String[] { "fromNamespaceAndPath", "method_60655" }, namespace, path);
+            } catch (IllegalStateException ignored) {
             }
         }
         throw new IllegalStateException("Unable to construct Minecraft resource identifier");
     }
 
     public static String dimensionId(ResourceKey<Level> key) {
-        for (String methodName : new String[] { "identifier", "location" }) {
+        for (String methodName : new String[] { "identifier", "location", "method_29177" }) {
             try {
                 Method method = key.getClass().getMethod(methodName);
                 Object value = method.invoke(key);
@@ -72,10 +75,10 @@ public final class McCompat {
             Class<?> type = findClass(name);
             if (type == null) continue;
             try {
-                Object platform = type.getMethod("getPlatform").invoke(null);
-                platform.getClass().getMethod("openUri", String.class).invoke(platform, url);
+                Object platform = invokeStaticBest(type, new String[] { "getPlatform", "method_668" });
+                invokeBest(platform, new String[] { "openUri", "method_674", "method_66818" }, url);
                 return;
-            } catch (ReflectiveOperationException ignored) {
+            } catch (IllegalStateException ignored) {
             }
         }
         throw new IllegalStateException("Unable to open URI");
@@ -84,7 +87,7 @@ public final class McCompat {
     public static SoundEvent createVariableRangeEvent(Object location) {
         try {
             for (Method method : SoundEvent.class.getMethods()) {
-                if (!method.getName().equals("createVariableRangeEvent") || method.getParameterCount() != 1) continue;
+                if (!matchesName(method, "createVariableRangeEvent", "method_47908") || method.getParameterCount() != 1) continue;
                 Class<?> parameter = method.getParameterTypes()[0];
                 if (parameter.isInstance(location)) {
                     return (SoundEvent) method.invoke(null, location);
@@ -99,24 +102,24 @@ public final class McCompat {
     public static Object registerTexture(DynamicTexture texture, String namespace, String path) {
         Object location = resource(namespace, path);
         Object textureManager = Minecraft.getInstance().getTextureManager();
-        invokeBest(textureManager, "register", location, texture);
+        invokeBest(textureManager, new String[] { "register", "method_4616" }, location, texture);
         return location;
     }
 
     public static void releaseTexture(Object location) {
-        invokeBest(Minecraft.getInstance().getTextureManager(), "release", location);
+        invokeBest(Minecraft.getInstance().getTextureManager(), new String[] { "release", "method_4615" }, location);
     }
 
     public static void blitGuiTexture(GuiGraphics graphics, Object pipeline, Object location, int x, int y,
                                       float u, float v, int width, int height, int textureWidth, int textureHeight,
                                       int imageWidth, int imageHeight) {
-        invokeBest(graphics, "blit", pipeline, location, x, y, u, v, width, height, textureWidth, textureHeight,
-                imageWidth, imageHeight);
+        invokeBest(graphics, new String[] { "blit", "method_25293" }, pipeline, location, x, y, u, v, width, height,
+                textureWidth, textureHeight, imageWidth, imageHeight);
     }
 
     public static VertexConsumer getWaypointBuffer(MultiBufferSource bufferSource) {
         Object renderType = getWaypointRenderType();
-        Object buffer = invokeBest(bufferSource, "getBuffer", renderType);
+        Object buffer = invokeBest(bufferSource, new String[] { "getBuffer", "method_73477" }, renderType);
         return (VertexConsumer) buffer;
     }
 
@@ -129,22 +132,17 @@ public final class McCompat {
             Class<?> type = findClass(name);
             if (type == null) continue;
             try {
-                for (Method method : type.getMethods()) {
-                    if (!method.getName().equals("entityTranslucent") || method.getParameterCount() != 1) continue;
-                    if (method.getParameterTypes()[0].isInstance(whiteTexture)) {
-                        return method.invoke(null, whiteTexture);
-                    }
-                }
-            } catch (ReflectiveOperationException ignored) {
+                return invokeStaticBest(type, new String[] { "entityTranslucent", "method_23580", "method_76000" }, whiteTexture);
+            } catch (IllegalStateException ignored) {
             }
         }
         throw new IllegalStateException("Unable to resolve waypoint render type");
     }
 
-    private static Object invokeBest(Object target, String name, Object... args) {
+    private static Object invokeBest(Object target, String[] names, Object... args) {
         Class<?> type = target.getClass();
         for (Method method : type.getMethods()) {
-            if (!method.getName().equals(name) || method.getParameterCount() != args.length) continue;
+            if (!matchesName(method, names) || method.getParameterCount() != args.length) continue;
             Class<?>[] parameterTypes = method.getParameterTypes();
             boolean matches = true;
             for (int i = 0; i < parameterTypes.length; i++) {
@@ -159,10 +157,40 @@ public final class McCompat {
             try {
                 return method.invoke(target, args);
             } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("Failed to invoke " + name + " with " + Arrays.toString(args), e);
+                throw new IllegalStateException("Failed to invoke " + Arrays.toString(names) + " with " + Arrays.toString(args), e);
             }
         }
-        throw new IllegalStateException("No matching method found: " + name);
+        throw new IllegalStateException("No matching method found: " + Arrays.toString(names));
+    }
+
+    private static Object invokeStaticBest(Class<?> type, String[] names, Object... args) {
+        for (Method method : type.getMethods()) {
+            if (!matchesName(method, names) || method.getParameterCount() != args.length) continue;
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            boolean matches = true;
+            for (int i = 0; i < parameterTypes.length; i++) {
+                Object arg = args[i];
+                if (arg == null) continue;
+                if (!wrap(parameterTypes[i]).isInstance(arg)) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (!matches) continue;
+            try {
+                return method.invoke(null, args);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("Failed to invoke " + Arrays.toString(names) + " with " + Arrays.toString(args), e);
+            }
+        }
+        throw new IllegalStateException("No matching method found: " + Arrays.toString(names));
+    }
+
+    private static boolean matchesName(Method method, String... names) {
+        for (String name : names) {
+            if (method.getName().equals(name)) return true;
+        }
+        return false;
     }
 
     private static Class<?> findClass(String name) {
