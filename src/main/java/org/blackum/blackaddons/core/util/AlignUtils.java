@@ -146,12 +146,12 @@ public class AlignUtils {
             
             float slipperiness = getSurfaceSlipperiness(player, mc);
             double f = slipperiness * 0.91D;
-            double a = player.getSpeed() * (0.216D / (slipperiness * slipperiness * slipperiness));
+            double a = player.getSpeed() * (0.21600002D / (slipperiness * slipperiness * slipperiness));
             
-            double d_walk = a / (1.0D - f);
+            double d_walk = predictDrift(a, f);
             
-            double predictedX = player.getX() + vx / (1.0D - f);
-            double predictedZ = player.getZ() + vz / (1.0D - f);
+            double predictedX = player.getX() + predictDrift(vx, f);
+            double predictedZ = player.getZ() + predictDrift(vz, f);
             
             double rx = targetX - predictedX;
             double rz = targetZ - predictedZ;
@@ -302,7 +302,7 @@ public class AlignUtils {
 
     private static float getSurfaceSlipperiness(LocalPlayer player, Minecraft mc) {
         if (mc.level == null) return 0.6F;
-        BlockPos groundPos = BlockPos.containing(player.getX(), player.getBoundingBox().minY - 0.5000001D, player.getZ());
+        BlockPos groundPos = BlockPos.containing(player.getX(), player.getBoundingBox().minY - 0.05D, player.getZ());
         return mc.level.getBlockState(groundPos).getBlock().getFriction();
     }
 
@@ -442,6 +442,16 @@ public class AlignUtils {
         debugActualStepAvailable[debugPendingStepIndex] = true;
         debugCompletedSteps = Math.max(debugCompletedSteps, debugPendingStepIndex + 1);
         debugPendingStepIndex = -1;
+    }
+
+    private static double predictDrift(double velocity, double friction) {
+        double drift = 0.0D;
+        double currentV = velocity;
+        while (Math.abs(currentV) >= 0.003D) {
+            drift += currentV;
+            currentV *= friction;
+        }
+        return drift;
     }
 
     private static double yawUnitX(float yaw) {
