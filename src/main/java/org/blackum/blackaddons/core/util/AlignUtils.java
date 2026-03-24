@@ -25,6 +25,17 @@ public class AlignUtils {
     private static final int LINE_HEIGHT = 10;
     private static final int DEBUG_STEP_COUNT = 2;
 
+    private static final float DEFAULT_FRICTION = 0.6F;
+    private static final float FRICTION_COMBINATION_FACTOR = 0.91F;
+    private static final float MOVEMENT_SPEED_MULTIPLIER = 0.21600002F;
+    private static final double MOVEMENT_INPUT_FACTOR = 0.9800000190734863D;
+    private static final double GROUND_CHECK_OFFSET = 0.5000001D;
+    private static final int BINARY_SEARCH_ROUNDS = 3;
+    private static final int BINARY_SEARCH_ITERATIONS = 24;
+    private static final double BINARY_SEARCH_PHI_RANGE = 2.0D;
+    private static final double MIN_MOVEMENT_DISTANCE_SQR = 9.0E-6D;
+    private static final double MIN_MOVEMENT_DISTANCE = 0.003D;
+
     private static boolean active;
     private static double targetX;
     private static double targetZ;
@@ -67,7 +78,6 @@ public class AlignUtils {
     private static int debugPendingStepIndex = -1;
     private static double sessionTotalError = 0.0D;
     private static int sessionAlignCount = 0;
-    private static final double TICK_PRECISION = 9.0E-6D;
 
     public static void register() {
         HudRenderCallback.EVENT.register((graphics, partialTick) -> renderOverlay(graphics));
@@ -149,9 +159,9 @@ public class AlignUtils {
             }
 
             float slipperiness = getSurfaceSlipperiness(player, mc);
-            float f = slipperiness * 0.91F;
-            float speedMultiplier = 0.21600002F / (slipperiness * slipperiness * slipperiness);
-            double a = (double) player.getSpeed() * (double) speedMultiplier * 0.9800000190734863D;
+            float f = slipperiness * FRICTION_COMBINATION_FACTOR;
+            float speedMultiplier = MOVEMENT_SPEED_MULTIPLIER / (slipperiness * slipperiness * slipperiness);
+            double a = (double) player.getSpeed() * (double) speedMultiplier * MOVEMENT_INPUT_FACTOR;
             
             double vx = player.getDeltaMovement().x;
             double vz = player.getDeltaMovement().z;
@@ -180,11 +190,11 @@ public class AlignUtils {
             double bestTheta = 0;
             double bestPhi = phi;
             
-            for (int round = 0; round < 3; round++) {
+            for (int round = 0; round < BINARY_SEARCH_ROUNDS; round++) {
                 double tLow = 0, tHigh = 180;
                 double unitX = yawUnitX((float)bestPhi);
                 double unitZ = yawUnitZ((float)bestPhi);
-                for (int i = 0; i < 24; i++) {
+                for (int i = 0; i < BINARY_SEARCH_ITERATIONS; i++) {
                     double mid = (tLow + tHigh) / 2.0;
                     double[] p = simulateFinalPosition(player.getX(), player.getZ(), vx, vz, a, (double)f, (float)(bestPhi + mid), (float)(bestPhi - mid));
                     double distProg = (p[0] - predX) * unitX + (p[1] - predZ) * unitZ;
@@ -193,10 +203,10 @@ public class AlignUtils {
                 }
                 bestTheta = tLow;
 
-                double pLow = bestPhi - 2.0, pHigh = bestPhi + 2.0;
+                double pLow = bestPhi - BINARY_SEARCH_PHI_RANGE, pHigh = bestPhi + BINARY_SEARCH_PHI_RANGE;
                 double latUnitX = yawUnitX((float)(bestPhi + 90));
                 double latUnitZ = yawUnitZ((float)(bestPhi + 90));
-                for (int i = 0; i < 24; i++) {
+                for (int i = 0; i < BINARY_SEARCH_ITERATIONS; i++) {
                     double mid = (pLow + pHigh) / 2.0;
                     double[] p = simulateFinalPosition(player.getX(), player.getZ(), vx, vz, a, (double)f, (float)(mid + bestTheta), (float)(mid - bestTheta));
                     double latErr = (p[0] - targetX) * latUnitX + (p[1] - targetZ) * latUnitZ;
@@ -334,8 +344,8 @@ public class AlignUtils {
     }
 
     private static float getSurfaceSlipperiness(LocalPlayer player, Minecraft mc) {
-        if (mc.level == null) return 0.6F;
-        BlockPos groundPos = BlockPos.containing(player.getX(), player.getY() - 0.5000001D, player.getZ());
+        if (mc.level == null) return DEFAULT_FRICTION;
+        BlockPos groundPos = BlockPos.containing(player.getX(), player.getY() - GROUND_CHECK_OFFSET, player.getZ());
         return mc.level.getBlockState(groundPos).getBlock().getFriction();
     }
 
@@ -423,7 +433,7 @@ public class AlignUtils {
     }
 
     private static void storeExpectedAlignment(double startX, double startZ, double vx, double vz, double a, double f, float firstYaw, float secondYaw) {
-        if (vx * vx + vz * vz < 9.0E-6D) { vx = 0; vz = 0; }
+        if (vx * vx + vz * vz < MIN_MOVEMENT_DISTANCE_SQR) { vx = 0; vz = 0; }
         double ax1 = a * yawUnitX(firstYaw);
         double az1 = a * yawUnitZ(firstYaw);
         double vx1 = vx + ax1;
@@ -433,7 +443,7 @@ public class AlignUtils {
 
         double vxm1 = vx1 * f;
         double vzm1 = vz1 * f;
-        if (vxm1 * vxm1 + vzm1 * vzm1 < 9.0E-6D) { vxm1 = 0; vzm1 = 0; }
+        if (vxm1 * vxm1 + vzm1 * vzm1 < MIN_MOVEMENT_DISTANCE_SQR) { vxm1 = 0; vzm1 = 0; }
         double ax2 = a * yawUnitX(secondYaw);
         double az2 = a * yawUnitZ(secondYaw);
         double vx2 = vxm1 + ax2;
@@ -492,7 +502,7 @@ public class AlignUtils {
     private static double predictDrift(double velocity, double friction) {
         double drift = 0.0D;
         double currentV = velocity;
-        while (Math.abs(currentV) >= 0.003D) {
+        while (Math.abs(currentV) >= MIN_MOVEMENT_DISTANCE) {
             drift += currentV;
             currentV *= friction;
         }
@@ -502,7 +512,7 @@ public class AlignUtils {
     private static double[] predictDrift2D(double vx, double vz, double friction) {
         double driftX = 0.0D;
         double driftZ = 0.0D;
-        while (vx * vx + vz * vz >= TICK_PRECISION) {
+        while (vx * vx + vz * vz >= MIN_MOVEMENT_DISTANCE_SQR) {
             driftX += vx;
             driftZ += vz;
             vx *= friction;
@@ -514,7 +524,7 @@ public class AlignUtils {
     private static double[] simulateFinalPosition(double startX, double startZ, double vx, double vz, double a, double f, float yaw1, float yaw2) {
         double v1x = vx;
         double v1z = vz;
-        if (v1x * v1x + v1z * v1z < TICK_PRECISION) {
+        if (v1x * v1x + v1z * v1z < MIN_MOVEMENT_DISTANCE_SQR) {
             v1x = 0; v1z = 0;
         }
         v1x += a * yawUnitX(yaw1);
@@ -524,7 +534,7 @@ public class AlignUtils {
 
         double v2x = v1x * f;
         double v2z = v1z * f;
-        if (v2x * v2x + v2z * v2z < TICK_PRECISION) {
+        if (v2x * v2x + v2z * v2z < MIN_MOVEMENT_DISTANCE_SQR) {
             v2x = 0; v2z = 0;
         }
         v2x += a * yawUnitX(yaw2);
