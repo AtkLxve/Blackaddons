@@ -33,12 +33,12 @@ jobs:
         with:
           name: BlackAddons-Mod
           path: |
-            build/libs/*.jar
-            !build/libs/*-sources.jar
-            !build/libs/*-dev.jar
+            */build/libs/*.jar
+            !*/build/libs/*-sources.jar
+            !*/build/libs/*-dev.jar
 
       - name: Upload Sources Jar
         uses: actions/upload-artifact@v6
         with:
           name: BlackAddons-Sources
-          path: build/libs/*-sources.jar
+          path: */build/libs/*-sources.jar
