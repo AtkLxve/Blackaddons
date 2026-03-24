@@ -68,9 +68,6 @@ public class AlignUtils {
     private static double sessionTotalError = 0.0D;
     private static int sessionAlignCount = 0;
     private static final double TICK_PRECISION = 9.0E-6D;
-    private static final double SNAP_THRESHOLD = 0.003D;
-
-    private static double[] lastSimPos = new double[2];
 
     public static void register() {
         HudRenderCallback.EVENT.register((graphics, partialTick) -> renderOverlay(graphics));
@@ -181,30 +178,36 @@ public class AlignUtils {
             }
 
             double bestTheta = 0;
-            double minErr = Double.MAX_VALUE;
-            double low = 0, high = 180;
+            double bestPhi = phi;
             
-            for (int i = 0; i < 30; i++) {
-                double mid = (low + high) / 2.0;
-                double[] p = simulateFinalPosition(player.getX(), player.getZ(), vx, vz, a, (double)f, (float)(phi + mid), (float)(phi - mid));
-                double distToTarget = Math.hypot(targetX - p[0], targetZ - p[1]);
-                if (distToTarget < minErr) {
-                    minErr = distToTarget;
-                    bestTheta = mid;
+            for (int round = 0; round < 3; round++) {
+                double tLow = 0, tHigh = 180;
+                double unitX = yawUnitX((float)bestPhi);
+                double unitZ = yawUnitZ((float)bestPhi);
+                for (int i = 0; i < 24; i++) {
+                    double mid = (tLow + tHigh) / 2.0;
+                    double[] p = simulateFinalPosition(player.getX(), player.getZ(), vx, vz, a, (double)f, (float)(bestPhi + mid), (float)(bestPhi - mid));
+                    double distProg = (p[0] - predX) * unitX + (p[1] - predZ) * unitZ;
+                    if (distProg > L) tLow = mid;
+                    else tHigh = mid;
                 }
-                
-                double unitX = yawUnitX((float)phi);
-                double unitZ = yawUnitZ((float)phi);
-                double dImpX = p[0] - predX;
-                double dImpZ = p[1] - predZ;
-                double prog = dImpX * unitX + dImpZ * unitZ;
-                
-                if (prog > L) low = mid;
-                else high = mid;
+                bestTheta = tLow;
+
+                double pLow = bestPhi - 2.0, pHigh = bestPhi + 2.0;
+                double latUnitX = yawUnitX((float)(bestPhi + 90));
+                double latUnitZ = yawUnitZ((float)(bestPhi + 90));
+                for (int i = 0; i < 24; i++) {
+                    double mid = (pLow + pHigh) / 2.0;
+                    double[] p = simulateFinalPosition(player.getX(), player.getZ(), vx, vz, a, (double)f, (float)(mid + bestTheta), (float)(mid - bestTheta));
+                    double latErr = (p[0] - targetX) * latUnitX + (p[1] - targetZ) * latUnitZ;
+                    if (latErr > 0) pHigh = mid;
+                    else pLow = mid;
+                }
+                bestPhi = pLow;
             }
 
-            yaw1 = (float) Mth.wrapDegrees(phi + bestTheta);
-            yaw2 = (float) Mth.wrapDegrees(phi - bestTheta);
+            yaw1 = (float) Mth.wrapDegrees(bestPhi + bestTheta);
+            yaw2 = (float) Mth.wrapDegrees(bestPhi - bestTheta);
             
             storeExpectedAlignment(player.getX(), player.getZ(), vx, vz, a, (double) f, yaw1, yaw2);
             alignState = 1;
@@ -536,10 +539,10 @@ public class AlignUtils {
     }
 
     private static double yawUnitX(float yaw) {
-        return (double)(-Mth.sin(yaw * 0.017453292F));
+        return (double)(-Mth.sin(yaw * 0.017453292519943295F));
     }
 
     private static double yawUnitZ(float yaw) {
-        return (double)Mth.cos(yaw * 0.017453292F);
+        return (double)Mth.cos(yaw * 0.017453292519943295F);
     }
 }
