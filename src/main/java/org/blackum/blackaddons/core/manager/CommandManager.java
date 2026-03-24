@@ -108,6 +108,13 @@ public class CommandManager {
                                                         Blackaddons.testMenuOpener.run();
                                                 return 1;
                                         }));
+                        
+                        testNode.then(ClientCommandManager.literal("resetalign")
+                                        .executes(ctx -> {
+                                                org.blackum.blackaddons.core.util.AlignUtils.resetSessionStats();
+                                                ctx.getSource().sendFeedback(net.minecraft.network.chat.Component.literal("Alignment session stats reset."));
+                                                return 1;
+                                        }));
 
                         testNode.then(ClientCommandManager.literal("rotate")
                                         .then(ClientCommandManager

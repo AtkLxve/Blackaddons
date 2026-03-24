@@ -8,6 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
+import net.minecraft.util.Mth;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.core.manager.RotationManager;
 import org.blackum.blackaddons.mixin.core.KeyBindingAccessor;
@@ -66,6 +67,8 @@ public class AlignUtils {
     private static int debugPendingStepIndex = -1;
     private static double debugPendingExpectedX;
     private static double debugPendingExpectedZ;
+    private static int sessionAlignCount = 0;
+    private static double sessionTotalError = 0.0D;
 
     public static void register() {
         HudRenderCallback.EVENT.register((graphics, partialTick) -> renderOverlay(graphics));
@@ -109,6 +112,11 @@ public class AlignUtils {
         }
     }
 
+    public static void resetSessionStats() {
+        sessionAlignCount = 0;
+        sessionTotalError = 0.0D;
+    }
+
     public static void tick() {
         Minecraft mc = Minecraft.getInstance();
         updateDebugMeasurement(mc);
@@ -141,22 +149,24 @@ public class AlignUtils {
                 return;
             }
 
+            float slipperiness = getSurfaceSlipperiness(player, mc);
+            float f = slipperiness * 0.91F;
+            float speedMultiplier = 0.21600002F / (slipperiness * slipperiness * slipperiness);
+            double a = (double) player.getSpeed() * (double) speedMultiplier;
+            
+            double d_walk = predictDrift(a, (double) f);
+            
             double vx = player.getDeltaMovement().x;
             double vz = player.getDeltaMovement().z;
             
-            float slipperiness = getSurfaceSlipperiness(player, mc);
-            double f = slipperiness * 0.91D;
-            double a = player.getSpeed() * (0.21600002D / (slipperiness * slipperiness * slipperiness));
-            
-            double d_walk = predictDrift(a, f);
-            
-            double predictedX = player.getX() + predictDrift(vx, f);
-            double predictedZ = player.getZ() + predictDrift(vz, f);
+            double[] drift = predictDrift2D(vx, vz, (double) f);
+            double predictedX = player.getX() + drift[0];
+            double predictedZ = player.getZ() + drift[1];
             
             double rx = targetX - predictedX;
             double rz = targetZ - predictedZ;
             double L = Math.hypot(rx, rz);
-            double phi = Math.toDegrees(Math.atan2(rz, rx)) - 90.0D;
+            double phi = (float) (Math.atan2(rz, rx) * 57.2957763671875D) - 90.0F;
             phi = normalizeYaw((float) phi);
 
             if (L <= ALIGN_EPSILON) {
@@ -272,6 +282,9 @@ public class AlignUtils {
             }
         } else {
             info.add("Actual@+0.5s: n/a");
+        }
+        if (sessionAlignCount > 0) {
+            info.add(String.format(Locale.US, "Session Avg Err: %.6f (%d)", sessionTotalError / sessionAlignCount, sessionAlignCount));
         }
         return info;
     }
@@ -418,6 +431,8 @@ public class AlignUtils {
         debugMeasuredError = Math.hypot(targetX - debugMeasuredX, targetZ - debugMeasuredZ);
         debugMeasuredAvailable = true;
         debugAwaitingSample = false;
+        sessionAlignCount++;
+        sessionTotalError += debugMeasuredError;
     }
 
     private static void markPendingStep(int stepIndex) {
@@ -454,13 +469,25 @@ public class AlignUtils {
         return drift;
     }
 
+    private static double[] predictDrift2D(double vx, double vz, double friction) {
+        double driftX = 0.0D;
+        double driftZ = 0.0D;
+        while (vx * vx + vz * vz >= 9.0E-6D) {
+            driftX += vx;
+            driftZ += vz;
+            vx *= friction;
+            vz *= friction;
+        }
+        return new double[]{driftX, driftZ};
+    }
+
     private static double yawUnitX(float yaw) {
-        double rad = Math.toRadians(yaw);
-        return -Math.sin(rad);
+        float f = yaw * 0.017453292F;
+        return -Math.sin(f);
     }
 
     private static double yawUnitZ(float yaw) {
-        double rad = Math.toRadians(yaw);
-        return Math.cos(rad);
+        float f = yaw * 0.017453292F;
+        return Math.cos(f);
     }
 }
