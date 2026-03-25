@@ -51,6 +51,8 @@ public class AlignUtils {
     private static int alignState = 0;
     private static float yaw1 = 0;
     private static float yaw2 = 0;
+    private static double tick1PlannedA = 0;
+    private static double tick1PlannedF = 0;
     private static int movementLockTicks = 0;
     private static boolean forcedForward = false;
     private static boolean forcedSneak = false;
@@ -157,6 +159,11 @@ public class AlignUtils {
                 return;
             }
 
+            if (player.isSprinting()) {
+                player.setSprinting(false);
+                return;
+            }
+
             float slipperiness = getSurfaceSlipperiness(player, mc);
             float f = slipperiness * FRICTION_COMBINATION_FACTOR;
             float speedMultiplier = MOVEMENT_SPEED_MULTIPLIER / (slipperiness * slipperiness * slipperiness);
@@ -217,7 +224,9 @@ public class AlignUtils {
 
             yaw1 = (float) Mth.wrapDegrees(bestPhi + bestTheta);
             yaw2 = (float) Mth.wrapDegrees(bestPhi - bestTheta);
-            
+            tick1PlannedA = a;
+            tick1PlannedF = (double) f;
+
             storeExpectedAlignment(player.getX(), player.getZ(), vx, vz, a, (double) f, yaw1, yaw2);
             alignState = 1;
         }
@@ -227,6 +236,7 @@ public class AlignUtils {
             applyMovement(mc, player, yaw1, false);
         } else if (alignState == 2) {
             capturePendingStep(player, 0);
+            yaw2 = correctSecondYaw(player, mc);
             alignState = 3;
             applyMovement(mc, player, yaw2, false);
         } else if (alignState == 3) {
@@ -393,6 +403,7 @@ public class AlignUtils {
         setKeyState(mc.options.keyRight, false);
         setKeyState(mc.options.keyJump, false);
         setKeyState(mc.options.keyShift, false);
+        setKeyState(mc.options.keySprint, false);
     }
 
     private static void releasePressedKeys(Minecraft mc) {
@@ -400,6 +411,7 @@ public class AlignUtils {
         clearForcedMovement();
         restorePhysicalState(mc.options.keyUp, mc);
         restorePhysicalState(mc.options.keyShift, mc);
+        restorePhysicalState(mc.options.keySprint, mc);
     }
 
     private static void clearForcedMovement() {
@@ -498,6 +510,55 @@ public class AlignUtils {
         );
         debugActualStepAvailable[stepIndex] = true;
         debugCompletedSteps = Math.max(debugCompletedSteps, stepIndex + 1);
+    }
+
+    private static float correctSecondYaw(LocalPlayer player, Minecraft mc) {
+        double realX = player.getX();
+        double realZ = player.getZ();
+        double realVx = player.getDeltaMovement().x;
+        double realVz = player.getDeltaMovement().z;
+        double a = tick1PlannedA;
+        double f = tick1PlannedF;
+
+        double rx = targetX - realX;
+        double rz = targetZ - realZ;
+        double L = Math.hypot(rx, rz);
+        if (L <= ALIGN_EPSILON) {
+            return yaw2;
+        }
+
+        double phi = Math.toDegrees(Math.atan2(rz, rx)) - 90.0D;
+        phi = Mth.wrapDegrees(phi);
+
+        double pLow = phi - 180.0D;
+        double pHigh = phi + 180.0D;
+        double latUnitX = yawUnitX((float)(phi + 90));
+        double latUnitZ = yawUnitZ((float)(phi + 90));
+        for (int i = 0; i < BINARY_SEARCH_ITERATIONS; i++) {
+            double mid = (pLow + pHigh) / 2.0;
+            double[] p = simulateSingleStep(realX, realZ, realVx, realVz, a, f, (float) mid);
+            double latErr = (p[0] - targetX) * latUnitX + (p[1] - targetZ) * latUnitZ;
+            if (latErr > 0) pHigh = mid;
+            else pLow = mid;
+        }
+        return (float) Mth.wrapDegrees(pLow);
+    }
+
+    private static double[] simulateSingleStep(double startX, double startZ, double vx, double vz, double a, double f, float yaw) {
+        double v1x = vx;
+        double v1z = vz;
+        if (v1x * v1x + v1z * v1z < MIN_MOVEMENT_DISTANCE_SQR) {
+            v1x = 0;
+            v1z = 0;
+        }
+        v1x += a * yawUnitX(yaw);
+        v1z += a * yawUnitZ(yaw);
+        double x1 = startX + v1x;
+        double z1 = startZ + v1z;
+        double v2x = v1x * f;
+        double v2z = v1z * f;
+        double[] drift = predictDrift2D(v2x, v2z, f);
+        return new double[]{x1 + drift[0], z1 + drift[1]};
     }
 
     private static double predictDrift(double velocity, double friction) {

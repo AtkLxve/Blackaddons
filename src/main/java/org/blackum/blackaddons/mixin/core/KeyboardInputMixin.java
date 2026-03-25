@@ -35,6 +35,7 @@ public abstract class KeyboardInputMixin {
                 || keyMapping == mc.options.keyLeft
                 || keyMapping == mc.options.keyRight
                 || keyMapping == mc.options.keyJump
-                || keyMapping == mc.options.keyShift;
+                || keyMapping == mc.options.keyShift
+                || keyMapping == mc.options.keySprint;
     }
 }

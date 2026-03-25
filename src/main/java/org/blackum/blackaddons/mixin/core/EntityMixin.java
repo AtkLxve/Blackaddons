@@ -2,6 +2,7 @@ package org.blackum.blackaddons.mixin.core;
 
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
+import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.waypoint.WaypointActionManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,9 +15,13 @@ public abstract class EntityMixin {
 
     @Inject(method = "turn", at = @At("HEAD"), cancellable = true)
     private void onTurn(double yRot, double xRot, CallbackInfo ci) {
-        if (Freecam.getInstance().isActive() && (Object) this instanceof LocalPlayer) {
-            Freecam.getInstance().changeLookDirection(yRot, xRot);
-            ci.cancel();
+        if ((Object) this instanceof LocalPlayer) {
+            if (Freecam.getInstance().isActive()) {
+                Freecam.getInstance().changeLookDirection(yRot, xRot);
+                ci.cancel();
+            } else if (AlignUtils.shouldBlockMovementInput()) {
+                ci.cancel();
+            }
         }
     }
 
