@@ -34,15 +34,37 @@ public class WaypointEditScreen extends BaseScreen {
     private final Waypoint waypoint;
     private final Consumer<Waypoint> onSave;
     
+    private final int originalColor;
+    private final WaypointAnimation originalAnimation;
+    private final WaypointShape originalShape;
+    private final double originalRadius;
+    private final double originalHeight;
+    private final boolean originalShowFullShape;
+    private final float originalReuseCooldownSeconds;
+    private boolean saved = false;
+    private boolean cancelled = false;
+
     private TextField nameField;
     private TextField xField;
     private TextField yField;
     private TextField zField;
+    private TextField manualRadius;
+    private TextField manualHeight;
+    private TextField cooldownField;
+    private Checkbox showFullShapeCheckbox;
 
     public WaypointEditScreen(Screen parent, Waypoint waypoint, Consumer<Waypoint> onSave) {
         super(Component.literal(waypoint.name == null ? "Add Waypoint" : "Edit Waypoint"), parent);
         this.waypoint = waypoint;
         this.onSave = onSave;
+        
+        this.originalColor = waypoint.color;
+        this.originalAnimation = waypoint.animation;
+        this.originalShape = waypoint.shape;
+        this.originalRadius = waypoint.radius;
+        this.originalHeight = waypoint.height;
+        this.originalShowFullShape = waypoint.showFullShape;
+        this.originalReuseCooldownSeconds = waypoint.reuseCooldownSeconds;
     }
 
     @Override
@@ -151,13 +173,13 @@ public class WaypointEditScreen extends BaseScreen {
             });
         shapeDropdown.setSelectedOption(waypoint.shape.toString());
         list.addItem(shapeDropdown);
-        Checkbox showFullShapeCheckbox = new Checkbox(0, 0, "Show Full Shape", waypoint.showFullShape, val -> waypoint.showFullShape = val);
+        showFullShapeCheckbox = new Checkbox(0, 0, "Show Full Shape", waypoint.showFullShape, val -> waypoint.showFullShape = val);
         list.addItem(showFullShapeCheckbox);
         list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Radius", Label.Style.CAPTION));
         GridRow radiusRow = new GridRow(itemWidth, 20);
-        TextField manualRadius = new TextField(0, 0, 50, 14, "Radius");
+        manualRadius = new TextField(0, 0, 50, 14, "Radius");
         manualRadius.setText(String.format(Locale.ROOT, "%.2f", waypoint.radius));
         Slider radiusSlider = new Slider(0, 0, itemWidth - 60, 0.01f, 10.00f, (float)waypoint.radius, val -> {
             waypoint.radius = val;
@@ -180,7 +202,7 @@ public class WaypointEditScreen extends BaseScreen {
 
         list.addItem(new Label(0, 0, "Height", Label.Style.CAPTION));
         GridRow heightRow = new GridRow(itemWidth, 20);
-        TextField manualHeight = new TextField(0, 0, 50, 14, "Height");
+        manualHeight = new TextField(0, 0, 50, 14, "Height");
         manualHeight.setText(String.format(Locale.ROOT, "%.2f", waypoint.height));
         Slider heightSlider = new Slider(0, 0, itemWidth - 60, 0.01f, 10.00f, (float)waypoint.height, val -> {
             waypoint.height = val;
@@ -209,7 +231,7 @@ public class WaypointEditScreen extends BaseScreen {
             waypoint.reuseCooldownSeconds = roundToMillis(val);
             updateTextField(cooldownFieldRef[0], waypoint.reuseCooldownSeconds);
         });
-        TextField cooldownField = createNonNegativeSecondsField(waypoint.reuseCooldownSeconds, value -> {
+        cooldownField = createNonNegativeSecondsField(waypoint.reuseCooldownSeconds, value -> {
             waypoint.reuseCooldownSeconds = value;
             cooldownSlider.setValue(Math.min(value, SAFE_COOLDOWN_TIME_SECONDS));
             updateTextField(cooldownFieldRef[0], waypoint.reuseCooldownSeconds);
@@ -223,39 +245,76 @@ public class WaypointEditScreen extends BaseScreen {
 
         GridRow btnRow = new GridRow(itemWidth, 20);
         Button saveBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, 20, "Save", () -> {
-            waypoint.name = nameField.getText();
-            try {
-                waypoint.x = Double.parseDouble(xField.getText().replace(",", "."));
-                waypoint.y = Double.parseDouble(yField.getText().replace(",", "."));
-                waypoint.z = Double.parseDouble(zField.getText().replace(",", "."));
-                
-                try {
-                    waypoint.radius = Double.parseDouble(manualRadius.getText().replace(",", "."));
-                } catch (NumberFormatException ignored) {}
-                
-                try {
-                    waypoint.height = Double.parseDouble(manualHeight.getText().replace(",", "."));
-                } catch (NumberFormatException ignored) {}
-                try {
-                    waypoint.reuseCooldownSeconds = roundToMillis(Float.parseFloat(cooldownField.getText().replace(",", ".")));
-                } catch (NumberFormatException ignored) {}
-                
-                waypoint.showFullShape = showFullShapeCheckbox.isChecked();
-
-                if (waypoint.dimension == null && Minecraft.getInstance().level != null) {
-                    Minecraft mc = Minecraft.getInstance();
-                    waypoint.dimension = McCompat.dimensionId(mc.level.dimension());
-                }
-                onSave.accept(waypoint);
+            if (performSave()) {
                 minecraft.setScreen(parent);
-            } catch (NumberFormatException ignored) {}
+            }
         });
-        Button cancelBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, 20, "Cancel", () -> minecraft.setScreen(parent));
+        Button cancelBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, 20, "Cancel", () -> {
+            cancelled = true;
+            minecraft.setScreen(parent);
+        });
         btnRow.addChild(saveBtn, 0);
         btnRow.addChild(cancelBtn, (itemWidth + Theme.PADDING) / 2);
         list.addItem(btnRow);
 
         widgets.add(list);
+    }
+
+    private boolean performSave() {
+        if (saved || cancelled) return false;
+        
+        boolean anyError = false;
+        waypoint.name = nameField.getText();
+        
+        try {
+            waypoint.x = Double.parseDouble(xField.getText().replace(",", "."));
+            waypoint.y = Double.parseDouble(yField.getText().replace(",", "."));
+            waypoint.z = Double.parseDouble(zField.getText().replace(",", "."));
+        } catch (NumberFormatException e) {
+            anyError = true;
+        }
+        
+        try {
+            waypoint.radius = Double.parseDouble(manualRadius.getText().replace(",", "."));
+        } catch (NumberFormatException ignored) {}
+        
+        try {
+            waypoint.height = Double.parseDouble(manualHeight.getText().replace(",", "."));
+        } catch (NumberFormatException ignored) {}
+        
+        try {
+            waypoint.reuseCooldownSeconds = roundToMillis(Float.parseFloat(cooldownField.getText().replace(",", ".")));
+        } catch (NumberFormatException ignored) {}
+        
+        waypoint.showFullShape = showFullShapeCheckbox.isChecked();
+
+        if (waypoint.dimension == null && Minecraft.getInstance().level != null) {
+            Minecraft mc = Minecraft.getInstance();
+            waypoint.dimension = McCompat.dimensionId(mc.level.dimension());
+        }
+        
+        saved = true;
+        onSave.accept(waypoint);
+        return !anyError;
+    }
+
+    @Override
+    public void onClose() {
+        performSave();
+        super.onClose();
+    }
+
+    @Override
+    public void removed() {
+        if (!saved) {
+            waypoint.color = originalColor;
+            waypoint.animation = originalAnimation;
+            waypoint.shape = originalShape;
+            waypoint.radius = originalRadius;
+            waypoint.height = originalHeight;
+            waypoint.showFullShape = originalShowFullShape;
+            waypoint.reuseCooldownSeconds = originalReuseCooldownSeconds;
+        }
     }
 
     @Override
