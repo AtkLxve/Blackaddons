@@ -298,11 +298,12 @@ public class ProfileStateManager {
             }
 
             final JsonObject finalData = data;
-            mc.execute(() -> {
-                mc.setScreen(
-                        new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player, profileName, force,
-                                finalData));
-            });
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player,
+                        profileName, force,
+                        finalData));
+            }
+
         }).exceptionally(e -> {
             mc.gui.getChat().addMessage(ChatUtils.error("Exception: " + e.getMessage()));
             NotificationManager.addNotification("Profile Exception", e.getMessage(), NotificationType.ERROR);

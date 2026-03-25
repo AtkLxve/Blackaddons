@@ -7,6 +7,7 @@ import org.blackum.blackaddons.core.config.ActionManager;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.screen.ChatActionEditScreen;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.*;
@@ -237,8 +238,11 @@ public class ChatActionsTabController extends SimpleTabController {
             }
 
             Button editActionsBtn = new Button(0, 0, itemWidth, Theme.BUTTON_HEIGHT, "Edit Action Steps", () -> {
-                Minecraft.getInstance().setScreen(new ChatActionEditScreen(screen, trigger));
+                if (Blackaddons.screenOpener != null) {
+                    Blackaddons.screenOpener.accept(new ChatActionEditScreen(screen, trigger));
+                }
             });
+
             triggerWidgets.add(editActionsBtn);
 
             Button deleteBtn = new Button(0, 0, itemWidth, Theme.BUTTON_HEIGHT, "Delete Action",

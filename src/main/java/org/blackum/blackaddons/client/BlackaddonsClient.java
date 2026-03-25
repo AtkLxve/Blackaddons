@@ -2,6 +2,7 @@ package org.blackum.blackaddons.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screens.Screen;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -45,6 +46,7 @@ import org.blackum.blackaddons.integration.BotIntegration;
 
 public class BlackaddonsClient implements ClientModInitializer {
     private static boolean internalChatMsg = false;
+    private static Screen pendingScreen = null;
 
     @Override
     public void onInitializeClient() {
@@ -74,18 +76,19 @@ public class BlackaddonsClient implements ClientModInitializer {
         });
 
         Blackaddons.guiOpener = () -> {
-            Minecraft client = Minecraft.getInstance();
-            client.execute(() -> client.setScreen(new DemoScreen()));
+            pendingScreen = new DemoScreen();
         };
 
         Blackaddons.testMenuOpener = () -> {
-            Minecraft client = Minecraft.getInstance();
-            client.execute(() -> client.setScreen(new TestMenuScreen()));
+            pendingScreen = new TestMenuScreen();
+        };
+
+        Blackaddons.screenOpener = (screen) -> {
+            pendingScreen = screen;
         };
 
         Blackaddons.mainGuiOpener = () -> {
-            Minecraft client = Minecraft.getInstance();
-            client.execute(() -> client.setScreen(new BlackAddonsGUI()));
+            pendingScreen = new BlackAddonsGUI();
         };
 
         Blackaddons.notificationTrigger = (message) -> {
@@ -123,7 +126,12 @@ public class BlackaddonsClient implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client -> AlignUtils.tick());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             NotificationManager.getInstance().tick();
+            if (pendingScreen != null) {
+                client.setScreen(pendingScreen);
+                pendingScreen = null;
+            }
         });
+
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
 
         ClientSendMessageEvents.ALLOW_CHAT.register(message -> {

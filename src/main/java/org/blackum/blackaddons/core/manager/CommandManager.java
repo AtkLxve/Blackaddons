@@ -457,9 +457,10 @@ public class CommandManager {
                                                                                 return 1;
                                                                         })))
                                         .executes(ctx -> {
-                                                Minecraft.getInstance().execute(() -> {
-                                                        Minecraft.getInstance().setScreen(new IrcScreen());
-                                                });
+                                                if (Blackaddons.screenOpener != null) {
+                                                        Blackaddons.screenOpener.accept(new IrcScreen());
+                                                }
+
                                                 return 1;
                                         });
 
@@ -473,9 +474,10 @@ public class CommandManager {
                                                                 return 1;
                                                         }))
                                         .executes(ctx -> {
-                                                Minecraft.getInstance().execute(() -> {
-                                                        Minecraft.getInstance().setScreen(new IrcScreen());
-                                                });
+                                                if (Blackaddons.screenOpener != null) {
+                                                        Blackaddons.screenOpener.accept(new IrcScreen());
+                                                }
+
                                                 return 1;
                                         }));
 
@@ -492,9 +494,10 @@ public class CommandManager {
                                 cmd.then(createActionTriggerModeNode("editmode"));
                                 cmd.then(CommandUtils.subcommand);
                                 cmd.then(ClientCommandManager.literal("pf").executes(ctx -> {
-                                        Minecraft.getInstance().execute(() -> {
-                                                Minecraft.getInstance().setScreen(new PartyFinderScreen());
-                                        });
+                                        if (Blackaddons.screenOpener != null) {
+                                                Blackaddons.screenOpener.accept(new PartyFinderScreen());
+                                        }
+
                                         return 1;
                                 }));
                                 cmd.then(ClientCommandManager.literal("preview")
@@ -504,13 +507,9 @@ public class CommandManager {
                                                                 .executes(ctx -> {
                                                                         String url = StringArgumentType
                                                                                         .getString(ctx, "url");
-                                                                        Minecraft.getInstance().execute(() -> {
-                                                                                Minecraft.getInstance()
-                                                                                                .setScreen(
-                                                                                                                new ImagePreviewScreen(
-                                                                                                                                url,
-                                                                                                                                Minecraft.getInstance().screen));
-                                                                        });
+                                                                        if (Blackaddons.screenOpener != null) {
+                                                                Blackaddons.screenOpener.accept(new ImagePreviewScreen(url, Minecraft.getInstance().screen));
+                                                        }
                                                                         return 1;
                                                                 })));
 

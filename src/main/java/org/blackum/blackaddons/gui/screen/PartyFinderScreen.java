@@ -14,6 +14,7 @@ import org.blackum.blackaddons.core.manager.PartyFinderManager;
 import org.blackum.blackaddons.integration.BotIntegration;
 import org.blackum.blackaddons.core.util.JsonUtils;
 import org.blackum.blackaddons.core.util.MinecraftInstance;
+import org.blackum.blackaddons.Blackaddons;
 
 import java.util.List;
 
@@ -47,8 +48,11 @@ public class PartyFinderScreen extends BaseScreen {
         widgets.add(refreshBtn);
 
         Button createBtn = new Button(contentX + 90, btnY, 100, btnHeight, "Create Party", () -> {
-            MinecraftInstance.mc.setScreen(new PartyCreationScreen(this));
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new PartyCreationScreen(this));
+            }
         });
+
         widgets.add(createBtn);
 
         Button unqueueBtn = new Button(contentX + 200, btnY, 80, btnHeight, "Unqueue", () -> {

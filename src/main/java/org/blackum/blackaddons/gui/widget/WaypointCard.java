@@ -9,6 +9,7 @@ import org.blackum.blackaddons.core.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.screen.WaypointActionEditScreen;
 import org.blackum.blackaddons.gui.screen.WaypointEditScreen;
 
@@ -57,19 +58,24 @@ public class WaypointCard extends Widget {
             WaypointManager.getInstance().save();
         });
 
-        editBtn = new Button(0, 0, 50, BUTTON_HEIGHT, "Edit", () ->
-                Minecraft.getInstance().execute(() ->
-                        Minecraft.getInstance().setScreen(new WaypointEditScreen(screen, waypoint, saved -> {
-                            WaypointManager.getInstance().save();
-                            onChanged.run();
-                        }))));
+        editBtn = new Button(0, 0, 50, BUTTON_HEIGHT, "Edit", () -> {
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new WaypointEditScreen(screen, waypoint, saved -> {
+                    WaypointManager.getInstance().save();
+                    onChanged.run();
+                }));
+            }
+        });
+
 
         actionsBtn = new Button(0, 0, 60, BUTTON_HEIGHT, "Actions", () -> {
             List<WaypointAction> actions = waypoint.actions;
             if (actions.isEmpty()) actions.add(new WaypointAction());
-            Minecraft.getInstance().execute(() ->
-                    Minecraft.getInstance().setScreen(new WaypointActionEditScreen(screen, waypoint, actions.get(0))));
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new WaypointActionEditScreen(screen, waypoint, actions.get(0)));
+            }
         });
+
 
         deleteBtn = new Button(0, 0, 55, BUTTON_HEIGHT, "Delete", () -> {
             WaypointManager.getInstance().removeWaypoint(waypoint);

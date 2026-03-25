@@ -5,6 +5,7 @@ import org.blackum.blackaddons.gui.screen.AutoSSOverlayPositionScreen;
 import org.blackum.blackaddons.gui.screen.RotationOverlayPositionScreen;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.gui.widget.*;
 
@@ -358,10 +359,11 @@ public class CheatsTabController extends SimpleTabController {
         listView.addItem(debugToggle);
 
         Button moveOverlayButton = new Button(0, 0, 260, 20, "Set Overlay Position", () -> {
-            Minecraft.getInstance().execute(() -> {
-                Minecraft.getInstance().setScreen(new AutoSSOverlayPositionScreen(screen));
-            });
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new AutoSSOverlayPositionScreen(screen));
+            }
         });
+
         listView.addItem(moveOverlayButton);
 
         autoSSCard.addChild(listView);
@@ -563,10 +565,12 @@ public class CheatsTabController extends SimpleTabController {
                 });
         listView.addItem(rotationDebugToggle);
 
-        Button positionButton = new Button(0, 0, 260, 20, "Set Overlay Position", () ->
-                Minecraft.getInstance().execute(() ->
-                        Minecraft.getInstance().setScreen(
-                                new RotationOverlayPositionScreen(screen))));
+        Button positionButton = new Button(0, 0, 260, 20, "Set Overlay Position", () -> {
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new RotationOverlayPositionScreen(screen));
+            }
+        });
+
         listView.addItem(positionButton);
 
         ToggleSwitch humanizerToggle = new ToggleSwitch(0, 0, 260,

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class Blackaddons implements ModInitializer {
@@ -17,6 +18,7 @@ public class Blackaddons implements ModInitializer {
     public static Runnable guiOpener;
     public static Runnable testMenuOpener;
     public static Runnable mainGuiOpener;
+    public static Consumer<Screen> screenOpener;
     public static Consumer<String> notificationTrigger;
 
     @Override

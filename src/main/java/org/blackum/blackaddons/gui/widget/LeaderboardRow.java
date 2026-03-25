@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 
@@ -29,9 +30,12 @@ public class LeaderboardRow extends Widget {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (isMouseOver(mouseX, mouseY) && button == 0) {
-            Minecraft.getInstance().setScreen(new ProfileViewerScreen(null, ign));
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new ProfileViewerScreen(null, ign));
+            }
             return true;
         }
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 

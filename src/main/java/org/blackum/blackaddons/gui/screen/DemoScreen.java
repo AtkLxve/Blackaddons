@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.gui.render.ColorUtils;
+import org.blackum.blackaddons.Blackaddons;
 
 import java.util.Arrays;
 
@@ -101,7 +102,10 @@ public class DemoScreen extends BaseScreen {
                                                 BaseScreen.showDebugOverlay = true;
                                                 sendMessage("Overlay auto-enabled for editing");
                                         }
-                                        Minecraft.getInstance().setScreen(new OverlayEditorScreen(this));
+                                if (Blackaddons.screenOpener != null) {
+                                        Blackaddons.screenOpener.accept(new OverlayEditorScreen(this));
+                                }
+
                                 }));
 
                 int startY = controlY + 90;

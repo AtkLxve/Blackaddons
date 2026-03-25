@@ -8,6 +8,7 @@ import org.blackum.blackaddons.core.waypoint.WaypointManager;
 import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.screen.WaypointEditScreen;
 import org.blackum.blackaddons.gui.widget.*;
 
@@ -83,10 +84,12 @@ public class WaypointsTabController extends SimpleTabController {
                     final double fx = x, fy = y, fz = z;
                     final String fdim = dim;
                     final UUID groupId = group.id;
-                    mc.execute(() -> mc.setScreen(new WaypointEditScreen(screen, createWaypoint(fx, fy, fz, fdim, groupId), wp -> {
-                        mgr.addWaypoint(wp);
-                        rebuildList();
-                    })));
+                    if (Blackaddons.screenOpener != null) {
+                        Blackaddons.screenOpener.accept(new WaypointEditScreen(screen, createWaypoint(fx, fy, fz, fdim, groupId), wp -> {
+                            mgr.addWaypoint(wp);
+                            rebuildList();
+                        }));
+                    }
                 });
                 waypointList.addItem(addWpBtn);
             }
@@ -114,10 +117,13 @@ public class WaypointsTabController extends SimpleTabController {
             }
             final double fx = x, fy = y, fz = z;
             final String fdim = dim;
-            mc.execute(() -> mc.setScreen(new WaypointEditScreen(screen, createWaypoint(fx, fy, fz, fdim, null), wp -> {
-                mgr.addWaypoint(wp);
-                rebuildList();
-            })));
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new WaypointEditScreen(screen, createWaypoint(fx, fy, fz, fdim, null), wp -> {
+                    mgr.addWaypoint(wp);
+                    rebuildList();
+                }));
+            }
+
         });
         waypointList.addItem(addUngroupedBtn);
 

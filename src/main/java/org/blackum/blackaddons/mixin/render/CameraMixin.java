@@ -3,8 +3,8 @@ package org.blackum.blackaddons.mixin.render;
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
 //? if < 1.21.11 {
-import net.minecraft.world.level.BlockGetter;
-//?} else
+/*import net.minecraft.world.level.BlockGetter;
+*///?} else
 import net.minecraft.world.level.Level;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.spongepowered.asm.mixin.Mixin;
