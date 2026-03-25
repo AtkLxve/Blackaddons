@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.mixin.core.KeyBindingAccessor;
+import org.blackum.blackaddons.core.util.KeyBindingAccessor;
 import org.blackum.blackaddons.mixin.core.InventoryAccessor;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.core.util.LocationUtils;

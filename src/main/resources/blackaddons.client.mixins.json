@@ -14,7 +14,7 @@
     "gui.AnvilScreenMixin",
     "gui.AbstractSignEditScreenMixin",
     "core.LanguageManagerAccessor",
-    "core.KeyBindingAccessor",
+    "core.KeyMappingMixin",
     "core.InventoryAccessor",
     "core.ClientPacketListenerAccessor",
     "render.FullbrightMixin",

@@ -11,7 +11,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.util.Mth;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.core.manager.RotationManager;
-import org.blackum.blackaddons.mixin.core.KeyBindingAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -412,6 +411,7 @@ public class AlignUtils {
         if (key instanceof KeyBindingAccessor accessor) {
             KeyMapping.set(accessor.getBoundKey(), pressed);
             accessor.setBlackaddonsIsDown(pressed);
+            accessor.blackaddons$setForced(pressed);
         }
     }
 
@@ -420,6 +420,7 @@ public class AlignUtils {
         boolean physicalDown = isPhysicalKeyDown(mc, accessor.getBoundKey());
         KeyMapping.set(accessor.getBoundKey(), physicalDown);
         accessor.setBlackaddonsIsDown(physicalDown);
+        accessor.blackaddons$setForced(false);
     }
 
     private static boolean isPhysicalKeyDown(Minecraft mc, InputConstants.Key key) {

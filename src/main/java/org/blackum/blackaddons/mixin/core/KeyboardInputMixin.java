@@ -5,6 +5,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.KeyboardInput;
 import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.feature.cheat.Freecam;
+import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
+import org.blackum.blackaddons.core.util.KeyBindingAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -15,6 +17,9 @@ public abstract class KeyboardInputMixin {
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
     private boolean onIsDown(KeyMapping keyMapping) {
         if (Freecam.getInstance().isActive()) {
+            if (keyMapping instanceof KeyBindingAccessor accessor && accessor.blackaddons$isForced()) {
+                return keyMapping.isDown();
+            }
             return false;
         }
         Minecraft mc = Minecraft.getInstance();

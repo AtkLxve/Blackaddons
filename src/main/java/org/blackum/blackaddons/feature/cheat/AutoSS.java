@@ -26,7 +26,7 @@ import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.mixin.core.GameRendererAccessor;
-import org.blackum.blackaddons.mixin.core.KeyBindingAccessor;
+import org.blackum.blackaddons.core.util.KeyBindingAccessor;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector4f;

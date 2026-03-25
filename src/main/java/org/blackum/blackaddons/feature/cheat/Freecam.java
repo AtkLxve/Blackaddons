@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.core.util.KeyBindingAccessor;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
@@ -136,24 +137,24 @@ public final class Freecam {
         if (mc.options.keySprint.isDown()) speed *= 2;
 
         boolean movingInPlane = false;
-        if (mc.options.keyUp.isDown()) {
+        if (isKeyDown(mc.options.keyUp)) {
             velX += forwardVec.x * speed;
             velZ += forwardVec.z * speed;
             movingInPlane = true;
         }
-        if (mc.options.keyDown.isDown()) {
+        if (isKeyDown(mc.options.keyDown)) {
             velX -= forwardVec.x * speed;
             velZ -= forwardVec.z * speed;
             movingInPlane = true;
         }
 
         boolean strafing = false;
-        if (mc.options.keyRight.isDown()) {
+        if (isKeyDown(mc.options.keyRight)) {
             velX += rightVec.x * speed;
             velZ += rightVec.z * speed;
             strafing = true;
         }
-        if (mc.options.keyLeft.isDown()) {
+        if (isKeyDown(mc.options.keyLeft)) {
             velX -= rightVec.x * speed;
             velZ -= rightVec.z * speed;
             strafing = true;
@@ -165,11 +166,15 @@ public final class Freecam {
             velZ *= diagonal;
         }
 
-        if (mc.options.keyJump.isDown()) velY += speed;
-        if (mc.options.keyShift.isDown()) velY -= speed;
+        if (isKeyDown(mc.options.keyJump)) velY += speed;
+        if (isKeyDown(mc.options.keyShift)) velY -= speed;
 
         prevPos.set(pos);
         pos.add(velX, velY, velZ);
+    }
+
+    private boolean isKeyDown(net.minecraft.client.KeyMapping key) {
+        return key.isDown() && !((KeyBindingAccessor) key).blackaddons$isForced();
     }
 
     private void handleKeybind() {

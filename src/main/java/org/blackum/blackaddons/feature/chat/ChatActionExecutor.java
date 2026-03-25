@@ -6,9 +6,9 @@ import net.minecraft.client.KeyMapping;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.feature.cheat.FastLeap;
 import org.blackum.blackaddons.gui.widget.MovementKeybindSelector;
-import org.blackum.blackaddons.mixin.core.KeyBindingAccessor;
 import org.blackum.blackaddons.core.manager.RotationManager;
 import org.blackum.blackaddons.core.util.AlignUtils;
+import org.blackum.blackaddons.core.util.KeyBindingAccessor;
 import org.blackum.blackaddons.core.waypoint.Waypoint;
 
 import java.util.ArrayList;
@@ -219,6 +219,7 @@ public class ChatActionExecutor {
         if (key instanceof KeyBindingAccessor accessor) {
             KeyMapping.set(accessor.getBoundKey(), pressed);
             accessor.setBlackaddonsIsDown(pressed);
+            accessor.blackaddons$setForced(pressed);
         }
     }
 
