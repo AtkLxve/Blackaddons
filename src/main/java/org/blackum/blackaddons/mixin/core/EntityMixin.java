@@ -4,6 +4,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.feature.cheat.Freecam;
+import org.blackum.blackaddons.feature.cheat.Perspective;
 import org.blackum.blackaddons.feature.waypoint.WaypointActionManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,6 +19,9 @@ public abstract class EntityMixin {
         if ((Object) this instanceof LocalPlayer) {
             if (Freecam.getInstance().isActive()) {
                 Freecam.getInstance().changeLookDirection(yRot, xRot);
+                ci.cancel();
+            } else if (Perspective.getInstance().isActive()) {
+                Perspective.getInstance().changeLookDirection(yRot, xRot);
                 ci.cancel();
             } else if (AlignUtils.shouldBlockMovementInput()) {
                 ci.cancel();

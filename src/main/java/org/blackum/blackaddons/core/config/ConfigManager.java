@@ -372,6 +372,12 @@ public class ConfigManager {
         public int freecamKeyCode = -1;
         public boolean freecamHoldMode = false;
 
+        public boolean perspectiveEnabled = false;
+        public float perspectiveDistance = 4.0f;
+        public int perspectiveKeyCode = -1;
+        public boolean perspectiveHoldMode = false;
+        public float perspectiveSensitivity = 1.0f;
+
         public boolean AutoSSEnabled = false;
         public int AutoSSDelay = 2;
         public float AutoSSDistanceLimit = 4.5f;

@@ -77,6 +77,8 @@ public final class Freecam {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
+        Perspective.getInstance().deactivate();
+
         active = true;
         ConfigManager.data.freecamEnabled = true;
 

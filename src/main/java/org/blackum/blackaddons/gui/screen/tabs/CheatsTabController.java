@@ -7,6 +7,7 @@ import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.feature.cheat.Freecam;
+import org.blackum.blackaddons.feature.cheat.Perspective;
 import org.blackum.blackaddons.gui.widget.*;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class CheatsTabController extends SimpleTabController {
     private ResizableCard rotationCard;
     private ResizableCard autoBMCard;
     private ResizableCard freecamCard;
+    private ResizableCard perspectiveCard;
     private Dropdown s1Dropdown;
     private Dropdown s2Dropdown;
     private Dropdown s3Dropdown;
@@ -117,7 +119,7 @@ public class CheatsTabController extends SimpleTabController {
         }
 
         Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("autoTnt", "autoSS", "fastLeap", "rotationSet", "autoBM", "freecam");
+            screen.resetCardStates("autoTnt", "autoSS", "fastLeap", "rotationSet", "autoBM", "freecam", "perspective");
         });
         cheatsTab.addWidget(resetLayout);
 
@@ -144,6 +146,8 @@ public class CheatsTabController extends SimpleTabController {
         cards.add(autoBMCard);
         freecamCard = createFreecamCard(0, 0);
         cards.add(freecamCard);
+        perspectiveCard = createPerspectiveCard(0, 0);
+        cards.add(perspectiveCard);
 
         for (ResizableCard card : cards) {
             int shortestCol = 0;
@@ -162,6 +166,7 @@ public class CheatsTabController extends SimpleTabController {
         cheatsCardContainer.addCard(rotationCard);
         cheatsCardContainer.addCard(autoBMCard);
         cheatsCardContainer.addCard(freecamCard);
+        cheatsCardContainer.addCard(perspectiveCard);
     }
 
     private ResizableCard createAutoTntCard(int x, int y) {
@@ -466,16 +471,13 @@ public class CheatsTabController extends SimpleTabController {
     }
 
     private ResizableCard createAutoBM(int x, int y) {
-        // 1. Initialize the correct variable
         autoBMCard = screen.createResizableCard("autoBM", x, y, 300, 310, "Auto Ballista Mechanic");
 
         int contentX = autoBMCard.getContentX();
         int contentY = autoBMCard.getContentY();
 
-        // Use a ListView to handle the multiple sliders/labels
         ListView listView = new ListView(contentX, contentY, 260, 260);
 
-        // Toggle
         ToggleSwitch enabled = new ToggleSwitch(0, 0, 260,
                 "Enabled",
                 "Enabled and disables auto BM",
@@ -486,7 +488,6 @@ public class CheatsTabController extends SimpleTabController {
         );
         listView.addItem(enabled);
 
-        // Min FC Delay
         Label min_fc_label = new Label(0, 0,
                 String.format("Min first click delay: %.0fms", ConfigManager.data.autoBMConfig.min_fc_delay),
                 Label.Style.BODY);
@@ -500,7 +501,6 @@ public class CheatsTabController extends SimpleTabController {
         });
         listView.addItem(min_fc_slider);
 
-        // Max FC Delay
         Label max_fc_label = new Label(0, 0,
                 String.format("Max first click delay: %.0fms", ConfigManager.data.autoBMConfig.max_fc_delay),
                 Label.Style.BODY);
@@ -514,7 +514,6 @@ public class CheatsTabController extends SimpleTabController {
         });
         listView.addItem(max_fc_slider);
 
-        // Min Between Click
         Label min_between_click_label = new Label(0, 0,
                 String.format("Min between click delay: %.0fms", ConfigManager.data.autoBMConfig.min_between_click_delay),
                 Label.Style.BODY);
@@ -528,7 +527,6 @@ public class CheatsTabController extends SimpleTabController {
         });
         listView.addItem(min_between_click_slider);
 
-        // Max Between Click
         Label max_between_click_label = new Label(0, 0,
                 String.format("Max between click delay: %.0fms", ConfigManager.data.autoBMConfig.max_between_click_delay),
                 Label.Style.BODY);
@@ -542,7 +540,6 @@ public class CheatsTabController extends SimpleTabController {
         });
         listView.addItem(max_between_click_slider);
 
-        // Add the list to the card and update
         autoBMCard.addChild(listView);
         autoBMCard.updateLayout();
 
@@ -748,6 +745,77 @@ public class CheatsTabController extends SimpleTabController {
         freecamCard.addChild(listView);
         freecamCard.updateLayout();
         return freecamCard;
+    }
+
+    private ResizableCard createPerspectiveCard(int x, int y) {
+        perspectiveCard = screen.createResizableCard("perspective", x, y, 300, 300, "Perspective");
+        int contentX = perspectiveCard.getContentX();
+        int contentY = perspectiveCard.getContentY();
+
+        ListView listView = new ListView(contentX, contentY, 260, 250);
+
+        ToggleSwitch enableToggle = new ToggleSwitch(0, 0, 260,
+                "Enabled",
+                "Orbits camera around player",
+                ConfigManager.data.perspectiveEnabled, value -> {
+            if (value) {
+                Perspective.getInstance().activate();
+            } else {
+                Perspective.getInstance().deactivate();
+            }
+            ConfigManager.data.perspectiveEnabled = Perspective.getInstance().isActive();
+            ConfigManager.save();
+        });
+        listView.addItem(enableToggle);
+
+        KeybindButton keybindButton = new KeybindButton(0, 0, 260,
+                "Keybind",
+                ConfigManager.data.perspectiveKeyCode,
+                keyCode -> {
+                    ConfigManager.data.perspectiveKeyCode = keyCode;
+                    ConfigManager.save();
+                });
+        listView.addItem(keybindButton);
+
+        Dropdown activationModeDropdown = new Dropdown(0, 0, 260,
+                "Activation Mode",
+                List.of("Toggle On/Off", "Hold Key"),
+                mode -> {
+                    ConfigManager.data.perspectiveHoldMode = mode.equals("Hold Key");
+                    ConfigManager.save();
+                });
+        activationModeDropdown.setSelectedIndex(ConfigManager.data.perspectiveHoldMode ? 1 : 0);
+        listView.addItem(activationModeDropdown);
+
+        Label distLabel = new Label(0, 0,
+                String.format(Locale.ROOT, "Distance: %.1f", ConfigManager.data.perspectiveDistance),
+                Label.Style.BODY);
+        listView.addItem(distLabel);
+
+        Slider distSlider = new Slider(0, 0, 260, 1.0f, 20.0f,
+                ConfigManager.data.perspectiveDistance, val -> {
+            ConfigManager.data.perspectiveDistance = val;
+            distLabel.setText(String.format(Locale.ROOT, "Distance: %.1f", val));
+            ConfigManager.save();
+        });
+        listView.addItem(distSlider);
+
+        Label sensitivityLabel = new Label(0, 0,
+                String.format(Locale.ROOT, "Sensitivity: %.1f", ConfigManager.data.perspectiveSensitivity),
+                Label.Style.BODY);
+        listView.addItem(sensitivityLabel);
+
+        Slider sensitivitySlider = new Slider(0, 0, 260, 0.1f, 5.0f,
+                ConfigManager.data.perspectiveSensitivity, val -> {
+            ConfigManager.data.perspectiveSensitivity = val;
+            sensitivityLabel.setText(String.format(Locale.ROOT, "Sensitivity: %.1f", val));
+            ConfigManager.save();
+        });
+        listView.addItem(sensitivitySlider);
+
+        perspectiveCard.addChild(listView);
+        perspectiveCard.updateLayout();
+        return perspectiveCard;
     }
     private static String delayLabel(int ticks) {
         String base = "Action Delay: " + ticks + (ticks == 1 ? " tick" : " ticks");
