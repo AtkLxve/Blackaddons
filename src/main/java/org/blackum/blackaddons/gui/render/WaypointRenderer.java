@@ -201,15 +201,15 @@ public class WaypointRenderer {
         float x4i = (float)x - offI, z4i = (float)z + offI;
 
         if (drawCaps) {
-            addQuad(matrix, buffer, x1o, tY, z1o, x2o, tY, z2o, x2i, tY, z2i, x1i, tY, z1i, r, g, b, a, 0, 1, 0);
-            addQuad(matrix, buffer, x2o, tY, z2o, x3o, tY, z3o, x3i, tY, z3i, x2i, tY, z2i, r, g, b, a, 0, 1, 0);
-            addQuad(matrix, buffer, x3o, tY, z3o, x4o, tY, z4o, x4i, tY, z4i, x3i, tY, z3i, r, g, b, a, 0, 1, 0);
-            addQuad(matrix, buffer, x4o, tY, z4o, x1o, tY, z1o, x1i, tY, z1i, x4i, tY, z4i, r, g, b, a, 0, 1, 0);
+            addQuad(matrix, buffer, x1i, tY, z1i, x2i, tY, z2i, x2o, tY, z2o, x1o, tY, z1o, r, g, b, a, 0, 1, 0);
+            addQuad(matrix, buffer, x2i, tY, z2i, x3i, tY, z3i, x3o, tY, z3o, x2o, tY, z2o, r, g, b, a, 0, 1, 0);
+            addQuad(matrix, buffer, x3i, tY, z3i, x4i, tY, z4i, x4o, tY, z4o, x3o, tY, z3o, r, g, b, a, 0, 1, 0);
+            addQuad(matrix, buffer, x4i, tY, z4i, x1i, tY, z1i, x1o, tY, z1o, x4o, tY, z4o, r, g, b, a, 0, 1, 0);
 
-            addQuad(matrix, buffer, x1o, bY, z1o, x1i, bY, z1i, x2i, bY, z2i, x2o, bY, z2o, r, g, b, a, 0, -1, 0);
-            addQuad(matrix, buffer, x2o, bY, z2o, x2i, bY, z2i, x3i, bY, z3i, x3o, bY, z3o, r, g, b, a, 0, -1, 0);
-            addQuad(matrix, buffer, x3o, bY, z3o, x3i, bY, z3i, x4i, bY, z4i, x4o, bY, z4o, r, g, b, a, 0, -1, 0);
-            addQuad(matrix, buffer, x4o, bY, z4o, x4i, bY, z4i, x1i, bY, z1i, x1o, bY, z1o, r, g, b, a, 0, -1, 0);
+            addQuad(matrix, buffer, x1o, bY, z1o, x2o, bY, z2o, x2i, bY, z2i, x1i, bY, z1i, r, g, b, a, 0, -1, 0);
+            addQuad(matrix, buffer, x2o, bY, z2o, x3o, bY, z3o, x3i, bY, z3i, x2i, bY, z2i, r, g, b, a, 0, -1, 0);
+            addQuad(matrix, buffer, x3o, bY, z3o, x4o, bY, z4o, x4i, bY, z4i, x3i, bY, z3i, r, g, b, a, 0, -1, 0);
+            addQuad(matrix, buffer, x4o, bY, z4o, x1o, bY, z1o, x1i, bY, z1i, x4i, bY, z4i, r, g, b, a, 0, -1, 0);
         }
 
         addQuad(matrix, buffer, x1o, bY, z1o, x2o, bY, z2o, x2o, tY, z2o, x1o, tY, z1o, r, g, b, a, 0, 0, -1);
