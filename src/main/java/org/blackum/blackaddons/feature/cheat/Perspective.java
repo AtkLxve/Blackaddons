@@ -98,7 +98,7 @@ public final class Perspective {
 
     private void handleKeybind() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) {
+        if (mc.player == null || mc.screen != null) {
             keybindPressedLastTick = false;
             holdKeyActive = false;
             return;
@@ -158,7 +158,7 @@ public final class Perspective {
     }
 
     public void onMouseScroll(double amount) {
-        if (!active) return;
+        if (!active || !ConfigManager.data.perspectiveScrollEnabled) return;
         ConfigManager.data.perspectiveDistance -= (float) amount * 0.25f;
         ConfigManager.data.perspectiveDistance = Mth.clamp(ConfigManager.data.perspectiveDistance, 1.0f, 20.0f);
         ConfigManager.save();

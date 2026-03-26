@@ -377,6 +377,7 @@ public class ConfigManager {
         public int perspectiveKeyCode = -1;
         public boolean perspectiveHoldMode = false;
         public float perspectiveSensitivity = 1.0f;
+        public boolean perspectiveScrollEnabled = true;
 
         public boolean AutoSSEnabled = false;
         public int AutoSSDelay = 2;

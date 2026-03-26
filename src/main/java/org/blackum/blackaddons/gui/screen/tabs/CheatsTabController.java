@@ -813,6 +813,15 @@ public class CheatsTabController extends SimpleTabController {
         });
         listView.addItem(sensitivitySlider);
 
+        ToggleSwitch scrollToggle = new ToggleSwitch(0, 0, 260,
+                "Scroll to Change Distance",
+                "Allows using the mouse wheel to change orbit distance",
+                ConfigManager.data.perspectiveScrollEnabled, value -> {
+            ConfigManager.data.perspectiveScrollEnabled = value;
+            ConfigManager.save();
+        });
+        listView.addItem(scrollToggle);
+
         perspectiveCard.addChild(listView);
         perspectiveCard.updateLayout();
         return perspectiveCard;

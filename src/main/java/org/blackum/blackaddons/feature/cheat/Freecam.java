@@ -181,7 +181,7 @@ public final class Freecam {
 
     private void handleKeybind() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) {
+        if (mc.player == null || mc.screen != null) {
             keybindPressedLastTick = false;
             holdKeyActive = false;
             return;
