@@ -1,14 +1,17 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
-import net.minecraft.client.Minecraft;
+import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.core.config.ActionManager;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.core.config.ProfileManager;
+import org.blackum.blackaddons.core.util.Constants;
+import org.blackum.blackaddons.core.util.McCompat;
 import org.blackum.blackaddons.core.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.widget.*;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +37,15 @@ public class ConfigsTabController extends SimpleTabController {
 
         listView.addItem(new Label(0, 0, "Profile Management", Label.Style.TITLE));
         listView.addItem(new Label(0, 0, "Manage independent profiles for different categories.", Label.Style.BODY));
+
+        Button openFolderBtn = new Button(0, 0, itemWidth, Theme.BUTTON_HEIGHT, "Open Config Folder", this::openConfigFolder);
+        listView.addItem(openFolderBtn);
+
+        Button reloadAllBtn = new Button(0, 0, itemWidth, Theme.BUTTON_HEIGHT, "Reload All Configs", () -> {
+            reloadAll();
+            screen.init();
+        });
+        listView.addItem(reloadAllBtn);
 
         List<String> categories = Arrays.stream(ProfileManager.Category.values())
                 .map(c -> formatCategoryName(c))
@@ -151,5 +163,18 @@ public class ConfigsTabController extends SimpleTabController {
                 WaypointManager.getInstance().save();
             }
         }
+    }
+
+    private void openConfigFolder() {
+        File folder = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME).toFile();
+        if (folder.exists()) {
+            McCompat.openUri(folder.toURI().toString());
+        }
+    }
+
+    private void reloadAll() {
+        ConfigManager.load();
+        ActionManager.getInstance().load();
+        WaypointManager.getInstance().load();
     }
 }
