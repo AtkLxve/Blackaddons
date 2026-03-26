@@ -42,6 +42,7 @@ public class BlackAddonsGUI extends BaseScreen {
     private ChatFiltersTabController chatFiltersController;
     private WaypointsTabController waypointsController;
     private ConfigsTabController configsController;
+    private SoloClearsTabController soloClearsController;
     private final List<SimpleTabController> controllers = new ArrayList<>();
 
     public BlackAddonsGUI() {
@@ -78,6 +79,7 @@ public class BlackAddonsGUI extends BaseScreen {
         chatFiltersController = new ChatFiltersTabController(this);
         waypointsController = new WaypointsTabController(this);
         configsController = new ConfigsTabController(this);
+        soloClearsController = new SoloClearsTabController(this);
 
         controllers.clear();
         controllers.add(settingsController);
@@ -89,6 +91,7 @@ public class BlackAddonsGUI extends BaseScreen {
         controllers.add(chatFiltersController);
         controllers.add(waypointsController);
         controllers.add(configsController);
+        controllers.add(soloClearsController);
         controllers.add(aboutController);
 
         settingsController.init(tabPanel.addTab("Settings"));
@@ -100,6 +103,7 @@ public class BlackAddonsGUI extends BaseScreen {
         chatFiltersController.init(tabPanel.addTab("Chat Filters"));
         waypointsController.init(tabPanel.addTab("Waypoints Actions"));
         configsController.init(tabPanel.addTab("Configs"));
+        soloClearsController.init(tabPanel.addTab("Solo Clears"));
         aboutController.init(tabPanel.addTab("About"));
 
         tabPanel.selectTab(lastTabIndex);

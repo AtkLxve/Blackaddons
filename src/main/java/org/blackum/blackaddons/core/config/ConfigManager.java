@@ -321,6 +321,27 @@ public class ConfigManager {
         }
     }
 
+    public static class SoloClearInfo {
+        public String type; // Usually F7 or M7, or could keep it empty and infer from the list
+        public String time;
+        public int secrets;
+        public List<String> puzzles = new ArrayList<>();
+        public boolean princeKilled;
+        public boolean mimicKilled;
+
+        public SoloClearInfo() {
+        }
+
+        public SoloClearInfo(String type, String time, int secrets, List<String> puzzles, boolean princeKilled, boolean mimicKilled) {
+            this.type = type;
+            this.time = time;
+            this.secrets = secrets;
+            this.puzzles = puzzles;
+            this.princeKilled = princeKilled;
+            this.mimicKilled = mimicKilled;
+        }
+    }
+
     public static class ConfigData {
         public int overlayX = 5;
         public int overlayY = 5;
@@ -398,10 +419,11 @@ public class ConfigManager {
         public int AutoSSOverlayY = 5;
 
         public boolean FastLeapEnabled = false;
+        public boolean RelicLookEnabled = false;
+        public boolean RelicLookDebug = false;
         public boolean FastLeapDoorOpener = false;
         public boolean FastLeapPositional = false;
         public boolean FastLeapDebug = false;
-        public String FastLeapS1Class = "NONE";
         public String FastLeapS2Class = "NONE";
         public String FastLeapS3Class = "NONE";
         public String FastLeapS4Class = "NONE";
@@ -448,6 +470,10 @@ public class ConfigManager {
         public boolean chatVisualFiltersEnabled = false;
         public boolean actionTriggersEnabled = true;
         public List<ChatVisualFilter> chatVisualFilters = new ArrayList<>();
+
+        // Solo Clears
+        public List<SoloClearInfo> f7SoloClears = new ArrayList<>();
+        public List<SoloClearInfo> m7SoloClears = new ArrayList<>();
 
         // Chat actions (migration) TODO: Delete migration when enough versions have passed
         public List<ChatAction> chatActions = new ArrayList<>(List.of(

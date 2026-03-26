@@ -36,6 +36,7 @@ import org.blackum.blackaddons.core.util.LocationUtils;
 import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.core.util.Scheduler;
 import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
+import org.blackum.blackaddons.feature.dungeon.SoloClearsTracker;
 import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
@@ -55,6 +56,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         IrcPrefixManager.getPrefix(); 
         AutoTNT.register();
         FastLeap.register();
+        RelicLook.register();
         AutoSS.register();
         AutoBM.register();
         Freecam.register();
@@ -128,6 +130,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client -> AlignUtils.tick());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             NotificationManager.getInstance().tick();
+            SoloClearsTracker.tick();
             if (pendingScreen != null) {
                 client.setScreen(pendingScreen);
                 pendingScreen = null;
@@ -143,6 +146,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             }
 
             if (ConfigManager.data.ircChatMode && !message.startsWith("/")) {
+            if (ConfigManager.data.ircChatMode) {
                 IrcClient.getInstance().sendMessage(message.trim());
                 return false;
             }
@@ -169,6 +173,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonJoinHandler.onChatMessage(handled);
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
+            SoloClearsTracker.onChatMessage(handled);
         });
 
         ClientReceiveMessageEvents.CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
@@ -178,6 +183,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonJoinHandler.onChatMessage(handled);
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
+            SoloClearsTracker.onChatMessage(handled);
         });
 
         Blackaddons.LOGGER.info("Client initialization completed");

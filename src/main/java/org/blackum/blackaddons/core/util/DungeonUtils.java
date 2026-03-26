@@ -19,4 +19,102 @@ public class DungeonUtils {
         }
         return 50 + (xp - CATA_XP[49]) / 200000000.0;
     }
+
+    public static class DungeonStats {
+        public int completedRooms = 0;
+        public int totalRooms = 1;
+        public int secretsFound = 0;
+        public int secretPercent = 0;
+        public int deaths = 0;
+        public int crypts = 0;
+        public int expectedPuzzles = 0;
+        public boolean mimicKilled = false;
+        public boolean princeKilled = false;
+        public java.util.List<String> completedPuzzles = new java.util.ArrayList<>();
+
+        public int calculateScore() {
+            double roomCompletion = (double) completedRooms / Math.max(1, totalRooms);
+            double exploration = (60.0 * roomCompletion) + (40.0 * secretPercent / 100.0);
+            
+            int puzzlePenalty = Math.max(0, (expectedPuzzles - completedPuzzles.size()) * 10);
+            int deathPenalty = Math.max(0, (deaths > 0) ? (deaths * 2 - 1) : 0);
+            
+            double skill = Math.max(20, 20.0 + 80.0 * roomCompletion - puzzlePenalty - deathPenalty);
+            int bonus = Math.min(5, crypts) + (mimicKilled ? 2 : 0) + (princeKilled ? 1 : 0);
+            
+            return 100 + (int)Math.floor(exploration) + (int)Math.floor(skill) + bonus;
+        }
+    }
+
+    private static final java.util.regex.Pattern COMPLETED_ROOMS_PATTERN = java.util.regex.Pattern.compile("(?i)Completed Rooms:\\s*(\\d+)(?:/|\\s*out\\s*of\\s*)(\\d+)");
+    private static final java.util.regex.Pattern DEATHS_PATTERN = java.util.regex.Pattern.compile("(?i)Deaths:\\s*.*?(\\d+)");
+    private static final java.util.regex.Pattern CRYPTS_PATTERN = java.util.regex.Pattern.compile("(?i)Crypts:\\s*(\\d+)");
+    private static final java.util.regex.Pattern PUZZLES_HEADER_PATTERN = java.util.regex.Pattern.compile("(?i)Puzzles:\\s*\\((\\d+)\\)");
+
+    public static DungeonStats parseDungeonStats(java.util.List<String> tabListLines) {
+        DungeonStats stats = new DungeonStats();
+
+        for (String line : tabListLines) {
+            String cleanLine = line.trim();
+            
+            java.util.regex.Matcher roomsMatcher = COMPLETED_ROOMS_PATTERN.matcher(cleanLine);
+            if (roomsMatcher.find()) {
+                stats.completedRooms = Integer.parseInt(roomsMatcher.group(1));
+                stats.totalRooms = Integer.parseInt(roomsMatcher.group(2));
+            }
+
+            if (cleanLine.toLowerCase().contains("secrets found")) {
+                String secretsPart = cleanLine.substring(cleanLine.toLowerCase().indexOf("found") + 5).trim();
+                java.util.regex.Pattern numPattern = java.util.regex.Pattern.compile("(\\d+)");
+                java.util.regex.Matcher m = numPattern.matcher(secretsPart);
+                java.util.List<Integer> nums = new java.util.ArrayList<>();
+                while (m.find()) nums.add(Integer.parseInt(m.group(1)));
+
+                if (!nums.isEmpty()) {
+                    if (secretsPart.contains("/") || (!secretsPart.contains("%") && nums.size() == 1)) {
+                        stats.secretsFound = nums.get(0);
+                    } else if (secretsPart.contains("%") && stats.secretPercent == 0) {
+                        stats.secretPercent = nums.get(0);
+                    }
+                }
+            }
+
+            java.util.regex.Matcher deathsMatcher = DEATHS_PATTERN.matcher(cleanLine);
+            if (deathsMatcher.find()) {
+                stats.deaths = Integer.parseInt(deathsMatcher.group(1));
+            }
+
+            java.util.regex.Matcher cryptsMatcher = CRYPTS_PATTERN.matcher(cleanLine);
+            if (cryptsMatcher.find()) {
+                stats.crypts = Integer.parseInt(cryptsMatcher.group(1));
+            }
+
+            java.util.regex.Matcher puzzleHeaderMatcher = PUZZLES_HEADER_PATTERN.matcher(cleanLine);
+            if (puzzleHeaderMatcher.find()) {
+                stats.expectedPuzzles = Integer.parseInt(puzzleHeaderMatcher.group(1));
+            }
+
+            // Mimic & Prince Tracking via TabList
+            if (cleanLine.contains("Mimic:") && (cleanLine.contains("✔") || cleanLine.toLowerCase().contains("killed"))) {
+                stats.mimicKilled = true;
+            }
+            if (cleanLine.contains("Prince:") && (cleanLine.contains("✔") || cleanLine.toLowerCase().contains("killed"))) {
+                stats.princeKilled = true;
+            }
+
+            // General Puzzle Tracking
+            if (cleanLine.contains(":") && (cleanLine.contains("[✔]") || cleanLine.contains("[✖]") || cleanLine.contains("[✦]"))) {
+                String name = cleanLine.split(":")[0].trim();
+                if (!name.equalsIgnoreCase("Mimic") && !name.equalsIgnoreCase("Prince") && 
+                    !name.equalsIgnoreCase("Secrets") && !name.equalsIgnoreCase("Deaths") && 
+                    !name.equalsIgnoreCase("Crypts")) {
+                    if (cleanLine.contains("[✔]")) {
+                        stats.completedPuzzles.add(name);
+                    }
+                }
+            }
+        }
+        
+        return stats;
+    }
 }
