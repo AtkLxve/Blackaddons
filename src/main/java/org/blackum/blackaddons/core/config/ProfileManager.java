@@ -84,7 +84,7 @@ public class ProfileManager {
         Path dir = getCategoryDir(category);
         
         try (Stream<Path> stream = Files.list(dir)) {
-            stream.filter(path -> path.toString().endsWith(".json"))
+            stream.filter(path -> path.toString().endsWith(".json") && !path.toString().endsWith("_groups.json"))
                   .forEach(path -> {
                       String name = path.getFileName().toString();
                       profiles.add(name.substring(0, name.length() - 5));
@@ -107,6 +107,11 @@ public class ProfileManager {
             file.delete();
         }
         
+        File groupsFile = new File(file.getParentFile(), profileName + "_groups.json");
+        if (groupsFile.exists()) {
+            groupsFile.delete();
+        }
+        
         if (getActiveProfile(category).equals(profileName)) {
             setActiveProfile(category, DEFAULT_PROFILE);
         }
@@ -118,6 +123,12 @@ public class ProfileManager {
         if (source.exists() && !target.exists()) {
             try {
                 Files.copy(source.toPath(), target.toPath());
+                
+                File sourceGroups = new File(source.getParentFile(), profileName + "_groups.json");
+                File targetGroups = new File(target.getParentFile(), newName + "_groups.json");
+                if (sourceGroups.exists() && !targetGroups.exists()) {
+                    Files.copy(sourceGroups.toPath(), targetGroups.toPath());
+                }
             } catch (IOException e) {
                 Blackaddons.LOGGER.error("Failed to duplicate profile " + profileName + " to " + newName, e);
             }

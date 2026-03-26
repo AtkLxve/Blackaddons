@@ -8,6 +8,7 @@ import java.util.UUID;
 public class WaypointGroup {
 
     public UUID id = UUID.randomUUID();
+    public UUID parentId = null;
     public String name = "New Group";
     public boolean collapsed = false;
     public boolean enabled = true;
@@ -25,7 +26,18 @@ public class WaypointGroup {
     }
 
     public boolean isActive() {
+        return isActive(0);
+    }
+
+    private boolean isActive(int depth) {
+        if (depth > 10) return false;
         if (!enabled) return false;
+        if (parentId != null) {
+            WaypointGroup parent = WaypointManager.getInstance().getGroup(parentId);
+            if (parent != null && !parent.isActive(depth + 1)) {
+                return false;
+            }
+        }
         if (inDungeonFilter != null) {
             if (LocationUtils.inDungeons() != inDungeonFilter) {
                 return false;

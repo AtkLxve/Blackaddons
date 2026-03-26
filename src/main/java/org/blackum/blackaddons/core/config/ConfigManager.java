@@ -459,6 +459,7 @@ public class ConfigManager {
         public Map<String, CardState> lastLoadedCardStates = new HashMap<>();
     }
 
+    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
     public static ConfigData data = new ConfigData();
 
     public static void save() {
@@ -467,19 +468,22 @@ public class ConfigManager {
         data.overlayX = BaseScreen.overlayX;
         data.overlayY = BaseScreen.overlayY;
         data.overlayScale = BaseScreen.overlayScale;
-        try {
-            File configFile = getConfigFile();
-            File parent = configFile.getParentFile();
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
-            }
+        
+        SAVE_EXECUTOR.submit(() -> {
+            try {
+                File configFile = getConfigFile();
+                File parent = configFile.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
 
-            try (FileWriter writer = new FileWriter(configFile)) {
-                GSON.toJson(data, writer);
+                try (FileWriter writer = new FileWriter(configFile)) {
+                    GSON.toJson(data, writer);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     public static void load() {

@@ -22,6 +22,12 @@ public class WaypointManager {
     private static WaypointManager instance;
     private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File OLD_WAYPOINTS_FILE = OLD_CONFIG_DIR.resolve(Constants.WAYPOINTS_FILE_NAME).toFile();
+    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
+
+    public static class WaypointData {
+        public List<Waypoint> waypoints = new ArrayList<>();
+        public List<WaypointGroup> groups = new ArrayList<>();
+    }
 
     private static File getWaypointsFile() {
         return ProfileManager.getActiveProfileFile(ProfileManager.Category.WAYPOINTS);
@@ -39,6 +45,7 @@ public class WaypointManager {
     public void resetToDefaults() {
         waypoints.clear();
         groups.clear();
+        save();
     }
 
     private WaypointManager() {
@@ -89,6 +96,11 @@ public class WaypointManager {
                 wp.groupId = null;
             }
         }
+        for (WaypointGroup g : groups) {
+            if (group.id.equals(g.parentId)) {
+                g.parentId = null;
+            }
+        }
         groups.remove(group);
         save();
     }
@@ -103,33 +115,32 @@ public class WaypointManager {
         return result;
     }
 
+    public List<WaypointGroup> getSubGroups(UUID parentId) {
+        List<WaypointGroup> result = new ArrayList<>();
+        for (WaypointGroup group : groups) {
+            if (parentId == null ? group.parentId == null : parentId.equals(group.parentId)) {
+                result.add(group);
+            }
+        }
+        return result;
+    }
+
     public void save() {
-        saveWaypoints();
-        saveGroups();
-    }
-
-    private void saveWaypoints() {
-        try {
-            File waypointsFile = getWaypointsFile();
-            ensureParent(waypointsFile);
-            try (FileWriter writer = new FileWriter(waypointsFile)) {
-                Constants.GSON.toJson(waypoints, writer);
+        WaypointData data = new WaypointData();
+        data.waypoints.addAll(new ArrayList<>(waypoints));
+        data.groups.addAll(new ArrayList<>(groups));
+        
+        SAVE_EXECUTOR.submit(() -> {
+            try {
+                File waypointsFile = getWaypointsFile();
+                ensureParent(waypointsFile);
+                try (FileWriter writer = new FileWriter(waypointsFile)) {
+                    Constants.GSON.toJson(data, writer);
+                }
+            } catch (IOException e) {
+                Blackaddons.LOGGER.error("Failed to save waypoints", e);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void saveGroups() {
-        try {
-            File groupsFile = getGroupsFile();
-            ensureParent(groupsFile);
-            try (FileWriter writer = new FileWriter(groupsFile)) {
-                Constants.GSON.toJson(groups, writer);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     private static void ensureParent(File file) {
@@ -141,32 +152,56 @@ public class WaypointManager {
 
     public void load() {
         migrate();
-        loadWaypoints();
-        loadGroups();
-    }
-
-    private void loadWaypoints() {
         File waypointsFile = getWaypointsFile();
         if (!waypointsFile.exists()) return;
+
         try (FileReader reader = new FileReader(waypointsFile)) {
-            List<Waypoint> loaded = Constants.GSON.fromJson(reader, new TypeToken<List<Waypoint>>() {}.getType());
-            if (loaded != null) {
-                waypoints.clear();
-                waypoints.addAll(loaded);
-                for (Waypoint waypoint : waypoints) {
-                    if (waypoint.actions != null) {
-                        for (WaypointAction action : waypoint.actions) {
-                            ConfigManager.normalizeActionSteps(action.actions);
-                        }
+            com.google.gson.JsonElement element = com.google.gson.JsonParser.parseReader(reader);
+            if (element.isJsonArray()) {
+                List<Waypoint> loaded = Constants.GSON.fromJson(element, new TypeToken<List<Waypoint>>() {}.getType());
+                if (loaded != null) {
+                    waypoints.clear();
+                    waypoints.addAll(loaded);
+                }
+                loadLegacyGroups();
+                save();
+                File groupsFile = getGroupsFile();
+                if (groupsFile.exists()) groupsFile.delete();
+            } else if (element.isJsonObject()) {
+                WaypointData data = Constants.GSON.fromJson(element, WaypointData.class);
+                if (data != null) {
+                    waypoints.clear();
+                    waypoints.addAll(data.waypoints);
+                    groups.clear();
+                    groups.addAll(data.groups);
+                    sanitizeGroups();
+                }
+            }
+
+            for (Waypoint waypoint : waypoints) {
+                if (waypoint.actions != null) {
+                    for (WaypointAction action : waypoint.actions) {
+                        ConfigManager.normalizeActionSteps(action.actions);
                     }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Blackaddons.LOGGER.error("Failed to load waypoints", e);
         }
     }
 
-    private void loadGroups() {
+    private void sanitizeGroups() {
+        boolean changed = false;
+        for (WaypointGroup group : groups) {
+            if (group.id.equals(group.parentId)) {
+                group.parentId = null;
+                changed = true;
+            }
+        }
+        if (changed) save();
+    }
+
+    private void loadLegacyGroups() {
         File groupsFile = getGroupsFile();
         if (!groupsFile.exists()) return;
         try (FileReader reader = new FileReader(groupsFile)) {
@@ -176,7 +211,7 @@ public class WaypointManager {
                 groups.addAll(loaded);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Blackaddons.LOGGER.error("Failed to load legacy groups", e);
         }
     }
 
@@ -202,6 +237,7 @@ public class WaypointManager {
                 for (WaypointAction action : actions) {
                     ConfigManager.normalizeActionSteps(action.actions);
                 }
+                if (waypoint.actions == null) waypoint.actions = new ArrayList<>();
                 waypoint.actions.addAll(actions);
                 changed = true;
             }

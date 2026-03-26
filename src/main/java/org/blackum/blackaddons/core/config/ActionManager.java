@@ -56,20 +56,25 @@ public class ActionManager {
         return chatActions;
     }
 
-    public void save() {
-        try {
-            File chatActionsFile = getChatActionsFile();
-            File parent = chatActionsFile.getParentFile();
-            if (parent != null && !parent.exists()) {
-                parent.mkdirs();
-            }
+    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
 
-            try (FileWriter writer = new FileWriter(chatActionsFile)) {
-                GSON.toJson(chatActions, writer);
+    public void save() {
+        final List<ConfigManager.ChatAction> toSave = new ArrayList<>(chatActions);
+        SAVE_EXECUTOR.submit(() -> {
+            try {
+                File chatActionsFile = getChatActionsFile();
+                File parent = chatActionsFile.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+
+                try (FileWriter writer = new FileWriter(chatActionsFile)) {
+                    GSON.toJson(toSave, writer);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     public void load() {

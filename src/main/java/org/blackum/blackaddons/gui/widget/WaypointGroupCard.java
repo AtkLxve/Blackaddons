@@ -28,6 +28,7 @@ public class WaypointGroupCard extends Widget {
     private final WaypointGroup group;
     private final BlackAddonsGUI screen;
     private final Runnable onChanged;
+    private int indent = 0;
 
     private WaypointDragState dragState;
     private Consumer<Double> onDropCallback;
@@ -74,6 +75,10 @@ public class WaypointGroupCard extends Widget {
         this.onDropCallback = onDropCallback;
     }
 
+    public void setIndent(int indent) {
+        this.indent = indent;
+    }
+
     public WaypointGroup getGroup() {
         return group;
     }
@@ -109,7 +114,8 @@ public class WaypointGroupCard extends Widget {
     }
 
     private boolean isInHandleArea(double mouseX, double mouseY) {
-        return mouseX >= x && mouseX <= x + HANDLE_WIDTH + 6
+        int handleX = x + indent;
+        return mouseX >= handleX && mouseX <= handleX + HANDLE_WIDTH + 6
                 && mouseY >= y && mouseY <= y + height;
     }
 
@@ -148,7 +154,7 @@ public class WaypointGroupCard extends Widget {
 
         String arrow = group.collapsed ? "▶ " : "▼ ";
         int textY = ry + (rh - 8) / 2;
-        int contentX = rx + CARD_PADDING + HANDLE_WIDTH + 4;
+        int contentX = rx + CARD_PADDING + HANDLE_WIDTH + 4 + indent;
         graphics.drawString(Minecraft.getInstance().font, arrow, contentX, textY, Theme.TEXT_SECONDARY);
 
         String name = group.name != null ? group.name : "Group";
@@ -170,7 +176,7 @@ public class WaypointGroupCard extends Widget {
         int dotColor = hovered ? Theme.TEXT_PRIMARY : Theme.withAlpha(Theme.TEXT_SECONDARY, 0.5f);
         int dotSize = 2;
         int gap = 3;
-        int hx = rx + 6;
+        int hx = rx + 6 + indent;
         int hy = ry + (rh - (2 * gap + 3 * dotSize)) / 2;
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 2; c++) {

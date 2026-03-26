@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.core.config.ConfigManager.WaypointAction;
 import org.blackum.blackaddons.core.waypoint.Waypoint;
 import org.blackum.blackaddons.core.waypoint.WaypointDragState;
+import org.blackum.blackaddons.core.waypoint.WaypointGroup;
 import org.blackum.blackaddons.core.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -20,19 +21,20 @@ import java.util.function.Consumer;
 
 public class WaypointCard extends Widget {
 
-    private static final int CARD_PADDING = 10;
-    private static final int HANDLE_WIDTH = 16;
-    private static final int CONTENT_OFFSET = HANDLE_WIDTH + 4;
-    private static final int SWATCH_SIZE = 10;
-    private static final int BUTTON_HEIGHT = 22;
-    private static final int BUTTON_GAP = 4;
-    private static final int ROW_HEIGHT = 18;
-    private static final int CARD_HEIGHT = CARD_PADDING * 2 + ROW_HEIGHT * 2 + 6 + BUTTON_HEIGHT;
+    private static final int CARD_PADDING = 12;
+    private static final int HANDLE_WIDTH = 12;
+    private static final int CONTENT_OFFSET = 16;
+    private static final int SWATCH_SIZE = 12;
+    private static final int BUTTON_HEIGHT = 18;
+    private static final int BUTTON_GAP = 6;
+    private static final int ROW_HEIGHT = 16;
+    private static final int CARD_HEIGHT = CARD_PADDING * 2 + ROW_HEIGHT * 2 + 12 + BUTTON_HEIGHT;
     private static final int DRAG_THRESHOLD = 5;
 
     private final Waypoint waypoint;
     private final BlackAddonsGUI screen;
     private final Runnable onChanged;
+    private int indent = 0;
 
     private WaypointDragState dragState;
     private Consumer<Double> onDropCallback;
@@ -93,6 +95,10 @@ public class WaypointCard extends Widget {
         this.onDropCallback = onDropCallback;
     }
 
+    public void setIndent(int indent) {
+        this.indent = indent;
+    }
+
     public Waypoint getWaypoint() {
         return waypoint;
     }
@@ -120,20 +126,26 @@ public class WaypointCard extends Widget {
         enabledToggle.setX(x + width - CARD_PADDING - enabledToggle.getWidth());
         enabledToggle.setY(toggleY);
 
-        int btnY = y + CARD_PADDING + ROW_HEIGHT * 2 + 6;
-        int btnX = x + CARD_PADDING + CONTENT_OFFSET;
-        editBtn.setX(btnX);
+        int btnY = y + height - CARD_PADDING - BUTTON_HEIGHT;
+        int availableWidth = width - CARD_PADDING * 2;
+        int btnWidth = (availableWidth - BUTTON_GAP * 2) / 3;
+
+        editBtn.setWidth(btnWidth);
+        editBtn.setX(x + CARD_PADDING);
         editBtn.setY(btnY);
-        btnX += editBtn.getWidth() + BUTTON_GAP;
-        actionsBtn.setX(btnX);
+
+        actionsBtn.setWidth(btnWidth);
+        actionsBtn.setX(editBtn.getX() + btnWidth + BUTTON_GAP);
         actionsBtn.setY(btnY);
-        btnX += actionsBtn.getWidth() + BUTTON_GAP;
-        deleteBtn.setX(btnX);
+
+        deleteBtn.setWidth(availableWidth - (btnWidth + BUTTON_GAP) * 2);
+        deleteBtn.setX(actionsBtn.getX() + btnWidth + BUTTON_GAP);
         deleteBtn.setY(btnY);
     }
 
     private boolean isInHandleArea(double mouseX, double mouseY) {
-        return mouseX >= x && mouseX <= x + HANDLE_WIDTH + 6
+        int handleX = x + CARD_PADDING + indent;
+        return mouseX >= handleX && mouseX <= handleX + HANDLE_WIDTH
                 && mouseY >= y && mouseY <= y + height;
     }
 
@@ -168,25 +180,37 @@ public class WaypointCard extends Widget {
     private void renderContents(GuiGraphics graphics, int renderX, int renderY, int renderWidth, int renderHeight, int mouseX, int mouseY, float partialTick, boolean isGhost) {
         renderDragHandle(graphics, renderX, renderY, renderHeight, mouseX, mouseY, isGhost);
 
-        int swatchX = renderX + CARD_PADDING + CONTENT_OFFSET;
+        int swatchX = renderX + CARD_PADDING + CONTENT_OFFSET + indent;
         int swatchY = renderY + CARD_PADDING + (ROW_HEIGHT - SWATCH_SIZE) / 2;
+        
+        graphics.fill(swatchX - 1, swatchY - 1, swatchX + SWATCH_SIZE + 1, swatchY + SWATCH_SIZE + 1, 0x44FFFFFF);
         graphics.fill(swatchX, swatchY, swatchX + SWATCH_SIZE, swatchY + SWATCH_SIZE, 0xFF000000 | waypoint.color);
 
         int nameX = swatchX + SWATCH_SIZE + 6;
         int nameColor = 0xFF000000 | waypoint.color;
-        graphics.drawString(Minecraft.getInstance().font, waypoint.name, nameX, renderY + CARD_PADDING + (ROW_HEIGHT - 8) / 2, nameColor);
-
-        String coords = String.format(Locale.ROOT, "%.0f, %.0f, %.0f", waypoint.x, waypoint.y, waypoint.z);
-        graphics.drawString(Minecraft.getInstance().font, coords, nameX, renderY + CARD_PADDING + ROW_HEIGHT + 3 + (ROW_HEIGHT - 8) / 2, Theme.TEXT_SECONDARY);
+        
+        String nameText = waypoint.name;
+        if (nameText.isEmpty()) nameText = "Unnamed Waypoint";
+        
+        WaypointGroup group = WaypointManager.getInstance().getGroup(waypoint.groupId);
+        if (group != null) {
+            nameText += " §7(in " + group.name + ")";
+        }
+        graphics.drawString(Minecraft.getInstance().font, nameText, nameX, renderY + CARD_PADDING + (ROW_HEIGHT - 8) / 2, nameColor);
 
         Minecraft mc = Minecraft.getInstance();
+        String coords = String.format(Locale.ROOT, "%.0f, %.0f, %.0f", waypoint.x, waypoint.y, waypoint.z);
+        String infoText = coords;
+        
         if (mc.player != null) {
             double dist = Math.sqrt(Math.pow(waypoint.x - mc.player.getX(), 2) + Math.pow(waypoint.y - mc.player.getY(), 2) + Math.pow(waypoint.z - mc.player.getZ(), 2));
-            String distLabel = String.format(Locale.ROOT, "%.0fm", dist);
-            int distWidth = mc.font.width(distLabel);
-            int distX = renderX + renderWidth - CARD_PADDING - enabledToggle.getWidth() - 6 - distWidth;
-            graphics.drawString(mc.font, distLabel, distX, renderY + CARD_PADDING + (ROW_HEIGHT - 8) / 2, Theme.TEXT_SECONDARY);
+            infoText += " §8• §7" + String.format(Locale.ROOT, "%.0fm", dist);
         }
+
+        graphics.drawString(mc.font, infoText, swatchX, renderY + CARD_PADDING + ROW_HEIGHT + 4 + (ROW_HEIGHT - 8) / 2, Theme.TEXT_SECONDARY);
+
+        int dividerY = renderY + CARD_PADDING + ROW_HEIGHT * 2 + 6;
+        graphics.fill(renderX + CARD_PADDING, dividerY, renderX + renderWidth - CARD_PADDING, dividerY + 1, 0x11FFFFFF);
 
         if (!isGhost) {
             for (Widget child : children) {
@@ -197,11 +221,12 @@ public class WaypointCard extends Widget {
 
     private void renderDragHandle(GuiGraphics graphics, int rx, int ry, int rh, int mx, int my, boolean isGhost) {
         boolean hovered = !isGhost && isInHandleArea(mx, my);
-        int dotColor = hovered ? Theme.TEXT_PRIMARY : Theme.withAlpha(Theme.TEXT_SECONDARY, 0.5f);
+        int dotColor = hovered ? Theme.TEXT_PRIMARY : Theme.withAlpha(Theme.TEXT_SECONDARY, 0.3f);
         int dotSize = 2;
-        int gap = 3;
-        int hx = rx + 6;
-        int hy = ry + (rh - (2 * gap + 3 * dotSize)) / 2;
+        int gap = 2;
+        int hx = rx + CARD_PADDING + indent;
+        int textAreaHeight = ROW_HEIGHT * 2 + 4;
+        int hy = ry + CARD_PADDING + (textAreaHeight - (2 * gap + 3 * dotSize)) / 2;
         for (int r = 0; r < 3; r++) {
             for (int c = 0; c < 2; c++) {
                 int dx = hx + c * (dotSize + gap);
