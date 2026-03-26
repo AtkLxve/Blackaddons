@@ -219,7 +219,6 @@ public class FastLeap {
 
     private static String getRoomClass(String room) {
         return switch (room) {
-            case "S1" -> ConfigManager.data.FastLeapS1Class;
             case "S2" -> ConfigManager.data.FastLeapS2Class;
             case "S3" -> ConfigManager.data.FastLeapS3Class;
             case "S4" -> ConfigManager.data.FastLeapS4Class;
