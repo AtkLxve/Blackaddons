@@ -32,6 +32,7 @@ import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.feature.cheat.FastLeap;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.cheat.Perspective;
+import org.blackum.blackaddons.feature.cheat.RelicLook;
 import org.blackum.blackaddons.core.util.LocationUtils;
 import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.core.util.Scheduler;
@@ -145,7 +146,6 @@ public class BlackaddonsClient implements ClientModInitializer {
                 return true;
             }
 
-            if (ConfigManager.data.ircChatMode && !message.startsWith("/")) {
             if (ConfigManager.data.ircChatMode) {
                 IrcClient.getInstance().sendMessage(message.trim());
                 return false;

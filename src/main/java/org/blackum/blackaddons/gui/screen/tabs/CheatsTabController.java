@@ -92,6 +92,7 @@ public class CheatsTabController extends SimpleTabController {
             cheatsTab.addWidget(ssTickSlider);
 
             Label ssDistLabel = new Label(contentX, contentY + 290,
+                    String.format(java.util.Locale.ROOT, "Max Distance: %.1f blocks", ConfigManager.data.AutoSSDistanceLimit), Label.Style.BODY);
             cheatsTab.addWidget(ssDistLabel);
 
             Slider ssDistSlider = new Slider(contentX, contentY + 310, contentWidth - 20, 2.0f, 10.0f,
@@ -125,8 +126,6 @@ public class CheatsTabController extends SimpleTabController {
         cheatsTab.addWidget(cheatsCardContainer);
 
         int containerY = contentY + 30;
-        int spacing = 20;
-        int[] colY = new int[numCols];
         boolean isSingleColumn = contentWidth < 680;
         int col1X = contentX + 20;
         int col2X = contentX + 340;
@@ -259,6 +258,7 @@ public class CheatsTabController extends SimpleTabController {
         listView.addItem(distSlider);
 
         Label speedLabel = new Label(0, 0,
+                String.format(java.util.Locale.ROOT, "Rotation Speed: %.1f", ConfigManager.data.AutoSSRotationSpeed), Label.Style.BODY);
         listView.addItem(speedLabel);
 
         Slider speedSlider = new Slider(0, 0, 260, 1.0f, 50.0f,
@@ -582,7 +582,6 @@ public class CheatsTabController extends SimpleTabController {
         listView.addItem(randomSlider);
 
         Label speedLabel = new Label(0, 0,
-                String.format(Locale.ROOT, "Speed: %.1f", ConfigManager.data.rotationSpeed),
                 String.format(java.util.Locale.ROOT, "Speed: %.1f", ConfigManager.data.rotationSpeed),
                 Label.Style.BODY);
         listView.addItem(speedLabel);
