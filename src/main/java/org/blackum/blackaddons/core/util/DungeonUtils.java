@@ -71,10 +71,16 @@ public class DungeonUtils {
                 while (m.find()) nums.add(Integer.parseInt(m.group(1)));
 
                 if (!nums.isEmpty()) {
-                    if (secretsPart.contains("/") || (!secretsPart.contains("%") && nums.size() == 1)) {
+                    if (secretsPart.contains("%")) {
+                        // find the number right before the %
+                        java.util.regex.Matcher pm = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)%").matcher(secretsPart);
+                        if (pm.find()) {
+                            stats.secretPercent = (int) Double.parseDouble(pm.group(pm.groupCount() > 0 ? 1 : 0));
+                        } else {
+                            stats.secretPercent = nums.get(nums.size() - 1); // fallback to last number
+                        }
+                    } else if (secretsPart.contains("/") || nums.size() == 1) {
                         stats.secretsFound = nums.get(0);
-                    } else if (secretsPart.contains("%") && stats.secretPercent == 0) {
-                        stats.secretPercent = nums.get(0);
                     }
                 }
             }
@@ -108,7 +114,7 @@ public class DungeonUtils {
                 if (!name.equalsIgnoreCase("Mimic") && !name.equalsIgnoreCase("Prince") && 
                     !name.equalsIgnoreCase("Secrets") && !name.equalsIgnoreCase("Deaths") && 
                     !name.equalsIgnoreCase("Crypts")) {
-                    if (cleanLine.contains("[✔]")) {
+                    if (cleanLine.contains("[✔]") || (name.equalsIgnoreCase("Quiz") && cleanLine.contains("[✦]"))) {
                         stats.completedPuzzles.add(name);
                     }
                 }

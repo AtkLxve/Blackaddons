@@ -131,7 +131,15 @@ public class SoloClearsTabController extends SimpleTabController {
             clearsList.addItem(new Label(0, 0, title, Label.Style.BODY));
 
             if (!info.puzzles.isEmpty()) {
-                String puzzlesJoined = String.join(", ", info.puzzles);
+                java.util.List<String> coloredPuzzles = new java.util.ArrayList<>();
+                for (String p : info.puzzles) {
+                    if (p.equalsIgnoreCase("Quiz")) {
+                        coloredPuzzles.add(ChatFormatting.RED + p + ChatFormatting.LIGHT_PURPLE);
+                    } else {
+                        coloredPuzzles.add(p);
+                    }
+                }
+                String puzzlesJoined = String.join(", ", coloredPuzzles);
                 clearsList.addItem(new Label(10, 0, ChatFormatting.GRAY + "Puzzles: " + ChatFormatting.LIGHT_PURPLE + puzzlesJoined, Label.Style.BODY));
             }
 

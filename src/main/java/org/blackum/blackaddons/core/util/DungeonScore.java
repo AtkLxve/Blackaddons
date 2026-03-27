@@ -190,6 +190,8 @@ public class DungeonScore {
             bonus += 2;
         if (princeKilled)
             bonus += 1;
+        if (isQuizCompleted())
+            bonus += 5;
         return bonus;
     }
 
@@ -248,13 +250,11 @@ public class DungeonScore {
         List<String> tab = TabListUtils.getTabListLines();
         for (String line : tab) {
             String cleanLine = line.trim().replaceAll("(?i)§[0-9a-fk-or]", "");
-            Matcher m = SECRETS_PATTERN.matcher(cleanLine);
-            if (m.find()) {
-                String val = m.group(1);
-                try {
-                    double d = Double.parseDouble(val);
-                    return d;
-                } catch (NumberFormatException ignored) {
+            if ((cleanLine.toLowerCase().contains("secrets found") || cleanLine.toLowerCase().contains("secrets:")) && cleanLine.contains("%")) {
+                Pattern percentPattern = Pattern.compile("(\\d+(?:\\.\\d+)?)%");
+                Matcher pm = percentPattern.matcher(cleanLine);
+                if (pm.find()) {
+                    try { return Double.parseDouble(pm.group(1)); } catch (Exception ignored) {}
                 }
             }
         }
@@ -271,27 +271,48 @@ public class DungeonScore {
         return 0;
     }
 
+    private static boolean isQuizCompleted() {
+        List<String> tab = TabListUtils.getTabListLines();
+        for (String line : tab) {
+            String cleanLine = line.trim();
+            if (cleanLine.contains("Quiz")) {
+                return cleanLine.contains("\u2714") || cleanLine.contains("\u2713") ||
+                        cleanLine.contains("\u2705") || cleanLine.contains("✔") ||
+                        cleanLine.contains("\u2726") || cleanLine.contains("✦");
+            }
+        }
+        return false;
+    }
+
     private static int getPuzzlePenalty() {
         int completed = 0;
         List<String> tab = TabListUtils.getTabListLines();
-        
+
         for (String line : tab) {
             String cleanLine = line.trim();
-            if (cleanLine.isEmpty()) continue;
-            
+            if (cleanLine.isEmpty())
+                continue;
+
             // Exclude known non-puzzle headers
-            if (cleanLine.contains("Mimic") || cleanLine.contains("Prince") || 
-                cleanLine.contains("Secrets") || cleanLine.contains("Deaths") || 
-                cleanLine.contains("Crypts") || cleanLine.contains("Completed Rooms") ||
-                cleanLine.contains("Puzzles: (")) continue;
-            
+            if (cleanLine.contains("Mimic") || cleanLine.contains("Prince") ||
+                    cleanLine.contains("Secrets") || cleanLine.contains("Deaths") ||
+                    cleanLine.contains("Crypts") || cleanLine.contains("Completed Rooms") ||
+                    cleanLine.contains("Puzzles: ("))
+                continue;
+
+            // Special exception for Quiz: count 'in progress' (✦) as completed
+            if (cleanLine.contains("Quiz") && (cleanLine.contains("\u2726") || cleanLine.contains("✦"))) {
+                completed++;
+                continue;
+            }
+
             // Check for any of the checkmark symbols
-            if (cleanLine.contains("\u2714") || cleanLine.contains("\u2713") || 
-                cleanLine.contains("\u2705") || cleanLine.contains("✔")) {
+            if (cleanLine.contains("\u2714") || cleanLine.contains("\u2713") ||
+                    cleanLine.contains("\u2705") || cleanLine.contains("✔")) {
                 completed++;
             }
         }
-        
+
         // Penalty is 10 points for each puzzle that is NOT completed
         return Math.max(0, (puzzleCount - completed)) * 10;
     }
