@@ -122,29 +122,35 @@ public class CheatsTabController extends SimpleTabController {
         });
         cheatsTab.addWidget(resetLayout);
 
-        CardContainer cheatsCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
+        CardContainer cheatsCardContainer = new CardContainer(contentX, contentY + 50, contentWidth, 540);
         cheatsTab.addWidget(cheatsCardContainer);
 
-        int containerY = contentY + 30;
-        boolean isSingleColumn = contentWidth < 680;
-        int col1X = contentX + 20;
-        int col2X = contentX + 340;
+        int containerY = contentY + 60;
+        int numCols = contentWidth < 680 ? 1 : (contentWidth < 1000 ? 2 : 3);
+        int colWidth = 300;
+        int spacing = 20;
+        int[] colY = new int[numCols];
+        for (int i = 0; i < numCols; i++) colY[i] = containerY;
 
-        List<ResizableCard> cards = new ArrayList<>();
         autoTntCard = createAutoTntCard(0, 0);
-        cards.add(autoTntCard);
         autoSSCard = createAutoSSCard(0, 0);
-        cards.add(autoSSCard);
         fastLeapCard = createFastLeapCard(0, 0);
-        cards.add(fastLeapCard);
         rotationCard = createRotationCard(0, 0);
-        cards.add(rotationCard);
         autoBMCard = createAutoBM(0, 0);
-        cards.add(autoBMCard);
         freecamCard = createFreecamCard(0, 0);
-        cards.add(freecamCard);
         perspectiveCard = createPerspectiveCard(0, 0);
-        cards.add(perspectiveCard);
+
+        List<ResizableCard> cards = List.of(autoTntCard, autoSSCard, fastLeapCard, rotationCard, autoBMCard, freecamCard, perspectiveCard);
+        for (ResizableCard card : cards) {
+            int shortestCol = 0;
+            for (int i = 1; i < numCols; i++) {
+                if (colY[i] < colY[shortestCol]) shortestCol = i;
+            }
+
+            card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
+            card.setY(colY[shortestCol]);
+            colY[shortestCol] += card.getHeight() + spacing;
+        }
 
         cheatsCardContainer.addCard(autoTntCard);
         cheatsCardContainer.addCard(autoSSCard);
