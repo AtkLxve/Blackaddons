@@ -12,6 +12,7 @@ import org.blackum.blackaddons.gui.notification.NotificationType;
 
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import net.minecraft.ChatFormatting;
+import org.blackum.blackaddons.core.util.DungeonScore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -29,7 +30,6 @@ public class SoloClearsTracker {
     
 
     private static final Pattern COMPLETED_ROOMS_PATTERN = Pattern.compile("(?i)Completed Rooms:\\s*(\\d+)(?:/|\\s*out\\s*of\\s*)(\\d+)");
-    private static final Pattern DEATHS_PATTERN = Pattern.compile("(?i)Deaths:\\s*.*?(\\d+)");
     private static final Pattern CRYPTS_PATTERN = Pattern.compile("(?i)Crypts:\\s*(\\d+)");
     private static final Pattern PUZZLES_HEADER_PATTERN = Pattern.compile("(?i)Puzzles:\\s*\\((\\d+)\\)");
 
@@ -42,6 +42,7 @@ public class SoloClearsTracker {
             runRecorded = false;
             lastLocation = currentLocation;
             princeKilledThisRun = false;
+            DungeonScore.reset();
             return;
         }
 
@@ -49,8 +50,10 @@ public class SoloClearsTracker {
             runRecorded = false;
             lastLocation = currentLocation;
             princeKilledThisRun = false;
+            DungeonScore.reset();
         }
 
+        DungeonScore.update();
         if (runRecorded) return;
 
         DungeonFloor floor = LocationUtils.getCurrentFloor();
@@ -90,15 +93,14 @@ public class SoloClearsTracker {
 
         org.blackum.blackaddons.core.util.DungeonUtils.DungeonStats stats = org.blackum.blackaddons.core.util.DungeonUtils.parseDungeonStats(tabListLines);
         
-        int calculatedScore = stats.calculateScore();
-        int finalScore = Math.max(calculatedScore, sidebarScore);
+        int finalScore = DungeonScore.getScore();
 
-        boolean princeDefeated = stats.princeKilled || princeKilledThisRun;
+        boolean mimicKilled = DungeonScore.isMimicKilled() || stats.mimicKilled;
+        boolean princeDefeated = DungeonScore.isPrinceKilled() || stats.princeKilled || princeKilledThisRun;
 
-        // TRIGGER: Score >= 265 (Modify this if you need a different minimum score for your clears)
-        // Wait until time is known so we don't trigger instantly at 00m 00s if score is bugged
-        if (finalScore >= 265 && isSolo && !time.equals("Unknown") && !time.equals("00m 00s") && !time.equals("00:00")) {
-            ConfigManager.SoloClearInfo info = new ConfigManager.SoloClearInfo(floorName, time, stats.secretsFound, stats.completedPuzzles, princeDefeated, stats.mimicKilled);
+        // TRIGGER: Manual Score >= 300
+        if (finalScore >= 300 && isSolo && !time.equals("Unknown") && !time.equals("00m 00s") && !time.equals("00:00")) {
+            ConfigManager.SoloClearInfo info = new ConfigManager.SoloClearInfo(floorName, time, stats.secretsFound, stats.completedPuzzles, princeDefeated, mimicKilled);
             if (floorName.equals("M7")) {
                 ConfigManager.data.m7SoloClears.add(info);
             } else {
@@ -112,7 +114,7 @@ public class SoloClearsTracker {
                 String colorTime = "§e" + time;
                 String puzzleStr = stats.completedPuzzles.isEmpty() ? "None" : String.join(", ", stats.completedPuzzles);
                 String princeStr = princeDefeated ? "§a✔" : "§c✘";
-                String mimicStr = stats.mimicKilled ? "§a✔" : "§c✘";
+                String mimicStr = mimicKilled ? "§a✔" : "§c✘";
                 mc.player.displayClientMessage(ChatUtils.getMessage("§b§l" + floorName + " SOLO CLEAR DONE! §r§fTime: " + colorTime + 
                     " §r§fSecrets: §b" + stats.secretsFound + " §r§fPuzzles: §d[" + puzzleStr + "] " + 
                     "§r§fPrince: " + princeStr + " §r§fMimic: " + mimicStr), false);
@@ -125,6 +127,9 @@ public class SoloClearsTracker {
         String cleanText = message.getString().replaceAll("(?i)§[0-9a-fk-or]", "").trim();
         if (cleanText.contains("A Prince falls. +1 Bonus Score")) {
             princeKilledThisRun = true;
+            DungeonScore.onPrinceKill();
+        } else if (cleanText.contains("[BOSS] The Watcher: You have proven yourself. You may pass.")) {
+            DungeonScore.onBloodRoomPassed();
         }
     }
 

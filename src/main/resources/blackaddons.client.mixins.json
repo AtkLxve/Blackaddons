@@ -17,6 +17,7 @@
     "core.KeyMappingMixin",
     "core.InventoryAccessor",
     "core.ClientPacketListenerAccessor",
+    "core.ClientPacketListenerMixin",
     "render.FullbrightMixin",
     "render.GameRendererMixin",
     "render.CameraMixin",

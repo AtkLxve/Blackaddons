@@ -469,6 +469,17 @@ public class ConfigManager {
         public boolean disableUnsecureChatToast = true;
         public boolean chatVisualFiltersEnabled = false;
         public boolean actionTriggersEnabled = true;
+
+        // Dungeon Score Calculator
+        public boolean enableDungeonScoreTracker = true;
+        public boolean enableDungeonScoreAnnouncements = true;
+        public String dungeonScore270Message = "270 Score Reached!";
+        public String dungeonScore300Message = "300 Score Reached!";
+        public String mimicKilledMessage = "Mimic Killed!";
+        public String princeKilledMessage = "Prince Killed!";
+        public boolean enableMimicKilledMessage = true;
+        public boolean enablePrinceKilledMessage = true;
+
         public List<ChatVisualFilter> chatVisualFilters = new ArrayList<>();
 
         // Solo Clears

@@ -30,6 +30,7 @@ import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.core.manager.RotationManager;
+import org.blackum.blackaddons.core.util.DungeonScore;
 import java.util.UUID;
 
 public class CommandManager {
@@ -498,6 +499,19 @@ public class CommandManager {
                                                 Blackaddons.screenOpener.accept(new PartyFinderScreen());
                                         }
 
+                                        return 1;
+                                }));
+                                cmd.then(ClientCommandManager.literal("score").executes(ctx -> {
+                                        for (String line : DungeonScore.getScoreBreakdown()) {
+                                                ctx.getSource().sendFeedback(Component.literal(line));
+                                        }
+                                        return 1;
+                                }));
+                                cmd.then(ClientCommandManager.literal("tablist").executes(ctx -> {
+                                        ctx.getSource().sendFeedback(Component.literal("§e--- Current Tablist ---"));
+                                        for (String line : org.blackum.blackaddons.core.util.TabListUtils.getTabListLines()) {
+                                                ctx.getSource().sendFeedback(Component.literal("§7- " + line));
+                                        }
                                         return 1;
                                 }));
                                 cmd.then(ClientCommandManager.literal("preview")
