@@ -3,7 +3,10 @@ package org.blackum.blackaddons.mixin.core;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.Zombie;
+//? if < 1.21.11 {
+/*import net.minecraft.world.entity.monster.Zombie;
+*///?} else
+import net.minecraft.world.entity.monster.zombie.Zombie;
 import org.blackum.blackaddons.core.util.DungeonScore;
 import org.blackum.blackaddons.core.util.LocationUtils;
 import org.blackum.blackaddons.core.model.DungeonFloor;
