@@ -1,25 +1,21 @@
 package org.blackum.blackaddons.feature.cheat;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.ContainerScreen;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.component.ItemLore;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
-import org.blackum.blackaddons.feature.chat.ChatUtils;
-import org.blackum.blackaddons.core.util.ScoreboardUtils;
-import org.blackum.blackaddons.gui.render.DebugBoxRenderer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Scoreboard;
+
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
 import java.util.ArrayList;
@@ -29,6 +25,12 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.core.util.ScoreboardUtils;
+import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
+import org.blackum.blackaddons.feature.chat.ChatUtils;
+import org.blackum.blackaddons.gui.render.DebugBoxRenderer;
 
 public class FastLeap {
     private static final Pattern WITHER_DOOR_PATTERN = Pattern.compile("(?i)([A-Za-z0-9_]+) opened a .*?door!");
@@ -51,6 +53,8 @@ public class FastLeap {
     private static final int[] S4_ROOM = {S4_MIN_X, S4_MIN_Y, S4_MIN_Z, S4_MAX_X, S4_MAX_Y, S4_MAX_Z};
 
     private static final String CLASS_NONE = "NONE";
+    private static final String INFINILEAP_NAME = "infinileap";
+    private static final String SPIRIT_LEAP_NAME = "spirit leap";
 
     private static String leapTarget = null;
     private static boolean searchByClass = false;
@@ -381,6 +385,11 @@ public class FastLeap {
         return true;
     }
 
+    private static String getCleanItemName(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return "";
+        return stack.getHoverName().getString().toLowerCase().replaceAll("(?i)§[0-9A-FK-ORX]", "");
+    }
+
     private static boolean slotLoreContains(Slot slot, String target) {
         ItemLore lore = slot.getItem().get(DataComponents.LORE);
         if (lore == null) return false;
@@ -464,9 +473,12 @@ public class FastLeap {
     }
 
     private static boolean isLeapItem(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) return false;
-        String name = stack.getHoverName().getString().toLowerCase().replaceAll("(?i)§[0-9A-FK-ORX]", "");
-        return name.contains("infinileap");
+        String name = getCleanItemName(stack);
+        return name.contains(INFINILEAP_NAME) || name.contains(SPIRIT_LEAP_NAME);
+    }
+
+    private static boolean isInfinileap(ItemStack stack) {
+        return getCleanItemName(stack).contains(INFINILEAP_NAME);
     }
 
     private static void debugMsg(String msg) {
