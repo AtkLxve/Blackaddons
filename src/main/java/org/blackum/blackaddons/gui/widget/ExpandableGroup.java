@@ -128,18 +128,8 @@ public class ExpandableGroup extends Widget {
         if (!visible || expandAnimation.getValue() == 0)
             return;
 
-        boolean scissored = false;
-        if (expandAnimation.getValue() < 1.0f) {
-            graphics.enableScissor(x, y + header.getHeight(), x + width, y + height);
-            scissored = true;
-        }
-
         for (Widget child : children) {
             child.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
-        }
-
-        if (scissored) {
-            graphics.disableScissor();
         }
     }
 

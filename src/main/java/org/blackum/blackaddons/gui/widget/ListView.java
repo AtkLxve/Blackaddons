@@ -75,7 +75,6 @@ public class ListView extends Widget {
         if (!visible || !(super.isMouseOver(mouseX, mouseY) || hasActiveOverlay()))
             return;
 
-        graphics.enableScissor(x, y, x + width, y + height);
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible() && currentY + item.getHeight() > y && currentY < y + height) {
@@ -87,7 +86,6 @@ public class ListView extends Widget {
             }
             currentY += item.getHeight() + itemSpacing;
         }
-        graphics.disableScissor();
     }
 
     @Override

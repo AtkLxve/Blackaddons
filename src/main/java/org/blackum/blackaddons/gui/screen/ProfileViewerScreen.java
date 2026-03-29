@@ -253,7 +253,10 @@ public class ProfileViewerScreen extends BaseScreen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         renderConfetti(graphics);
+    }
 
+    @Override
+    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (!isLoading && profileData != null) {
             String label = "Viewing: " + player;
             int x = containerX + 10;
