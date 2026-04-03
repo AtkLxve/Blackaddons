@@ -76,7 +76,9 @@ public final class Constants {
         public static final String GITHUB_NAMES_URL = "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/refs/heads/main/data/custom_names.json";
 
         // API Headers
-        public static final String HEADER_ENCRYPTED_IDENTITY = "X-Encrypted-Identity";
+        public static final String HEADER_PLAYER_KEY = "X-Player-Key";
+        public static final String HEADER_PLAYER_NAME = "X-Player-Name";
+        public static final String HEADER_PLAYER_UUID = "X-Player-UUID";
         public static final String HEADER_DEVELOPER_KEY = "X-Developer-Key";
 
         // Catacombs Data

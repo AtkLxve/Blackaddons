@@ -67,7 +67,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         AlignUtils.register();
 
         ConfigManager.load();
-        BotIntegration.fetchVerificationKey();
+        BotIntegration.authenticateWithMojang();
         CustomNameManager.getInstance().fetch();
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
