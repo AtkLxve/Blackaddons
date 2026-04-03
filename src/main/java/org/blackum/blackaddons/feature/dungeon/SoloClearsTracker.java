@@ -13,6 +13,7 @@ import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import net.minecraft.ChatFormatting;
 import org.blackum.blackaddons.core.util.DungeonScore;
+import org.blackum.blackaddons.integration.BotIntegration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -100,6 +101,24 @@ public class SoloClearsTracker {
 
         // TRIGGER: Manual Score >= 300
         if (finalScore >= 300 && isSolo && !time.equals("Unknown") && !time.equals("00m 00s") && !time.equals("00:00")) {
+            List<ConfigManager.SoloClearInfo> floorClears = floorName.equals("M7")
+                    ? ConfigManager.data.m7SoloClears : ConfigManager.data.f7SoloClears;
+
+            // Determine if this is a new personal best before adding
+            int newTimeSeconds = parseTimeToSeconds(time);
+            boolean isNewPB = true;
+            if (newTimeSeconds == Integer.MAX_VALUE) {
+                isNewPB = false; // can't parse – skip bot submission
+            } else {
+                for (ConfigManager.SoloClearInfo existing : floorClears) {
+                    int existingSeconds = parseTimeToSeconds(existing.time);
+                    if (existingSeconds != Integer.MAX_VALUE && existingSeconds <= newTimeSeconds) {
+                        isNewPB = false;
+                        break;
+                    }
+                }
+            }
+
             ConfigManager.SoloClearInfo info = new ConfigManager.SoloClearInfo(floorName, time, stats.secretsFound, stats.completedPuzzles, princeDefeated, mimicKilled);
             if (floorName.equals("M7")) {
                 ConfigManager.data.m7SoloClears.add(info);
@@ -115,12 +134,70 @@ public class SoloClearsTracker {
                 String puzzleStr = stats.completedPuzzles.isEmpty() ? "None" : String.join(", ", stats.completedPuzzles);
                 String princeStr = princeDefeated ? "§a✔" : "§c✘";
                 String mimicStr = mimicKilled ? "§a✔" : "§c✘";
-                mc.player.displayClientMessage(ChatUtils.getMessage("§b§l" + floorName + " SOLO CLEAR DONE! §r§fTime: " + colorTime + 
-                    " §r§fSecrets: §b" + stats.secretsFound + " §r§fPuzzles: §d[" + puzzleStr + "] " + 
+                mc.player.displayClientMessage(ChatUtils.getMessage("§b§l" + floorName + " SOLO CLEAR DONE! §r§fTime: " + colorTime +
+                    " §r§fSecrets: §b" + stats.secretsFound + " §r§fPuzzles: §d[" + puzzleStr + "] " +
                     "§r§fPrince: " + princeStr + " §r§fMimic: " + mimicStr), false);
+
+                if (isNewPB) {
+                    final String player = mc.getUser().getName();
+                    final String normalizedTime = normalizeTimeForBot(time);
+                    final String submittedFloor = floorName;
+                    final int submittedSecrets = stats.secretsFound;
+                    final List<String> submittedPuzzles = new ArrayList<>(stats.completedPuzzles);
+                    final boolean submittedPrince = princeDefeated;
+                    final boolean submittedMimic = mimicKilled;
+                    BotIntegration.sendSoloClear(player, submittedFloor, normalizedTime,
+                            submittedSecrets, submittedPuzzles, submittedPrince, submittedMimic)
+                            .thenAccept(res -> {
+                                if (res != null && mc.player != null) {
+                                    mc.execute(() -> mc.player.displayClientMessage(
+                                            ChatUtils.getMessage("§a[SoloClears] New PB submitted to leaderboard!"), false));
+                                }
+                            });
+                }
             }
             NotificationManager.addNotification("Solo Clear", floorName + " Clear Recorded: " + time + " (" + stats.secretsFound + " secrets)", NotificationType.SUCCESS);
         }
+    }
+
+    /**
+     * Converts sidebar time strings like "4m 20s" or "04m 20s" into "MM:SS"
+     * which the bot's parse_time() expects.
+     */
+    private static String normalizeTimeForBot(String raw) {
+        if (raw == null) return "00:00";
+        // Already colon format
+        if (raw.matches("\\d+:\\d+.*")) return raw;
+        // Regex for "Xm Ys" style
+        java.util.regex.Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
+        if (m.find()) {
+            int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
+            int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
+            return String.format("%02d:%02d", mins, secs);
+        }
+        return raw;
+    }
+
+    private static int parseTimeToSeconds(String timeStr) {
+        if (timeStr == null || timeStr.trim().isEmpty() || timeStr.equals("Unknown")) return Integer.MAX_VALUE;
+        try {
+            if (timeStr.contains("m") || timeStr.contains("s")) {
+                Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(timeStr);
+                if (m.find()) {
+                    int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
+                    int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
+                    int total = mins * 60 + secs;
+                    return total <= 0 ? Integer.MAX_VALUE : total;
+                }
+            } else if (timeStr.contains(":")) {
+                String[] parts = timeStr.split(":");
+                if (parts.length >= 2) {
+                    int total = Integer.parseInt(parts[0]) * 60 + Integer.parseInt(parts[1]);
+                    return total <= 0 ? Integer.MAX_VALUE : total;
+                }
+            }
+        } catch (Exception ignored) {}
+        return Integer.MAX_VALUE;
     }
 
     public static void onChatMessage(Component message) {

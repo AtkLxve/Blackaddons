@@ -26,6 +26,7 @@ import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.gui.screen.PartyFinderScreen;
 import org.blackum.blackaddons.gui.screen.IrcScreen;
 import org.blackum.blackaddons.gui.screen.ImagePreviewScreen;
+import org.blackum.blackaddons.gui.screen.SoloLeaderboardScreen;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import net.fabricmc.loader.api.FabricLoader;
@@ -527,10 +528,45 @@ public class CommandManager {
                                                                         return 1;
                                                                 })));
 
+                                var lbNode = ClientCommandManager.literal("leaderboard")
+                                        .executes(ctx -> {
+                                                if (Blackaddons.screenOpener != null)
+                                                        Blackaddons.screenOpener.accept(new SoloLeaderboardScreen("F7"));
+                                                return 1;
+                                        })
+                                        .then(ClientCommandManager.argument("floor", StringArgumentType.string())
+                                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
+                                                        new String[]{ "F7", "M7" }, builder))
+                                                .executes(ctx -> {
+                                                        String floor = StringArgumentType.getString(ctx, "floor");
+                                                        if (Blackaddons.screenOpener != null)
+                                                                Blackaddons.screenOpener.accept(new SoloLeaderboardScreen(floor));
+                                                        return 1;
+                                                }));
+                                cmd.then(lbNode);
+
                                 if (net.fabricmc.loader.api.FabricLoader.getInstance().isDevelopmentEnvironment()) {
                                 }
 
                                 dispatcher.register(cmd);
+                        }
+
+                        for (String lbAlias : new String[]{ "leaderboard", "lb" }) {
+                                dispatcher.register(ClientCommandManager.literal(lbAlias)
+                                        .executes(ctx -> {
+                                                if (Blackaddons.screenOpener != null)
+                                                        Blackaddons.screenOpener.accept(new SoloLeaderboardScreen("F7"));
+                                                return 1;
+                                        })
+                                        .then(ClientCommandManager.argument("floor", StringArgumentType.string())
+                                                .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
+                                                        new String[]{ "F7", "M7" }, builder))
+                                                .executes(ctx -> {
+                                                        String floor = StringArgumentType.getString(ctx, "floor");
+                                                        if (Blackaddons.screenOpener != null)
+                                                                Blackaddons.screenOpener.accept(new SoloLeaderboardScreen(floor));
+                                                        return 1;
+                                                })));
                         }
                         CommandUtils.register(dispatcher);
                 });

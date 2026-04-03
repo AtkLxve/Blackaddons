@@ -3,6 +3,7 @@ package org.blackum.blackaddons.integration;
 import org.blackum.blackaddons.core.util.Constants;
 import org.blackum.blackaddons.core.util.EncryptionUtils;
 import org.blackum.blackaddons.core.util.MinecraftInstance;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.network.chat.Component;
@@ -14,6 +15,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -257,6 +259,56 @@ public class BotIntegration {
                     return JsonParser.parseString(res.body()).getAsJsonObject();
                 } catch (Exception e) {
                     return null;
+                }
+            }
+            return null;
+        });
+    }
+
+    public static CompletableFuture<JsonObject> getSoloLeaderboard(String floor) {
+        if (ConfigManager.data.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        String url = Constants.BOT_API_SOLO_LEADERBOARD + "?floor=" + floor;
+        return sendGetRequest(url).thenApply(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Failed to parse leaderboard response: " + e.getMessage());
+                }
+            }
+            return null;
+        });
+    }
+
+    public static CompletableFuture<JsonObject> sendSoloClear(String player, String floor, String time,
+            int secrets, List<String> puzzles, boolean prince, boolean mimic) {
+        if (ConfigManager.data.botUrl.isEmpty())
+            return CompletableFuture.completedFuture(null);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("player", player);
+        json.addProperty("floor", floor);
+        json.addProperty("time", time);
+        json.addProperty("secrets", secrets);
+        json.addProperty("prince", prince);
+        json.addProperty("mimic", mimic);
+
+        JsonArray puzzleArray = new JsonArray();
+        if (puzzles != null) {
+            for (String p : puzzles) {
+                puzzleArray.add(p);
+            }
+        }
+        json.add("puzzles", puzzleArray);
+
+        return sendPostRequest(Constants.BOT_API_SOLO_CLEAR, json.toString()).thenApply(res -> {
+            if (res != null && res.statusCode() >= 200 && res.statusCode() < 300) {
+                try {
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.error("Failed to parse solo clear response: " + e.getMessage());
                 }
             }
             return null;

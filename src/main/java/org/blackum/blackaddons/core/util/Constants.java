@@ -65,6 +65,8 @@ public final class Constants {
         public static final String BOT_API_PARTY_UPDATE = "/v1/party/update";
         public static final String BOT_API_PARTY_LIST = "/v1/party/list";
         public static final String BOT_API_NAMES = "/v1/names";
+        public static final String BOT_API_SOLO_CLEAR = "/v1/solo_clear";
+        public static final String BOT_API_SOLO_LEADERBOARD = "/v1/solo_leaderboard";
         
         // GitHub
         public static final String GITHUB_RELEASES_URL = "https://github.com/BLACKUM/BlackAddons/releases";

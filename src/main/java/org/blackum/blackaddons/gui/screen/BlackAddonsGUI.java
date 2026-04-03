@@ -90,8 +90,8 @@ public class BlackAddonsGUI extends BaseScreen {
         controllers.add(chatActionsController);
         controllers.add(chatFiltersController);
         controllers.add(waypointsController);
-        controllers.add(configsController);
         controllers.add(soloClearsController);
+        controllers.add(configsController);
         controllers.add(aboutController);
 
         settingsController.init(tabPanel.addTab("Settings"));
@@ -102,8 +102,8 @@ public class BlackAddonsGUI extends BaseScreen {
         chatActionsController.init(tabPanel.addTab("Chat Actions"));
         chatFiltersController.init(tabPanel.addTab("Chat Filters"));
         waypointsController.init(tabPanel.addTab("Waypoints Actions"));
-        configsController.init(tabPanel.addTab("Configs"));
         soloClearsController.init(tabPanel.addTab("Solo Clears"));
+        configsController.init(tabPanel.addTab("Configs"));
         aboutController.init(tabPanel.addTab("About"));
 
         tabPanel.selectTab(lastTabIndex);
