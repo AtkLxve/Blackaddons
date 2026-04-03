@@ -146,8 +146,9 @@ public class SoloClearsTracker {
                     final List<String> submittedPuzzles = new ArrayList<>(stats.completedPuzzles);
                     final boolean submittedPrince = princeDefeated;
                     final boolean submittedMimic = mimicKilled;
+                    final boolean needsVerification = newTimeSeconds < 180;
                     BotIntegration.sendSoloClear(player, submittedFloor, normalizedTime,
-                            submittedSecrets, submittedPuzzles, submittedPrince, submittedMimic)
+                            submittedSecrets, submittedPuzzles, submittedPrince, submittedMimic, needsVerification)
                             .thenAccept(res -> {
                                 if (res != null && mc.player != null) {
                                     mc.execute(() -> mc.player.displayClientMessage(

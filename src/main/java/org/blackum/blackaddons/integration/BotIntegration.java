@@ -283,7 +283,7 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<JsonObject> sendSoloClear(String player, String floor, String time,
-            int secrets, List<String> puzzles, boolean prince, boolean mimic) {
+            int secrets, List<String> puzzles, boolean prince, boolean mimic, boolean needsVerification) {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
@@ -294,6 +294,7 @@ public class BotIntegration {
         json.addProperty("secrets", secrets);
         json.addProperty("prince", prince);
         json.addProperty("mimic", mimic);
+        json.addProperty("needs_verification", needsVerification);
 
         JsonArray puzzleArray = new JsonArray();
         if (puzzles != null) {
