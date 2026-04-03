@@ -133,7 +133,9 @@ public class SoloLeaderboardScreen extends BaseScreen {
             super(x, y, width, 44);
             this.rank = JsonUtils.getInt(data, "rank");
             this.ign = JsonUtils.getString(data, "ign", "Unknown");
-            this.timeStr = JsonUtils.getString(data, "time_str", "--:--");
+            String rawTime = JsonUtils.getString(data, "time_str", "--:--");
+            int dotIndex = rawTime.indexOf('.');
+            this.timeStr = dotIndex != -1 ? rawTime.substring(0, dotIndex) : rawTime;
             this.secrets = JsonUtils.getInt(data, "secrets");
             this.prince = data.has("prince") && data.get("prince").getAsBoolean();
             this.mimic = data.has("mimic") && data.get("mimic").getAsBoolean();
