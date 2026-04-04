@@ -113,7 +113,7 @@ public final class McCompat {
     public static void blitGuiTexture(GuiGraphics graphics, Object pipeline, Object location, int x, int y,
                                       float u, float v, int width, int height, int textureWidth, int textureHeight,
                                       int imageWidth, int imageHeight) {
-        invokeBest(graphics, new String[] { "blit", "method_25293" }, pipeline, location, x, y, u, v, width, height,
+        invokeBest(graphics, new String[] { "blit", "method_25293", "method_25302" }, pipeline, location, x, y, u, v, width, height,
                 textureWidth, textureHeight, imageWidth, imageHeight);
     }
 

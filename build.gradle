@@ -99,7 +99,6 @@ dependencies {
 
     modImplementation "net.hypixel:mod-api:1.0.1"
     modImplementation "me.shedaniel.cloth:basic-math:0.6.1"
-    modImplementation "me.shedaniel:mm:2.4.1"
 
     if (project.jarvis_version != null) {
         modImplementation "moe.nea.jarvis:jarvis-fabric:${project.jarvis_version}"

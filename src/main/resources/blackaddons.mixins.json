@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "org.blackum.blackaddons.mixin",
   "compatibilityLevel": "JAVA_21",
+  "plugin": "org.blackum.blackaddons.mixin.BlackAddonsMixinConfigPlugin",
   "mixins": [
     "gui.AnvilMenuMixin",
     "gui.ToastManagerMixin",
