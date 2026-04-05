@@ -38,6 +38,11 @@ import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.core.util.Scheduler;
 import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.SoloClearsTracker;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonMapHud;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonWorldScanner;
+import org.blackum.blackaddons.feature.dungeon.map.RoomData;
 import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
@@ -67,6 +72,9 @@ public class BlackaddonsClient implements ClientModInitializer {
         AlignUtils.register();
 
         ConfigManager.load();
+        RoomData.loadRooms();
+        DungeonWorldScanner.register();
+        DungeonScoreboard.register();
         BotIntegration.authenticateWithMojang();
         CustomNameManager.getInstance().fetch();
 
@@ -74,10 +82,14 @@ public class BlackaddonsClient implements ClientModInitializer {
             IrcPrefixManager.resetCache();
             IrcClient.getInstance().connect();
             UpdateManager.check();
+            DungeonMap.reset();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             IrcClient.getInstance().disconnect();
+            DungeonMap.reset();
+            DungeonWorldScanner.reset();
+            DungeonScoreboard.reset();
         });
 
         Blackaddons.guiOpener = () -> {
@@ -105,6 +117,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         CommandManager.register();
 
         HudRenderCallback.EVENT.register((graphics, partialTick) -> {
+            DungeonMapHud.render(graphics);
             if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
                 NotificationManager.getInstance().render(graphics);
             }
@@ -171,6 +184,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     .handleMessage(message);
             RngTracker.onChatMessage(handled);
             DungeonJoinHandler.onChatMessage(handled);
+            DungeonScoreboard.onChatMessage(handled);
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
             SoloClearsTracker.onChatMessage(handled);
@@ -181,6 +195,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     .handleMessage(message);
             RngTracker.onChatMessage(handled);
             DungeonJoinHandler.onChatMessage(handled);
+            DungeonScoreboard.onChatMessage(handled);
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
             SoloClearsTracker.onChatMessage(handled);

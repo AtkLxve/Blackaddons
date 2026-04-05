@@ -118,6 +118,20 @@ public class CommandManager {
                                                 return 1;
                                         }));
 
+                        testNode.then(ClientCommandManager.literal("dungeonforce")
+                                        .executes(ctx -> {
+                                                org.blackum.blackaddons.core.util.LocationUtils.debugDungeonMode = !org.blackum.blackaddons.core.util.LocationUtils.debugDungeonMode;
+                                                ctx.getSource().sendFeedback(Component.literal("Debug dungeon mode: " + (org.blackum.blackaddons.core.util.LocationUtils.debugDungeonMode ? "§aON" : "§cOFF")));
+                                                return 1;
+                                        }));
+
+                        testNode.then(ClientCommandManager.literal("resetdungeon")
+                                        .executes(ctx -> {
+                                                org.blackum.blackaddons.feature.dungeon.map.DungeonMap.reset();
+                                                ctx.getSource().sendFeedback(Component.literal("Dungeon map reset."));
+                                                return 1;
+                                        }));
+
                         testNode.then(ClientCommandManager.literal("rotate")
                                         .then(ClientCommandManager
                                                         .argument("yaw", com.mojang.brigadier.arguments.FloatArgumentType.floatArg(-180, 180))

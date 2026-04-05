@@ -19,6 +19,7 @@ public class LocationUtils {
     private static final int LINE_HEIGHT = 10;
     private static final int COLOR_BOSS = 0xFFFFFFFF;
     private static final int[] F7_PHASE_COLORS = {0xFF5555, 0xFFAA33, 0xFFEE55, 0x55CC55, 0x33AADD};
+    public static boolean debugDungeonMode = false;
 
     private static final Map<Integer, int[]> BOSS_ROOM_BOUNDS = Map.of(
         7, new int[]{-8, 0, -8, 134, 254, 147},
@@ -45,6 +46,7 @@ public class LocationUtils {
     }
 
     public static boolean inDungeons() {
+        if (debugDungeonMode) return true;
         String loc = getLocation();
         for (int i = 1; i <= 7; i++) {
             if (loc.contains("(F" + i + ")") || loc.contains("(M" + i + ")")) {

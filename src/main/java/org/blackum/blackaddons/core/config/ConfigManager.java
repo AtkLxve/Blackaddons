@@ -456,6 +456,12 @@ public class ConfigManager {
             };
         }
 
+        // Dungeon Map
+        public boolean dungeonMapEnabled = false;
+        public int dungeonMapX = 10;
+        public int dungeonMapY = 10;
+        public int dungeonMapSize = 128;
+
         // Legit
         public boolean legitFullbrightEnabled = false;
         public boolean removeFireOverlay = false;

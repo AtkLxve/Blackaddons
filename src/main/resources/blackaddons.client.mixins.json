@@ -30,7 +30,8 @@
     "gui.GuiMixin",
     "gui.EffectsInInventoryMixin",
     "core.TextColorMixin",
-    "core.TextColorAccessor"
+    "core.TextColorAccessor",
+    "dungeon.MapItemDataMixin"
   ],
   "injectors": {
     "defaultRequire": 1
