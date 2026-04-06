@@ -183,20 +183,22 @@ public class DungeonMapHud {
             case ENTRANCE:  base = 0xFF20C020; break;
             case BLOOD:     base = 0xFFCC2020; break;
             case PUZZLE:    base = 0xFFb04bd5; break;
-            case CHAMPION:
-            case RARE:      base = 0xFFAA44AA; break;
+            case CHAMPION:  base = 0xFFFEDF00; break;
+            case RARE:      base = 0xFFFFCB59; break;
             case FAIRY:     base = 0xFFFF88FF; break;
             case TRAP:      base = 0xFFCC8822; break;
-            default:        base = 0xFF414141; break;
+            default:        base = 0xFF808080; break;
         }
-        switch (room.state) {
-            case GREEN:      return 0xFF55FF55;
-            case CLEARED:    return 0xFFFFFFFF;
-            case FAILED:     return 0xFFFF4444;
-            case UNOPENED:   return 0xFF414141;
-            case DISCOVERED: return base;
-            default:         return base;
-        }
+        if (room.state == Room.State.UNOPENED) return darken(base, 0.55f);
+        return base;
+    }
+
+    private static int darken(int argb, float factor) {
+        int a = (argb >> 24) & 0xFF;
+        int r = (int)(((argb >> 16) & 0xFF) * factor);
+        int g = (int)(((argb >> 8)  & 0xFF) * factor);
+        int b = (int)((argb         & 0xFF) * factor);
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
     private static int getDoorColor(Door door) {
@@ -216,9 +218,9 @@ public class DungeonMapHud {
 
     private static int getMarkColor(Room room) {
         switch (room.state) {
-            case GREEN:   return 0xFF55FF55;
+            case GREEN:   return 0xFF00FF00;
             case CLEARED: return 0xFFFFFFFF;
-            case FAILED:  return 0xFFFF4444;
+            case FAILED:  return 0xFFFF3333;
             default:      return 0xFFAAAAAA;
         }
     }

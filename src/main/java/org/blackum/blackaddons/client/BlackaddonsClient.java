@@ -83,6 +83,8 @@ public class BlackaddonsClient implements ClientModInitializer {
             IrcClient.getInstance().connect();
             UpdateManager.check();
             DungeonMap.reset();
+            DungeonWorldScanner.reset();
+            DungeonScoreboard.reset();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {

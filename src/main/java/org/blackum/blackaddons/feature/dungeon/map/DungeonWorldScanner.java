@@ -8,6 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.core.util.LocationUtils;
 
 import java.util.Set;
@@ -58,7 +59,9 @@ public class DungeonWorldScanner {
                 if (core == 48696) continue;
 
                 RoomData roomData = RoomData.getRoomData(core);
-                if (roomData == null) continue;
+                if (roomData == null) {
+                    continue;
+                }
 
                 Vec2i place = new Vec2i(x, z);
                 int tileIdx = place.roomListIndex();
@@ -114,23 +117,24 @@ public class DungeonWorldScanner {
         for (int y = scanHeight; y > 11; y--) {
             Block block = level.getBlockState(new BlockPos(worldX, y, worldZ)).getBlock();
 
-            if (bedrock >= 2 && (block == Blocks.AIR || block == Blocks.CAVE_AIR || block == Blocks.VOID_AIR)) {
+            if (bedrock >= 2 && block == Blocks.AIR) {
                 for (int i = 0; i < y - 11; i++) sb.append('a');
-                break;
             }
 
             if (block == Blocks.BEDROCK) {
                 bedrock++;
             } else {
                 bedrock = 0;
-                if (!isBlacklisted(block)) {
-                    String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
-                    sb.append(Character.toLowerCase(path.charAt(0)));
-                }
+                if (isBlacklisted(block)) continue;
             }
+
+            String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
+            sb.append(Character.toLowerCase(path.charAt(0)));
         }
 
-        return new int[]{sb.toString().hashCode(), height};
+        String coreStr = sb.toString();
+        int hash = coreStr.hashCode();
+        return new int[]{hash, height};
     }
 
     private static boolean isBlacklisted(Block block) {
