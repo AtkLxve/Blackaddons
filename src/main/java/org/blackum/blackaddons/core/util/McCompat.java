@@ -51,8 +51,13 @@ public final class McCompat {
             Class<?> type = findClass(name);
             if (type == null) continue;
             try {
-                return invokeStaticBest(type, new String[] { "fromNamespaceAndPath", "method_60655" }, namespace, path);
+                return invokeStaticBest(type, new String[] { "fromNamespaceAndPath", "of", "method_60655", "method_12829" }, namespace, path);
             } catch (IllegalStateException ignored) {
+            }
+            try {
+                java.lang.reflect.Constructor<?> constr = type.getConstructor(String.class, String.class);
+                return constr.newInstance(namespace, path);
+            } catch (Exception ignored) {
             }
         }
         throw new IllegalStateException("Unable to construct Minecraft resource identifier");
@@ -139,7 +144,7 @@ public final class McCompat {
         throw new IllegalStateException("Unable to resolve waypoint render type");
     }
 
-    private static Object invokeBest(Object target, String[] names, Object... args) {
+    public static Object invokeBest(Object target, String[] names, Object... args) {
         Class<?> type = target.getClass();
         for (Method method : type.getMethods()) {
             if (!matchesName(method, names) || method.getParameterCount() != args.length) continue;
@@ -163,7 +168,7 @@ public final class McCompat {
         throw new IllegalStateException("No matching method found: " + Arrays.toString(names));
     }
 
-    private static Object invokeStaticBest(Class<?> type, String[] names, Object... args) {
+    public static Object invokeStaticBest(Class<?> type, String[] names, Object... args) {
         for (Method method : type.getMethods()) {
             if (!matchesName(method, names) || method.getParameterCount() != args.length) continue;
             Class<?>[] parameterTypes = method.getParameterTypes();

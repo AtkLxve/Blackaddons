@@ -102,6 +102,7 @@ public class Room {
     public boolean specialTile;
     public boolean rushRoom;
     public boolean mimic;
+    public int foundSecrets = -1; // -1 = unknown, set to data.secrets when GREEN
 
     public Room(Type type, Shape shape) {
         this.type = type;

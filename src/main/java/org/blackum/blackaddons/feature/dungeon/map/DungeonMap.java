@@ -263,7 +263,13 @@ public class DungeonMap {
             }
 
             Room.StateUpdated su = room.updateState(placement, color);
-            if (su != null) updated.add(su);
+            if (su != null) {
+                updated.add(su);
+                // Mirror Noamm9: stamp foundSecrets when room becomes fully cleared (GREEN)
+                if (su.newState == Room.State.GREEN && room.data != null && room.foundSecrets < 0) {
+                    room.foundSecrets = room.data.secrets;
+                }
+            }
         }
         return updated;
     }
