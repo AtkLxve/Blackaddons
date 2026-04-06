@@ -13,6 +13,7 @@ public class Door {
     public Type type;
     public final List<Room> rooms;
     public boolean locked;
+    public boolean worldScanned;
 
     public Door(Vec2i pos, Type type, List<Room> rooms) {
         this.pos = pos;

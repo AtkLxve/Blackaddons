@@ -23,8 +23,23 @@ public class DungeonMapHud {
         Vec2i sc = DungeonMap.getStartCoords();
         Integer roomSizeI = DungeonMap.getRoomSize();
         Vec2i ms = DungeonMap.getMapSize();
+        boolean funnyMap = ConfigManager.data.dungeonFunnyMap;
 
-        if (sc != null && roomSizeI != null && ms != null) {
+        if (roomSizeI == null && funnyMap) roomSizeI = 16;
+        if (ms == null && funnyMap) {
+            int maxGx = 0, maxGz = 0;
+            for (Room room : DungeonMap.getRooms()) {
+                for (Room.Tile tile : room.tiles) {
+                    int gx = (tile.pos.x + 185) / 32;
+                    int gz = (tile.pos.z + 185) / 32;
+                    if (gx > maxGx) maxGx = gx;
+                    if (gz > maxGz) maxGz = gz;
+                }
+            }
+            if (maxGx > 0 || maxGz > 0) ms = new Vec2i(maxGx + 1, maxGz + 1);
+        }
+
+        if (roomSizeI != null && ms != null) {
             int rs = roomSizeI;
             int cellSize = rs + 4;
 
@@ -46,7 +61,6 @@ public class DungeonMapHud {
 
             Set<Room> rooms = DungeonMap.getRooms();
 
-            boolean funnyMap = ConfigManager.data.dungeonFunnyMap;
             for (Room room : rooms) {
                 if (!funnyMap && room.state == Room.State.UNDISCOVERED) continue;
                 int roomColor = getRoomColor(room, funnyMap);
@@ -78,7 +92,7 @@ public class DungeonMapHud {
             }
 
             for (Door door : DungeonMap.getDoors()) {
-                if (!door.isSeen()) continue;
+                if (!door.isSeen() && !(funnyMap && door.worldScanned)) continue;
                 float[] dp = door.placement(16f, rs);
                 Vec2i ds = door.size(16f, rs);
                 int dpx1 = drawX + (int)(dp[0] * scale);
@@ -191,6 +205,7 @@ public class DungeonMapHud {
             case TRAP:      base = 0xFFCC8822; break;
             default:        base = 0xFF808080; break;
         }
+        if (room.mimic) return 0xFFFF6600;
         if (room.state == Room.State.UNOPENED) return darken(base, 0.55f);
         if (funnyMap && room.state == Room.State.UNDISCOVERED) return darken(base, 0.55f);
         return base;
