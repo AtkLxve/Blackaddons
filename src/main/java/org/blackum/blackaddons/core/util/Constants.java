@@ -40,8 +40,8 @@ public final class Constants {
         public static final long BLOCKED_PACKETS_LOG_MAX_BYTES = 5L * 1024 * 1024;
 
         // APIs
-        public static final String DEFAULT_BOT_URL = "http://hypixel-skyblock-socket.pegle.com:8080";
-        public static final String BOT_IRC_WS_URL = "ws://hypixel-skyblock-socket.pegle.com:8080/v1/irc";
+        public static final String DEFAULT_BOT_URL = "http://ba.neutrality.cc:8080";
+        public static final String BOT_IRC_WS_URL = "ws://ba.neutrality.cc:8080/v1/irc";
         public static final String HYPIXEL_BAZAAR_API = "https://api.hypixel.net/skyblock/bazaar";
         public static final String MOULBERRY_AH_API = "https://moulberry.codes/auction_averages_lbin/3day.json";
         public static final String PLAYER_DB_API = "https://playerdb.co/api/player/minecraft/";
