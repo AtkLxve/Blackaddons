@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.feature.dungeon.map;
 
+import net.minecraft.core.BlockPos;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -152,6 +153,19 @@ public class Room {
 
         this.state = newState;
         return (newState == oldState) ? null : new StateUpdated(this, oldState, newState);
+    }
+
+    public BlockPos offset(BlockPos rel) {
+        if (clayPos == null) return null;
+        int rx = rel.getX(), ry = rel.getY(), rz = rel.getZ();
+        int rotX, rotZ;
+        switch (rotation) {
+            case NORTH: rotX = -rx; rotZ = -rz; break;
+            case WEST:  rotX = -rz; rotZ =  rx; break;
+            case EAST:  rotX =  rz; rotZ = -rx; break;
+            default:    rotX =  rx; rotZ =  rz; break;
+        }
+        return new BlockPos(clayPos[0] + rotX, ry, clayPos[2] + rotZ);
     }
 
     public Tile roomTile(Vec2i pos, int roomSize) {

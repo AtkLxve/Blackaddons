@@ -344,6 +344,17 @@ public class DungeonMap {
         }
     }
 
+    public static void addWorldDoor(Vec2i pos, Door.Type type, Room roomA, Room roomB) {
+        for (Door d : doors) { if (d.pos.equals(pos)) return; }
+        List<Room> adj = new ArrayList<>();
+        if (roomA != null) adj.add(roomA);
+        if (roomB != null) adj.add(roomB);
+        Door door = new Door(pos, type, adj);
+        door.worldScanned = true;
+        doors.add(door);
+        for (Room r : adj) r.doors.add(door);
+    }
+
     public static void setBloodRoom(Room room) { bloodRoom = room; }
     public static int getSpecialColumn() { return specialColumn; }
 

@@ -8,6 +8,8 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.core.util.LocationUtils;
 
@@ -29,6 +31,7 @@ public class DungeonWorldScanner {
                 scan();
                 shouldScan = false;
             }
+            if (LocationUtils.inDungeons()) scanMimic(world);
         });
     }
 
@@ -42,6 +45,8 @@ public class DungeonWorldScanner {
 
         Level level = mc.level;
         Set<Room> rooms = DungeonMap.getRooms();
+
+        Room.Tile[] tileGrid = DungeonMap.getTileGrid();
 
         for (int x = 0; x < 6; x++) {
             for (int z = 0; z < 6; z++) {
@@ -59,13 +64,10 @@ public class DungeonWorldScanner {
                 if (core == 48696) continue;
 
                 RoomData roomData = RoomData.getRoomData(core);
-                if (roomData == null) {
-                    continue;
-                }
+                if (roomData == null) continue;
 
                 Vec2i place = new Vec2i(x, z);
                 int tileIdx = place.roomListIndex();
-                Room.Tile[] tileGrid = DungeonMap.getTileGrid();
 
                 synchronized (rooms) {
                     Room existing = (tileGrid[tileIdx] != null) ? tileGrid[tileIdx].owner : null;
@@ -95,6 +97,89 @@ public class DungeonWorldScanner {
                 }
             }
         }
+
+        scanWorldDoors(level, tileGrid);
+    }
+
+    private static void scanMimic(Level level) {
+        for (Room room : DungeonMap.getRooms()) {
+            if (room.mimic || room.tiles.isEmpty()) continue;
+
+            outer:
+            for (Room.Tile tile : room.tiles) {
+                int chunkX = tile.pos.x >> 4;
+                int chunkZ = tile.pos.z >> 4;
+                if (!level.hasChunk(chunkX, chunkZ)) continue;
+
+                LevelChunk chunk = level.getChunk(chunkX, chunkZ);
+                for (net.minecraft.world.level.block.entity.BlockEntity be : chunk.getBlockEntities().values()) {
+                    if (be instanceof TrappedChestBlockEntity) {
+                        room.mimic = true;
+                        break outer;
+                    }
+                }
+            }
+        }
+    }
+
+    private static void scanWorldDoors(Level level, Room.Tile[] tileGrid) {
+        for (int x = 0; x < 6; x++) {
+            for (int z = 0; z < 6; z++) {
+                int idx = x * 6 + z;
+                if (tileGrid[idx] == null || tileGrid[idx].owner == null) continue;
+                Room roomA = tileGrid[idx].owner;
+
+                if (z + 1 < 6) {
+                    int idx2 = x * 6 + (z + 1);
+                    if (tileGrid[idx2] != null && tileGrid[idx2].owner != null && tileGrid[idx2].owner != roomA) {
+                        int doorX = -185 + x * 32;
+                        int doorZ = -185 + z * 32 + 16;
+                        if (level.hasChunk(doorX >> 4, doorZ >> 4))
+                            tryAddWorldDoor(level, doorX, doorZ, roomA, tileGrid[idx2].owner);
+                    }
+                }
+
+                if (x + 1 < 6) {
+                    int idx2 = (x + 1) * 6 + z;
+                    if (tileGrid[idx2] != null && tileGrid[idx2].owner != null && tileGrid[idx2].owner != roomA) {
+                        int doorX = -185 + x * 32 + 16;
+                        int doorZ = -185 + z * 32;
+                        if (level.hasChunk(doorX >> 4, doorZ >> 4))
+                            tryAddWorldDoor(level, doorX, doorZ, roomA, tileGrid[idx2].owner);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void tryAddWorldDoor(Level level, int worldX, int worldZ, Room roomA, Room roomB) {
+        Vec2i pos = new Vec2i(worldX, worldZ);
+        for (Door d : DungeonMap.getDoors()) { if (d.pos.equals(pos)) return; }
+
+        int topY = 0;
+        for (int y = 160; y > 10; y--) {
+            Block b = level.getBlockState(new BlockPos(worldX, y, worldZ)).getBlock();
+            if (b == Blocks.BEDROCK) return;
+            if (b != Blocks.AIR && b != Blocks.CAVE_AIR && b != Blocks.VOID_AIR) { topY = y; break; }
+        }
+        if (topY == 0) return;
+
+        Door.Type type = Door.Type.NORMAL;
+        if (topY == 73 || topY == 81) {
+            Block b69 = level.getBlockState(new BlockPos(worldX, 69, worldZ)).getBlock();
+            String path = BuiltInRegistries.BLOCK.getKey(b69).getPath();
+            if (path.contains("coal")) {
+                type = Door.Type.WITHER;
+            } else if (roomA.type == Room.Type.BLOOD || roomB.type == Room.Type.BLOOD) {
+                type = Door.Type.BLOOD;
+            }
+        } else if (topY > 73) {
+            if (roomA.type != Room.Type.ENTRANCE && roomB.type != Room.Type.ENTRANCE) return;
+        } else {
+            return;
+        }
+
+        DungeonMap.addWorldDoor(pos, type, roomA, roomB);
     }
 
     private static int[] calculateCore(Level level, int worldX, int worldZ) {
