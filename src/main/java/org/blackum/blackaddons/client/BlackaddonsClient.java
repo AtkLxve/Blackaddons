@@ -37,8 +37,11 @@ import org.blackum.blackaddons.core.util.LocationUtils;
 import org.blackum.blackaddons.core.util.AlignUtils;
 import org.blackum.blackaddons.core.util.Scheduler;
 import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
+import org.blackum.blackaddons.feature.dungeon.DungeonListener;
 import org.blackum.blackaddons.feature.dungeon.SoloClearsTracker;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
+import org.blackum.blackaddons.feature.dungeon.solvers.puzzles.WaterBoardHandler;
+import org.blackum.blackaddons.feature.dungeon.solvers.puzzles.WaterBoardSolver;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMapHud;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonWorldScanner;
@@ -70,6 +73,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         Scheduler.register();
         LocationUtils.register();
         AlignUtils.register();
+        WaterBoardHandler.register();
 
         ConfigManager.load();
         RoomData.loadRooms();
@@ -120,6 +124,7 @@ public class BlackaddonsClient implements ClientModInitializer {
 
         HudRenderCallback.EVENT.register((graphics, partialTick) -> {
             DungeonMapHud.render(graphics);
+            WaterBoardSolver.renderHUD(graphics);
             if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
                 NotificationManager.getInstance().render(graphics);
             }
@@ -145,6 +150,7 @@ public class BlackaddonsClient implements ClientModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> AlignUtils.tick());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            ++DungeonListener.currentTime;
             NotificationManager.getInstance().tick();
             SoloClearsTracker.tick();
             if (pendingScreen != null) {

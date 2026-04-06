@@ -35,6 +35,7 @@ public class BlackAddonsGUI extends BaseScreen {
     private SettingsTabController settingsController;
     private ModHiderTabController modHiderController;
     private PayloadsTabController payloadsController;
+    private DungeonsSettingsTabController dungeonsController;
     private CheatsTabController cheatsController;
     private LegitTabController legitController;
     private AboutTabController aboutController;
@@ -72,6 +73,7 @@ public class BlackAddonsGUI extends BaseScreen {
         settingsController = new SettingsTabController(this);
         modHiderController = new ModHiderTabController(this);
         payloadsController = new PayloadsTabController(this);
+        dungeonsController = new DungeonsSettingsTabController(this);
         cheatsController = new CheatsTabController(this);
         legitController = new LegitTabController(this);
         aboutController = new AboutTabController(this);
@@ -85,6 +87,7 @@ public class BlackAddonsGUI extends BaseScreen {
         controllers.add(settingsController);
         controllers.add(modHiderController);
         controllers.add(payloadsController);
+        controllers.add(dungeonsController);
         controllers.add(cheatsController);
         controllers.add(legitController);
         controllers.add(chatActionsController);
@@ -97,6 +100,7 @@ public class BlackAddonsGUI extends BaseScreen {
         settingsController.init(tabPanel.addTab("Settings"));
         modHiderController.init(tabPanel.addTab("Mod Hider"));
         payloadsController.init(tabPanel.addTab("Payloads"));
+        dungeonsController.init(tabPanel.addTab("Dungeons"));
         cheatsController.init(tabPanel.addTab("Cheats"));
         legitController.init(tabPanel.addTab("Legit"));
         chatActionsController.init(tabPanel.addTab("Chat Actions"));

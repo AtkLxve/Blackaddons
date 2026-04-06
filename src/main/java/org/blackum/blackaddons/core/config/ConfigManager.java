@@ -463,6 +463,14 @@ public class ConfigManager {
         public int dungeonMapY = 10;
         public int dungeonMapSize = 128;
 
+        // Water Board Solver
+        public boolean waterBoardSolverEnabled = true;
+        public boolean waterBoardHudEnabled = true;
+        public int waterBoardHudX = -1;
+        public int waterBoardHudY = -1;
+        public float waterBoardHudScale = 1.0f;
+        public float waterBoardTimerScale = 1.0f;
+
         // Legit
         public boolean legitFullbrightEnabled = false;
         public boolean removeFireOverlay = false;
