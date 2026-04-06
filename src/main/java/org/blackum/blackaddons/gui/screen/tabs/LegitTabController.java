@@ -193,7 +193,7 @@ public class LegitTabController extends SimpleTabController {
     }
 
     private ResizableCard createDungeonMapCard(int x, int y) {
-        dungeonMapCard = screen.createResizableCard("legit_dungeon_map", x, y, 300, 60, "Dungeon Map");
+        dungeonMapCard = screen.createResizableCard("legit_dungeon_map", x, y, 300, 90, "Dungeon Map");
         int contentX = dungeonMapCard.getContentX();
         int contentY = dungeonMapCard.getContentY();
 
@@ -206,7 +206,16 @@ public class LegitTabController extends SimpleTabController {
                 });
         dungeonMapCard.addChild(enableToggle);
 
-        Button positionButton = new Button(contentX, contentY + 30, 260, 20, "Set Map Position", () -> {
+        ToggleSwitch funnyMapToggle = new ToggleSwitch(contentX, contentY + 30, 260,
+                "Funny Map",
+                "Reveals all scanned rooms regardless of discovery state",
+                ConfigManager.data.dungeonFunnyMap, value -> {
+                    ConfigManager.data.dungeonFunnyMap = value;
+                    ConfigManager.save();
+                });
+        dungeonMapCard.addChild(funnyMapToggle);
+
+        Button positionButton = new Button(contentX, contentY + 60, 260, 20, "Set Map Position", () -> {
             if (Blackaddons.screenOpener != null) {
                 Blackaddons.screenOpener.accept(new DungeonMapPositionScreen(screen));
             }

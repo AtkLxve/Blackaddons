@@ -46,9 +46,10 @@ public class DungeonMapHud {
 
             Set<Room> rooms = DungeonMap.getRooms();
 
+            boolean funnyMap = ConfigManager.data.dungeonFunnyMap;
             for (Room room : rooms) {
-                if (room.state == Room.State.UNDISCOVERED) continue;
-                int roomColor = getRoomColor(room);
+                if (!funnyMap && room.state == Room.State.UNDISCOVERED) continue;
+                int roomColor = getRoomColor(room, funnyMap);
                 for (Room.Tile tile : room.tiles) {
                     int gx = (tile.pos.x + 185) / 32;
                     int gz = (tile.pos.z + 185) / 32;
@@ -90,7 +91,8 @@ public class DungeonMapHud {
             Minecraft mc = Minecraft.getInstance();
 
             for (Room room : rooms) {
-                if (room.state == Room.State.UNDISCOVERED || room.state == Room.State.UNOPENED) continue;
+                boolean isHidden = room.state == Room.State.UNDISCOVERED || room.state == Room.State.UNOPENED;
+                if (isHidden && !funnyMap) continue;
                 if (room.type == Room.Type.ENTRANCE) continue;
                 if (room.tiles.isEmpty()) continue;
 
@@ -114,7 +116,7 @@ public class DungeonMapHud {
                 String mark = getStateMark(room);
                 if (mark != null) {
                     g.drawCenteredString(mc.font, mark, cx, cz - mc.font.lineHeight / 2, getMarkColor(room));
-                } else if (room.data != null && room.state == Room.State.DISCOVERED) {
+                } else if (room.data != null && (room.state == Room.State.DISCOVERED || isHidden)) {
                     String name = room.data.name.length() > 8 ? room.data.name.substring(0, 8) : room.data.name;
                     g.pose().pushMatrix();
                     g.pose().translate((float) cx, (float) cz);
@@ -177,7 +179,7 @@ public class DungeonMapHud {
         return best;
     }
 
-    private static int getRoomColor(Room room) {
+    private static int getRoomColor(Room room, boolean funnyMap) {
         int base;
         switch (room.type) {
             case ENTRANCE:  base = 0xFF20C020; break;
@@ -190,6 +192,7 @@ public class DungeonMapHud {
             default:        base = 0xFF808080; break;
         }
         if (room.state == Room.State.UNOPENED) return darken(base, 0.55f);
+        if (funnyMap && room.state == Room.State.UNDISCOVERED) return darken(base, 0.55f);
         return base;
     }
 
