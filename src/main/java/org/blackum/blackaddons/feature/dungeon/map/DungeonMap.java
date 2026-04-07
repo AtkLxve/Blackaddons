@@ -200,7 +200,6 @@ public class DungeonMap {
             }
 
             Room.Shape shape = inferShape(type, unique.tiles);
-
             Room existing = null;
             for (Vec2i tp : unique.tiles) {
                 int idx = tp.x * 6 + tp.z;
@@ -211,9 +210,16 @@ public class DungeonMap {
 
             if (existing != null) {
                 if (type != Room.Type.UNKNOWN && existing.type == Room.Type.UNKNOWN) existing.type = type;
-                if (shape != Room.Shape.UNKNOWN && existing.shape == Room.Shape.UNKNOWN) existing.shape = shape;
-                for (Vec2i tp : unique.tiles)
+                if (shape != Room.Shape.UNKNOWN && (existing.shape == Room.Shape.UNKNOWN || existing.shape == Room.Shape.S1x1)) existing.shape = shape;
+                for (Vec2i tp : unique.tiles) {
+                    int idx = tp.x * 6 + tp.z;
+                    if (tileGrid[idx] != null && tileGrid[idx].owner != null && tileGrid[idx].owner != existing) {
+                        Room other = tileGrid[idx].owner;
+                        other.tiles.removeIf(t -> (t.pos.x + 185) / 32 == tp.x && (t.pos.z + 185) / 32 == tp.z);
+                        if (other.tiles.isEmpty()) rooms.remove(other);
+                    }
                     if (!existing.places.contains(tp)) existing.roomTile(tp.multiply(32).add(-185, -185), rs);
+                }
             } else {
                 Room room = new Room(type, shape);
                 rooms.add(room);
@@ -263,7 +269,12 @@ public class DungeonMap {
             }
 
             Room.StateUpdated su = room.updateState(placement, color);
-            if (su != null) updated.add(su);
+            if (su != null) {
+                updated.add(su);
+                if (su.newState == Room.State.GREEN && room.data != null && room.foundSecrets < 0) {
+                    room.foundSecrets = room.data.secrets;
+                }
+            }
         }
         return updated;
     }
@@ -286,18 +297,18 @@ public class DungeonMap {
 
         for (int a = 0; a < 5; a++) {
             for (int b = 0; b < 6; b++) {
-                int hIdx   = sc.add(hrs + a * (rs + 4), b * (rs + 4)).mapIndex();
-                int hGuard = sc.add(hrs + a * (rs + 4), b * (rs + 4) - hrs + 1).mapIndex();
+                int hIdx   = sc.add(rs + 1 + a * (rs + 4), hrs + b * (rs + 4)).mapIndex();
+                int hGuard = sc.add(rs + a * (rs + 4),     hrs + b * (rs + 4)).mapIndex();
                 if (hIdx < colors.length && hGuard < colors.length && colors[hGuard] == 0) {
                     int c = colors[hIdx] & 0xFF;
-                    if (c != 0) handleDoor(new Vec2i(TL + 16 + a * 32, TL + b * 32), new Vec2i(a, b), new Vec2i(1, 0), c);
+                    if (c != 0) handleDoor(new Vec2i(TL + 16 + a * 32, TL + 16 + b * 32), new Vec2i(a, b), new Vec2i(1, 0), c);
                 }
 
-                int vIdx   = sc.add(b * (rs + 4), hrs + a * (rs + 4)).mapIndex();
-                int vGuard = sc.add(b * (rs + 4) - hrs + 1, hrs + a * (rs + 4)).mapIndex();
+                int vIdx   = sc.add(hrs + b * (rs + 4), rs + 1 + a * (rs + 4)).mapIndex();
+                int vGuard = sc.add(hrs + b * (rs + 4), rs + a * (rs + 4)).mapIndex();
                 if (vIdx < colors.length && vGuard < colors.length && colors[vGuard] == 0) {
                     int c = colors[vIdx] & 0xFF;
-                    if (c != 0) handleDoor(new Vec2i(TL + b * 32, TL + 16 + a * 32), new Vec2i(b, a), new Vec2i(0, 1), c);
+                    if (c != 0) handleDoor(new Vec2i(TL + 16 + b * 32, TL + 16 + a * 32), new Vec2i(b, a), new Vec2i(0, 1), c);
                 }
             }
         }

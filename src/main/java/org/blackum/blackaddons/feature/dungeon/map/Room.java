@@ -103,6 +103,7 @@ public class Room {
     public boolean specialTile;
     public boolean rushRoom;
     public boolean mimic;
+    public int foundSecrets = -1;
 
     public Room(Type type, Shape shape) {
         this.type = type;

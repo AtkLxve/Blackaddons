@@ -8,6 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.blackum.blackaddons.Blackaddons;
@@ -64,7 +65,9 @@ public class DungeonWorldScanner {
                 if (core == 48696) continue;
 
                 RoomData roomData = RoomData.getRoomData(core);
-                if (roomData == null) continue;
+                if (roomData == null) {
+                    continue;
+                }
 
                 Vec2i place = new Vec2i(x, z);
                 int tileIdx = place.roomListIndex();
@@ -97,22 +100,19 @@ public class DungeonWorldScanner {
                 }
             }
         }
-
         scanWorldDoors(level, tileGrid);
     }
 
     private static void scanMimic(Level level) {
         for (Room room : DungeonMap.getRooms()) {
             if (room.mimic || room.tiles.isEmpty()) continue;
-
             outer:
             for (Room.Tile tile : room.tiles) {
                 int chunkX = tile.pos.x >> 4;
                 int chunkZ = tile.pos.z >> 4;
                 if (!level.hasChunk(chunkX, chunkZ)) continue;
-
                 LevelChunk chunk = level.getChunk(chunkX, chunkZ);
-                for (net.minecraft.world.level.block.entity.BlockEntity be : chunk.getBlockEntities().values()) {
+                for (BlockEntity be : chunk.getBlockEntities().values()) {
                     if (be instanceof TrappedChestBlockEntity) {
                         room.mimic = true;
                         break outer;
