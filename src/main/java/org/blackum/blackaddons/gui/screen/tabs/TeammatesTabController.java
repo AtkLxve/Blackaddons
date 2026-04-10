@@ -34,7 +34,7 @@ public class TeammatesTabController extends ProfileTabController {
     private static final int COL_IGN = 90;
     private static final int COL_RUNS = 40;
     private static final int COL_CLASS = 80;
-    private static final int COL_FLOOR = 45;
+    private static final int COL_FLOOR = 60;
 
     private enum SortColumn {
         IGN, RUNS, CLASS, FLOOR, LAST_SEEN

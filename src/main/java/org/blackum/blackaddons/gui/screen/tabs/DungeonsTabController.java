@@ -124,11 +124,11 @@ public class DungeonsTabController extends ProfileTabController {
             graph.setData(classData, "Lvl");
 
             java.util.Map<String, Integer> classColors = new java.util.HashMap<>();
-            classColors.put("Archer", 0xFF2ECC71); // Green
-            classColors.put("Berserk", 0xFFE74C3C); // Red
-            classColors.put("Healer", 0xFFF1C40F); // Yellow
-            classColors.put("Mage", 0xFF3498DB); // Blue
-            classColors.put("Tank", 0xFF95A5A6); // Gray
+            classColors.put("Archer", 0xFFFFAA00);
+            classColors.put("Berserk", 0xFFFF5555);
+            classColors.put("Healer", 0xFFFF55FF);
+            classColors.put("Mage", 0xFF55FFFF);
+            classColors.put("Tank", 0xFF55FF55);
             graph.setColorMap(classColors);
 
             list.addItem(graph);

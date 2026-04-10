@@ -455,7 +455,7 @@ public class RtcaTabController extends ProfileTabController {
             classColors.put("berserk", 0xFFFF5555);
             classColors.put("healer", 0xFFFF55FF);
             classColors.put("mage", 0xFF55FFFF);
-            classColors.put("tank", 0xFF00AA00);
+            classColors.put("tank", 0xFF55FF55);
             xpGraph.setColorMap(classColors);
 
             simResultsList.addItem(xpGraph);
