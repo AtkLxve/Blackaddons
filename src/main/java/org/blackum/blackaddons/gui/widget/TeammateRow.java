@@ -18,7 +18,7 @@ public class TeammateRow extends Widget {
     public static final int COL_IGN = 90;
     public static final int COL_RUNS = 40;
     public static final int COL_CLASS = 80;
-    public static final int COL_FLOOR = 45;
+    public static final int COL_FLOOR = 60;
 
     public TeammateRow(int width, Teammate tm) {
         super(0, 0, width, 18);
@@ -59,11 +59,53 @@ public class TeammateRow extends Widget {
                 0xFFFFFFFF);
         cx += COL_RUNS;
 
-        String classText = String.format("%s%s %d", ChatFormatting.WHITE, tm.lastClass, tm.lastClassLevel);
-        graphics.drawString(Minecraft.getInstance().font, classText, cx, cy, 0xFFFFFFFF);
+        int classColor = 0xFFFFFFFF;
+        switch (tm.lastClass.toLowerCase()) {
+            case "archer" -> classColor = 0xFFFFAA00;
+            case "berserk" -> classColor = 0xFFFF5555;
+            case "healer" -> classColor = 0xFFFF55FF;
+            case "mage" -> classColor = 0xFF55FFFF;
+            case "tank" -> classColor = 0xFF55FF55;
+        }
+
+        graphics.drawString(Minecraft.getInstance().font, tm.lastClass, cx, cy, classColor);
+        int classWidth = Minecraft.getInstance().font.width(tm.lastClass);
+
+        if (tm.lastClassLevel >= 0) {
+            int lvlColor = 0xFFAAAAAA;
+            if (tm.lastClassLevel == 50) {
+                long time = System.currentTimeMillis() / 10;
+                float hue = (time % 1000) / 1000f;
+                lvlColor = java.awt.Color.HSBtoRGB(hue, 0.7f, 1f);
+            } else if (tm.lastClassLevel >= 40) {
+                lvlColor = 0xFFFF55FF;
+            } else if (tm.lastClassLevel >= 30) {
+                lvlColor = 0xFF55FFFF;
+            } else if (tm.lastClassLevel >= 20) {
+                lvlColor = 0xFF55FF55;
+            } else if (tm.lastClassLevel >= 10) {
+                lvlColor = 0xFFFFFFFF;
+            }
+            graphics.drawString(Minecraft.getInstance().font, " " + tm.lastClassLevel, cx + classWidth, cy, lvlColor);
+        }
         cx += COL_CLASS;
 
-        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.WHITE + tm.lastFloor, cx, cy, 0xFFFFFFFF);
+        int floorColor = 0xFFFFFFFF;
+        if (tm.lastFloor.equalsIgnoreCase("Entrance")) {
+            floorColor = 0xFFBBBBBB;
+        } else if (tm.lastFloor.startsWith("M")) {
+            floorColor = 0xFFD35400;
+        } else if (tm.lastFloor.startsWith("F")) {
+            floorColor = 0xFF9B59B6;
+        } else {
+            switch (tm.lastFloor) {
+                case "Hot" -> floorColor = 0xFFFFAA00;
+                case "Burning" -> floorColor = 0xFFFFFF55;
+                case "Fiery" -> floorColor = 0xFFFF5555;
+                case "Infernal" -> floorColor = 0xFFAA0000;
+            }
+        }
+        graphics.drawString(Minecraft.getInstance().font, tm.lastFloor, cx, cy, floorColor);
         cx += COL_FLOOR;
 
         String timeAgo = FormatUtils.formatRelativeTime(tm.lastTs);

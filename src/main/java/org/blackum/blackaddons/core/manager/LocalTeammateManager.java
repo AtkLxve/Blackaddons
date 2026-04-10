@@ -126,13 +126,27 @@ public class LocalTeammateManager {
                 newScanTs = tsSeconds;
             }
 
-            String dType = run.has("dungeon_type") ? run.get("dungeon_type").getAsString() : "catacombs";
-            int tier = run.has("dungeon_tier") ? run.get("dungeon_tier").getAsInt() : 0;
-            boolean isMaster = dType.contains("master");
-            String floorPrefix = isMaster ? "M" : "F";
-            String floorName = floorPrefix + tier;
-            if (tier == 0 && !isMaster)
-                floorName = "Entrance";
+            String typeStr = run.has("type") ? run.get("type").getAsString() : "";
+            String dType = typeStr.equalsIgnoreCase("KUUDRA") ? "kuudra" : (run.has("dungeon_type") ? run.get("dungeon_type").getAsString() : "catacombs");
+            String floorName;
+
+            if (dType.equalsIgnoreCase("kuudra")) {
+                String tierId = run.has("tier_id") ? run.get("tier_id").getAsString() : "NONE";
+                floorName = switch (tierId.toUpperCase()) {
+                    case "HOT" -> "Hot";
+                    case "BURNING" -> "Burning";
+                    case "FIERY" -> "Fiery";
+                    case "INFERNAL" -> "Infernal";
+                    default -> "Basic";
+                };
+            } else {
+                int tier = run.has("dungeon_tier") ? run.get("dungeon_tier").getAsInt() : 0;
+                boolean isMaster = dType.contains("master");
+                String floorPrefix = isMaster ? "M" : "F";
+                floorName = floorPrefix + tier;
+                if (tier == 0 && !isMaster)
+                    floorName = "Entrance";
+            }
 
             if (run.has("participants")) {
                 JsonArray participants = run.getAsJsonArray("participants");
@@ -170,7 +184,7 @@ public class LocalTeammateManager {
                     if (cleanName.contains(":")) {
                         String[] parts = cleanName.split(":");
                         if (parts.length > 1) {
-                            String classPart = parts[1].trim();
+                            String classPart = parts[1].strip();
                             if (classPart.contains("(")) {
                                 String className = classPart.split("\\(")[0].trim();
                                 tm.addProperty("last_class", className);
@@ -180,6 +194,9 @@ public class LocalTeammateManager {
                                     tm.addProperty("last_class_level", lvl);
                                 } catch (Exception ignored) {
                                 }
+                            } else if (dType.equalsIgnoreCase("kuudra")) {
+                                tm.addProperty("last_class", classPart);
+                                tm.addProperty("last_class_level", -1);
                             }
                         }
                     }
