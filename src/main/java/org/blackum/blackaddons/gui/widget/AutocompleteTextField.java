@@ -55,6 +55,12 @@ public class AutocompleteTextField extends TextField {
                     showSuggestions = false;
                     return true;
                 }
+            } else if (keyCode == 258) { // Tab
+                if (!currentSuggestions.isEmpty()) {
+                    setText(currentSuggestions.get(0));
+                    showSuggestions = false;
+                    return true;
+                }
             } else if (keyCode == 256) { // Escape
                 showSuggestions = false;
                 return true;
