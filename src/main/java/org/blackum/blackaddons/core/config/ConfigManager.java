@@ -462,6 +462,23 @@ public class ConfigManager {
         public int dungeonMapX = 10;
         public int dungeonMapY = 10;
         public int dungeonMapSize = 128;
+        public int dungeonMapColorNormal = 0xFF794600;
+        public int dungeonMapColorEntrance = 0xFF20C020;
+        public int dungeonMapColorBlood = 0xFFCC2020;
+        public int dungeonMapColorFairy = 0xFFDD44DD;
+        public int dungeonMapColorPuzzle = 0xFF9B39C8;
+        public int dungeonMapColorTrap = 0xFFA97442;
+        public int dungeonMapColorChampion = 0xFFFFD400;
+        public int dungeonMapColorUndiscovered = 0xFF555555;
+        public int dungeonMapBackgroundColor = 0x111111;
+        public float dungeonMapBackgroundOpacity = 0.75f;
+        public boolean dungeonMapShowRoomNames = false;
+        public float dungeonMapRoomNameScale = 0.7f;
+        public int dungeonMapColorNameDiscovered = 0xFFAAAAAA;
+        public int dungeonMapColorNameCleared = 0xFFFFFFFF;
+        public int dungeonMapColorNameSecreted = 0xFF55FF55;
+        public int dungeonMapColorBorder = 0xFF555555;
+        public boolean dungeonMapBorderEnabled = true;
 
         // Water Board Solver
         public boolean waterBoardSolverEnabled = true;

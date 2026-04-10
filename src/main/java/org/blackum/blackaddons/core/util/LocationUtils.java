@@ -47,6 +47,16 @@ public class LocationUtils {
 
     public static boolean inDungeons() {
         if (debugDungeonMode) return true;
+        
+        // Tablist is populated instantly upon joining the instance.
+        // Check this first for zero-delay detection.
+        for (String line : TabListUtils.getTabListLines()) {
+            if (line.toLowerCase(Locale.ROOT).contains("dungeon: catacombs")) {
+                return true;
+            }
+        }
+
+        // Fallback to scoreboard (which is delayed by a second or two).
         String loc = getLocation();
         for (int i = 1; i <= 7; i++) {
             if (loc.contains("(F" + i + ")") || loc.contains("(M" + i + ")")) {

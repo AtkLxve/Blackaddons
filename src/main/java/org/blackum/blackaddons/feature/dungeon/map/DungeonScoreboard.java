@@ -68,7 +68,7 @@ public class DungeonScoreboard {
             float startZ = player.mapZ;
             float startYaw = player.yaw;
 
-            long animationDuration = 350L;
+            long animationDuration = 250L;
             long startTime = System.currentTimeMillis();
             float progress = 0f;
 
@@ -139,10 +139,16 @@ public class DungeonScoreboard {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!LocationUtils.inDungeons())
                 return;
+            // Create selfPlayer immediately so we know we're in a dungeon.
+            if (client.player != null && selfPlayer == null) {
+                selfPlayer = new DungeonPlayer(client.player.getName().getString(), "UNKNOWN");
+            }
             parseTabList();
             parseSidebar();
         });
     }
+
+
 
     public static void reset() {
         teammates.clear();

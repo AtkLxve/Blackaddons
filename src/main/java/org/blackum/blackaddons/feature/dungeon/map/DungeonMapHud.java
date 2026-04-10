@@ -11,18 +11,6 @@ import java.util.Set;
 
 public class DungeonMapHud {
 
-    private static final int CLR_NORMAL = 0xFF794600;
-    private static final int CLR_ENTRANCE = 0xFF20C020;
-    private static final int CLR_BLOOD = 0xFFCC2020;
-    private static final int CLR_FAIRY = 0xFFDD44DD;
-    private static final int CLR_PUZZLE = 0xFF9B39C8;
-    private static final int CLR_TRAP = 0xFFA97442;
-    private static final int CLR_CHAMPION = 0xFFFFD400;
-    private static final int CLR_RARE = 0xFFFFFFFF;
-    private static final int CLR_MIMIC = 0xFFFF6600;
-    private static final int CLR_GREY = 0xFF555555;
-    private static final int CLR_BORDER = 0xFF555555;
-
     private static final Object MARKER_SELF = safeRL("blackaddons", "textures/map/marker_self.png");
 
     private static Object safeRL(String namespace, String path) {
@@ -57,7 +45,7 @@ public class DungeonMapHud {
         int y = ConfigManager.data.dungeonMapY;
         int size = ConfigManager.data.dungeonMapSize;
 
-        g.fill(x, y, x + size, y + size, 0xC0111111);
+        g.fill(x, y, x + size, y + size, org.blackum.blackaddons.gui.render.Theme.withAlpha(ConfigManager.data.dungeonMapBackgroundColor, ConfigManager.data.dungeonMapBackgroundOpacity));
 
         Vec2i sc = DungeonMap.getStartCoords();
         Integer roomSizeI = DungeonMap.getRoomSize();
@@ -65,8 +53,6 @@ public class DungeonMapHud {
         boolean funnyMap = ConfigManager.data.dungeonFunnyMap;
 
         if (funnyMap) {
-            if (roomSizeI == null)
-                roomSizeI = 16;
             if (ms == null) {
                 int maxGx = 0, maxGz = 0;
                 for (Room r : DungeonMap.getRooms()) {
@@ -84,10 +70,12 @@ public class DungeonMapHud {
             }
         }
 
-        if (roomSizeI == null || ms == null) {
-            drawBorder(g, x, y, size);
-            return;
-        }
+        if (roomSizeI == null)
+            roomSizeI = 16;
+        if (sc == null)
+            sc = new Vec2i(11, 11);
+        if (ms == null)
+            ms = new Vec2i(6, 6);
 
         int rs = roomSizeI;
         int cellSize = rs + 4;
@@ -141,8 +129,6 @@ public class DungeonMapHud {
         for (Room room : rooms) {
             if (room.tiles.isEmpty())
                 continue;
-            if (room.type == Room.Type.ENTRANCE)
-                continue;
             Room.Type eff = effectiveType(room, allPuzzlesKnown, trapDiscovered);
 
             boolean undiscovered = room.state == Room.State.UNDISCOVERED;
@@ -167,9 +153,9 @@ public class DungeonMapHud {
                 int z1 = dY + (int) (gz * cellSize * scale);
                 int x2 = dX + (int) ((gx * cellSize + rs) * scale);
                 int z2 = dY + (int) ((gz * cellSize + rs) * scale);
-                // Rounded corners for the grey tile
-                g.fill(x1 + 1, z1, x2 - 1, z2, CLR_GREY);
-                g.fill(x1, z1 + 1, x2, z2 - 1, CLR_GREY);
+                int grey = ConfigManager.data.dungeonMapColorUndiscovered;
+                g.fill(x1 + 1, z1, x2 - 1, z2, grey);
+                g.fill(x1, z1 + 1, x2, z2 - 1, grey);
                 cx = (x1 + x2) / 2;
                 cz = (z1 + z2) / 2;
             } else {
@@ -187,7 +173,22 @@ public class DungeonMapHud {
             if (self != null && self.hasMapPos) {
                 int px = dX + (int) ((self.mapX - sc.x) * scale);
                 int pz = dY + (int) ((self.mapZ - sc.z) * scale);
-                drawPlayerPin(g, px, pz, 0xFF00FF00, self.yaw);
+                float drawYaw = self.yaw;
+
+                if (mc.player != null) {
+                    float relX = (float) mc.player.getX() + 185f;
+                    float relZ = (float) mc.player.getZ() + 185f;
+
+                    // Smooth continuous geometrical mapping (removes room snaps/checks)
+                    float tx = sc.x + (rs / 2f) + (relX * (rs + 4f) / 32f);
+                    float tz = sc.z + (rs / 2f) + (relZ * (rs + 4f) / 32f);
+
+                    px = dX + (int) ((tx - sc.x) * scale);
+                    pz = dY + (int) ((tz - sc.z) * scale);
+                    drawYaw = mc.player.getYRot();
+                }
+
+                drawPlayerPin(g, px, pz, 0xFF00FF00, drawYaw);
             }
             for (DungeonScoreboard.DungeonPlayer p : DungeonScoreboard.teammates) {
                 if (p.dead || !p.hasMapPos)
@@ -224,15 +225,15 @@ public class DungeonMapHud {
                 int z2 = dY + (int) ((gz * cellSize + rs) * scale);
                 int mx = (x1 + x2) / 2;
 
-                // Left half (purple) - round left corners
-                g.fill(x1 + 1, z1, mx, z2, darken(CLR_PUZZLE, 0.75f));
-                g.fill(x1, z1 + 1, mx, z2 - 1, darken(CLR_PUZZLE, 0.75f));
+                int clrP = darken(ConfigManager.data.dungeonMapColorPuzzle, 0.75f);
+                int clrT = darken(ConfigManager.data.dungeonMapColorTrap, 0.75f);
+                g.fill(x1 + 1, z1, mx, z2, clrP);
+                g.fill(x1, z1 + 1, mx, z2 - 1, clrP);
 
-                // Right half (orange) - round right corners
-                g.fill(mx, z1, x2 - 1, z2, darken(CLR_TRAP, 0.75f));
-                g.fill(mx, z1 + 1, x2, z2 - 1, darken(CLR_TRAP, 0.75f));
+                g.fill(mx, z1, x2 - 1, z2, clrT);
+                g.fill(mx, z1 + 1, x2, z2 - 1, clrT);
 
-                int connClr = darken(CLR_PUZZLE, 0.75f);
+                int connClr = clrP;
                 if (hasTileAt(room, gx + 1, gz))
                     g.fill(x2 - 1, z1, dX + (int) ((gx + 1) * cellSize * scale) + 1, z2, connClr);
                 if (hasTileAt(room, gx, gz + 1))
@@ -251,15 +252,13 @@ public class DungeonMapHud {
             int x2 = dX + (int) ((gx * cellSize + rs) * scale);
             int z1 = dY + (int) (gz * cellSize * scale);
             int z2 = dY + (int) ((gz * cellSize + rs) * scale);
-            int clr = room.mimic ? CLR_MIMIC
+            int clr = room.mimic ? 0xFFFF6600
                     : (funnyMap && undiscovered) ? darken(baseColor(eff), 0.55f)
                             : baseColor(eff);
 
-            // Rounded corners for the tile
             g.fill(x1 + 1, z1, x2 - 1, z2, clr);
             g.fill(x1, z1 + 1, x2, z2 - 1, clr);
 
-            // Connectors overlap by 1px to heal the rounded intersection
             if (hasTileAt(room, gx + 1, gz))
                 g.fill(x2 - 1, z1, dX + (int) ((gx + 1) * cellSize * scale) + 1, z2, clr);
             if (hasTileAt(room, gx, gz + 1))
@@ -273,6 +272,17 @@ public class DungeonMapHud {
     private static void drawOverlay(GuiGraphics g, Minecraft mc, Room room, Room.Type eff,
             int cx, int cz, float scale, boolean ambiguous, boolean funnyMap) {
         boolean hasName = room.data != null;
+        if (ConfigManager.data.dungeonMapShowRoomNames && hasName && room.state != Room.State.UNDISCOVERED && room.state != Room.State.UNOPENED) {
+            int nameColor = ConfigManager.data.dungeonMapColorNameDiscovered;
+            if (room.state == Room.State.GREEN)
+                nameColor = ConfigManager.data.dungeonMapColorNameSecreted;
+            else if (room.state == Room.State.CLEARED)
+                nameColor = ConfigManager.data.dungeonMapColorNameCleared;
+            
+            drawName(g, mc, cx, cz, room.data.name, nameColor);
+            return;
+        }
+
         switch (room.state) {
             case GREEN:
                 if (eff != Room.Type.FAIRY)
@@ -289,13 +299,13 @@ public class DungeonMapHud {
                 break;
             case UNDISCOVERED:
                 if (hasName && funnyMap)
-                    drawName(g, mc, cx, cz, room.data.name, 0xFFAAAAAA);
+                    drawName(g, mc, cx, cz, room.data.name, 0xFFFFFFFF);
                 else
-                    drawQuestionMark(g, mc, cx, cz, 0xFFAAAAAA);
+                    drawQuestionMark(g, mc, cx, cz, ConfigManager.data.dungeonMapColorUndiscovered);
                 break;
             case UNOPENED:
                 if (hasName && funnyMap) {
-                    drawName(g, mc, cx, cz, room.data.name, 0xFFAAAAAA);
+                    drawName(g, mc, cx, cz, room.data.name, 0xFFFFFFFF);
                 } else if (ambiguous) {
                     drawQuestionMark(g, mc, cx, cz, 0xFFAAAAAA);
                 } else if (room.type != Room.Type.PUZZLE && room.type != Room.Type.TRAP) {
@@ -307,18 +317,10 @@ public class DungeonMapHud {
         }
     }
 
-    /**
-     * Draws a chunky pixel-art checkmark centered at (cx, cy).
-     * Each "pixel" in the design is a 2x2 block, giving a ~14x12 total shape.
-     * 
-     * @param color       Main fill color
-     * @param shadowColor Shadow/outline color drawn 1px offset behind each block
-     */
     private static void drawCheckProcedural(GuiGraphics g, int cx, int cy, int color, int shadowColor) {
         int x = cx - 6;
-        int y = cy - 5; // centered: shape spans y to y+10, so center is y+5 = cy
+        int y = cy - 5;
 
-        // Shadow pass (1px down+right)
         g.fill(x + 1, y + 7, x + 3, y + 9, shadowColor);
         g.fill(x + 3, y + 9, x + 5, y + 11, shadowColor);
         g.fill(x + 5, y + 7, x + 7, y + 9, shadowColor);
@@ -326,7 +328,6 @@ public class DungeonMapHud {
         g.fill(x + 9, y + 3, x + 11, y + 5, shadowColor);
         g.fill(x + 11, y + 1, x + 13, y + 3, shadowColor);
 
-        // Main color pass
         g.fill(x, y + 6, x + 2, y + 8, color);
         g.fill(x + 2, y + 8, x + 4, y + 10, color);
         g.fill(x + 4, y + 6, x + 6, y + 8, color);
@@ -352,7 +353,7 @@ public class DungeonMapHud {
 
     private static void drawName(GuiGraphics g, Minecraft mc, int cx, int cz, String name, int color) {
         int h = mc.font.lineHeight / 2;
-        scaled(g, cx, cz, 0.7f, () -> g.drawCenteredString(mc.font, name, 0, -h, color));
+        scaled(g, cx, cz, ConfigManager.data.dungeonMapRoomNameScale, () -> g.drawCenteredString(mc.font, name, 0, -h, color));
     }
 
     private static void scaled(GuiGraphics g, int cx, int cz, float s, Runnable draw) {
@@ -378,21 +379,21 @@ public class DungeonMapHud {
     private static int baseColor(Room.Type type) {
         switch (type) {
             case ENTRANCE:
-                return CLR_ENTRANCE;
+                return ConfigManager.data.dungeonMapColorEntrance;
             case BLOOD:
-                return CLR_BLOOD;
+                return ConfigManager.data.dungeonMapColorBlood;
             case PUZZLE:
-                return CLR_PUZZLE;
+                return ConfigManager.data.dungeonMapColorPuzzle;
             case TRAP:
-                return CLR_TRAP;
+                return ConfigManager.data.dungeonMapColorTrap;
             case CHAMPION:
-                return CLR_CHAMPION;
+                return ConfigManager.data.dungeonMapColorChampion;
             case RARE:
-                return CLR_RARE;
+                return 0xFFFFFFFF;
             case FAIRY:
-                return CLR_FAIRY;
+                return ConfigManager.data.dungeonMapColorFairy;
             default:
-                return CLR_NORMAL;
+                return ConfigManager.data.dungeonMapColorNormal;
         }
     }
 
@@ -406,10 +407,10 @@ public class DungeonMapHud {
 
     private static int doorColor(Door door) {
         if (door.type == Door.Type.BLOOD)
-            return 0xFFCC2020;
+            return ConfigManager.data.dungeonMapColorBlood;
         if (door.type == Door.Type.WITHER)
             return 0xFF111111;
-        return 0xFF794600;
+        return ConfigManager.data.dungeonMapColorNormal;
     }
 
     private static boolean hasTileAt(Room room, int gx, int gz) {
@@ -551,16 +552,11 @@ public class DungeonMapHud {
         }
     }
 
-    /**
-     * Draws the player's marker PNG. Uses dynamic reflection for both rotation
-     * and texture blit, strictly to bypass any cross-version mapping issues.
-     */
     private static void drawPlayerPin(GuiGraphics g, int cx, int cy, int color, float yaw) {
         g.pose().pushMatrix();
         try {
             g.pose().translate((float) cx, (float) cy);
 
-            // Dynamics rotate to avoid mapping crashes across different yarn/official names
             for (Method m : g.pose().getClass().getMethods()) {
                 if ((m.getName().equals("rotate") || m.getName().equals("rotateZ") || m.getName().equals("mulPose"))
                         && m.getParameterCount() == 1) {
@@ -583,7 +579,6 @@ public class DungeonMapHud {
             int y = -size / 2;
 
             boolean drawn = false;
-            // Dynamic texture draw to avoid mapping crashes
             if (MARKER_SELF != null) {
                 for (Method m : g.getClass().getMethods()) {
                     if ((m.getName().equals("blit") || m.getName().equals("drawTexture"))
@@ -626,9 +621,11 @@ public class DungeonMapHud {
     }
 
     private static void drawBorder(GuiGraphics g, int x, int y, int size) {
-        g.fill(x, y, x + size, y + 1, CLR_BORDER);
-        g.fill(x, y + size - 1, x + size, y + size, CLR_BORDER);
-        g.fill(x, y, x + 1, y + size, CLR_BORDER);
-        g.fill(x + size - 1, y, x + size, y + size, CLR_BORDER);
+        if (!ConfigManager.data.dungeonMapBorderEnabled) return;
+        int color = ConfigManager.data.dungeonMapColorBorder;
+        g.fill(x, y, x + size, y + 1, color);
+        g.fill(x, y + size - 1, x + size, y + size, color);
+        g.fill(x, y, x + 1, y + size, color);
+        g.fill(x + size - 1, y, x + size, y + size, color);
     }
 }
