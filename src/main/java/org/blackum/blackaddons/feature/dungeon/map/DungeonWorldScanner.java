@@ -10,10 +10,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
-import net.minecraft.world.level.chunk.LevelChunk;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.core.util.LocationUtils;
 
+import java.util.List;
 import java.util.Set;
 
 public class DungeonWorldScanner {
@@ -105,20 +105,35 @@ public class DungeonWorldScanner {
 
     private static void scanMimic(Level level) {
         for (Room room : DungeonMap.getRooms()) {
-            if (room.mimic || room.tiles.isEmpty()) continue;
-            outer:
-            for (Room.Tile tile : room.tiles) {
-                int chunkX = tile.pos.x >> 4;
-                int chunkZ = tile.pos.z >> 4;
-                if (!level.hasChunk(chunkX, chunkZ)) continue;
-                LevelChunk chunk = level.getChunk(chunkX, chunkZ);
-                for (BlockEntity be : chunk.getBlockEntities().values()) {
-                    if (be instanceof TrappedChestBlockEntity) {
-                        room.mimic = true;
-                        break outer;
-                    }
+            if (room.mimic || room.data == null || room.clayPos == null) continue;
+            List<String> chestSecrets = room.data.secretDetails.get("chest");
+            if (chestSecrets == null || chestSecrets.isEmpty()) continue;
+            for (String posStr : chestSecrets) {
+                BlockPos rel = parsePos(posStr);
+                if (rel == null) continue;
+                BlockPos world = room.offset(rel);
+                if (world == null) continue;
+                if (!level.hasChunk(world.getX() >> 4, world.getZ() >> 4)) continue;
+                BlockEntity be = level.getBlockEntity(world);
+                if (be instanceof TrappedChestBlockEntity) {
+                    room.mimic = true;
+                    break;
                 }
             }
+        }
+    }
+
+    private static BlockPos parsePos(String s) {
+        String[] parts = s.split(",\\s*");
+        if (parts.length != 3) return null;
+        try {
+            return new BlockPos(
+                Integer.parseInt(parts[0].trim()),
+                Integer.parseInt(parts[1].trim()),
+                Integer.parseInt(parts[2].trim())
+            );
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 
