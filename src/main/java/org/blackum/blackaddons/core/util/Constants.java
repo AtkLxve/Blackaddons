@@ -73,7 +73,7 @@ public final class Constants {
         public static final String GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/BLACKUM/BlackAddons/releases/latest";
 
         // External URLs
-        public static final String GITHUB_NAMES_URL = "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/refs/heads/main/data/custom_names.json";
+        public static final String GITHUB_NAMES_URL = "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/main/data/custom_names.json";
 
         // API Headers
         public static final String HEADER_PLAYER_KEY = "X-Player-Key";
