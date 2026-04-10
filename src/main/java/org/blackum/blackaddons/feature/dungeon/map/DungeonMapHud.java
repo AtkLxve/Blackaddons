@@ -18,7 +18,7 @@ public class DungeonMapHud {
     private static final int CLR_PUZZLE = 0xFF9B39C8;
     private static final int CLR_TRAP = 0xFFA97442;
     private static final int CLR_CHAMPION = 0xFFFFD400;
-    private static final int CLR_RARE = 0xFFFFCB59;
+    private static final int CLR_RARE = 0xFFFFFFFF;
     private static final int CLR_MIMIC = 0xFFFF6600;
     private static final int CLR_GREY = 0xFF555555;
     private static final int CLR_BORDER = 0xFF555555;
