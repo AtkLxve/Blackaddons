@@ -212,15 +212,6 @@ public class LegitTabController extends SimpleTabController {
         legitTab.addWidget(autoSSPositionButton);
         y += 30;
 
-        ToggleSwitch fastLeapDebugToggle = new ToggleSwitch(x, y, width,
-                "FastLeap Debug",
-                "Shows FastLeap debug messages in chat",
-                ConfigManager.data.FastLeapDebug, value -> {
-                    ConfigManager.data.FastLeapDebug = value;
-                    ConfigManager.save();
-                });
-        legitTab.addWidget(fastLeapDebugToggle);
-        y += 30;
 
         ToggleSwitch rotationDebugToggle = new ToggleSwitch(x, y, width,
                 "Rotation Debugger",
@@ -310,14 +301,6 @@ public class LegitTabController extends SimpleTabController {
             }
         }));
 
-
-        listView.addItem(new ToggleSwitch(0, 0, 260,
-                "FastLeap Debug",
-                "Shows FastLeap debug messages in chat",
-                ConfigManager.data.FastLeapDebug, value -> {
-                    ConfigManager.data.FastLeapDebug = value;
-                    ConfigManager.save();
-                }));
 
         listView.addItem(new ToggleSwitch(0, 0, 260,
                 "Rotation Debugger",

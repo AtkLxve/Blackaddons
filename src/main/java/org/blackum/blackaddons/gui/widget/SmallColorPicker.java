@@ -17,33 +17,48 @@ public class SmallColorPicker extends ColorPicker {
     }
 
     @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setWidth(int width) {
+        // We keep it small
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) return;
 
         RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, false);
 
-        int currentY = y + 5;
-        int sbWidth = width - 10;
-        int sbHeight = 60;
-        int innerX = x + 5;
+        int padding = 5;
+        int innerX = x + padding;
+        int sbWidth = width - (padding * 2);
+        int sbHeight = (int) (height * 0.6f);
+        int currentY = y + padding;
 
         renderSBArea(graphics, innerX, currentY, sbWidth, sbHeight);
-        currentY += sbHeight + 5;
+        currentY += sbHeight + padding;
 
-        renderHueSlider(graphics, innerX, currentY, sbWidth, 6);
-        currentY += 10;
+        int sliderHeight = Math.max(4, (int) (height * 0.06f));
+        int spacing = Math.max(4, (int) (height * 0.1f));
 
-        renderAlphaSlider(graphics, innerX, currentY, sbWidth, 6);
+        renderHueSlider(graphics, innerX, currentY, sbWidth, sliderHeight);
+        currentY += spacing;
+
+        renderAlphaSlider(graphics, innerX, currentY, sbWidth, sliderHeight);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!visible || !enabled) return false;
 
-        int sbWidth = width - 10;
-        int sbHeight = 60;
-        int innerX = x + 5;
-        int sbY = y + 5;
+        int padding = 5;
+        int innerX = x + padding;
+        int sbWidth = width - (padding * 2);
+        int sbHeight = (int) (height * 0.6f);
+        int sbY = y + padding;
 
         if (mouseX >= innerX && mouseX <= innerX + sbWidth && mouseY >= sbY && mouseY <= sbY + sbHeight) {
             draggingSB = true;
@@ -51,15 +66,18 @@ public class SmallColorPicker extends ColorPicker {
             return true;
         }
 
-        int hueY = sbY + sbHeight + 5;
-        if (mouseX >= innerX && mouseX <= innerX + sbWidth && mouseY >= hueY && mouseY <= hueY + 6) {
+        int sliderHeight = Math.max(4, (int) (height * 0.06f));
+        int spacing = Math.max(4, (int) (height * 0.1f));
+
+        int hueY = sbY + sbHeight + padding;
+        if (mouseX >= innerX && mouseX <= innerX + sbWidth && mouseY >= hueY && mouseY <= hueY + sliderHeight) {
             draggingHue = true;
             updateHue(mouseX, innerX, sbWidth);
             return true;
         }
 
-        int alphaY = hueY + 10;
-        if (mouseX >= innerX && mouseX <= innerX + sbWidth && mouseY >= alphaY && mouseY <= alphaY + 6) {
+        int alphaY = hueY + spacing;
+        if (mouseX >= innerX && mouseX <= innerX + sbWidth && mouseY >= alphaY && mouseY <= alphaY + sliderHeight) {
             draggingAlpha = true;
             updateAlpha(mouseX, innerX, sbWidth);
             return true;
@@ -70,10 +88,11 @@ public class SmallColorPicker extends ColorPicker {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        int sbWidth = width - 10;
-        int sbHeight = 60;
-        int innerX = x + 5;
-        int sbY = y + 5;
+        int padding = 5;
+        int innerX = x + padding;
+        int sbWidth = width - (padding * 2);
+        int sbHeight = (int) (height * 0.6f);
+        int sbY = y + padding;
 
         if (draggingSB) {
             updateSB(mouseX, mouseY, innerX, sbY, sbWidth, sbHeight);

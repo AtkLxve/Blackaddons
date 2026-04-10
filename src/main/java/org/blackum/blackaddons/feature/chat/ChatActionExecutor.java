@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.feature.cheat.FastLeap;
 import org.blackum.blackaddons.gui.widget.MovementKeybindSelector;
 import org.blackum.blackaddons.core.manager.RotationManager;
 import org.blackum.blackaddons.core.util.AlignUtils;
@@ -128,9 +127,6 @@ public class ChatActionExecutor {
                 break;
             case ATTACK:
                 if (client.screen != null) break;
-                if (FastLeap.tryTriggerFromAttackAction(client, true)) {
-                    break;
-                }
                 holdOrClickKey(client.options.keyAttack, action.getDurationTicks());
                 break;
             case SEND_MESSAGE:

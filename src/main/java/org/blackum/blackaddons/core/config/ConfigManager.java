@@ -418,15 +418,8 @@ public class ConfigManager {
         public int AutoSSOverlayX = -1;
         public int AutoSSOverlayY = 5;
 
-        public boolean FastLeapEnabled = false;
         public boolean RelicLookEnabled = false;
         public boolean RelicLookDebug = false;
-        public boolean FastLeapDoorOpener = false;
-        public boolean FastLeapPositional = false;
-        public boolean FastLeapDebug = false;
-        public String FastLeapS2Class = "NONE";
-        public String FastLeapS3Class = "NONE";
-        public String FastLeapS4Class = "NONE";
 
         public boolean showRotationDebug = false;
         public int rotationOverlayX = -1;

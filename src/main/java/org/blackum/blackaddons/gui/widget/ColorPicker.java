@@ -59,9 +59,8 @@ public class ColorPicker extends Widget {
         updateCenteredX();
     }
 
-    private void updateCenteredX() {
+    protected void updateCenteredX() {
         this.x = gridX;
-        this.width = WIDTH;
     }
 
     private void updateFields() {
