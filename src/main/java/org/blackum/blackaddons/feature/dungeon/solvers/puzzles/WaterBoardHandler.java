@@ -51,9 +51,40 @@ public class WaterBoardHandler {
         });
 
         ThreadUtils.loop(200, () -> !ConfigManager.data.waterBoardSolverEnabled, () -> {
-            if (WaterBoardSolver.INSTANCE.isInactive()) {
-                manualTrigger();
-            }
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.level == null) return;
+            
+            mc.execute(() -> {
+                if (WaterBoardSolver.INSTANCE.isInactive()) {
+                    manualTrigger();
+                } else {
+                    // Part 1: Sticky Reset
+                    BlockPos playerPos = mc.player.blockPosition();
+                    BlockPos center = WaterBoardSolver.INSTANCE.getRoomCenter();
+                    
+                    // 1. Check distance fallback (64 blocks, 2D)
+                    if (center != null) {
+                        double dx = playerPos.getX() - center.getX();
+                        double dz = playerPos.getZ() - center.getZ();
+                        double distSq2D = dx * dx + dz * dz;
+                        if (distSq2D > 64 * 64) {
+                            WaterBoardSolver.reset();
+                            return;
+                        }
+                    }
+
+                    // 2. Check room boundary (only reset if in a DIFFERENT known room)
+                    int idx = (playerPos.getX() + 185) / 32 * 6 + (playerPos.getZ() + 185) / 32;
+                    if (idx >= 0 && idx < 36) {
+                        Room.Tile tile = DungeonMap.getTileGrid()[idx];
+                        if (tile != null && tile.owner != null && tile.owner.data != null) {
+                            if (!"Water Board".equals(tile.owner.data.name)) {
+                                WaterBoardSolver.reset();
+                            }
+                        }
+                    }
+                }
+            });
         });
     }
 
@@ -69,33 +100,33 @@ public class WaterBoardHandler {
         if (tile == null || tile.owner == null || tile.owner.data == null) return;
         if (!"Water Board".equals(tile.owner.data.name)) return;
 
-        // If we are in Water Board, scan a slightly larger radius for the lever
-        // because the lever might be across tile boundaries if the room is big.
+        // Optimized scan using the gate signature logic you provided
         for (int x = -16; x <= 16; x++) {
             for (int z = -16; z <= 16; z++) {
                 for (int y = 56; y <= 75; y++) {
                     BlockPos pos = new BlockPos(playerPos.getX() + x, y, playerPos.getZ() + z);
-                    if (mc.level.getBlockState(pos).is(Blocks.LEVER)) {
-                        for (int rot : new int[]{0, 90, 180, 270}) {
-                            int woolCount = 0;
-                            int validCount = 0;
-                            for (int i = 0; i < 5; i++) {
-                                BlockPos gateOffset = new BlockPos(0, -4, 10 + i);
-                                BlockPos gatePos = ScanUtils.getRealCoord(gateOffset, pos, rot);
-                                BlockState state = mc.level.getBlockState(gatePos);
-                                String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK
-                                        .getKey(state.getBlock()).getPath();
-                                if (path.contains("wool")) {
-                                    woolCount++;
-                                    validCount++;
-                                } else if (state.isAir() || path.contains("water") || path.contains("glass")) {
-                                    validCount++;
-                                }
+                    if (!mc.level.getBlockState(pos).is(Blocks.LEVER)) continue;
+
+                    for (int rot : new int[]{0, 90, 180, 270}) {
+                        int woolCount = 0;
+                        int validCount = 0;
+                        for (int i = 0; i < 5; i++) {
+                            // Gate signature: check for clay board blocks relative to lever
+                            BlockPos gateOffset = new BlockPos(0, -4, 10 + i);
+                            BlockPos gatePos = ScanUtils.getRealCoord(gateOffset, pos, rot);
+                            BlockState state = mc.level.getBlockState(gatePos);
+                            String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                                    .getKey(state.getBlock()).getPath();
+                            if (path.contains("wool") || path.contains("clay") || path.contains("terracotta")) {
+                                woolCount++;
+                                validCount++;
+                            } else if (state.isAir() || path.contains("water") || path.contains("glass")) {
+                                validCount++;
                             }
-                            if (validCount == 5 && woolCount >= 1) {
-                                triggerRoomEntry(pos, rot, pos);
-                                return;
-                            }
+                        }
+                        if (validCount == 5 && woolCount >= 1) {
+                            triggerRoomEntry(pos, rot, pos);
+                            return;
                         }
                     }
                 }

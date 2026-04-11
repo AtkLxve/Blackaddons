@@ -87,6 +87,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonMap.reset();
             DungeonWorldScanner.reset();
             DungeonScoreboard.reset();
+            WaterBoardSolver.reset();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -94,6 +95,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonMap.reset();
             DungeonWorldScanner.reset();
             DungeonScoreboard.reset();
+            WaterBoardSolver.reset();
         });
 
         Blackaddons.guiOpener = () -> {
