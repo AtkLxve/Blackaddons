@@ -253,8 +253,8 @@ public class DungeonMapHud {
             int z1 = dY + (int) (gz * cellSize * scale);
             int z2 = dY + (int) ((gz * cellSize + rs) * scale);
             int clr = room.mimic ? 0xFFFF6600
-                    : (funnyMap && undiscovered) ? darken(baseColor(eff), 0.55f)
-                            : baseColor(eff);
+                    : (unopened || (funnyMap && undiscovered)) ? darken(baseColor(eff), 0.75f)
+                    : baseColor(eff);
 
             g.fill(x1 + 1, z1, x2 - 1, z2, clr);
             g.fill(x1, z1 + 1, x2, z2 - 1, clr);
@@ -272,7 +272,7 @@ public class DungeonMapHud {
     private static void drawOverlay(GuiGraphics g, Minecraft mc, Room room, Room.Type eff,
             int cx, int cz, float scale, boolean ambiguous, boolean funnyMap) {
         boolean hasName = room.data != null;
-        if (ConfigManager.data.dungeonMapShowRoomNames && hasName && room.state != Room.State.UNDISCOVERED && room.state != Room.State.UNOPENED) {
+        if (ConfigManager.data.dungeonMapShowRoomNames && hasName && room.state != Room.State.UNDISCOVERED && room.state != Room.State.UNOPENED && room.type != Room.Type.ENTRANCE) {
             int nameColor = ConfigManager.data.dungeonMapColorNameDiscovered;
             if (room.state == Room.State.GREEN)
                 nameColor = ConfigManager.data.dungeonMapColorNameSecreted;

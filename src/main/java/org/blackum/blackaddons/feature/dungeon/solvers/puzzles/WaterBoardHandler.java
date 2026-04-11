@@ -73,13 +73,18 @@ public class WaterBoardHandler {
                         }
                     }
 
-                    // 2. Check room boundary (only reset if in a DIFFERENT known room)
+                    // 2. Check room boundary (only reset if in a DIFFERENT known room AND at least 28 blocks away)
                     int idx = (playerPos.getX() + 185) / 32 * 6 + (playerPos.getZ() + 185) / 32;
                     if (idx >= 0 && idx < 36) {
                         Room.Tile tile = DungeonMap.getTileGrid()[idx];
                         if (tile != null && tile.owner != null && tile.owner.data != null) {
                             if (!"Water Board".equals(tile.owner.data.name)) {
-                                WaterBoardSolver.reset();
+                                // Double check distance to ensure we aren't just on a door boundary
+                                double dx = playerPos.getX() - center.getX();
+                                double dz = playerPos.getZ() - center.getZ();
+                                if (dx * dx + dz * dz > 28 * 28) {
+                                    WaterBoardSolver.reset();
+                                }
                             }
                         }
                     }

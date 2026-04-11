@@ -23,6 +23,7 @@ public class DungeonMap {
     private static final List<Door> doors   = new ArrayList<>();
     private static final Room.Tile[] tileGrid = new Room.Tile[36];
     private static Room bloodRoom = null;
+    private static Room localRoom = null;
 
     public static void onMapPacket(ClientboundMapItemDataPacket packet) {
         if (!LocationUtils.inDungeons()) return;
@@ -376,6 +377,7 @@ public class DungeonMap {
 
     public static void reset() {
         mapId = null; startCoords = null; mapCenter = null; mapSize = null; roomSize = null; bloodRoom = null;
+        localRoom = null;
         rooms.clear(); doors.clear();
         Arrays.fill(tileGrid, null);
         Blackaddons.LOGGER.info("[DungeonMap] Reset.");
@@ -389,6 +391,24 @@ public class DungeonMap {
     public static Vec2i       getMapSize()    { return mapSize;     }
     public static Integer     getRoomSize()   { return roomSize;    }
     public static Vec2i       getStartCoords(){ return startCoords; }
+    public static Room        getLocalRoom()  { return localRoom;   }
+
+    public static void updateLocalRoom(Room room) {
+        if (room == null || room == localRoom) return;
+        localRoom = room;
+
+        if (room.state == Room.State.UNDISCOVERED || room.state == Room.State.UNOPENED) {
+            room.state = Room.State.DISCOVERED;
+        }
+
+        for (Door door : room.doors) {
+            for (Room r : door.rooms) {
+                if (r != room && r.state == Room.State.UNDISCOVERED) {
+                    r.state = Room.State.UNOPENED;
+                }
+            }
+        }
+    }
 
     private static int getFloorNumber(DungeonFloor floor) {
         if (floor == null || floor == DungeonFloor.ENTRANCE) return 0;

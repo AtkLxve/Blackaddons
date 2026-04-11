@@ -135,6 +135,9 @@ public class DungeonScoreboard {
     public static DungeonPlayer selfPlayer = null;
     public static final Stats stats = new Stats();
 
+    private static Room pendingRoom = null;
+    private static int roomEntryConfirmation = 0;
+
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!LocationUtils.inDungeons())
@@ -143,6 +146,38 @@ public class DungeonScoreboard {
             if (client.player != null && selfPlayer == null) {
                 selfPlayer = new DungeonPlayer(client.player.getName().getString(), "UNKNOWN");
             }
+
+            if (client.player != null) {
+                int px = (int) client.player.getX();
+                int pz = (int) client.player.getZ();
+                int idx = (px + 185) / 32 * 6 + (pz + 185) / 32;
+                
+                Room detectedRoom = null;
+                if (idx >= 0 && idx < 36) {
+                    Room.Tile tile = DungeonMap.getTileGrid()[idx];
+                    if (tile != null && tile.owner != null) {
+                        detectedRoom = tile.owner;
+                    }
+                }
+
+                if (detectedRoom != null && detectedRoom != DungeonMap.getLocalRoom()) {
+                    if (detectedRoom == pendingRoom) {
+                        roomEntryConfirmation++;
+                        if (roomEntryConfirmation >= 10) { // 0.5s confirmation
+                            DungeonMap.updateLocalRoom(detectedRoom);
+                            pendingRoom = null;
+                            roomEntryConfirmation = 0;
+                        }
+                    } else {
+                        pendingRoom = detectedRoom;
+                        roomEntryConfirmation = 1;
+                    }
+                } else {
+                    pendingRoom = null;
+                    roomEntryConfirmation = 0;
+                }
+            }
+
             parseTabList();
             parseSidebar();
         });
