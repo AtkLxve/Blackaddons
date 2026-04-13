@@ -170,7 +170,7 @@ public class DungeonScoreboard {
                 if (detectedRoom != null && detectedRoom != DungeonMap.getLocalRoom()) {
                     if (detectedRoom == pendingRoom) {
                         roomEntryConfirmation++;
-                        if (roomEntryConfirmation >= 10) { // 0.5s confirmation
+                        if (roomEntryConfirmation >= 25) { // 1.25s confirmation
                             DungeonMap.updateLocalRoom(detectedRoom);
                             pendingRoom = null;
                             roomEntryConfirmation = 0;

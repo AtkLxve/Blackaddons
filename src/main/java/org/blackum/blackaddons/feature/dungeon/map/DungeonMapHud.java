@@ -298,8 +298,12 @@ public class DungeonMapHud {
 
         switch (room.state) {
             case GREEN:
+                if (eff != Room.Type.FAIRY && eff != Room.Type.ENTRANCE)
+                    drawCheckProcedural(g, cx, cz, 0xFF22DD22, 0xFF115511);
                 break;
             case CLEARED:
+                if (eff != Room.Type.FAIRY && eff != Room.Type.ENTRANCE)
+                    drawCheckProcedural(g, cx, cz, 0xFFFFFFFF, 0xFF888888);
                 break;
             case FAILED:
                 drawXMark(g, mc, cx, cz, 0xFFFF5555);

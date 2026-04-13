@@ -23,7 +23,8 @@ public class WaterBoardHandler {
 
     public static void register() {
         WorldRenderEvents.BEFORE_TRANSLUCENT.register(context -> {
-            if (!ConfigManager.data.waterBoardSolverEnabled) return;
+            if (!ConfigManager.data.waterBoardSolverEnabled)
+                return;
 
             MultiBufferSource.BufferSource bufSource;
             if (context.consumers() instanceof MultiBufferSource.BufferSource bs) {
@@ -35,14 +36,15 @@ public class WaterBoardHandler {
             RenderContext ctx = new RenderContext(
                     context.matrices(),
                     bufSource,
-                    0.0f
-            );
+                    0.0f);
             WaterBoardSolver.onRenderWorld(ctx);
         });
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (!ConfigManager.data.waterBoardSolverEnabled) return InteractionResult.PASS;
-            if (!world.isClientSide()) return InteractionResult.PASS;
+            if (!ConfigManager.data.waterBoardSolverEnabled)
+                return InteractionResult.PASS;
+            if (!world.isClientSide())
+                return InteractionResult.PASS;
 
             BlockPos pos = hitResult.getBlockPos();
             PlayerInteractEvent.RIGHT_CLICK.BLOCK event = new PlayerInteractEvent.RIGHT_CLICK.BLOCK(pos);
@@ -53,8 +55,9 @@ public class WaterBoardHandler {
 
         ThreadUtils.loop(200, () -> !ConfigManager.data.waterBoardSolverEnabled, () -> {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.level == null) return;
-            
+            if (mc.level == null)
+                return;
+
             mc.execute(() -> {
                 if (WaterBoardSolver.INSTANCE.isInactive()) {
                     manualTrigger();
@@ -62,7 +65,7 @@ public class WaterBoardHandler {
                     // Part 1: Sticky Reset
                     BlockPos playerPos = mc.player.blockPosition();
                     BlockPos center = WaterBoardSolver.INSTANCE.getRoomCenter();
-                    
+
                     // 1. Check distance fallback (64 blocks, 2D)
                     if (center != null) {
                         double dx = playerPos.getX() - center.getX();
@@ -74,7 +77,8 @@ public class WaterBoardHandler {
                         }
                     }
 
-                    // 2. Check room boundary (only reset if in a DIFFERENT known room AND at least 28 blocks away)
+                    // 2. Check room boundary (only reset if in a DIFFERENT known room AND at least
+                    // 28 blocks away)
                     int idx = (playerPos.getX() + 185) / 32 * 6 + (playerPos.getZ() + 185) / 32;
                     if (idx >= 0 && idx < 36) {
                         Room.Tile tile = DungeonMap.getTileGrid()[idx];
@@ -96,8 +100,10 @@ public class WaterBoardHandler {
 
     public static void manualTrigger() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return;
-        if (!LocationUtils.inDungeons()) return;
+        if (mc.player == null || mc.level == null)
+            return;
+        if (!LocationUtils.inDungeons())
+            return;
 
         BlockPos playerPos = mc.player.blockPosition();
 
@@ -106,9 +112,10 @@ public class WaterBoardHandler {
             for (int z = -16; z <= 16; z++) {
                 for (int y = 56; y <= 75; y++) {
                     BlockPos pos = new BlockPos(playerPos.getX() + x, y, playerPos.getZ() + z);
-                    if (!mc.level.getBlockState(pos).is(Blocks.LEVER)) continue;
+                    if (!mc.level.getBlockState(pos).is(Blocks.LEVER))
+                        continue;
 
-                    for (int rot : new int[]{0, 90, 180, 270}) {
+                    for (int rot : new int[] { 0, 90, 180, 270 }) {
                         int woolCount = 0;
                         int validCount = 0;
                         for (int i = 0; i < 5; i++) {
