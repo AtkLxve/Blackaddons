@@ -107,11 +107,19 @@ public class DungeonMapHud {
         int totalPuzzles = DungeonScoreboard.stats.puzzleCount;
         boolean allPuzzlesKnown = totalPuzzles > 0 && discoveredPuzzles >= totalPuzzles;
 
+        float darknessFactor = 1.0f - ConfigManager.data.dungeonMapUndiscoveredDarkness;
+
         for (Room room : rooms) {
             if (room.tiles.isEmpty())
                 continue;
+            
+            // Force entrance to be cleared if it was discovered
+            if (room.type == Room.Type.ENTRANCE && room.state == Room.State.DISCOVERED) {
+                room.state = Room.State.CLEARED;
+            }
+
             Room.Type eff = effectiveType(room, allPuzzlesKnown, trapDiscovered);
-            drawTiles(g, room, eff, dX, dY, cellSize, rs, scale, allPuzzlesKnown, trapDiscovered, funnyMap);
+            drawTiles(g, room, eff, dX, dY, cellSize, rs, scale, allPuzzlesKnown, trapDiscovered, funnyMap, darknessFactor);
         }
 
         for (Door door : DungeonMap.getDoors()) {
@@ -119,10 +127,14 @@ public class DungeonMapHud {
                 continue;
             float[] dp = door.placement(8f, rs);
             Vec2i dsz = door.size(8f, rs);
+            int dclr = doorColor(door);
+            if (funnyMap && !door.isSeen()) {
+                dclr = darken(dclr, darknessFactor);
+            }
             g.fill(
                     dX + (int) (dp[0] * scale), dY + (int) (dp[1] * scale),
                     dX + (int) ((dp[0] + dsz.x) * scale), dY + (int) ((dp[1] + dsz.z) * scale),
-                    doorColor(door));
+                    dclr);
         }
 
         Minecraft mc = Minecraft.getInstance();
@@ -165,7 +177,7 @@ public class DungeonMapHud {
 
             boolean ambiguous = isSpecial && unopened && !allPuzzlesKnown && !trapDiscovered
                     && !(funnyMap && room.data != null);
-            drawOverlay(g, mc, room, eff, cx, cz, scale, ambiguous, funnyMap);
+            drawOverlay(g, mc, room, eff, cx, cz, scale, ambiguous, funnyMap, darknessFactor);
         }
 
         if (sc != null) {
@@ -201,11 +213,12 @@ public class DungeonMapHud {
 
         g.disableScissor();
         drawBorder(g, x, y, size);
+        drawResizeIndicator(g, x, y, size);
     }
 
     private static void drawTiles(GuiGraphics g, Room room, Room.Type eff,
             int dX, int dY, int cellSize, int rs, float scale,
-            boolean allPuzzlesKnown, boolean trapDiscovered, boolean funnyMap) {
+            boolean allPuzzlesKnown, boolean trapDiscovered, boolean funnyMap, float darkness) {
         boolean undiscovered = room.state == Room.State.UNDISCOVERED;
         boolean unopened = room.state == Room.State.UNOPENED;
         boolean isSpecial = (room.type == Room.Type.PUZZLE || room.type == Room.Type.TRAP);
@@ -225,8 +238,8 @@ public class DungeonMapHud {
                 int z2 = dY + (int) ((gz * cellSize + rs) * scale);
                 int mx = (x1 + x2) / 2;
 
-                int clrP = darken(ConfigManager.data.dungeonMapColorPuzzle, 0.75f);
-                int clrT = darken(ConfigManager.data.dungeonMapColorTrap, 0.75f);
+                int clrP = darken(ConfigManager.data.dungeonMapColorPuzzle, darkness);
+                int clrT = darken(ConfigManager.data.dungeonMapColorTrap, darkness);
                 g.fill(x1 + 1, z1, mx, z2, clrP);
                 g.fill(x1, z1 + 1, mx, z2 - 1, clrP);
 
@@ -253,7 +266,7 @@ public class DungeonMapHud {
             int z1 = dY + (int) (gz * cellSize * scale);
             int z2 = dY + (int) ((gz * cellSize + rs) * scale);
             int clr = room.mimic ? 0xFFFF6600
-                    : (unopened || (funnyMap && undiscovered)) ? darken(baseColor(eff), 0.75f)
+                    : (unopened || (funnyMap && undiscovered)) ? darken(baseColor(eff), darkness)
                     : baseColor(eff);
 
             g.fill(x1 + 1, z1, x2 - 1, z2, clr);
@@ -270,12 +283,12 @@ public class DungeonMapHud {
     }
 
     private static void drawOverlay(GuiGraphics g, Minecraft mc, Room room, Room.Type eff,
-            int cx, int cz, float scale, boolean ambiguous, boolean funnyMap) {
+            int cx, int cz, float scale, boolean ambiguous, boolean funnyMap, float darkness) {
         boolean hasName = room.data != null;
-        if (ConfigManager.data.dungeonMapShowRoomNames && hasName && room.state != Room.State.UNDISCOVERED && room.state != Room.State.UNOPENED && room.type != Room.Type.ENTRANCE) {
+        if (ConfigManager.data.dungeonMapShowRoomNames && hasName && room.state != Room.State.UNDISCOVERED && room.state != Room.State.UNOPENED) {
             int nameColor = ConfigManager.data.dungeonMapColorNameDiscovered;
             if (room.state == Room.State.GREEN)
-                nameColor = ConfigManager.data.dungeonMapColorNameSecreted;
+                nameColor = ConfigManager.data.dungeonMapColorNameCompleted;
             else if (room.state == Room.State.CLEARED)
                 nameColor = ConfigManager.data.dungeonMapColorNameCleared;
             
@@ -285,12 +298,8 @@ public class DungeonMapHud {
 
         switch (room.state) {
             case GREEN:
-                if (eff != Room.Type.FAIRY)
-                    drawCheckProcedural(g, cx, cz, 0xFF22DD22, 0xFF115511);
                 break;
             case CLEARED:
-                if (eff != Room.Type.FAIRY)
-                    drawCheckProcedural(g, cx, cz, 0xFFFFFFFF, 0xFF888888);
                 break;
             case FAILED:
                 drawXMark(g, mc, cx, cz, 0xFFFF5555);
@@ -299,17 +308,17 @@ public class DungeonMapHud {
                 break;
             case UNDISCOVERED:
                 if (hasName && funnyMap)
-                    drawName(g, mc, cx, cz, room.data.name, 0xFFFFFFFF);
+                    drawName(g, mc, cx, cz, room.data.name, darken(0xFFFFFFFF, darkness));
                 else
-                    drawQuestionMark(g, mc, cx, cz, ConfigManager.data.dungeonMapColorUndiscovered);
+                    drawQuestionMark(g, mc, cx, cz, darken(ConfigManager.data.dungeonMapColorUndiscovered, darkness));
                 break;
             case UNOPENED:
                 if (hasName && funnyMap) {
-                    drawName(g, mc, cx, cz, room.data.name, 0xFFFFFFFF);
+                    drawName(g, mc, cx, cz, room.data.name, darken(0xFFFFFFFF, darkness));
                 } else if (ambiguous) {
-                    drawQuestionMark(g, mc, cx, cz, 0xFFAAAAAA);
+                    drawQuestionMark(g, mc, cx, cz, darken(0xFFAAAAAA, darkness));
                 } else if (room.type != Room.Type.PUZZLE && room.type != Room.Type.TRAP) {
-                    drawQuestionMark(g, mc, cx, cz, 0xFFAAAAAA);
+                    drawQuestionMark(g, mc, cx, cz, darken(0xFFAAAAAA, darkness));
                 }
                 break;
             default:
@@ -352,8 +361,42 @@ public class DungeonMapHud {
     }
 
     private static void drawName(GuiGraphics g, Minecraft mc, int cx, int cz, String name, int color) {
-        int h = mc.font.lineHeight / 2;
-        scaled(g, cx, cz, ConfigManager.data.dungeonMapRoomNameScale, () -> g.drawCenteredString(mc.font, name, 0, -h, color));
+        int fontH = mc.font.lineHeight;
+        float scale = ConfigManager.data.dungeonMapRoomNameScale;
+        
+        String[] words = name.split(" ");
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        int maxWidth = (int)(24 / scale); // Approx room width in font pixels
+        
+        for (String w : words) {
+            if (sb.length() > 0 && mc.font.width(sb.toString() + " " + w) > maxWidth) {
+                lines.add(sb.toString());
+                sb = new StringBuilder(w);
+            } else {
+                if (sb.length() > 0) sb.append(" ");
+                sb.append(w);
+            }
+        }
+        if (sb.length() > 0) lines.add(sb.toString());
+
+        float totalH = lines.size() * fontH * scale;
+        float startY = cz - totalH / 2f;
+
+        for (int i = 0; i < lines.size(); i++) {
+            final String line = lines.get(i);
+            float curY = startY + i * fontH * scale + (fontH * scale / 2f);
+            scaled(g, cx, (int)curY, scale, () -> g.drawCenteredString(mc.font, line, 0, -(fontH / 2), color));
+        }
+    }
+
+    private static void drawResizeIndicator(GuiGraphics g, int x, int y, int size) {
+        int clr = 0x80FFFFFF;
+        int x2 = x + size - 1;
+        int y2 = y + size - 1;
+        g.fill(x2 - 4, y2 - 1, x2, y2, clr);
+        g.fill(x2 - 1, y2 - 4, x2, y2, clr);
+        g.fill(x2 - 3, y2 - 2, x2 - 1, y2 - 1, clr);
     }
 
     private static void scaled(GuiGraphics g, int cx, int cz, float s, Runnable draw) {

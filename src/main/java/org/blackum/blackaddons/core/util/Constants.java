@@ -148,4 +148,7 @@ public final class Constants {
         public static final String PREVIEW_HOVER = "Click to preview image";
         public static final int BUFFER_SIZE = 8192;
         public static final int DEFAULT_GIF_DELAY = 100;
+
+        // Dungeon Map
+        public static final int DUNGEON_ROOM_DETECTION_BUFFER = 2;
 }

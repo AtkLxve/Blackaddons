@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import org.blackum.blackaddons.core.util.Constants;
 import org.blackum.blackaddons.core.util.LocationUtils;
 import org.blackum.blackaddons.core.util.ScoreboardUtils;
 import org.blackum.blackaddons.core.util.TabListUtils;
@@ -150,13 +151,19 @@ public class DungeonScoreboard {
             if (client.player != null) {
                 int px = (int) client.player.getX();
                 int pz = (int) client.player.getZ();
-                int idx = (px + 185) / 32 * 6 + (pz + 185) / 32;
-                
+
+                int ox = Math.floorMod(px + 185, 32);
+                int oz = Math.floorMod(pz + 185, 32);
+                int b = Constants.DUNGEON_ROOM_DETECTION_BUFFER;
+
                 Room detectedRoom = null;
-                if (idx >= 0 && idx < 36) {
-                    Room.Tile tile = DungeonMap.getTileGrid()[idx];
-                    if (tile != null && tile.owner != null) {
-                        detectedRoom = tile.owner;
+                if (ox >= b && ox < 32 - b && oz >= b && oz < 32 - b) {
+                    int idx = (px + 185) / 32 * 6 + (pz + 185) / 32;
+                    if (idx >= 0 && idx < 36) {
+                        Room.Tile tile = DungeonMap.getTileGrid()[idx];
+                        if (tile != null && tile.owner != null) {
+                            detectedRoom = tile.owner;
+                        }
                     }
                 }
 

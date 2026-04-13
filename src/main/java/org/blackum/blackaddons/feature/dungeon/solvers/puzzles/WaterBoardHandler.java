@@ -12,6 +12,7 @@ import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.core.event.DungeonEvent;
 import org.blackum.blackaddons.core.event.PlayerInteractEvent;
 
+import org.blackum.blackaddons.core.util.LocationUtils;
 import org.blackum.blackaddons.core.util.ThreadUtils;
 import org.blackum.blackaddons.feature.dungeon.ScanUtils;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
@@ -96,14 +97,9 @@ public class WaterBoardHandler {
     public static void manualTrigger() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
+        if (!LocationUtils.inDungeons()) return;
 
         BlockPos playerPos = mc.player.blockPosition();
-        int idx = (playerPos.getX() + 185) / 32 * 6 + (playerPos.getZ() + 185) / 32;
-        if (idx < 0 || idx >= 36) return;
-
-        Room.Tile tile = DungeonMap.getTileGrid()[idx];
-        if (tile == null || tile.owner == null || tile.owner.data == null) return;
-        if (!"Water Board".equals(tile.owner.data.name)) return;
 
         // Optimized scan using the gate signature logic you provided
         for (int x = -16; x <= 16; x++) {

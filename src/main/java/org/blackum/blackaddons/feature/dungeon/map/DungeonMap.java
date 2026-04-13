@@ -8,6 +8,10 @@ import org.blackum.blackaddons.core.model.DungeonFloor;
 import org.blackum.blackaddons.core.util.LocationUtils;
 
 import java.util.*;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 
 public class DungeonMap {
@@ -32,6 +36,12 @@ public class DungeonMap {
         if (mc.level == null) return;
 
         int packetMapId = packet.mapId().id();
+        
+        Integer invMapId = findDungeonMapId();
+        if (invMapId != null) {
+            mapId = invMapId;
+        }
+
         if (mapId == null) {
             mapId = packetMapId;
         } else if (mapId != packetMapId) {
@@ -414,5 +424,19 @@ public class DungeonMap {
         if (floor == null || floor == DungeonFloor.ENTRANCE) return 0;
         try { return Integer.parseInt(floor.getDisplayName().substring(1)); }
         catch (NumberFormatException e) { return -1; }
+    }
+    private static Integer findDungeonMapId() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return null;
+        for (int i = 0; i < mc.player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = mc.player.getInventory().getItem(i);
+            if (stack.getItem() instanceof MapItem) {
+                if (stack.has(DataComponents.CUSTOM_NAME) && stack.getHoverName().getString().contains("Dungeon Map")) {
+                    MapId mid = stack.get(DataComponents.MAP_ID);
+                    if (mid != null) return mid.id();
+                }
+            }
+        }
+        return null;
     }
 }

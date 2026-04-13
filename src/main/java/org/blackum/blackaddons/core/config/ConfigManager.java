@@ -469,7 +469,8 @@ public class ConfigManager {
         public float dungeonMapRoomNameScale = 0.7f;
         public int dungeonMapColorNameDiscovered = 0xFFAAAAAA;
         public int dungeonMapColorNameCleared = 0xFFFFFFFF;
-        public int dungeonMapColorNameSecreted = 0xFF55FF55;
+        public int dungeonMapColorNameCompleted = 0xFF55FF55;
+        public float dungeonMapUndiscoveredDarkness = 0.25f;
         public int dungeonMapColorBorder = 0xFF555555;
         public boolean dungeonMapBorderEnabled = true;
 

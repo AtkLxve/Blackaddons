@@ -123,9 +123,12 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         list.addItem(new ToggleSwitch(0, 0, width, "Show Room Names", "Replaces checkmarks with names", 
             ConfigManager.data.dungeonMapShowRoomNames, v -> { ConfigManager.data.dungeonMapShowRoomNames = v; ConfigManager.save(); }));
         
-        list.addItem(new Label(0, 0, "Name Scale: " + String.format("%.1f", ConfigManager.data.dungeonMapRoomNameScale * 100) + "%", Label.Style.BODY));
+        final Label nameScaleLabel = new Label(0, 0, "Name Scale: " + String.format("%.1f", ConfigManager.data.dungeonMapRoomNameScale * 100) + "%", Label.Style.BODY);
+        list.addItem(nameScaleLabel);
         list.addItem(new Slider(0, 0, width, 0.1f, 2.0f, ConfigManager.data.dungeonMapRoomNameScale, v -> {
-            ConfigManager.data.dungeonMapRoomNameScale = v; ConfigManager.save();
+            ConfigManager.data.dungeonMapRoomNameScale = v;
+            nameScaleLabel.setText("Name Scale: " + String.format("%.1f", v * 100) + "%");
+            ConfigManager.save();
         }));
 
         list.addItem(new Label(0, 0, "Name Colors", Label.Style.TITLE));
@@ -134,8 +137,8 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         nameColGrid.addChild(createLabeledPicker("Cleared", ConfigManager.data.dungeonMapColorNameCleared, c -> ConfigManager.data.dungeonMapColorNameCleared = c, 110), 130);
         list.addItem(nameColGrid);
 
-        list.addItem(new Label(0, 0, "Secreted", Label.Style.BODY));
-        list.addItem(new SmallColorPicker(0, 0, ConfigManager.data.dungeonMapColorNameSecreted, c -> { ConfigManager.data.dungeonMapColorNameSecreted = c; ConfigManager.save(); }));
+        list.addItem(new Label(0, 0, "Completed", Label.Style.BODY));
+        list.addItem(new SmallColorPicker(0, 0, ConfigManager.data.dungeonMapColorNameCompleted, c -> { ConfigManager.data.dungeonMapColorNameCompleted = c; ConfigManager.save(); }));
 
         list.addItem(new Label(0, 0, "Background", Label.Style.TITLE));
         GridRow bgColGrid = new GridRow(width, 130);
@@ -143,9 +146,12 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         bgColGrid.addChild(createLabeledPicker("Border", ConfigManager.data.dungeonMapColorBorder, c -> ConfigManager.data.dungeonMapColorBorder = c, 110), 130);
         list.addItem(bgColGrid);
 
-        list.addItem(new Label(0, 0, "Background Opacity: " + (int)(ConfigManager.data.dungeonMapBackgroundOpacity * 100) + "%", Label.Style.BODY));
+        final Label bgOpacityLabel = new Label(0, 0, "Background Opacity: " + (int)(ConfigManager.data.dungeonMapBackgroundOpacity * 100) + "%", Label.Style.BODY);
+        list.addItem(bgOpacityLabel);
         list.addItem(new Slider(0, 0, width, 0f, 1f, ConfigManager.data.dungeonMapBackgroundOpacity, v -> {
-            ConfigManager.data.dungeonMapBackgroundOpacity = v; ConfigManager.save();
+            ConfigManager.data.dungeonMapBackgroundOpacity = v;
+            bgOpacityLabel.setText("Background Opacity: " + (int)(v * 100) + "%");
+            ConfigManager.save();
         }));
         list.addItem(new ToggleSwitch(0, 0, width, "Show Border", "Draws a 1px border around the map", 
             ConfigManager.data.dungeonMapBorderEnabled, v -> { ConfigManager.data.dungeonMapBorderEnabled = v; ConfigManager.save(); }));
@@ -167,10 +173,15 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         roomGrid3.addChild(createLabeledPicker("Trap", ConfigManager.data.dungeonMapColorTrap, c -> ConfigManager.data.dungeonMapColorTrap = c, 110), 130);
         list.addItem(roomGrid3);
 
-        GridRow roomGrid4 = new GridRow(width, 130);
-        roomGrid4.addChild(createLabeledPicker("Champion", ConfigManager.data.dungeonMapColorChampion, c -> ConfigManager.data.dungeonMapColorChampion = c, 110), 0);
-        roomGrid4.addChild(createLabeledPicker("Undiscovered", ConfigManager.data.dungeonMapColorUndiscovered, c -> ConfigManager.data.dungeonMapColorUndiscovered = c, 110), 130);
-        list.addItem(roomGrid4);
+        list.addItem(createLabeledPicker("Champion", ConfigManager.data.dungeonMapColorChampion, c -> ConfigManager.data.dungeonMapColorChampion = c, width));
+        
+        final Label undiscoveredDarknessLabel = new Label(0, 0, "Undiscovered Darkness: " + (int)(ConfigManager.data.dungeonMapUndiscoveredDarkness * 100) + "%", Label.Style.BODY);
+        list.addItem(undiscoveredDarknessLabel);
+        list.addItem(new Slider(0, 0, width, 0f, 1f, ConfigManager.data.dungeonMapUndiscoveredDarkness, v -> {
+            ConfigManager.data.dungeonMapUndiscoveredDarkness = v;
+            undiscoveredDarknessLabel.setText("Undiscovered Darkness: " + (int)(v * 100) + "%");
+            ConfigManager.save();
+        }));
     }
 
     private Widget createLabeledPicker(String label, int color, Consumer<Integer> onChange, int width) {
