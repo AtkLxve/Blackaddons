@@ -47,6 +47,10 @@ public class Dropdown extends Widget {
         this.onExpand = onExpand;
     }
 
+    public void setOnSelect(Consumer<String> onSelect) {
+        this.onSelect = onSelect;
+    }
+
     public void collapse() {
         expanded = false;
     }

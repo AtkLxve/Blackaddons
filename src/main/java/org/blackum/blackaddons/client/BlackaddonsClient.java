@@ -49,6 +49,7 @@ import org.blackum.blackaddons.feature.dungeon.map.RoomData;
 import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
 import org.blackum.blackaddons.gui.screen.BaseScreen;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.DemoScreen;
@@ -76,6 +77,9 @@ public class BlackaddonsClient implements ClientModInitializer {
         WaterBoardHandler.register();
 
         ConfigManager.load();
+        if (ConfigManager.data.customTextEnabled) {
+            CustomFontRenderer.getInstance().init();
+        }
         RoomData.loadRooms();
         DungeonWorldScanner.register();
         DungeonScoreboard.register();

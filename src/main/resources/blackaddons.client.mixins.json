@@ -26,7 +26,6 @@
     "core.ParticleAccessor",
     "gui.ChatComponentMixin",
     "gui.ScreenMixin",
-    "core.FontMixin",
     "gui.GuiMixin",
     "gui.EffectsInInventoryMixin",
     "core.TextColorMixin",
