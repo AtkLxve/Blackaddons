@@ -70,6 +70,11 @@ public class CustomFontRenderer {
     private float cachedBaseline = 0f;
     private float cachedSdfScale = -1f;
 
+    private record PreparedAtlasEntry(int codepoint, int width, int height, int xoff, int yoff,
+                                      float u0, float v0, float u1, float v1, byte[] pixels) {}
+
+    private record PreparedAsciiAtlas(int width, int height, List<PreparedAtlasEntry> entries) {}
+
     public static final class SdfGlyph {
         public final int width;
         public final int height;
@@ -166,6 +171,7 @@ public class CustomFontRenderer {
                 ByteBuffer buffer = loadFontBuffer(onProgress);
                 if (buffer != null) {
                     CustomFontManager newManager = new CustomFontManager(buffer);
+                    PreparedAsciiAtlas atlasData = prepareAsciiAtlas(newManager);
                     Minecraft.getInstance().execute(() -> {
                         manager = newManager;
                         sdfGlyphCache.clear();
@@ -182,7 +188,7 @@ public class CustomFontRenderer {
                         atlasTextureSetup = null;
 
                         initialized = true;
-                        buildAsciiAtlas();
+                        applyPreparedAsciiAtlas(atlasData);
                         loading = false;
                         if (onDone != null) {
                             onDone.run();
@@ -235,9 +241,9 @@ public class CustomFontRenderer {
         }
     }
 
-    private void buildAsciiAtlas() {
-        if (manager == null) {
-            return;
+    private PreparedAsciiAtlas prepareAsciiAtlas(CustomFontManager fontManager) {
+        if (fontManager == null) {
+            return null;
         }
 
         List<AtlasEntry> entries = new ArrayList<>();
@@ -248,7 +254,7 @@ public class CustomFontRenderer {
         int rowHeight = 0;
 
         for (int cp = 32; cp <= 126; cp++) {
-            CustomFontManager.SdfGlyphData sdf = manager.getSdfGlyphData(cp, SDF_SOURCE_SIZE, SDF_PADDING, SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
+            CustomFontManager.SdfGlyphData sdf = fontManager.getSdfGlyphData(cp, SDF_SOURCE_SIZE, SDF_PADDING, SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
             if (sdf == null || sdf.width <= 0 || sdf.height <= 0) {
                 continue;
             }
@@ -267,18 +273,16 @@ public class CustomFontRenderer {
 
         atlasHeight = cursorY + rowHeight + ATLAS_GAP;
         if (entries.isEmpty()) {
-            return;
+            return null;
         }
 
         atlasWidth = nextPow2(Math.max(32, atlasWidth));
         atlasHeight = nextPow2(Math.max(32, atlasHeight));
 
-        atlasTexture = new DynamicTexture("custom_sdf_atlas", atlasWidth, atlasHeight, false);
-        NativeImage pixels = atlasTexture.getPixels();
-
+        List<PreparedAtlasEntry> preparedEntries = new ArrayList<>(entries.size());
         for (AtlasEntry entry : entries) {
-            copySdfBitmap(pixels, entry.sdf.pixels, entry.x, entry.y, entry.sdf.width, entry.sdf.height);
-            sdfGlyphCache.put(entry.codepoint, new SdfGlyph(
+            preparedEntries.add(new PreparedAtlasEntry(
+                    entry.codepoint,
                     entry.sdf.width,
                     entry.sdf.height,
                     entry.sdf.xoff,
@@ -287,6 +291,31 @@ public class CustomFontRenderer {
                     entry.y / (float) atlasHeight,
                     (entry.x + entry.sdf.width) / (float) atlasWidth,
                     (entry.y + entry.sdf.height) / (float) atlasHeight,
+                    entry.sdf.pixels.clone()));
+        }
+
+        return new PreparedAsciiAtlas(atlasWidth, atlasHeight, preparedEntries);
+    }
+
+    private void applyPreparedAsciiAtlas(PreparedAsciiAtlas atlasData) {
+        if (atlasData == null) {
+            return;
+        }
+
+        atlasTexture = new DynamicTexture("custom_sdf_atlas", atlasData.width(), atlasData.height(), false);
+        NativeImage pixels = atlasTexture.getPixels();
+
+        for (PreparedAtlasEntry entry : atlasData.entries()) {
+            copySdfBitmap(pixels, entry.pixels(), (int) (entry.u0() * atlasData.width()), (int) (entry.v0() * atlasData.height()), entry.width(), entry.height());
+            sdfGlyphCache.put(entry.codepoint(), new SdfGlyph(
+                    entry.width(),
+                    entry.height(),
+                    entry.xoff(),
+                    entry.yoff(),
+                    entry.u0(),
+                    entry.v0(),
+                    entry.u1(),
+                    entry.v1(),
                     true));
         }
 

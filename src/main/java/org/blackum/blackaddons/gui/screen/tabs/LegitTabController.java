@@ -537,15 +537,12 @@ public class LegitTabController extends SimpleTabController {
                 val -> { ConfigManager.data.customFontShadow = val; ConfigManager.save(); });
         listView.addItem(shadowToggle);
 
-        listView.addItem(new Label(0, 0, "Shadow Color (AARRGGBB hex):", Label.Style.BODY));
-        TextField shadowColorField = new TextField(0, 0, W, "AARRGGBB");
-        shadowColorField.setText(String.format("%08X", ConfigManager.data.customFontShadowColor));
-        shadowColorField.setMaxLength(8);
-        shadowColorField.setOnValueChange(hex -> {
-            try { ConfigManager.data.customFontShadowColor = (int) Long.parseLong(hex.trim(), 16); ConfigManager.save(); }
-            catch (NumberFormatException ignored) {}
+        listView.addItem(new Label(0, 0, "Shadow Color", Label.Style.BODY));
+        SmallColorPicker shadowColorPicker = new SmallColorPicker(0, 0, ConfigManager.data.customFontShadowColor, color -> {
+            ConfigManager.data.customFontShadowColor = color;
+            ConfigManager.save();
         });
-        listView.addItem(shadowColorField);
+        listView.addItem(shadowColorPicker);
 
         Label shadowDxLabel = new Label(0, 0,
                 "Offset X: " + String.format(Locale.ROOT, "%.1f", ConfigManager.data.customFontShadowOffsetX), Label.Style.BODY);
@@ -580,7 +577,7 @@ public class LegitTabController extends SimpleTabController {
             ConfigManager.data.customFontShadowOffsetY = 0.5f;
             ConfigManager.save();
             shadowToggle.setValue(false);
-            shadowColorField.setText("AA000000");
+            shadowColorPicker.setColor(0xAA000000);
             shadowDxSlider.setValue(0.5f);
             shadowDxLabel.setText("Offset X: 0.5");
             shadowDySlider.setValue(0.5f);
@@ -594,15 +591,12 @@ public class LegitTabController extends SimpleTabController {
                 val -> { ConfigManager.data.customFontOutline = val; ConfigManager.save(); });
         listView.addItem(outlineToggle);
 
-        listView.addItem(new Label(0, 0, "Outline Color (AARRGGBB hex):", Label.Style.BODY));
-        TextField outlineColorField = new TextField(0, 0, W, "AARRGGBB");
-        outlineColorField.setText(String.format("%08X", ConfigManager.data.customFontOutlineColor));
-        outlineColorField.setMaxLength(8);
-        outlineColorField.setOnValueChange(hex -> {
-            try { ConfigManager.data.customFontOutlineColor = (int) Long.parseLong(hex.trim(), 16); ConfigManager.save(); }
-            catch (NumberFormatException ignored) {}
+        listView.addItem(new Label(0, 0, "Outline Color", Label.Style.BODY));
+        SmallColorPicker outlineColorPicker = new SmallColorPicker(0, 0, ConfigManager.data.customFontOutlineColor, color -> {
+            ConfigManager.data.customFontOutlineColor = color;
+            ConfigManager.save();
         });
-        listView.addItem(outlineColorField);
+        listView.addItem(outlineColorPicker);
 
         Label outlineWidthLabel = new Label(0, 0,
                 "Outline Width: " + String.format(Locale.ROOT, "%.1f", ConfigManager.data.customFontOutlineWidth), Label.Style.BODY);
@@ -623,7 +617,7 @@ public class LegitTabController extends SimpleTabController {
             ConfigManager.data.customFontOutlineWidth = 0.5f;
             ConfigManager.save();
             outlineToggle.setValue(false);
-            outlineColorField.setText("FF000000");
+            outlineColorPicker.setColor(0xFF000000);
             outlineWidthSlider.setValue(0.5f);
             outlineWidthLabel.setText("Outline Width: 0.5");
         }));
@@ -809,17 +803,14 @@ public class LegitTabController extends SimpleTabController {
                 "Draws a drop shadow behind each glyph.", ConfigManager.data.customFontShadow,
                 val -> { ConfigManager.data.customFontShadow = val; ConfigManager.save(); }));
         y += 30;
-        legitTab.addWidget(new Label(x, y, "Shadow Color (AARRGGBB hex):", Label.Style.BODY));
+        legitTab.addWidget(new Label(x, y, "Shadow Color", Label.Style.BODY));
         y += 12;
-        TextField shadowColorField = new TextField(x, y, width, "AARRGGBB");
-        shadowColorField.setText(String.format("%08X", ConfigManager.data.customFontShadowColor));
-        shadowColorField.setMaxLength(8);
-        shadowColorField.setOnValueChange(hex -> {
-            try { ConfigManager.data.customFontShadowColor = (int) Long.parseLong(hex.trim(), 16); ConfigManager.save(); }
-            catch (NumberFormatException ignored) {}
+        SmallColorPicker shadowColorPicker = new SmallColorPicker(x, y, ConfigManager.data.customFontShadowColor, color -> {
+            ConfigManager.data.customFontShadowColor = color;
+            ConfigManager.save();
         });
-        legitTab.addWidget(shadowColorField);
-        y += 24;
+        legitTab.addWidget(shadowColorPicker);
+        y += SmallColorPicker.S_HEIGHT + 10;
         Label shadowDxLabel = new Label(x, y,
                 "Offset X: " + String.format(Locale.ROOT, "%.1f", ConfigManager.data.customFontShadowOffsetX), Label.Style.BODY);
         legitTab.addWidget(shadowDxLabel);
@@ -853,17 +844,14 @@ public class LegitTabController extends SimpleTabController {
                 "Draws one larger glyph behind the original as the outline.", ConfigManager.data.customFontOutline,
                 val -> { ConfigManager.data.customFontOutline = val; ConfigManager.save(); }));
         y += 30;
-        legitTab.addWidget(new Label(x, y, "Outline Color (AARRGGBB hex):", Label.Style.BODY));
+        legitTab.addWidget(new Label(x, y, "Outline Color", Label.Style.BODY));
         y += 12;
-        TextField outlineColorField = new TextField(x, y, width, "AARRGGBB");
-        outlineColorField.setText(String.format("%08X", ConfigManager.data.customFontOutlineColor));
-        outlineColorField.setMaxLength(8);
-        outlineColorField.setOnValueChange(hex -> {
-            try { ConfigManager.data.customFontOutlineColor = (int) Long.parseLong(hex.trim(), 16); ConfigManager.save(); }
-            catch (NumberFormatException ignored) {}
+        SmallColorPicker outlineColorPicker = new SmallColorPicker(x, y, ConfigManager.data.customFontOutlineColor, color -> {
+            ConfigManager.data.customFontOutlineColor = color;
+            ConfigManager.save();
         });
-        legitTab.addWidget(outlineColorField);
-        y += 24;
+        legitTab.addWidget(outlineColorPicker);
+        y += SmallColorPicker.S_HEIGHT + 10;
         Label outlineWidthLabel = new Label(x, y,
                 "Outline Width: " + String.format(Locale.ROOT, "%.1f", ConfigManager.data.customFontOutlineWidth), Label.Style.BODY);
         legitTab.addWidget(outlineWidthLabel);
