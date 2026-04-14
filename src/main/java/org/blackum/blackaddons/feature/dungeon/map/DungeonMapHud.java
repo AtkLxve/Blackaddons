@@ -112,7 +112,10 @@ public class DungeonMapHud {
         for (Room room : rooms) {
             if (room.tiles.isEmpty())
                 continue;
-            
+            if (!ConfigManager.data.dungeonMapShowSpecialRooms
+                    && (room.type == Room.Type.PUZZLE || room.type == Room.Type.TRAP))
+                continue;
+
             // Force entrance to be cleared if it was discovered
             if (room.type == Room.Type.ENTRANCE && room.state == Room.State.DISCOVERED) {
                 room.state = Room.State.CLEARED;
@@ -140,6 +143,9 @@ public class DungeonMapHud {
         Minecraft mc = Minecraft.getInstance();
         for (Room room : rooms) {
             if (room.tiles.isEmpty())
+                continue;
+            if (!ConfigManager.data.dungeonMapShowSpecialRooms
+                    && (room.type == Room.Type.PUZZLE || room.type == Room.Type.TRAP))
                 continue;
             Room.Type eff = effectiveType(room, allPuzzlesKnown, trapDiscovered);
 
@@ -191,7 +197,7 @@ public class DungeonMapHud {
                     float relX = (float) mc.player.getX() + 185f;
                     float relZ = (float) mc.player.getZ() + 185f;
 
-                    // Smooth continuous geometrical mapping (removes room snaps/checks)
+                    // Smooth continuous geometrical mapping (reverted to original accurate math)
                     float tx = sc.x + (rs / 2f) + (relX * (rs + 4f) / 32f);
                     float tz = sc.z + (rs / 2f) + (relZ * (rs + 4f) / 32f);
 
@@ -213,7 +219,6 @@ public class DungeonMapHud {
 
         g.disableScissor();
         drawBorder(g, x, y, size);
-        drawResizeIndicator(g, x, y, size);
     }
 
     private static void drawTiles(GuiGraphics g, Room room, Room.Type eff,
@@ -265,8 +270,9 @@ public class DungeonMapHud {
             int x2 = dX + (int) ((gx * cellSize + rs) * scale);
             int z1 = dY + (int) (gz * cellSize * scale);
             int z2 = dY + (int) ((gz * cellSize + rs) * scale);
-            int clr = room.mimic ? 0xFFFF6600
-                    : (unopened || (funnyMap && undiscovered)) ? darken(baseColor(eff), darkness)
+            boolean shouldDarken = unopened || (funnyMap && undiscovered);
+            int clr = room.mimic ? darken(ConfigManager.data.dungeonMapColorMimic, shouldDarken ? darkness : 1.0f)
+                    : shouldDarken ? darken(baseColor(eff), darkness)
                     : baseColor(eff);
 
             g.fill(x1 + 1, z1, x2 - 1, z2, clr);
@@ -298,12 +304,16 @@ public class DungeonMapHud {
 
         switch (room.state) {
             case GREEN:
-                if (eff != Room.Type.FAIRY && eff != Room.Type.ENTRANCE)
-                    drawCheckProcedural(g, cx, cz, 0xFF22DD22, 0xFF115511);
+                if (eff != Room.Type.FAIRY && eff != Room.Type.ENTRANCE) {
+                    int greenColor = ConfigManager.data.dungeonMapColorNameCompleted;
+                    drawCheckProcedural(g, cx, cz, greenColor, darken(greenColor, 0.4f));
+                }
                 break;
             case CLEARED:
-                if (eff != Room.Type.FAIRY && eff != Room.Type.ENTRANCE)
-                    drawCheckProcedural(g, cx, cz, 0xFFFFFFFF, 0xFF888888);
+                if (eff != Room.Type.FAIRY && eff != Room.Type.ENTRANCE) {
+                    int clearedColor = ConfigManager.data.dungeonMapColorNameCleared;
+                    drawCheckProcedural(g, cx, cz, clearedColor, darken(clearedColor, 0.5f));
+                }
                 break;
             case FAILED:
                 drawXMark(g, mc, cx, cz, 0xFFFF5555);
@@ -394,14 +404,6 @@ public class DungeonMapHud {
         }
     }
 
-    private static void drawResizeIndicator(GuiGraphics g, int x, int y, int size) {
-        int clr = 0x80FFFFFF;
-        int x2 = x + size - 1;
-        int y2 = y + size - 1;
-        g.fill(x2 - 4, y2 - 1, x2, y2, clr);
-        g.fill(x2 - 1, y2 - 4, x2, y2, clr);
-        g.fill(x2 - 3, y2 - 2, x2 - 1, y2 - 1, clr);
-    }
 
     private static void scaled(GuiGraphics g, int cx, int cz, float s, Runnable draw) {
         g.pose().pushMatrix();
@@ -670,9 +672,10 @@ public class DungeonMapHud {
     private static void drawBorder(GuiGraphics g, int x, int y, int size) {
         if (!ConfigManager.data.dungeonMapBorderEnabled) return;
         int color = ConfigManager.data.dungeonMapColorBorder;
-        g.fill(x, y, x + size, y + 1, color);
-        g.fill(x, y + size - 1, x + size, y + size, color);
-        g.fill(x, y, x + 1, y + size, color);
-        g.fill(x + size - 1, y, x + size, y + size, color);
+        int t = ConfigManager.data.dungeonMapBorderThickness;
+        g.fill(x, y, x + size, y + t, color);
+        g.fill(x, y + size - t, x + size, y + size, color);
+        g.fill(x, y, x + t, y + size, color);
+        g.fill(x + size - t, y, x + size, y + size, color);
     }
 }

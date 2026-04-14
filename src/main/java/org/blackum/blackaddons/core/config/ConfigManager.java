@@ -462,6 +462,7 @@ public class ConfigManager {
         public int dungeonMapColorPuzzle = 0xFF9B39C8;
         public int dungeonMapColorTrap = 0xFFA97442;
         public int dungeonMapColorChampion = 0xFFFFD400;
+        public int dungeonMapColorMimic = 0xFFFF6600;
         public int dungeonMapColorUndiscovered = 0xFF555555;
         public int dungeonMapBackgroundColor = 0x111111;
         public float dungeonMapBackgroundOpacity = 0.75f;
@@ -473,6 +474,8 @@ public class ConfigManager {
         public float dungeonMapUndiscoveredDarkness = 0.25f;
         public int dungeonMapColorBorder = 0xFF555555;
         public boolean dungeonMapBorderEnabled = true;
+        public int dungeonMapBorderThickness = 1;
+        public boolean dungeonMapShowSpecialRooms = true;
 
         // Water Board Solver
         public boolean waterBoardSolverEnabled = true;
@@ -530,6 +533,24 @@ public class ConfigManager {
     }
 
     private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
+    public static void resetDungeonMapColors() {
+        ConfigData defaults = new ConfigData();
+        data.dungeonMapColorNormal = defaults.dungeonMapColorNormal;
+        data.dungeonMapColorEntrance = defaults.dungeonMapColorEntrance;
+        data.dungeonMapColorBlood = defaults.dungeonMapColorBlood;
+        data.dungeonMapColorFairy = defaults.dungeonMapColorFairy;
+        data.dungeonMapColorPuzzle = defaults.dungeonMapColorPuzzle;
+        data.dungeonMapColorTrap = defaults.dungeonMapColorTrap;
+        data.dungeonMapColorChampion = defaults.dungeonMapColorChampion;
+        data.dungeonMapColorMimic = defaults.dungeonMapColorMimic;
+        data.dungeonMapColorUndiscovered = defaults.dungeonMapColorUndiscovered;
+        data.dungeonMapBackgroundColor = defaults.dungeonMapBackgroundColor;
+        data.dungeonMapColorBorder = defaults.dungeonMapColorBorder;
+        data.dungeonMapColorNameDiscovered = defaults.dungeonMapColorNameDiscovered;
+        data.dungeonMapColorNameCleared = defaults.dungeonMapColorNameCleared;
+        data.dungeonMapColorNameCompleted = defaults.dungeonMapColorNameCompleted;
+    }
+
     public static ConfigData data = new ConfigData();
 
     public static void save() {

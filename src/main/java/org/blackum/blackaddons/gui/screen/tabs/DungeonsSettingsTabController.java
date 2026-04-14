@@ -4,6 +4,7 @@ import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.gui.screen.DungeonMapPositionScreen;
 import org.blackum.blackaddons.gui.screen.WaterBoardPositionScreen;
 import org.blackum.blackaddons.gui.widget.*;
@@ -120,8 +121,11 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         }));
 
         list.addItem(new Label(0, 0, "Room Style", Label.Style.TITLE));
-        list.addItem(new ToggleSwitch(0, 0, width, "Show Room Names", "Replaces checkmarks with names", 
+        list.addItem(new ToggleSwitch(0, 0, width, "Show Room Names", "Replaces checkmarks with names",
             ConfigManager.data.dungeonMapShowRoomNames, v -> { ConfigManager.data.dungeonMapShowRoomNames = v; ConfigManager.save(); }));
+
+        list.addItem(new ToggleSwitch(0, 0, width, "Show Special Rooms", "Shows Puzzle and Trap rooms on the map",
+            ConfigManager.data.dungeonMapShowSpecialRooms, v -> { ConfigManager.data.dungeonMapShowSpecialRooms = v; ConfigManager.save(); }));
         
         final Label nameScaleLabel = new Label(0, 0, "Name Scale: " + String.format("%.1f", ConfigManager.data.dungeonMapRoomNameScale * 100) + "%", Label.Style.BODY);
         list.addItem(nameScaleLabel);
@@ -153,10 +157,23 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             bgOpacityLabel.setText("Background Opacity: " + (int)(v * 100) + "%");
             ConfigManager.save();
         }));
-        list.addItem(new ToggleSwitch(0, 0, width, "Show Border", "Draws a 1px border around the map", 
+        list.addItem(new ToggleSwitch(0, 0, width, "Show Border", "Draws a border around the map",
             ConfigManager.data.dungeonMapBorderEnabled, v -> { ConfigManager.data.dungeonMapBorderEnabled = v; ConfigManager.save(); }));
 
+        final Label borderThicknessLabel = new Label(0, 0, "Border Thickness: " + ConfigManager.data.dungeonMapBorderThickness + "px", Label.Style.BODY);
+        list.addItem(borderThicknessLabel);
+        list.addItem(new Slider(0, 0, width, 1f, 5f, ConfigManager.data.dungeonMapBorderThickness, v -> {
+            ConfigManager.data.dungeonMapBorderThickness = v.intValue();
+            borderThicknessLabel.setText("Border Thickness: " + v.intValue() + "px");
+            ConfigManager.save();
+        }));
+
         list.addItem(new Label(0, 0, "Room Colors", Label.Style.TITLE));
+        list.addItem(new Button(0, 0, width, 20, "Reset Map Colors", () -> {
+            ConfigManager.resetDungeonMapColors();
+            ConfigManager.save();
+            Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(null));
+        }));
         
         GridRow roomGrid1 = new GridRow(width, 130);
         roomGrid1.addChild(createLabeledPicker("Normal", ConfigManager.data.dungeonMapColorNormal, c -> ConfigManager.data.dungeonMapColorNormal = c, 110), 0);
@@ -174,12 +191,13 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         list.addItem(roomGrid3);
 
         list.addItem(createLabeledPicker("Champion", ConfigManager.data.dungeonMapColorChampion, c -> ConfigManager.data.dungeonMapColorChampion = c, width));
+        list.addItem(createLabeledPicker("Mimic", ConfigManager.data.dungeonMapColorMimic, c -> ConfigManager.data.dungeonMapColorMimic = c, width));
         
-        final Label undiscoveredDarknessLabel = new Label(0, 0, "Undiscovered Darkness: " + (int)(ConfigManager.data.dungeonMapUndiscoveredDarkness * 100) + "%", Label.Style.BODY);
-        list.addItem(undiscoveredDarknessLabel);
+        final Label darknessLabel = new Label(0, 0, "Darkness: " + (int)(ConfigManager.data.dungeonMapUndiscoveredDarkness * 100) + "%", Label.Style.BODY);
+        list.addItem(darknessLabel);
         list.addItem(new Slider(0, 0, width, 0f, 1f, ConfigManager.data.dungeonMapUndiscoveredDarkness, v -> {
             ConfigManager.data.dungeonMapUndiscoveredDarkness = v;
-            undiscoveredDarknessLabel.setText("Undiscovered Darkness: " + (int)(v * 100) + "%");
+            darknessLabel.setText("Darkness: " + (int)(v * 100) + "%");
             ConfigManager.save();
         }));
     }

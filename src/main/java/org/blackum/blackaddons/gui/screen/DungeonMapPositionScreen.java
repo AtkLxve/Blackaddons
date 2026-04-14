@@ -11,9 +11,12 @@ public class DungeonMapPositionScreen extends Screen {
     private static final int BORDER_COLOR = 0xFF4A5568;
     private static final int BG_COLOR = 0xC0111827;
     private static final int HINT_COLOR = 0xFFAAAAAA;
+    private static final int RESIZE_HANDLE_SIZE = 8;
+    private static final int RESIZE_HANDLE_COLOR = 0xC0FFFFFF;
 
     private final Screen parent;
     private boolean dragging;
+    private boolean resizing;
     private double dragOffsetX;
     private double dragOffsetY;
     private int mapX;
@@ -41,7 +44,7 @@ public class DungeonMapPositionScreen extends Screen {
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         g.fill(0, 0, this.width, this.height, 0x80000000);
         g.drawCenteredString(font, "Drag the dungeon map to reposition it.", this.width / 2, this.height / 2, HINT_COLOR);
-        g.drawCenteredString(font, "Press Esc to save.", this.width / 2, this.height / 2 + 12, HINT_COLOR);
+        g.drawCenteredString(font, "Drag the corner handle or scroll to resize. Press Esc to save.", this.width / 2, this.height / 2 + 12, HINT_COLOR);
 
         g.fill(mapX, mapY, mapX + mapSize, mapY + mapSize, BG_COLOR);
         g.fill(mapX, mapY, mapX + mapSize, mapY + 1, BORDER_COLOR);
@@ -51,6 +54,10 @@ public class DungeonMapPositionScreen extends Screen {
 
         g.drawCenteredString(font, "Dungeon Map", mapX + mapSize / 2, mapY + mapSize / 2 - 4, 0xFF888888);
         g.drawCenteredString(font, "(Preview)", mapX + mapSize / 2, mapY + mapSize / 2 + 6, 0xFF666666);
+
+        int hx = mapX + mapSize - RESIZE_HANDLE_SIZE;
+        int hy = mapY + mapSize - RESIZE_HANDLE_SIZE;
+        g.fill(hx, hy, mapX + mapSize, mapY + mapSize, RESIZE_HANDLE_COLOR);
     }
 
     private double getScaledMouseX() {
@@ -63,6 +70,12 @@ public class DungeonMapPositionScreen extends Screen {
         return mc.mouseHandler.ypos() * ((double) this.height / mc.getWindow().getScreenHeight());
     }
 
+    private boolean isOverResizeHandle(double mx, double my) {
+        int hx = mapX + mapSize - RESIZE_HANDLE_SIZE;
+        int hy = mapY + mapSize - RESIZE_HANDLE_SIZE;
+        return mx >= hx && mx <= mapX + mapSize && my >= hy && my <= mapY + mapSize;
+    }
+
     private boolean isOverMap(double mx, double my) {
         return mx >= mapX && mx <= mapX + mapSize && my >= mapY && my <= mapY + mapSize;
     }
@@ -72,7 +85,10 @@ public class DungeonMapPositionScreen extends Screen {
         double mx = getScaledMouseX();
         double my = getScaledMouseY();
         if (event.button() == 0) {
-            if (isOverMap(mx, my)) {
+            if (isOverResizeHandle(mx, my)) {
+                resizing = true;
+                return true;
+            } else if (isOverMap(mx, my)) {
                 dragging = true;
                 dragOffsetX = mx - mapX;
                 dragOffsetY = my - mapY;
@@ -85,11 +101,18 @@ public class DungeonMapPositionScreen extends Screen {
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         dragging = false;
+        resizing = false;
         return super.mouseReleased(event);
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (resizing) {
+            double mx = getScaledMouseX();
+            double my = getScaledMouseY();
+            mapSize = (int) Math.max(32, Math.min(400, Math.max(mx - mapX, my - mapY)));
+            return true;
+        }
         if (dragging) {
             double mx = getScaledMouseX();
             double my = getScaledMouseY();
