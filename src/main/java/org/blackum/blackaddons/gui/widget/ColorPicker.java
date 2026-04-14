@@ -13,15 +13,15 @@ public class ColorPicker extends Widget {
     public static final int WIDTH = 180;
     public static final int HEIGHT = 210;
 
-    private float hull = 0f;
-    private float saturation = 1f;
-    private float brightness = 1f;
-    private float alpha = 1f;
-    private Consumer<Integer> onColorChange;
+    protected float hull = 0f;
+    protected float saturation = 1f;
+    protected float brightness = 1f;
+    protected float alpha = 1f;
+    protected Consumer<Integer> onColorChange;
 
-    private boolean draggingHue = false;
-    private boolean draggingSB = false;
-    private boolean draggingAlpha = false;
+    protected boolean draggingHue = false;
+    protected boolean draggingSB = false;
+    protected boolean draggingAlpha = false;
 
     private int gridX;
     private TextField rgbaField;
@@ -59,9 +59,8 @@ public class ColorPicker extends Widget {
         updateCenteredX();
     }
 
-    private void updateCenteredX() {
+    protected void updateCenteredX() {
         this.x = gridX;
-        this.width = WIDTH;
     }
 
     private void updateFields() {
@@ -125,7 +124,7 @@ public class ColorPicker extends Widget {
         renderValues(graphics, mouseX, mouseY, partialTick, innerX, currentY, sbWidth);
     }
 
-    private void renderSBArea(GuiGraphics graphics, int x, int y, int width, int height) {
+    protected void renderSBArea(GuiGraphics graphics, int x, int y, int width, int height) {
         int baseColor = ColorUtils.hsvToRgb(hull, 1f, 1f);
         graphics.fill(x, y, x + width, y + height, baseColor | 0xFF000000);
 
@@ -153,7 +152,7 @@ public class ColorPicker extends Widget {
         graphics.renderOutline(cursorX - 4, cursorY - 4, 8, 8, Theme.TEXT_PRIMARY);
     }
 
-    private void renderHueSlider(GuiGraphics graphics, int x, int y, int width, int height) {
+    protected void renderHueSlider(GuiGraphics graphics, int x, int y, int width, int height) {
         for (int i = 0; i < width; i++) {
             float h = (float) i / width;
             int color = ColorUtils.hsvToRgb(h, 1f, 1f);
@@ -164,7 +163,7 @@ public class ColorPicker extends Widget {
         graphics.fill(selectorX - 2, y - 2, selectorX + 2, y + height + 2, Theme.TEXT_PRIMARY);
     }
 
-    private void renderAlphaSlider(GuiGraphics graphics, int x, int y, int width, int height) {
+    protected void renderAlphaSlider(GuiGraphics graphics, int x, int y, int width, int height) {
         int baseColor = ColorUtils.hsvToRgb(hull, saturation, brightness) & 0xFFFFFF;
 
         graphics.fill(x, y, x + width, y + height, Theme.SURFACE_LIGHT);
@@ -315,7 +314,7 @@ public class ColorPicker extends Widget {
         notifyChange();
     }
 
-    private void notifyChange() {
+    protected void notifyChange() {
         if (onColorChange != null) {
             int color = ColorUtils.hsvToRgb(hull, saturation, brightness);
             int packedColor = ((int) (alpha * 255) << 24) | (color & 0xFFFFFF);

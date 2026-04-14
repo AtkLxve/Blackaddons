@@ -43,6 +43,10 @@ public class WaterBoardSolver {
     private static BlockPos roomCenter = null;
     private static long lastInteractTime = -1L;
 
+    public BlockPos getRoomCenter() {
+        return roomCenter;
+    }
+
     private static void loadSolutions(int patternId) {
         Type type = new TypeToken<Map<String, Map<String, Map<String, Map<String, List<Double>>>>>>() {
         }.getType();

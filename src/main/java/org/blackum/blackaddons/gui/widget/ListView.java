@@ -204,8 +204,10 @@ public class ListView extends Widget {
         }
 
         if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
-            scroll((int) (-scrollY * 20));
-            return true;
+            if (maxScroll > 0) {
+                scroll((int) (-scrollY * 20));
+                return true;
+            }
         }
         return false;
     }

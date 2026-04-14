@@ -19,7 +19,6 @@ import java.util.List;
 public class LegitTabController extends SimpleTabController {
     private ResizableCard visualsCard;
     private ResizableCard debuggersCard;
-    private ResizableCard dungeonMapCard;
 
     public LegitTabController(BlackAddonsGUI screen) {
         super(screen);
@@ -33,7 +32,7 @@ public class LegitTabController extends SimpleTabController {
 
         if (ConfigManager.data.useCardLayout) {
             Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-                screen.resetCardStates("legit_visuals", "legit_debuggers", "legit_dungeon_map");
+                screen.resetCardStates("legit_visuals", "legit_debuggers");
             });
             legitTab.addWidget(resetLayout);
 
@@ -52,8 +51,6 @@ public class LegitTabController extends SimpleTabController {
             cards.add(visualsCard);
             debuggersCard = createDebuggersCard(0, 0);
             cards.add(debuggersCard);
-            dungeonMapCard = createDungeonMapCard(0, 0);
-            cards.add(dungeonMapCard);
 
             for (ResizableCard card : cards) {
                 int shortestCol = 0;
@@ -68,7 +65,6 @@ public class LegitTabController extends SimpleTabController {
 
             legitCardContainer.addCard(visualsCard);
             legitCardContainer.addCard(debuggersCard);
-            legitCardContainer.addCard(dungeonMapCard);
             return;
         }
 
@@ -110,27 +106,9 @@ public class LegitTabController extends SimpleTabController {
                 });
         legitTab.addWidget(disableNearbyParticlesToggle);
 
-        legitTab.addWidget(new Label(contentX, contentY + 150, "Dungeon Map", Label.Style.TITLE));
+        legitTab.addWidget(new Label(contentX, contentY + 150, "Debuggers", Label.Style.TITLE));
 
-        ToggleSwitch dungeonMapToggle = new ToggleSwitch(contentX, contentY + 180, contentWidth - 20,
-                "Enable Dungeon Map",
-                "Shows a dungeon minimap overlay",
-                ConfigManager.data.dungeonMapEnabled, value -> {
-                    ConfigManager.data.dungeonMapEnabled = value;
-                    ConfigManager.save();
-                });
-        legitTab.addWidget(dungeonMapToggle);
-
-        Button mapPositionButton = new Button(contentX, contentY + 210, contentWidth - 20, 20, "Set Map Position", () -> {
-            if (Blackaddons.screenOpener != null) {
-                Blackaddons.screenOpener.accept(new DungeonMapPositionScreen(screen));
-            }
-        });
-        legitTab.addWidget(mapPositionButton);
-
-        legitTab.addWidget(new Label(contentX, contentY + 250, "Debuggers", Label.Style.TITLE));
-
-        int debugY = contentY + 280;
+        int debugY = contentY + 180;
         addDebuggerWidgets(legitTab, contentX, debugY, contentWidth - 20);
     }
 
@@ -192,40 +170,6 @@ public class LegitTabController extends SimpleTabController {
         return debuggersCard;
     }
 
-    private ResizableCard createDungeonMapCard(int x, int y) {
-        dungeonMapCard = screen.createResizableCard("legit_dungeon_map", x, y, 300, 90, "Dungeon Map");
-        int contentX = dungeonMapCard.getContentX();
-        int contentY = dungeonMapCard.getContentY();
-
-        ToggleSwitch enableToggle = new ToggleSwitch(contentX, contentY, 260,
-                "Enable Dungeon Map",
-                "Shows a dungeon minimap overlay",
-                ConfigManager.data.dungeonMapEnabled, value -> {
-                    ConfigManager.data.dungeonMapEnabled = value;
-                    ConfigManager.save();
-                });
-        dungeonMapCard.addChild(enableToggle);
-
-        ToggleSwitch funnyMapToggle = new ToggleSwitch(contentX, contentY + 30, 260,
-                "Funny Map",
-                "Reveals all scanned rooms regardless of discovery state",
-                ConfigManager.data.dungeonFunnyMap, value -> {
-                    ConfigManager.data.dungeonFunnyMap = value;
-                    ConfigManager.save();
-                });
-        dungeonMapCard.addChild(funnyMapToggle);
-
-        Button positionButton = new Button(contentX, contentY + 60, 260, 20, "Set Map Position", () -> {
-            if (Blackaddons.screenOpener != null) {
-                Blackaddons.screenOpener.accept(new DungeonMapPositionScreen(screen));
-            }
-        });
-        dungeonMapCard.addChild(positionButton);
-
-        dungeonMapCard.updateLayout();
-        return dungeonMapCard;
-    }
-
     private void addDebuggerWidgets(TabPanel.Tab legitTab, int x, int startY, int width) {
         int y = startY;
 
@@ -268,15 +212,6 @@ public class LegitTabController extends SimpleTabController {
         legitTab.addWidget(autoSSPositionButton);
         y += 30;
 
-        ToggleSwitch fastLeapDebugToggle = new ToggleSwitch(x, y, width,
-                "FastLeap Debug",
-                "Shows FastLeap debug messages in chat",
-                ConfigManager.data.FastLeapDebug, value -> {
-                    ConfigManager.data.FastLeapDebug = value;
-                    ConfigManager.save();
-                });
-        legitTab.addWidget(fastLeapDebugToggle);
-        y += 30;
 
         ToggleSwitch rotationDebugToggle = new ToggleSwitch(x, y, width,
                 "Rotation Debugger",
@@ -366,14 +301,6 @@ public class LegitTabController extends SimpleTabController {
             }
         }));
 
-
-        listView.addItem(new ToggleSwitch(0, 0, 260,
-                "FastLeap Debug",
-                "Shows FastLeap debug messages in chat",
-                ConfigManager.data.FastLeapDebug, value -> {
-                    ConfigManager.data.FastLeapDebug = value;
-                    ConfigManager.save();
-                }));
 
         listView.addItem(new ToggleSwitch(0, 0, 260,
                 "Rotation Debugger",
