@@ -49,6 +49,26 @@ public class BlackaddonsRenderPipelines {
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .build());
 
+    public static final RenderPipeline VECTOR_TEXT = add(RenderPipeline.builder()
+            //? if < 1.21.11 {
+            /*.withLocation(ResourceLocation.fromNamespaceAndPath("blackaddons", "vector_text"))*/
+            /*.withVertexShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/vector_text"))*/
+            /*.withFragmentShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/vector_text"))*/
+            //?}
+            //? if >= 1.21.11 {
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "vector_text"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/vector_text"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/vector_text"))
+            //?}
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withSampler("Sampler0")
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
+            .withCull(false)
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .build());
+
     private static RenderPipeline add(RenderPipeline pipeline) {
         PIPELINES.add(pipeline);
         return pipeline;

@@ -517,6 +517,10 @@ public class ConfigManager {
         public float  customFontItalicSlant = 0.25f;
         public String customFontGoogleName = "";
 
+        // Vector Text
+        public boolean vectorTextEnabled = false;
+        public float vectorTextScale = 12.5f;
+
         // Dungeon Score Calculator
         public boolean enableDungeonScoreTracker = true;
         public boolean enableDungeonScoreAnnouncements = true;

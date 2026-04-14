@@ -11,18 +11,19 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GlyphRenderState;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.blackum.blackaddons.core.util.McCompat;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.jspecify.annotations.Nullable;
+//? if < 1.21.11 {
+/*import net.minecraft.client.renderer.RenderType;*/
+//?} else
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -34,8 +35,8 @@ public class VectorFontRenderer {
     private static VectorFontRenderer instance;
     private final Map<Integer, VectorFontManager.GlyphData> glyphCache = new HashMap<>();
     private final Map<Integer, DynamicTexture> textureCache = new HashMap<>();
-    private final Map<Integer, Identifier> identifierCache = new HashMap<>();
-    private final Map<Identifier, RenderType> layerCache = new HashMap<>();
+    private final Map<Integer, Object> identifierCache = new HashMap<>();
+    private final Map<Object, RenderType> layerCache = new HashMap<>();
     private boolean initialized = false;
 
     private float getScale() {
@@ -50,11 +51,10 @@ public class VectorFontRenderer {
     public void init() {
         if (initialized) return;
         try {
-            Identifier location = Identifier.fromNamespaceAndPath("blackaddons", "font/vector_font.ttf");
             Optional<net.minecraft.server.packs.resources.Resource> resource =
-                    Minecraft.getInstance().getResourceManager().getResource(location);
+                    McCompat.findResource(Minecraft.getInstance().getResourceManager(), "blackaddons", "font/vector_font.ttf");
             if (resource.isEmpty()) {
-                org.blackum.blackaddons.Blackaddons.LOGGER.error("[VectorFont] Font not found at {}", location);
+                org.blackum.blackaddons.Blackaddons.LOGGER.error("[VectorFont] Font not found at blackaddons:font/vector_font.ttf");
                 return;
             }
             try (InputStream is = resource.get().open()) {
@@ -78,7 +78,7 @@ public class VectorFontRenderer {
     }
 
     public void drawStringGui(Matrix3x2fc pose, FormattedCharSequence text, float x, float y,
-                              int baseColor, @Nullable ScreenRectangle scissor, GuiRenderState renderState,
+                              int baseColor, ScreenRectangle scissor, GuiRenderState renderState,
                               Font font) {
         if (!initialized) init();
         if (!initialized) return;
@@ -101,12 +101,24 @@ public class VectorFontRenderer {
                 curX[0] += getAdvance(cp);
             } else {
                 FormattedCharSequence singleChar = sink -> sink.accept(0, style, cp);
+                //? if < 1.21.11 {
+                /*font.prepareText(singleChar, curX[0], y, argb, false, 0)*/
+                //?} else
                 font.prepareText(singleChar, curX[0], y, argb, false, false, 0)
                         .visit(new Font.GlyphVisitor() {
+                            //? if < 1.21.11 {
+                            /*@Override
+                            public void acceptEffect(TextRenderable effect) {
+                            }*/
+                            //?}
+
                             @Override
+                            //? if < 1.21.11 {
+                            /*public void acceptGlyph(TextRenderable styled) {*/
+                            //?} else
                             public void acceptGlyph(TextRenderable.Styled styled) {
                                 renderState.submitGlyphToCurrentLayer(
-                                        new GlyphRenderState(pose, styled, scissor));
+                                        new GlyphRenderState(new Matrix3x2f(pose), styled, scissor));
                             }
                         });
                 curX[0] += font.width(singleChar);
@@ -116,7 +128,7 @@ public class VectorFontRenderer {
     }
 
     public void drawStringGui(Matrix3x2fc pose, String text, float x, float y,
-                              int color, @Nullable ScreenRectangle scissor, GuiRenderState renderState) {
+                              int color, ScreenRectangle scissor, GuiRenderState renderState) {
         if (!initialized) init();
         if (!initialized) return;
         float curX = x;
@@ -129,12 +141,15 @@ public class VectorFontRenderer {
     }
 
     private void renderGlyphGui(Matrix3x2fc pose, int codepoint, float x, float y,
-                                int color, @Nullable ScreenRectangle scissor, GuiRenderState renderState) {
+                                int color, ScreenRectangle scissor, GuiRenderState renderState) {
         VectorFontManager.GlyphData glyph = glyphCache.computeIfAbsent(codepoint,
                 cp -> VectorFontManager.getInstance().getGlyphData(cp));
         if (glyph == null || glyph.curves.isEmpty()) return;
 
         DynamicTexture texture = textureCache.computeIfAbsent(codepoint, cp -> createCurveTexture(glyph));
+        //? if < 1.21.11 {
+        /*TextureSetup textureSetup = TextureSetup.singleTexture(texture.getTextureView());*/
+        //?} else
         TextureSetup textureSetup = TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler());
 
         float scale = getScale();
@@ -201,8 +216,8 @@ public class VectorFontRenderer {
         if (glyph == null || glyph.curves.isEmpty()) return;
 
         DynamicTexture texture = textureCache.computeIfAbsent(codepoint, cp -> createCurveTexture(glyph));
-        Identifier curveTextureId = identifierCache.computeIfAbsent(codepoint, cp ->
-                (Identifier) McCompat.registerTexture(texture, "blackaddons", "vector_curves/" + codepoint));
+        Object curveTextureId = identifierCache.computeIfAbsent(codepoint, cp ->
+                McCompat.registerTexture(texture, "blackaddons", "vector_curves/" + codepoint));
         RenderType layer = getLayer(curveTextureId);
 
         VertexConsumer buffer = bufferSource.getBuffer(layer);
@@ -230,17 +245,15 @@ public class VectorFontRenderer {
 
     public RenderType getLayer(int codepoint, VectorFontManager.GlyphData glyph) {
         DynamicTexture texture = getTexture(codepoint, glyph);
-        Identifier curveTextureId = identifierCache.computeIfAbsent(codepoint, cp ->
-                (Identifier) McCompat.registerTexture(texture, "blackaddons", "vector_curves/" + codepoint));
+        Object curveTextureId = identifierCache.computeIfAbsent(codepoint, cp ->
+                McCompat.registerTexture(texture, "blackaddons", "vector_curves/" + codepoint));
         return getLayer(curveTextureId);
     }
 
-    private RenderType getLayer(Identifier curveTexture) {
+    private RenderType getLayer(Object curveTexture) {
         return layerCache.computeIfAbsent(curveTexture, loc ->
-                (RenderType) McCompat.createRenderType("vector_text_" + loc.getPath().hashCode(),
-                        RenderSetup.builder(BlackaddonsRenderPipelines.VECTOR_TEXT)
-                                .withTexture("Sampler0", loc)
-                                .createRenderSetup()));
+                (RenderType) McCompat.createTextRenderType("vector_text_" + loc.toString().hashCode(),
+                        BlackaddonsRenderPipelines.VECTOR_TEXT, loc));
     }
 
     private DynamicTexture createCurveTexture(VectorFontManager.GlyphData glyph) {

@@ -7,13 +7,16 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Style;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
 import org.blackum.blackaddons.core.config.ConfigManager;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+//? if < 1.21.11 {
+/*import net.minecraft.client.renderer.RenderType;*/
+//?} else
+import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class VectorBakedGlyph implements BakedGlyph {
     private final int codepoint;
@@ -36,12 +39,26 @@ public class VectorBakedGlyph implements BakedGlyph {
         };
     }
 
+    //? if < 1.21.11 {
+    /*@Override
+    public TextRenderable createGlyph(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset) {
+        return new VectorTextRenderable(codepoint, glyphData, x, y, color, shadowColor, style, boldOffset, shadowOffset);
+    }*/
+    //?}
+
+    //? if >= 1.21.11 {
     @Override
     public TextRenderable.Styled createGlyph(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset) {
         return new VectorTextRenderable(codepoint, glyphData, x, y, color, shadowColor, style, boldOffset, shadowOffset);
     }
+    //?}
 
+    //? if < 1.21.11 {
+    /*public static class VectorTextRenderable implements TextRenderable {*/
+    //?}
+    //? if >= 1.21.11 {
     public static class VectorTextRenderable implements TextRenderable.Styled {
+    //?}
         private final int codepoint;
         private final VectorFontManager.GlyphData glyphData;
         private final float x, y;
@@ -67,10 +84,12 @@ public class VectorBakedGlyph implements BakedGlyph {
             this.shadowOffset = shadowOffset;
         }
 
+        //? if >= 1.21.11 {
         @Override
         public Style style() {
             return this.style;
         }
+        //?}
 
         private float getScale() {
             float size = ConfigManager.data.vectorTextScale;
