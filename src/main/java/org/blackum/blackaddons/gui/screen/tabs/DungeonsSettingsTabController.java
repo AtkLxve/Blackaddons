@@ -124,9 +124,6 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         list.addItem(new ToggleSwitch(0, 0, width, "Show Room Names", "Replaces checkmarks with names",
             ConfigManager.data.dungeonMapShowRoomNames, v -> { ConfigManager.data.dungeonMapShowRoomNames = v; ConfigManager.save(); }));
 
-        list.addItem(new ToggleSwitch(0, 0, width, "Show Special Rooms", "Shows Puzzle and Trap rooms on the map",
-            ConfigManager.data.dungeonMapShowSpecialRooms, v -> { ConfigManager.data.dungeonMapShowSpecialRooms = v; ConfigManager.save(); }));
-        
         final Label nameScaleLabel = new Label(0, 0, "Name Scale: " + String.format("%.1f", ConfigManager.data.dungeonMapRoomNameScale * 100) + "%", Label.Style.BODY);
         list.addItem(nameScaleLabel);
         list.addItem(new Slider(0, 0, width, 0.1f, 2.0f, ConfigManager.data.dungeonMapRoomNameScale, v -> {

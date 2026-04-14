@@ -112,9 +112,7 @@ public class DungeonMapHud {
         for (Room room : rooms) {
             if (room.tiles.isEmpty())
                 continue;
-            if (!ConfigManager.data.dungeonMapShowSpecialRooms
-                    && (room.type == Room.Type.PUZZLE || room.type == Room.Type.TRAP))
-                continue;
+
 
             // Force entrance to be cleared if it was discovered
             if (room.type == Room.Type.ENTRANCE && room.state == Room.State.DISCOVERED) {
@@ -144,9 +142,7 @@ public class DungeonMapHud {
         for (Room room : rooms) {
             if (room.tiles.isEmpty())
                 continue;
-            if (!ConfigManager.data.dungeonMapShowSpecialRooms
-                    && (room.type == Room.Type.PUZZLE || room.type == Room.Type.TRAP))
-                continue;
+
             Room.Type eff = effectiveType(room, allPuzzlesKnown, trapDiscovered);
 
             boolean undiscovered = room.state == Room.State.UNDISCOVERED;

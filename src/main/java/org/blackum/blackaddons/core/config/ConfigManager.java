@@ -475,7 +475,6 @@ public class ConfigManager {
         public int dungeonMapColorBorder = 0xFF555555;
         public boolean dungeonMapBorderEnabled = true;
         public int dungeonMapBorderThickness = 1;
-        public boolean dungeonMapShowSpecialRooms = true;
 
         // Water Board Solver
         public boolean waterBoardSolverEnabled = true;
