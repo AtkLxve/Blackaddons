@@ -8,6 +8,10 @@ import org.blackum.blackaddons.core.model.DungeonFloor;
 import org.blackum.blackaddons.core.util.LocationUtils;
 
 import java.util.*;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 
 public class DungeonMap {
@@ -23,6 +27,7 @@ public class DungeonMap {
     private static final List<Door> doors   = new ArrayList<>();
     private static final Room.Tile[] tileGrid = new Room.Tile[36];
     private static Room bloodRoom = null;
+    private static Room localRoom = null;
 
     public static void onMapPacket(ClientboundMapItemDataPacket packet) {
         if (!LocationUtils.inDungeons()) return;
@@ -31,6 +36,12 @@ public class DungeonMap {
         if (mc.level == null) return;
 
         int packetMapId = packet.mapId().id();
+        
+        Integer invMapId = findDungeonMapId();
+        if (invMapId != null) {
+            mapId = invMapId;
+        }
+
         if (mapId == null) {
             mapId = packetMapId;
         } else if (mapId != packetMapId) {
@@ -376,6 +387,7 @@ public class DungeonMap {
 
     public static void reset() {
         mapId = null; startCoords = null; mapCenter = null; mapSize = null; roomSize = null; bloodRoom = null;
+        localRoom = null;
         rooms.clear(); doors.clear();
         Arrays.fill(tileGrid, null);
         Blackaddons.LOGGER.info("[DungeonMap] Reset.");
@@ -389,10 +401,42 @@ public class DungeonMap {
     public static Vec2i       getMapSize()    { return mapSize;     }
     public static Integer     getRoomSize()   { return roomSize;    }
     public static Vec2i       getStartCoords(){ return startCoords; }
+    public static Room        getLocalRoom()  { return localRoom;   }
+
+    public static void updateLocalRoom(Room room) {
+        if (room == null || room == localRoom) return;
+        localRoom = room;
+
+        if (room.state == Room.State.UNDISCOVERED || room.state == Room.State.UNOPENED) {
+            room.state = Room.State.DISCOVERED;
+        }
+
+        for (Door door : room.doors) {
+            for (Room r : door.rooms) {
+                if (r != room && r.state == Room.State.UNDISCOVERED) {
+                    r.state = Room.State.UNOPENED;
+                }
+            }
+        }
+    }
 
     private static int getFloorNumber(DungeonFloor floor) {
         if (floor == null || floor == DungeonFloor.ENTRANCE) return 0;
         try { return Integer.parseInt(floor.getDisplayName().substring(1)); }
         catch (NumberFormatException e) { return -1; }
+    }
+    private static Integer findDungeonMapId() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return null;
+        for (int i = 0; i < mc.player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = mc.player.getInventory().getItem(i);
+            if (stack.getItem() instanceof MapItem) {
+                if (stack.has(DataComponents.CUSTOM_NAME) && stack.getHoverName().getString().contains("Dungeon Map")) {
+                    MapId mid = stack.get(DataComponents.MAP_ID);
+                    if (mid != null) return mid.id();
+                }
+            }
+        }
+        return null;
     }
 }

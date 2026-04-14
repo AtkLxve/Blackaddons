@@ -18,7 +18,7 @@ public class Room {
 
     public enum Shape {
         UNKNOWN("Unknown", 0),
-        SL("L",   3),
+        SL("L", 3),
         S1x1("1x1", 1),
         S2x1("1x2", 2),
         S3x1("1x3", 3),
@@ -35,22 +35,25 @@ public class Room {
 
         public static Shape fromStr(String str) {
             for (Shape s : values()) {
-                if (s.str.equals(str)) return s;
+                if (s.str.equals(str))
+                    return s;
             }
             return UNKNOWN;
         }
     }
 
     public enum Rotation {
-        NORTH(new Vec2i(15,  15)),
+        NORTH(new Vec2i(15, 15)),
         SOUTH(new Vec2i(-15, -15)),
-        WEST (new Vec2i(15,  -15)),
-        EAST (new Vec2i(-15, 15)),
-        NONE (new Vec2i(0,   0));
+        WEST(new Vec2i(15, -15)),
+        EAST(new Vec2i(-15, 15)),
+        NONE(new Vec2i(0, 0));
 
         public final Vec2i pos;
 
-        Rotation(Vec2i pos) { this.pos = pos; }
+        Rotation(Vec2i pos) {
+            this.pos = pos;
+        }
     }
 
     public static class Tile {
@@ -64,8 +67,7 @@ public class Room {
             int cellSize = roomSize + 4;
             this.placement = new Vec2i(
                     ((pos.x + 185) >> 5) * cellSize,
-                    ((pos.z + 185) >> 5) * cellSize
-            );
+                    ((pos.z + 185) >> 5) * cellSize);
         }
 
         public int listIndex() {
@@ -130,7 +132,9 @@ public class Room {
         State newState;
 
         switch (color) {
-            case 0:  newState = State.UNDISCOVERED; break;
+            case 0:
+                newState = State.UNDISCOVERED;
+                break;
             case 18:
                 if (type == Type.BLOOD) {
                     DungeonMap.setBloodRoom(this);
@@ -141,15 +145,21 @@ public class Room {
                     newState = state;
                 }
                 break;
-            case 30: newState = (type == Type.ENTRANCE) ? State.DISCOVERED : State.GREEN; break;
-            case 34: newState = State.CLEARED; break;
+            case 30:
+                newState = (type == Type.ENTRANCE) ? State.DISCOVERED : State.GREEN;
+                break;
+            case 34:
+                newState = State.CLEARED;
+                break;
             case 85:
             case 119:
                 this.entryTile = placement;
                 this.specialTile = (placement.x == DungeonMap.getSpecialColumn());
                 newState = State.UNOPENED;
                 break;
-            default: newState = State.DISCOVERED; break;
+            default:
+                newState = State.DISCOVERED;
+                break;
         }
 
         this.state = newState;
@@ -157,21 +167,35 @@ public class Room {
     }
 
     public BlockPos offset(BlockPos rel) {
-        if (clayPos == null) return null;
+        if (clayPos == null)
+            return null;
         int rx = rel.getX(), ry = rel.getY(), rz = rel.getZ();
         int rotX, rotZ;
         switch (rotation) {
-            case NORTH: rotX = -rx; rotZ = -rz; break;
-            case WEST:  rotX = -rz; rotZ =  rx; break;
-            case EAST:  rotX =  rz; rotZ = -rx; break;
-            default:    rotX =  rx; rotZ =  rz; break;
+            case NORTH:
+                rotX = -rx;
+                rotZ = -rz;
+                break;
+            case WEST:
+                rotX = -rz;
+                rotZ = rx;
+                break;
+            case EAST:
+                rotX = rz;
+                rotZ = -rx;
+                break;
+            default:
+                rotX = rx;
+                rotZ = rz;
+                break;
         }
         return new BlockPos(clayPos[0] + rotX, ry, clayPos[2] + rotZ);
     }
 
     public Tile roomTile(Vec2i pos, int roomSize) {
         for (Tile t : tiles) {
-            if (t.pos.equals(pos)) return null;
+            if (t.pos.equals(pos))
+                return null;
         }
         Tile tile = new Tile(this, pos, roomSize);
         tiles.add(tile);
@@ -185,7 +209,10 @@ public class Room {
         int minScore = Integer.MAX_VALUE;
         for (Tile t : tiles) {
             int score = t.pos.x * 1000 + t.pos.z;
-            if (score < minScore) { minScore = score; min = t; }
+            if (score < minScore) {
+                minScore = score;
+                min = t;
+            }
         }
         return min != null ? min.placement : new Vec2i(0, 0);
     }
@@ -195,7 +222,10 @@ public class Room {
         int maxScore = Integer.MIN_VALUE;
         for (Tile t : tiles) {
             int score = t.pos.x * 1000 + t.pos.z;
-            if (score > maxScore) { maxScore = score; max = t; }
+            if (score > maxScore) {
+                maxScore = score;
+                max = t;
+            }
         }
         return max != null ? max.placement : new Vec2i(0, 0);
     }

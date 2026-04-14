@@ -29,7 +29,6 @@ import org.blackum.blackaddons.feature.chat.IrcPrefixManager;
 import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoSS;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
-import org.blackum.blackaddons.feature.cheat.FastLeap;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.cheat.Perspective;
 import org.blackum.blackaddons.feature.cheat.RelicLook;
@@ -65,7 +64,6 @@ public class BlackaddonsClient implements ClientModInitializer {
         Blackaddons.LOGGER.info("Initializing client...");
         IrcPrefixManager.getPrefix(); 
         AutoTNT.register();
-        FastLeap.register();
         RelicLook.register();
         AutoSS.register();
         AutoBM.register();
@@ -93,6 +91,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonMap.reset();
             DungeonWorldScanner.reset();
             DungeonScoreboard.reset();
+            WaterBoardSolver.reset();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -100,6 +99,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonMap.reset();
             DungeonWorldScanner.reset();
             DungeonScoreboard.reset();
+            WaterBoardSolver.reset();
         });
 
         Blackaddons.guiOpener = () -> {
@@ -143,12 +143,6 @@ public class BlackaddonsClient implements ClientModInitializer {
                     context.consumers(),
                     mc.gameRenderer.getMainCamera().position(),
                     LocationUtils.getDebugBoxes()
-            );
-            DebugBoxRenderer.render(
-                    context.matrices().last().pose(),
-                    context.consumers(),
-                    mc.gameRenderer.getMainCamera().position(),
-                    FastLeap.getDebugBoxes()
             );
         });
 

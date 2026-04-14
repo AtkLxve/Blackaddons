@@ -16,12 +16,10 @@ import java.util.Locale;
 public class CheatsTabController extends SimpleTabController {
     private ResizableCard autoTntCard;
     private ResizableCard autoSSCard;
-    private ResizableCard fastLeapCard;
     private ResizableCard rotationCard;
     private ResizableCard autoBMCard;
     private ResizableCard freecamCard;
     private ResizableCard perspectiveCard;
-    private Dropdown s1Dropdown;
     private Dropdown s2Dropdown;
     private Dropdown s3Dropdown;
     private Dropdown s4Dropdown;
@@ -118,7 +116,7 @@ public class CheatsTabController extends SimpleTabController {
         }
 
         Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("autoTnt", "autoSS", "fastLeap", "rotationSet", "autoBM", "freecam", "perspective");
+            screen.resetCardStates("autoTnt", "autoSS", "rotationSet", "autoBM", "freecam", "perspective");
         });
         cheatsTab.addWidget(resetLayout);
 
@@ -134,13 +132,12 @@ public class CheatsTabController extends SimpleTabController {
 
         autoTntCard = createAutoTntCard(0, 0);
         autoSSCard = createAutoSSCard(0, 0);
-        fastLeapCard = createFastLeapCard(0, 0);
         rotationCard = createRotationCard(0, 0);
         autoBMCard = createAutoBM(0, 0);
         freecamCard = createFreecamCard(0, 0);
         perspectiveCard = createPerspectiveCard(0, 0);
 
-        List<ResizableCard> cards = List.of(autoTntCard, autoSSCard, fastLeapCard, rotationCard, autoBMCard, freecamCard, perspectiveCard);
+        List<ResizableCard> cards = List.of(autoTntCard, autoSSCard, rotationCard, autoBMCard, freecamCard, perspectiveCard);
         for (ResizableCard card : cards) {
             int shortestCol = 0;
             for (int i = 1; i < numCols; i++) {
@@ -154,7 +151,6 @@ public class CheatsTabController extends SimpleTabController {
 
         cheatsCardContainer.addCard(autoTntCard);
         cheatsCardContainer.addCard(autoSSCard);
-        cheatsCardContainer.addCard(fastLeapCard);
         cheatsCardContainer.addCard(rotationCard);
         cheatsCardContainer.addCard(autoBMCard);
         cheatsCardContainer.addCard(freecamCard);
@@ -368,87 +364,7 @@ public class CheatsTabController extends SimpleTabController {
         return autoSSCard;
     }
 
-    private ResizableCard createFastLeapCard(int x, int y) {
-        fastLeapCard = screen.createResizableCard("fastLeap", x, y, 300, 310, "⚠ FastLeap [WIP] (S1 is currently bugged)");
-
-        int contentX = fastLeapCard.getContentX();
-        int contentY = fastLeapCard.getContentY();
-
-        ListView listView = new ListView(contentX, contentY, 260, 260);
-
-        List<String> classOptions = List.of("NONE", "HEALER", "MAGE", "BERSERK", "ARCHER", "TANK");
-
-        ToggleSwitch enableToggle = new ToggleSwitch(0, 0, 260,
-                "⚠ Enable FastLeap [WIP]",
-                "Automatically leaps to players or classes (S1 is currently bugged)",
-                ConfigManager.data.FastLeapEnabled, value -> {
-                    ConfigManager.data.FastLeapEnabled = value;
-                    ConfigManager.save();
-                });
-        listView.addItem(enableToggle);
-
-        ToggleSwitch doorOpenerToggle = new ToggleSwitch(0, 0, 260,
-                "Door Opener",
-                "Leap to the player who opens wither doors",
-                ConfigManager.data.FastLeapDoorOpener, value -> {
-                    ConfigManager.data.FastLeapDoorOpener = value;
-                    ConfigManager.save();
-                });
-        listView.addItem(doorOpenerToggle);
-
-        ToggleSwitch positionalToggle = new ToggleSwitch(0, 0, 260,
-                "Positional",
-                "Leap to a class based on your S-room position",
-                ConfigManager.data.FastLeapPositional, value -> {
-                    ConfigManager.data.FastLeapPositional = value;
-                    ConfigManager.save();
-                });
-        listView.addItem(positionalToggle);
-
-
-        listView.addItem(new Label(0, 0, "S2 Class", Label.Style.BODY));
-        s2Dropdown = new Dropdown(0, 0, 260, "S2 Class", classOptions, value -> {
-            ConfigManager.data.FastLeapS2Class = value;
-            ConfigManager.save();
-        });
-        s2Dropdown.setSelectedOption(ConfigManager.data.FastLeapS2Class);
-        s2Dropdown.setOnExpand(() -> collapseOtherDropdowns(s2Dropdown));
-        listView.addItem(s2Dropdown);
-
-        listView.addItem(new Label(0, 0, "S3 Class", Label.Style.BODY));
-        s3Dropdown = new Dropdown(0, 0, 260, "S3 Class", classOptions, value -> {
-            ConfigManager.data.FastLeapS3Class = value;
-            ConfigManager.save();
-        });
-        s3Dropdown.setSelectedOption(ConfigManager.data.FastLeapS3Class);
-        s3Dropdown.setOnExpand(() -> collapseOtherDropdowns(s3Dropdown));
-        listView.addItem(s3Dropdown);
-
-        listView.addItem(new Label(0, 0, "S4 Class", Label.Style.BODY));
-        s4Dropdown = new Dropdown(0, 0, 260, "S4 Class", classOptions, value -> {
-            ConfigManager.data.FastLeapS4Class = value;
-            ConfigManager.save();
-        });
-        s4Dropdown.setSelectedOption(ConfigManager.data.FastLeapS4Class);
-        s4Dropdown.setOnExpand(() -> collapseOtherDropdowns(s4Dropdown));
-        listView.addItem(s4Dropdown);
-
-        ToggleSwitch debugToggle = new ToggleSwitch(0, 0, 260,
-                "Debug Mode",
-                "Shows FastLeap debug messages in chat",
-                ConfigManager.data.FastLeapDebug, value -> {
-                    ConfigManager.data.FastLeapDebug = value;
-                    ConfigManager.save();
-                });
-        listView.addItem(debugToggle);
-
-        fastLeapCard.addChild(listView);
-        fastLeapCard.updateLayout();
-        return fastLeapCard;
-    }
-
     private void collapseOtherDropdowns(Dropdown active) {
-        if (s1Dropdown != null && s1Dropdown != active) s1Dropdown.collapse();
         if (s2Dropdown != null && s2Dropdown != active) s2Dropdown.collapse();
         if (s3Dropdown != null && s3Dropdown != active) s3Dropdown.collapse();
         if (s4Dropdown != null && s4Dropdown != active) s4Dropdown.collapse();

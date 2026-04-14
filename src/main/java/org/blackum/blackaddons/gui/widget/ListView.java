@@ -234,9 +234,11 @@ public class ListView extends Widget {
             }
         }
 
-        if (super.isMouseOver(mouseX, mouseY)) {
-            scroll((int) (-scrollY * 20));
-            return true;
+        if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+            if (maxScroll > 0) {
+                scroll((int) (-scrollY * 20));
+                return true;
+            }
         }
         return false;
     }

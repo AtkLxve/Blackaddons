@@ -418,15 +418,8 @@ public class ConfigManager {
         public int AutoSSOverlayX = -1;
         public int AutoSSOverlayY = 5;
 
-        public boolean FastLeapEnabled = false;
         public boolean RelicLookEnabled = false;
         public boolean RelicLookDebug = false;
-        public boolean FastLeapDoorOpener = false;
-        public boolean FastLeapPositional = false;
-        public boolean FastLeapDebug = false;
-        public String FastLeapS2Class = "NONE";
-        public String FastLeapS3Class = "NONE";
-        public String FastLeapS4Class = "NONE";
 
         public boolean showRotationDebug = false;
         public int rotationOverlayX = -1;
@@ -462,6 +455,26 @@ public class ConfigManager {
         public int dungeonMapX = 10;
         public int dungeonMapY = 10;
         public int dungeonMapSize = 128;
+        public int dungeonMapColorNormal = 0xFF794600;
+        public int dungeonMapColorEntrance = 0xFF20C020;
+        public int dungeonMapColorBlood = 0xFFCC2020;
+        public int dungeonMapColorFairy = 0xFFDD44DD;
+        public int dungeonMapColorPuzzle = 0xFF9B39C8;
+        public int dungeonMapColorTrap = 0xFFA97442;
+        public int dungeonMapColorChampion = 0xFFFFD400;
+        public int dungeonMapColorMimic = 0xFFFF6600;
+        public int dungeonMapColorUndiscovered = 0xFF555555;
+        public int dungeonMapBackgroundColor = 0x111111;
+        public float dungeonMapBackgroundOpacity = 0.75f;
+        public boolean dungeonMapShowRoomNames = false;
+        public float dungeonMapRoomNameScale = 0.7f;
+        public int dungeonMapColorNameDiscovered = 0xFFAAAAAA;
+        public int dungeonMapColorNameCleared = 0xFFFFFFFF;
+        public int dungeonMapColorNameCompleted = 0xFF55FF55;
+        public float dungeonMapUndiscoveredDarkness = 0.25f;
+        public int dungeonMapColorBorder = 0xFF555555;
+        public boolean dungeonMapBorderEnabled = true;
+        public int dungeonMapBorderThickness = 1;
 
         // Water Board Solver
         public boolean waterBoardSolverEnabled = true;
@@ -538,6 +551,24 @@ public class ConfigManager {
     }
 
     private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
+    public static void resetDungeonMapColors() {
+        ConfigData defaults = new ConfigData();
+        data.dungeonMapColorNormal = defaults.dungeonMapColorNormal;
+        data.dungeonMapColorEntrance = defaults.dungeonMapColorEntrance;
+        data.dungeonMapColorBlood = defaults.dungeonMapColorBlood;
+        data.dungeonMapColorFairy = defaults.dungeonMapColorFairy;
+        data.dungeonMapColorPuzzle = defaults.dungeonMapColorPuzzle;
+        data.dungeonMapColorTrap = defaults.dungeonMapColorTrap;
+        data.dungeonMapColorChampion = defaults.dungeonMapColorChampion;
+        data.dungeonMapColorMimic = defaults.dungeonMapColorMimic;
+        data.dungeonMapColorUndiscovered = defaults.dungeonMapColorUndiscovered;
+        data.dungeonMapBackgroundColor = defaults.dungeonMapBackgroundColor;
+        data.dungeonMapColorBorder = defaults.dungeonMapColorBorder;
+        data.dungeonMapColorNameDiscovered = defaults.dungeonMapColorNameDiscovered;
+        data.dungeonMapColorNameCleared = defaults.dungeonMapColorNameCleared;
+        data.dungeonMapColorNameCompleted = defaults.dungeonMapColorNameCompleted;
+    }
+
     public static ConfigData data = new ConfigData();
 
     public static void save() {
