@@ -498,6 +498,29 @@ public class ConfigManager {
         public boolean chatVisualFiltersEnabled = false;
         public boolean actionTriggersEnabled = true;
 
+        // Custom Text
+        public boolean customTextEnabled = true;
+        public float customTextScale = 12.5f;
+        public boolean customTextGuiOnly = true;
+        public boolean customFontAntiAliasing = true;
+        public float  customFontAntiAliasingWidth = 0.5f;
+        public boolean customFontShadow = false;
+        public int    customFontShadowColor = 0xAA000000;
+        public float  customFontShadowOffsetX = 0.5f;
+        public float  customFontShadowOffsetY = 0.5f;
+        public boolean customFontOutline = false;
+        public int    customFontOutlineColor = 0xFF000000;
+        public float  customFontOutlineWidth = 0.5f;
+        public boolean customFontBold = false;
+        public float  customFontBoldStrength = 0.5f;
+        public boolean customFontItalic = false;
+        public float  customFontItalicSlant = 0.25f;
+        public String customFontGoogleName = "";
+
+        // Vector Text
+        public boolean vectorTextEnabled = false;
+        public float vectorTextScale = 12.5f;
+
         // Dungeon Score Calculator
         public boolean enableDungeonScoreTracker = true;
         public boolean enableDungeonScoreAnnouncements = true;

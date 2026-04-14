@@ -1,0 +1,96 @@
+package org.blackum.blackaddons.client.render;
+
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.shaders.UniformType;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.Resource;
+import org.apache.commons.io.IOUtils;
+import com.mojang.blaze3d.shaders.ShaderType;
+import org.blackum.blackaddons.core.util.McCompat;
+//? if < 1.21.11 {
+/*import net.minecraft.resources.ResourceLocation;*/
+//?} else
+import net.minecraft.resources.Identifier;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BlackaddonsRenderPipelines {
+
+    private static final List<RenderPipeline> PIPELINES = new ArrayList<>();
+
+    public static final RenderPipeline CUSTOM_TEXT = add(RenderPipeline.builder()
+            //? if < 1.21.11 {
+            /*.withLocation(ResourceLocation.fromNamespaceAndPath("blackaddons", "custom_text"))*/
+            /*.withVertexShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/custom_text"))*/
+            /*.withFragmentShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/custom_text"))*/
+            //?}
+            //? if >= 1.21.11 {
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            //?}
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withSampler("Sampler0")
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
+            .withCull(false)
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .build());
+
+    public static final RenderPipeline VECTOR_TEXT = add(RenderPipeline.builder()
+            //? if < 1.21.11 {
+            /*.withLocation(ResourceLocation.fromNamespaceAndPath("blackaddons", "vector_text"))*/
+            /*.withVertexShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/vector_text"))*/
+            /*.withFragmentShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/vector_text"))*/
+            //?}
+            //? if >= 1.21.11 {
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "vector_text"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/vector_text"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/vector_text"))
+            //?}
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withSampler("Sampler0")
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
+            .withCull(false)
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .build());
+
+    private static RenderPipeline add(RenderPipeline pipeline) {
+        PIPELINES.add(pipeline);
+        return pipeline;
+    }
+
+    public static void precompile() {
+        GpuDevice device = RenderSystem.getDevice();
+        ResourceManager resources = Minecraft.getInstance().getResourceManager();
+
+        for (RenderPipeline pipeline : PIPELINES) {
+            device.precompilePipeline(pipeline, (location, shaderType) -> {
+                String extension = shaderType == ShaderType.VERTEX ? ".vsh" : ".fsh";
+                String shaderPath = "shaders/" + location.getPath() + extension;
+                Resource resource = McCompat.findResource(resources, location.getNamespace(), shaderPath)
+                        .orElseThrow(() -> new RuntimeException("Could not find shader: " + location.getNamespace() + ":" + shaderPath));
+
+                try (var inputStream = resource.open()) {
+                    return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to load shader: " + location.getNamespace() + ":" + shaderPath, e);
+                }
+            });
+        }
+    }
+}

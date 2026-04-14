@@ -28,6 +28,7 @@ public class TextField extends Widget {
     private Predicate<Character> charFilter = c -> true;
 
     private Consumer<String> onValueChange;
+    private Consumer<String> onSubmit;
     private long debounceDelay = 0;
     private long lastChangeTime = 0;
     private boolean pendingChange = false;
@@ -265,6 +266,14 @@ public class TextField extends Widget {
         // End
         if (keyCode == 269) {
             moveCursorToEnd(isShiftPressed);
+            return true;
+        }
+
+        if (keyCode == 257 || keyCode == 335) {
+            if (onSubmit != null) {
+                onSubmit.accept(text);
+            }
+            setFocused(false);
             return true;
         }
 
@@ -549,6 +558,10 @@ public class TextField extends Widget {
 
     public void setOnValueChange(Consumer<String> onValueChange) {
         this.onValueChange = onValueChange;
+    }
+
+    public void setOnSubmit(Consumer<String> onSubmit) {
+        this.onSubmit = onSubmit;
     }
 
     public void setDebounceDelay(long debounceDelay) {

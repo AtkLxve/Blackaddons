@@ -16,7 +16,19 @@ public class ListView extends Widget {
     private int scrollbarWidth = 4;
 
     private boolean isItemWithinViewport(Widget item) {
-        return item.isVisible() && item.getY() + item.getHeight() > y && item.getY() < y + height;
+        return item.isVisible() && item.getY() + item.getHeight() > y - 2 && item.getY() < y + height + 2;
+    }
+
+    private void syncItemCoordinates() {
+        int currentY = y - scrollOffset;
+        for (Widget item : items) {
+            if (item.isVisible()) {
+                item.setX(x);
+                item.setY(currentY);
+                item.setWidth(width - scrollbarWidth - 12);
+                currentY += item.getHeight() + itemSpacing;
+            }
+        }
     }
 
     public ListView(int x, int y, int width, int height) {
@@ -90,15 +102,14 @@ public class ListView extends Widget {
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        if (!super.isMouseOver(mouseX, mouseY)) {
-            return false;
-        }
-        for (Widget item : items) {
-            if (isItemWithinViewport(item) && item.isMouseOver(mouseX, mouseY)) {
-                return true;
+        if (hasActiveOverlay()) {
+            for (Widget item : items) {
+                if (item.isVisible() && item.hasActiveOverlay() && item.isMouseOver(mouseX, mouseY)) {
+                    return true;
+                }
             }
         }
-        return true;
+        return super.isMouseOver(mouseX, mouseY);
     }
 
     @Override
@@ -143,7 +154,18 @@ public class ListView extends Widget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!enabled || !visible || !isMouseOver(mouseX, mouseY))
+        if (!enabled || !visible)
+            return false;
+        syncItemCoordinates();
+        for (Widget item : items) {
+            if (item.isVisible() && item.hasActiveOverlay()) {
+                if (item.mouseClicked(mouseX, mouseY, button)) {
+                    return true;
+                }
+            }
+        }
+
+        if (!super.isMouseOver(mouseX, mouseY))
             return false;
 
         if (isMouseOverScrollbar(mouseX, mouseY)) {
@@ -167,9 +189,12 @@ public class ListView extends Widget {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         draggingScrollbar = false;
 
+        syncItemCoordinates();
         for (Widget item : items) {
-            if (isItemWithinViewport(item) && item.mouseReleased(mouseX, mouseY, button)) {
-                return true;
+            if (isItemWithinViewport(item) || item.hasActiveOverlay()) {
+                if (item.mouseReleased(mouseX, mouseY, button)) {
+                    return true;
+                }
             }
         }
 
@@ -183,9 +208,12 @@ public class ListView extends Widget {
             return true;
         }
 
+        syncItemCoordinates();
         for (Widget item : items) {
-            if (isItemWithinViewport(item) && item.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
-                return true;
+            if (isItemWithinViewport(item) || item.hasActiveOverlay()) {
+                if (item.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+                    return true;
+                }
             }
         }
 
@@ -197,9 +225,12 @@ public class ListView extends Widget {
         if (!visible)
             return false;
 
+        syncItemCoordinates();
         for (Widget item : items) {
-            if (isItemWithinViewport(item) && item.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
-                return true;
+            if (isItemWithinViewport(item) || item.hasActiveOverlay()) {
+                if (item.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) {
+                    return true;
+                }
             }
         }
 

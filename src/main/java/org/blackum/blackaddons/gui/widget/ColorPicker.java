@@ -91,6 +91,16 @@ public class ColorPicker extends Widget {
         }
     }
 
+    public void setColor(int color) {
+        float[] hsb = ColorUtils.toHSB(color);
+        this.hull = hsb[0];
+        this.saturation = hsb[1];
+        this.brightness = hsb[2];
+        this.alpha = ((color >> 24) & 0xFF) / 255f;
+        updateFields();
+        notifyChange();
+    }
+
     @Override
     public void tick() {
         rgbaField.tick();
