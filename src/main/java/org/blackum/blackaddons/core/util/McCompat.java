@@ -83,7 +83,7 @@ public final class McCompat {
             Class<?> type = findClass(className);
             if (type == null) continue;
             for (Class<?> paramType : paramTypes) {
-                for (String methodName : new String[] { "create", "method_24045" }) {
+                for (String methodName : new String[] { "create", "method_24045", "method_24048", "method_75940" }) {
                     try {
                         Method create = type.getDeclaredMethod(methodName, String.class, paramType);
                         create.setAccessible(true);
@@ -97,36 +97,121 @@ public final class McCompat {
     }
 
     public static Object createTextRenderType(String name, Object pipeline, Object location) {
-        Class<?> renderSetupClass = findClass("net.minecraft.client.renderer.rendertype.RenderSetup");
+        Class<?> renderSetupClass = null;
+        for (String cn : new String[] {
+                "net.minecraft.client.renderer.rendertype.RenderSetup",
+                "net.minecraft.class_12247"
+        }) {
+            renderSetupClass = findClass(cn);
+            if (renderSetupClass != null) break;
+        }
         if (renderSetupClass != null) {
             try {
-                Object builder = invokeStaticBest(renderSetupClass, new String[] { "builder" }, pipeline);
-                Object textured = invokeBest(builder, new String[] { "withTexture" }, "Sampler0", location);
-                Object renderSetup = invokeBest(textured, new String[] { "createRenderSetup" });
+                Object builder = invokeDeclaredStaticBest(renderSetupClass,
+                        new String[] { "builder", "method_75927" }, pipeline);
+                Object textured = invokeDeclaredBest(builder,
+                        new String[] { "withTexture", "method_75934" }, "Sampler0", location);
+                Object renderSetup = invokeDeclaredBest(textured,
+                        new String[] { "createRenderSetup", "method_75938" });
                 return createRenderType(name, renderSetup);
             } catch (IllegalStateException ignored) {
             }
         }
 
-        Class<?> renderTypeClass = findClass("net.minecraft.client.renderer.RenderType");
-        Class<?> compositeStateClass = findClass("net.minecraft.client.renderer.RenderType$CompositeState");
-        Class<?> textureStateClass = findClass("net.minecraft.client.renderer.RenderStateShard$TextureStateShard");
+        Class<?> renderTypeClass = null;
+        for (String cn : RENDER_TYPE_CLASSES) {
+            renderTypeClass = findClass(cn);
+            if (renderTypeClass != null) break;
+        }
+
+        Class<?> compositeStateClass = null;
+        for (String cn : new String[] {
+                "net.minecraft.client.renderer.RenderType$CompositeState",
+                "net.minecraft.class_1921$class_4688"
+        }) {
+            compositeStateClass = findClass(cn);
+            if (compositeStateClass != null) break;
+        }
+
+        Class<?> textureStateClass = null;
+        for (String cn : new String[] {
+                "net.minecraft.client.renderer.RenderStateShard$TextureStateShard",
+                "net.minecraft.class_4668$class_4683"
+        }) {
+            textureStateClass = findClass(cn);
+            if (textureStateClass != null) break;
+        }
+
         if (renderTypeClass == null || compositeStateClass == null || textureStateClass == null) {
             throw new IllegalStateException("Unable to resolve RenderType internals for text rendering");
         }
 
         try {
-            Object compositeBuilder = invokeStaticBest(compositeStateClass, new String[] { "builder" });
-            java.lang.reflect.Constructor<?> textureStateCtor = textureStateClass.getDeclaredConstructor(location.getClass(), boolean.class);
+            Object compositeBuilder = invokeDeclaredStaticBest(compositeStateClass,
+                    new String[] { "builder", "method_23598" });
+            java.lang.reflect.Constructor<?> textureStateCtor = null;
+            for (java.lang.reflect.Constructor<?> ctor : textureStateClass.getDeclaredConstructors()) {
+                Class<?>[] params = ctor.getParameterTypes();
+                if (params.length == 2 && params[1] == boolean.class) {
+                    textureStateCtor = ctor;
+                    break;
+                }
+            }
+            if (textureStateCtor == null) {
+                throw new IllegalStateException("Unable to find TextureStateShard constructor");
+            }
             textureStateCtor.setAccessible(true);
             Object textureState = textureStateCtor.newInstance(location, true);
-            Object texturedBuilder = invokeBest(compositeBuilder, new String[] { "setTextureState" }, textureState);
-            Object compositeState = invokeBest(texturedBuilder, new String[] { "createCompositeState" }, false);
-            try {
-                return invokeStaticBest(renderTypeClass, new String[] { "create", "method_24045" }, name, 1536, pipeline, compositeState);
-            } catch (IllegalStateException ignored) {
-                return invokeStaticBest(renderTypeClass, new String[] { "create", "method_24045" }, name, 1536, false, true, pipeline, compositeState);
+            Object texturedBuilder = invokeDeclaredBest(compositeBuilder,
+                    new String[] { "setTextureState", "method_34577" }, textureState);
+
+            Object compositeState = null;
+            for (String cn : new String[] {
+                    "net.minecraft.client.renderer.RenderType$OutlineProperty",
+                    "net.minecraft.class_1921$class_4750"
+            }) {
+                Class<?> outlinePropClass = findClass(cn);
+                if (outlinePropClass != null) {
+                    try {
+                        Object none = outlinePropClass.getEnumConstants()[0];
+                        compositeState = invokeDeclaredBest(texturedBuilder,
+                                new String[] { "createCompositeState", "method_24297" }, none);
+                        break;
+                    } catch (IllegalStateException ignored) {
+                    }
+                }
             }
+            if (compositeState == null) {
+                compositeState = invokeDeclaredBest(texturedBuilder,
+                        new String[] { "createCompositeState", "method_24297" }, false);
+            }
+
+            // RenderType.create is private — must use getDeclaredMethods + setAccessible
+            // method_24045 is pre-1.21.10, method_24048 (4 args) / method_24049 (6 args) is 1.21.10+
+            String[] createNames = { "create", "method_24045", "method_24048", "method_24049" };
+            Object[][] argSets = {
+                    { name, 1536, pipeline, compositeState },
+                    { name, 1536, false, true, pipeline, compositeState }
+            };
+            for (Object[] args : argSets) {
+                for (Method method : renderTypeClass.getDeclaredMethods()) {
+                    if (!matchesName(method, createNames) || method.getParameterCount() != args.length) continue;
+                    Class<?>[] paramTypes = method.getParameterTypes();
+                    boolean matches = true;
+                    for (int i = 0; i < paramTypes.length; i++) {
+                        if (args[i] == null) continue;
+                        if (!wrap(paramTypes[i]).isInstance(args[i])) { matches = false; break; }
+                    }
+                    if (!matches) continue;
+                    try {
+                        method.setAccessible(true);
+                        return method.invoke(null, args);
+                    } catch (ReflectiveOperationException e) {
+                        throw new IllegalStateException("Failed to invoke RenderType.create", e);
+                    }
+                }
+            }
+            throw new IllegalStateException("No matching RenderType.create method found");
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Unable to create text RenderType", e);
         }
@@ -280,6 +365,50 @@ public final class McCompat {
             }
         }
         throw new IllegalStateException("No matching method found: " + Arrays.toString(names));
+    }
+
+    private static Object invokeDeclaredBest(Object target, String[] names, Object... args) {
+        Class<?> cls = target.getClass();
+        while (cls != null) {
+            for (Method method : cls.getDeclaredMethods()) {
+                if (!matchesName(method, names) || method.getParameterCount() != args.length) continue;
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                boolean matches = true;
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    if (args[i] == null) continue;
+                    if (!wrap(parameterTypes[i]).isInstance(args[i])) { matches = false; break; }
+                }
+                if (!matches) continue;
+                try {
+                    method.setAccessible(true);
+                    return method.invoke(target, args);
+                } catch (ReflectiveOperationException e) {
+                    throw new IllegalStateException("Failed to invoke " + Arrays.toString(names), e);
+                }
+            }
+            cls = cls.getSuperclass();
+        }
+        throw new IllegalStateException("No matching declared method found: " + Arrays.toString(names));
+    }
+
+    private static Object invokeDeclaredStaticBest(Class<?> type, String[] names, Object... args) {
+        for (Method method : type.getDeclaredMethods()) {
+            if (!matchesName(method, names) || method.getParameterCount() != args.length) continue;
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            boolean matches = true;
+            for (int i = 0; i < parameterTypes.length; i++) {
+                if (args[i] == null) continue;
+                if (!wrap(parameterTypes[i]).isInstance(args[i])) { matches = false; break; }
+            }
+            if (!matches) continue;
+            try {
+                method.setAccessible(true);
+                return method.invoke(null, args);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("Failed to invoke " + Arrays.toString(names), e);
+            }
+        }
+        throw new IllegalStateException("No matching declared method found: " + Arrays.toString(names));
     }
 
     private static boolean matchesName(Method method, String... names) {

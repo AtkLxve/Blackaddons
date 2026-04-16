@@ -36,9 +36,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CustomFontRenderer {
     private static final CustomFontRenderer INSTANCE = new CustomFontRenderer();
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomFontRenderer.class);
 
     public static final float SDF_SOURCE_SIZE = 192.0f;
     public static final int SDF_PADDING = 24;
@@ -176,27 +179,33 @@ public class CustomFontRenderer {
                     CustomFontManager newManager = new CustomFontManager(buffer);
                     PreparedAsciiAtlas atlasData = prepareAsciiAtlas(newManager);
                     Minecraft.getInstance().execute(() -> {
-                        manager = newManager;
-                        sdfGlyphCache.clear();
-                        textureCache.clear();
-                        identifierCache.clear();
-                        layerCache.clear();
-                        fallbackTextureSetupCache.clear();
-                        bakedGlyphCache.clear();
-                        lastScaleConfig = -1f;
-                        cachedSdfScale = -1f;
-                        atlasTexture = null;
-                        atlasId = null;
-                        atlasRenderType = null;
-                        atlasDepthRenderType = null;
-                        depthLayerCache.clear();
-                        atlasTextureSetup = null;
+                        try {
+                            manager = newManager;
+                            sdfGlyphCache.clear();
+                            textureCache.clear();
+                            identifierCache.clear();
+                            layerCache.clear();
+                            fallbackTextureSetupCache.clear();
+                            bakedGlyphCache.clear();
+                            lastScaleConfig = -1f;
+                            cachedSdfScale = -1f;
+                            atlasTexture = null;
+                            atlasId = null;
+                            atlasRenderType = null;
+                            atlasDepthRenderType = null;
+                            depthLayerCache.clear();
+                            atlasTextureSetup = null;
 
-                        initialized = true;
-                        applyPreparedAsciiAtlas(atlasData);
-                        loading = false;
-                        if (onDone != null) {
-                            onDone.run();
+                            applyPreparedAsciiAtlas(atlasData);
+                            initialized = true;
+                        } catch (Exception e) {
+                            LOGGER.error("[CustomFont] Failed to apply font atlas on render thread", e);
+                            initialized = false;
+                        } finally {
+                            loading = false;
+                            if (onDone != null) {
+                                onDone.run();
+                            }
                         }
                     });
                 } else {
@@ -206,6 +215,7 @@ public class CustomFontRenderer {
                     }
                 }
             } catch (Exception e) {
+                LOGGER.error("[CustomFont] Failed to load font", e);
                 loading = false;
                 if (onDone != null) {
                     onDone.run();
@@ -233,7 +243,11 @@ public class CustomFontRenderer {
             }
         }
 
-        Optional<Resource> resource = McCompat.findResource(Minecraft.getInstance().getResourceManager(), "blackaddons", "font/custom_font.ttf");
+        net.minecraft.server.packs.resources.ResourceManager rm = Minecraft.getInstance().getResourceManager();
+        if (rm == null) {
+            return null;
+        }
+        Optional<Resource> resource = McCompat.findResource(rm, "blackaddons", "font/custom_font.ttf");
         if (resource.isEmpty()) {
             return null;
         }
