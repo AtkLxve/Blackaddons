@@ -55,6 +55,7 @@ public class CustomFontRenderer {
 
     private DynamicTexture atlasTexture;
     private Object atlasId;
+    public static boolean inOutlinePass = false;
     private RenderType atlasRenderType;
     private RenderType atlasDepthRenderType;
     private TextureSetup atlasTextureSetup;
@@ -515,8 +516,12 @@ public class CustomFontRenderer {
     }
 
     public static float packShaderEffect(float effect) {
+        return packShaderEffect(effect, false);
+    }
+
+    public static float packShaderEffect(float effect, boolean hardEdge) {
         var cfg = ConfigManager.data;
-        float aaWidth = cfg.customFontAntiAliasing ? cfg.customFontAntiAliasingWidth : 0.01f;
+        float aaWidth = (!hardEdge && cfg.customFontAntiAliasing) ? cfg.customFontAntiAliasingWidth : 0.0f;
         float packedAa = Math.round(aaWidth * 100.0f) + 1000.0f;
         return packedAa * 16.0f + (effect + 4.0f);
     }

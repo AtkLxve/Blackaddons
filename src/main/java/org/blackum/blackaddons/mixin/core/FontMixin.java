@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
@@ -143,9 +144,19 @@ public class FontMixin {
         }
     }
 
+    @Inject(method = "drawInBatch8xOutline", at = @At("HEAD"))
+    private void onOutlineStart(CallbackInfo ci) {
+        CustomFontRenderer.inOutlinePass = true;
+    }
+
+    @Inject(method = "drawInBatch8xOutline", at = @At("RETURN"))
+    private void onOutlineEnd(CallbackInfo ci) {
+        CustomFontRenderer.inOutlinePass = false;
+    }
+
     @Inject(method = "getGlyph", at = @At("HEAD"), cancellable = true)
     private void onGetGlyph(int codepoint, Style style, CallbackInfoReturnable<BakedGlyph> cir) {
-        if (isCustomTextActive()) {
+        if (isCustomTextActive() && !CustomFontRenderer.inOutlinePass) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
                 CustomBakedGlyph baked = renderer.getOrCreateBakedGlyph(codepoint);

@@ -47,6 +47,7 @@ public class BlackaddonsRenderPipelines {
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
             .withCull(false)
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withDepthWrite(false)
             .build());
 
     public static final RenderPipeline CUSTOM_TEXT_DEPTH = add(RenderPipeline.builder()
@@ -67,6 +68,7 @@ public class BlackaddonsRenderPipelines {
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
             .withCull(false)
             .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
+            .withDepthBias(-1.0F, -10.0F)
             .build());
 
     public static final RenderPipeline VECTOR_TEXT = add(RenderPipeline.builder()
