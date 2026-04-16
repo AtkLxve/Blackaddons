@@ -56,12 +56,14 @@ public class CustomFontRenderer {
     private DynamicTexture atlasTexture;
     private Object atlasId;
     private RenderType atlasRenderType;
+    private RenderType atlasDepthRenderType;
     private TextureSetup atlasTextureSetup;
 
     private final Map<Integer, SdfGlyph> sdfGlyphCache = new HashMap<>();
     private final Map<Integer, DynamicTexture> textureCache = new HashMap<>();
     private final Map<Integer, Object> identifierCache = new HashMap<>();
     private final Map<Object, RenderType> layerCache = new HashMap<>();
+    private final Map<Object, RenderType> depthLayerCache = new HashMap<>();
     private final Map<Integer, TextureSetup> fallbackTextureSetupCache = new HashMap<>();
     private final Map<Integer, CustomBakedGlyph> bakedGlyphCache = new HashMap<>();
 
@@ -185,6 +187,8 @@ public class CustomFontRenderer {
                         atlasTexture = null;
                         atlasId = null;
                         atlasRenderType = null;
+                        atlasDepthRenderType = null;
+                        depthLayerCache.clear();
                         atlasTextureSetup = null;
 
                         initialized = true;
@@ -323,6 +327,7 @@ public class CustomFontRenderer {
         atlasTexture.upload();
         atlasId = McCompat.registerTexture(atlasTexture, "blackaddons", "custom_sdf_atlas");
         atlasRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas", BlackaddonsRenderPipelines.CUSTOM_TEXT, atlasId);
+        atlasDepthRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas_depth", BlackaddonsRenderPipelines.CUSTOM_TEXT_DEPTH, atlasId);
         //? if < 1.21.11 {
         /*atlasTextureSetup = TextureSetup.singleTexture(atlasTexture.getTextureView());*/
         //?} else
@@ -661,17 +666,17 @@ public class CustomFontRenderer {
 
         VertexConsumer buffer = bufferSource.getBuffer(layer);
         float effect = ConfigManager.data.customFontBold ? ConfigManager.data.customFontBoldStrength : 0f;
-        float packedEffect = packShaderEffect(effect);
+        int effectBits = Float.floatToRawIntBits(packShaderEffect(effect));
 
         Vector4f v1p = new Vector4f(quad.x0, quad.y0, 0, 1).mul(matrix);
         Vector4f v2p = new Vector4f(quad.x0, quad.y1, 0, 1).mul(matrix);
         Vector4f v3p = new Vector4f(quad.x1, quad.y1, 0, 1).mul(matrix);
         Vector4f v4p = new Vector4f(quad.x1, quad.y0, 0, 1).mul(matrix);
 
-        buffer.addVertex(v1p.x(), v1p.y(), packedEffect).setUv(u0, v0).setColor(color);
-        buffer.addVertex(v2p.x(), v2p.y(), packedEffect).setUv(u0, v1).setColor(color);
-        buffer.addVertex(v3p.x(), v3p.y(), packedEffect).setUv(u1, v1).setColor(color);
-        buffer.addVertex(v4p.x(), v4p.y(), packedEffect).setUv(u1, v0).setColor(color);
+        buffer.addVertex(v1p.x(), v1p.y(), v1p.z()).setColor(color).setUv(u0, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+        buffer.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(color).setUv(u0, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+        buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(color).setUv(u1, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+        buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(color).setUv(u1, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
     }
 
     public DynamicTexture getTexture(int codepoint, CustomFontManager.GlyphData glyph) {
@@ -693,10 +698,27 @@ public class CustomFontRenderer {
         return getPerGlyphLayer(textureId);
     }
 
+    public RenderType getDepthLayer(int codepoint, CustomFontManager.GlyphData glyph) {
+        SdfGlyph sdfGlyph = getSdfGlyph(codepoint);
+        if (sdfGlyph != null && sdfGlyph.atlasResident) {
+            return atlasDepthRenderType;
+        }
+        DynamicTexture texture = textureCache.computeIfAbsent(codepoint, this::createGlyphTexture);
+        Object textureId = identifierCache.computeIfAbsent(codepoint, cp ->
+                McCompat.registerTexture(texture, "blackaddons", "custom_sdf/" + codepoint));
+        return getPerGlyphDepthLayer(textureId);
+    }
+
     private RenderType getPerGlyphLayer(Object textureId) {
         return layerCache.computeIfAbsent(textureId, loc ->
                 (RenderType) McCompat.createTextRenderType("custom_text_" + loc.toString().hashCode(),
                         BlackaddonsRenderPipelines.CUSTOM_TEXT, loc));
+    }
+
+    private RenderType getPerGlyphDepthLayer(Object textureId) {
+        return depthLayerCache.computeIfAbsent(textureId, loc ->
+                (RenderType) McCompat.createTextRenderType("custom_text_depth_" + loc.toString().hashCode(),
+                        BlackaddonsRenderPipelines.CUSTOM_TEXT_DEPTH, loc));
     }
 
     private DynamicTexture createGlyphTexture(int codepoint) {

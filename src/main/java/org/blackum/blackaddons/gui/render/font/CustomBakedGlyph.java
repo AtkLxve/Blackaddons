@@ -141,11 +141,11 @@ public class CustomBakedGlyph implements BakedGlyph {
             Vector4f v2p = new Vector4f(lx0, ly1, 0, 1).mul(m);
             Vector4f v3p = new Vector4f(lx1, ly1, 0, 1).mul(m);
             Vector4f v4p = new Vector4f(lx1 + skew, ly0, 0, 1).mul(m);
-            float packedEffect = CustomFontRenderer.packShaderEffect(effectZ);
-            vc.addVertex(v1p.x(), v1p.y(), packedEffect).setColor(c).setUv(u0, v0).setLight(light);
-            vc.addVertex(v2p.x(), v2p.y(), packedEffect).setColor(c).setUv(u0, v1).setLight(light);
-            vc.addVertex(v3p.x(), v3p.y(), packedEffect).setColor(c).setUv(u1, v1).setLight(light);
-            vc.addVertex(v4p.x(), v4p.y(), packedEffect).setColor(c).setUv(u1, v0).setLight(light);
+            int effectBits = Float.floatToRawIntBits(CustomFontRenderer.packShaderEffect(effectZ));
+            vc.addVertex(v1p.x(), v1p.y(), v1p.z()).setColor(c).setUv(u0, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+            vc.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(c).setUv(u0, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+            vc.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(c).setUv(u1, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+            vc.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(c).setUv(u1, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
         }
 
         private static int ensureOpaque(int argb) {
@@ -154,7 +154,12 @@ public class CustomBakedGlyph implements BakedGlyph {
 
         @Override
         public RenderType renderType(Font.DisplayMode displayMode) {
-            return CustomFontRenderer.getInstance().getLayer(codepoint, glyphData);
+            CustomFontRenderer renderer = CustomFontRenderer.getInstance();
+            if (displayMode == Font.DisplayMode.SEE_THROUGH) {
+                return renderer.getLayer(codepoint, glyphData);
+            } else {
+                return renderer.getDepthLayer(codepoint, glyphData);
+            }
         }
 
         @Override

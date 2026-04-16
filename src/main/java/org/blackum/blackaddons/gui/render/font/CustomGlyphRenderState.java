@@ -62,10 +62,11 @@ public class CustomGlyphRenderState implements GuiElementRenderState {
         float dx = pose.m00() * (x1 + skew) + pose.m10() * y0 + pose.m20();
         float dy = pose.m01() * (x1 + skew) + pose.m11() * y0 + pose.m21();
 
-        consumer.addVertex(ax, ay, effectZ).setUv(u0, v0).setColor(color);
-        consumer.addVertex(bx, by, effectZ).setUv(u0, v1).setColor(color);
-        consumer.addVertex(cx, cy, effectZ).setUv(u1, v1).setColor(color);
-        consumer.addVertex(dx, dy, effectZ).setUv(u1, v0).setColor(color);
+        int effectBits = Float.floatToRawIntBits(effectZ);
+        consumer.addVertex(ax, ay, 0.0f).setColor(color).setUv(u0, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+        consumer.addVertex(bx, by, 0.0f).setColor(color).setUv(u0, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+        consumer.addVertex(cx, cy, 0.0f).setColor(color).setUv(u1, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+        consumer.addVertex(dx, dy, 0.0f).setColor(color).setUv(u1, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
     }
 
     @Override public RenderPipeline pipeline() { return pipeline; }

@@ -44,9 +44,29 @@ public class BlackaddonsRenderPipelines {
             .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
             .withSampler("Sampler0")
             .withBlend(BlendFunction.TRANSLUCENT)
-            .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
             .withCull(false)
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .build());
+
+    public static final RenderPipeline CUSTOM_TEXT_DEPTH = add(RenderPipeline.builder()
+            //? if < 1.21.11 {
+            /*.withLocation(ResourceLocation.fromNamespaceAndPath("blackaddons", "custom_text_depth"))*/
+            /*.withVertexShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/custom_text"))*/
+            /*.withFragmentShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/custom_text"))*/
+            //?}
+            //? if >= 1.21.11 {
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text_depth"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            //?}
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withSampler("Sampler0")
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
+            .withCull(false)
+            .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
             .build());
 
     public static final RenderPipeline VECTOR_TEXT = add(RenderPipeline.builder()
