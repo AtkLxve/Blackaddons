@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 public class AlignOverlayPositionScreen extends Screen {
     private static final int PREVIEW_WIDTH = 190;

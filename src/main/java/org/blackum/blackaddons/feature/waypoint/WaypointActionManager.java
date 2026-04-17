@@ -1,18 +1,18 @@
 package org.blackum.blackaddons.feature.waypoint;
 
-import org.blackum.blackaddons.core.util.AlignUtils;
+import org.blackum.blackaddons.common.util.AlignUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.config.ConfigManager.WaypointAction;
-import org.blackum.blackaddons.core.waypoint.Waypoint;
-import org.blackum.blackaddons.core.waypoint.WaypointGroup;
-import org.blackum.blackaddons.core.waypoint.WaypointManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager.WaypointAction;
+import org.blackum.blackaddons.feature.waypoint.Waypoint;
+import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
+import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
-import org.blackum.blackaddons.core.util.FormatUtils;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.McCompat;
 
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import java.util.HashMap;
@@ -161,7 +161,7 @@ public class WaypointActionManager {
         if (y < waypoint.y || y > waypoint.y + waypoint.height) {
             return false;
         }
-        if (waypoint.shape == org.blackum.blackaddons.core.waypoint.WaypointShape.BOX) {
+        if (waypoint.shape == org.blackum.blackaddons.feature.waypoint.WaypointShape.BOX) {
             return Math.abs(dx) <= waypoint.radius && Math.abs(dz) <= waypoint.radius;
         }
 
@@ -174,7 +174,7 @@ public class WaypointActionManager {
             return true;
         }
 
-        if (waypoint.shape == org.blackum.blackaddons.core.waypoint.WaypointShape.BOX) {
+        if (waypoint.shape == org.blackum.blackaddons.feature.waypoint.WaypointShape.BOX) {
             return intersectsBox(waypoint, x1, y1, z1, x2, y2, z2);
         }
 

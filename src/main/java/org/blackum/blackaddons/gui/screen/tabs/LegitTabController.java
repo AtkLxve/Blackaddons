@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
 import net.minecraft.client.Minecraft;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.screen.BaseScreen;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
 import org.blackum.blackaddons.gui.render.font.GoogleFontsList;
+import org.blackum.blackaddons.feature.cheat.AutoSS;
 
 public class LegitTabController extends SimpleTabController {
     private ResizableCard visualsCard;

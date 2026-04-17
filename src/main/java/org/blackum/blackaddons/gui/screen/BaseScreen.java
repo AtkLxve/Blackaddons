@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import org.blackum.blackaddons.gui.widget.ResizableCard;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 @SuppressWarnings("all")
 public abstract class BaseScreen extends Screen {

@@ -3,15 +3,16 @@ package org.blackum.blackaddons.gui.screen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.model.DungeonFloor;
-import org.blackum.blackaddons.core.waypoint.WaypointGroup;
-import org.blackum.blackaddons.core.waypoint.WaypointManager;
+import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
+import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.blackum.blackaddons.feature.dungeon.map.Room;
 
 public class WaypointGroupEditScreen extends BaseScreen {
 

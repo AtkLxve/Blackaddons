@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.config.ConfigManager.SoloClearInfo;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager.SoloClearInfo;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.widget.*;
 import net.minecraft.ChatFormatting;

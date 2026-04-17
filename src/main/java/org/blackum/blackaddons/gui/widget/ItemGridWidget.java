@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPosition
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import org.blackum.blackaddons.core.model.SkyblockItem;
+import org.blackum.blackaddons.common.model.SkyblockItem;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 
 import java.util.ArrayList;

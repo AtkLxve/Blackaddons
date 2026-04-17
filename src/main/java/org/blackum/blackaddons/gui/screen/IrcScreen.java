@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.Constants;
-import org.blackum.blackaddons.core.util.McCompat;
-import org.blackum.blackaddons.core.util.MinecraftInstance;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.MinecraftInstance;
 import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import org.blackum.blackaddons.feature.chat.IrcPrefixManager;

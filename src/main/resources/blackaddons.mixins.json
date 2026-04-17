@@ -13,7 +13,7 @@
     "core.FontMixin",
     "render.CameraMixin",
     "render.ShaderManagerMixin",
-    "render.GuiRendererMixin",
+    "gui.GuiRendererMixin",
     "skyhanni.CurrentChatDisplayMixin"
   ],
   "injectors": {

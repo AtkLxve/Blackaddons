@@ -2,9 +2,9 @@ package org.blackum.blackaddons.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import org.blackum.blackaddons.core.waypoint.WaypointDragState;
-import org.blackum.blackaddons.core.waypoint.WaypointGroup;
-import org.blackum.blackaddons.core.waypoint.WaypointManager;
+import org.blackum.blackaddons.feature.waypoint.WaypointDragState;
+import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
+import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;

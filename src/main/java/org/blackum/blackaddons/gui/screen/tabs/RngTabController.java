@@ -1,8 +1,8 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
-import org.blackum.blackaddons.core.manager.ProfileStateManager;
-import org.blackum.blackaddons.core.util.JsonUtils;
-import org.blackum.blackaddons.integration.PriceService;
+import org.blackum.blackaddons.feature.profile.ProfileStateManager;
+import org.blackum.blackaddons.common.util.JsonUtils;
+import org.blackum.blackaddons.service.PriceService;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -13,7 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;

@@ -3,7 +3,7 @@ package org.blackum.blackaddons.gui.screen.tabs;
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.BaseScreen;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -11,6 +11,7 @@ import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.feature.chat.IrcClient;
+import org.blackum.blackaddons.gui.notification.Notification;
 
 public class SettingsTabController extends SimpleTabController {
 

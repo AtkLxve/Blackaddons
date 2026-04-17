@@ -3,10 +3,10 @@ package org.blackum.blackaddons.gui.screen;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.config.ActionManager;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.waypoint.Waypoint;
-import org.blackum.blackaddons.core.waypoint.WaypointManager;
+import org.blackum.blackaddons.common.config.ActionManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.feature.waypoint.Waypoint;
+import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
@@ -16,6 +16,7 @@ import org.blackum.blackaddons.gui.widget.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import org.blackum.blackaddons.gui.notification.Notification;
 
 public class WaypointActionEditScreen extends BaseScreen {
     private static final int CUSTOM_INPUT_WIDTH = 90;
@@ -162,8 +163,8 @@ public class WaypointActionEditScreen extends BaseScreen {
 
             testNotificationButton = new Button(fieldX + fieldWidth - 50, currentY, 50, Theme.TEXTFIELD_HEIGHT, "Test", () -> {
                 NotificationManager.addNotification(
-                        org.blackum.blackaddons.core.util.FormatUtils.formatColor(action.notificationTitle != null && !action.notificationTitle.isEmpty() ? action.notificationTitle : "Test Title"),
-                        org.blackum.blackaddons.core.util.FormatUtils.formatColor(action.notificationMessage != null && !action.notificationMessage.isEmpty() ? action.notificationMessage : "Test Message"),
+                        org.blackum.blackaddons.common.util.FormatUtils.formatColor(action.notificationTitle != null && !action.notificationTitle.isEmpty() ? action.notificationTitle : "Test Title"),
+                        org.blackum.blackaddons.common.util.FormatUtils.formatColor(action.notificationMessage != null && !action.notificationMessage.isEmpty() ? action.notificationMessage : "Test Message"),
                         action.notificationType
                 );
             });

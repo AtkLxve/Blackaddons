@@ -4,8 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.core.model.DungeonFloor;
-import org.blackum.blackaddons.core.util.LocationUtils;
+import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.LocationUtils;
 
 import java.util.*;
 import net.minecraft.core.component.DataComponents;

@@ -5,9 +5,9 @@ import com.google.gson.JsonObject;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.widget.*;
 
-import org.blackum.blackaddons.core.util.DungeonUtils;
-import org.blackum.blackaddons.core.util.FormatUtils;
-import org.blackum.blackaddons.core.util.JsonUtils;
+import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
+import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

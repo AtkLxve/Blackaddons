@@ -2,7 +2,7 @@ package org.blackum.blackaddons.mixin.core;
 
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
-import org.blackum.blackaddons.core.util.AlignUtils;
+import org.blackum.blackaddons.common.util.AlignUtils;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.cheat.Perspective;
 import org.blackum.blackaddons.feature.waypoint.WaypointActionManager;

@@ -6,7 +6,7 @@ import org.blackum.blackaddons.gui.render.Theme;
 import net.minecraft.ChatFormatting;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.common.util.McCompat;
 import org.blackum.blackaddons.feature.chat.ImageHelper;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;

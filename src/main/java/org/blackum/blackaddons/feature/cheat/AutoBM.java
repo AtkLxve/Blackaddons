@@ -6,10 +6,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ClickType;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.TimeUtils;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.TimeUtils;
 
-import static org.blackum.blackaddons.core.util.MinecraftInstance.mc;
+import static org.blackum.blackaddons.common.util.MinecraftInstance.mc;
 
 // GLORY TO BENJAMIN NETANYAHU 
 public class AutoBM {

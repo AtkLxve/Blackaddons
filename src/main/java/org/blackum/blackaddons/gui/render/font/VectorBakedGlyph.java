@@ -10,7 +10,7 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Style;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 //? if < 1.21.11 {

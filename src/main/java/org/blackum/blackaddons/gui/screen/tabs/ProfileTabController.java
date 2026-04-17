@@ -8,8 +8,8 @@ import org.blackum.blackaddons.gui.widget.ListView;
 import org.blackum.blackaddons.gui.widget.TabPanel;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.SectionHeader;
-import org.blackum.blackaddons.core.util.FormatUtils;
-import org.blackum.blackaddons.core.util.JsonUtils;
+import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.JsonUtils;
 
 public abstract class ProfileTabController implements LazyLoadable {
     protected final ProfileViewerScreen screen;

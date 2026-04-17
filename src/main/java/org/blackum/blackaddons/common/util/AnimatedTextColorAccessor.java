@@ -1,0 +1,20 @@
+package org.blackum.blackaddons.common.util;
+
+import org.blackum.blackaddons.feature.chat.ChatUtils;
+import java.util.List;
+
+public interface AnimatedTextColorAccessor {
+    void ba$setAnimated(boolean animated);
+
+    void ba$setStops(List<ChatUtils.ColorStop> stops);
+
+    void ba$setSpeed(float speed);
+
+    void ba$setOffset(float offset);
+
+    boolean ba$isAnimated();
+
+    void ba$setChroma(boolean chroma);
+
+    boolean ba$isChroma();
+}

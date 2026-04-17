@@ -1,12 +1,12 @@
 package org.blackum.blackaddons.gui.screen;
 
-import org.blackum.blackaddons.core.util.MinecraftInstance;
+import org.blackum.blackaddons.common.util.MinecraftInstance;
 import com.google.gson.JsonObject;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.core.manager.PartyFinderManager;
+import org.blackum.blackaddons.feature.party.PartyFinderManager;
 
 import java.util.List;
 

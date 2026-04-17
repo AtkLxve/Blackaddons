@@ -21,7 +21,7 @@
     "render.FullbrightMixin",
     "render.GameRendererMixin",
     "render.CameraMixin",
-    "render.ScreenEffectRendererMixin",
+    "gui.ScreenEffectRendererMixin",
     "render.SingleQuadParticleMixin",
     "core.ParticleAccessor",
     "gui.ChatComponentMixin",

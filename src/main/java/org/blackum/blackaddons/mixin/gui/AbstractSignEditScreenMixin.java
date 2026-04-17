@@ -2,7 +2,7 @@ package org.blackum.blackaddons.mixin.gui;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.feature.modhider.ComponentUtils;
 
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
-import org.blackum.blackaddons.core.util.Constants;
+import org.blackum.blackaddons.common.constants.Constants;
 
 @Mixin(AbstractSignEditScreen.class)
 public abstract class AbstractSignEditScreenMixin {

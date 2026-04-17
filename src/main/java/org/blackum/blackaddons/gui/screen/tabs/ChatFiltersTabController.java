@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.gui.render.Theme;

@@ -3,10 +3,10 @@ package org.blackum.blackaddons.gui.widget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.model.SkyblockItem;
+import org.blackum.blackaddons.common.model.SkyblockItem;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
-import org.blackum.blackaddons.core.util.FormatUtils;
+import org.blackum.blackaddons.common.util.FormatUtils;
 import com.google.gson.JsonObject;
 
 public class PetDetailWidget extends Widget {
@@ -59,7 +59,7 @@ public class PetDetailWidget extends Widget {
                     : "UNKNOWN";
             long exp = data.has("exp") ? data.get("exp").getAsLong() : 0;
 
-            float progress = org.blackum.blackaddons.core.util.PetUtils.getProgress(type, rarity, exp);
+            float progress = org.blackum.blackaddons.feature.item.PetUtils.getProgress(type, rarity, exp);
             boolean isMax = progress >= 1.0f;
 
             if (isMax) {

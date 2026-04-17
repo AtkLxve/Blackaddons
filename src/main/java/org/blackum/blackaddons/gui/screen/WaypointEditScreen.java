@@ -4,8 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.waypoint.Waypoint;
-import org.blackum.blackaddons.core.waypoint.WaypointManager;
+import org.blackum.blackaddons.feature.waypoint.Waypoint;
+import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
@@ -24,9 +24,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-import org.blackum.blackaddons.core.waypoint.WaypointAnimation;
-import org.blackum.blackaddons.core.waypoint.WaypointShape;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.feature.waypoint.WaypointAnimation;
+import org.blackum.blackaddons.feature.waypoint.WaypointShape;
+import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.gui.animation.Animation;
 
 public class WaypointEditScreen extends BaseScreen {
     private static final int CUSTOM_INPUT_WIDTH = 90;

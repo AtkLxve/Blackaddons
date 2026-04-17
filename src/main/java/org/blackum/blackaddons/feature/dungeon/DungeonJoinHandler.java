@@ -1,10 +1,10 @@
 package org.blackum.blackaddons.feature.dungeon;
 
-import org.blackum.blackaddons.core.manager.ProfileStateManager;
-import org.blackum.blackaddons.core.util.JsonUtils;
-import org.blackum.blackaddons.core.util.FormatUtils;
-import org.blackum.blackaddons.core.util.Constants;
-import org.blackum.blackaddons.core.util.DungeonUtils;
+import org.blackum.blackaddons.feature.profile.ProfileStateManager;
+import org.blackum.blackaddons.common.util.JsonUtils;
+import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
@@ -12,12 +12,12 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.blackum.blackaddons.core.util.MinecraftInstance.mc;
+import static org.blackum.blackaddons.common.util.MinecraftInstance.mc;
 
 public class DungeonJoinHandler {
     private static final Pattern JOIN_PATTERN = Pattern

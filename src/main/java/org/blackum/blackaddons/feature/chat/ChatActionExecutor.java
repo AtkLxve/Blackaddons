@@ -3,12 +3,12 @@ package org.blackum.blackaddons.feature.chat;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.widget.MovementKeybindSelector;
-import org.blackum.blackaddons.core.manager.RotationManager;
-import org.blackum.blackaddons.core.util.AlignUtils;
-import org.blackum.blackaddons.core.util.KeyBindingAccessor;
-import org.blackum.blackaddons.core.waypoint.Waypoint;
+import org.blackum.blackaddons.feature.rotation.RotationManager;
+import org.blackum.blackaddons.common.util.AlignUtils;
+import org.blackum.blackaddons.common.util.KeyBindingAccessor;
+import org.blackum.blackaddons.feature.waypoint.Waypoint;
 
 import java.util.ArrayList;
 import java.util.List;

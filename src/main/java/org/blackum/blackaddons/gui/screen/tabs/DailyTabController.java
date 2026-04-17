@@ -1,22 +1,22 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
-import org.blackum.blackaddons.core.manager.ProfileStateManager;
+import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.common.util.McCompat;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.integration.BotIntegration;
-import org.blackum.blackaddons.core.util.Constants;
-import org.blackum.blackaddons.core.model.DungeonFloor;
-import org.blackum.blackaddons.core.util.FormatUtils;
-import org.blackum.blackaddons.core.util.JsonUtils;
+import org.blackum.blackaddons.service.BotIntegration;
+import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,8 +3,8 @@ package org.blackum.blackaddons.feature.dungeon.map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.LocationUtils;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.LocationUtils;
 
 import java.lang.reflect.Method;
 import java.util.Set;

@@ -5,10 +5,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
-import org.blackum.blackaddons.core.util.Constants;
-import org.blackum.blackaddons.core.util.LocationUtils;
-import org.blackum.blackaddons.core.util.ScoreboardUtils;
-import org.blackum.blackaddons.core.util.TabListUtils;
+import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.LocationUtils;
+import org.blackum.blackaddons.common.util.ScoreboardUtils;
+import org.blackum.blackaddons.common.util.TabListUtils;
 
 import java.util.ArrayList;
 import java.util.List;

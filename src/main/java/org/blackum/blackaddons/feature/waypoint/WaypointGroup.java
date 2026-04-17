@@ -1,0 +1,64 @@
+package org.blackum.blackaddons.feature.waypoint;
+
+import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.LocationUtils;
+
+import java.util.UUID;
+
+public class WaypointGroup {
+
+    public UUID id = UUID.randomUUID();
+    public UUID parentId = null;
+    public String name = "New Group";
+    public boolean collapsed = false;
+    public boolean enabled = true;
+
+    public String floorFilter = null;
+    public Boolean inBossFilter = null;
+    public Integer phaseFilter = null;
+    public Boolean inDungeonFilter = null;
+
+    public WaypointGroup() {
+    }
+
+    public WaypointGroup(String name) {
+        this.name = name;
+    }
+
+    public boolean isActive() {
+        return isActive(0);
+    }
+
+    private boolean isActive(int depth) {
+        if (depth > 10) return false;
+        if (!enabled) return false;
+        if (parentId != null) {
+            WaypointGroup parent = WaypointManager.getInstance().getGroup(parentId);
+            if (parent != null && !parent.isActive(depth + 1)) {
+                return false;
+            }
+        }
+        if (inDungeonFilter != null) {
+            if (LocationUtils.inDungeons() != inDungeonFilter) {
+                return false;
+            }
+        }
+        if (floorFilter != null && !floorFilter.isEmpty()) {
+            DungeonFloor floor = LocationUtils.getCurrentFloor();
+            if (floor == null || !floor.getDisplayName().equals(floorFilter)) {
+                return false;
+            }
+        }
+        if (inBossFilter != null) {
+            if (LocationUtils.inBoss() != inBossFilter) {
+                return false;
+            }
+        }
+        if (phaseFilter != null && phaseFilter > 0) {
+            if (LocationUtils.getF7Phase() != phaseFilter) {
+                return false;
+            }
+        }
+        return true;
+    }
+}

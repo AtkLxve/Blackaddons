@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.core.util.LocationUtils;
+import org.blackum.blackaddons.common.util.LocationUtils;
 
 import java.util.List;
 import java.util.Set;

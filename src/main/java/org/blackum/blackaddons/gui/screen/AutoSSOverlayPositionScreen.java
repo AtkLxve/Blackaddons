@@ -5,7 +5,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.input.MouseButtonEvent;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.feature.cheat.AutoSS;
 
 public class AutoSSOverlayPositionScreen extends Screen {
     private static final int PREVIEW_WIDTH = 145;

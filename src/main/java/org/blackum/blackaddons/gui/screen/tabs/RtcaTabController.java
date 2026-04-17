@@ -1,11 +1,11 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
-import org.blackum.blackaddons.core.util.JsonUtils;
-import org.blackum.blackaddons.core.util.FormatUtils;
-import org.blackum.blackaddons.core.util.CatacombsUtils;
-import org.blackum.blackaddons.core.util.DungeonUtils;
-import org.blackum.blackaddons.integration.BotIntegration;
-import org.blackum.blackaddons.integration.LocalRtcaService;
+import org.blackum.blackaddons.common.util.JsonUtils;
+import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.feature.dungeon.util.CatacombsUtils;
+import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
+import org.blackum.blackaddons.service.BotIntegration;
+import org.blackum.blackaddons.service.LocalRtcaService;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;

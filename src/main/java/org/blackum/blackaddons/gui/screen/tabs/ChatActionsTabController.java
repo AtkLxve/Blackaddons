@@ -3,9 +3,9 @@ package org.blackum.blackaddons.gui.screen.tabs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
-import org.blackum.blackaddons.core.config.ActionManager;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.common.config.ActionManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.McCompat;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.screen.ChatActionEditScreen;
@@ -15,12 +15,13 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
-import org.blackum.blackaddons.core.util.FormatUtils;
+import org.blackum.blackaddons.common.util.FormatUtils;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.stream.Stream;
+import org.blackum.blackaddons.gui.notification.Notification;
 
 public class ChatActionsTabController extends SimpleTabController {
     private static int lastScrollOffset = 0;

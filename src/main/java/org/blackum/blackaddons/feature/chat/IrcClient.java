@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.feature.chat;
 
-import org.blackum.blackaddons.core.util.MinecraftInstance;
+import org.blackum.blackaddons.common.util.MinecraftInstance;
 import org.blackum.blackaddons.feature.chat.EmojiUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -10,7 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 import java.net.URI;
 import java.net.URLEncoder;

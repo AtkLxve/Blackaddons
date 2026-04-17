@@ -9,7 +9,7 @@ import net.minecraft.client.gui.screens.Screen;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.ConfettiEffect;
-import org.blackum.blackaddons.core.manager.ProfileStateManager;
+import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;

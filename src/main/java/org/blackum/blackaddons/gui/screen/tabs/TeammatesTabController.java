@@ -9,8 +9,8 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.core.model.Teammate;
-import org.blackum.blackaddons.core.util.JsonUtils;
+import org.blackum.blackaddons.common.model.Teammate;
+import org.blackum.blackaddons.common.util.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;

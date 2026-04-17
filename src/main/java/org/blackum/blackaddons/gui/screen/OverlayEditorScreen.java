@@ -9,7 +9,7 @@ import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.Button;
 import org.blackum.blackaddons.gui.widget.Widget;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 import java.util.ArrayList;
 import java.util.List;

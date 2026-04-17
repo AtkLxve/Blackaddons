@@ -3,8 +3,8 @@ package org.blackum.blackaddons.gui.screen.tabs;
 import com.google.gson.JsonObject;
 import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.core.util.ItemDeserializer;
-import org.blackum.blackaddons.core.model.SkyblockItem;
+import org.blackum.blackaddons.feature.item.ItemDeserializer;
+import org.blackum.blackaddons.common.model.SkyblockItem;
 
 import java.util.ArrayList;
 import java.util.List;

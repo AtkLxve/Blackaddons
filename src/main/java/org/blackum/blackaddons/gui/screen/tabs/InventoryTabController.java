@@ -7,8 +7,8 @@ import org.blackum.blackaddons.gui.widget.Button;
 import org.blackum.blackaddons.gui.widget.ItemGridWidget;
 import org.blackum.blackaddons.gui.widget.TabPanel;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.core.util.ItemDeserializer;
-import org.blackum.blackaddons.core.model.SkyblockItem;
+import org.blackum.blackaddons.feature.item.ItemDeserializer;
+import org.blackum.blackaddons.common.model.SkyblockItem;
 import java.util.ArrayList;
 import java.util.List;
 

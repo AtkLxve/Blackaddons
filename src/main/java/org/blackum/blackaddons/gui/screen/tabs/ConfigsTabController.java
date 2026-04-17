@@ -1,12 +1,12 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
 import net.fabricmc.loader.api.FabricLoader;
-import org.blackum.blackaddons.core.config.ActionManager;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.config.ProfileManager;
-import org.blackum.blackaddons.core.util.Constants;
-import org.blackum.blackaddons.core.util.McCompat;
-import org.blackum.blackaddons.core.waypoint.WaypointManager;
+import org.blackum.blackaddons.common.config.ActionManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ProfileManager;
+import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.widget.*;

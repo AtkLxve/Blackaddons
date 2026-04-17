@@ -2,7 +2,7 @@ package org.blackum.blackaddons.gui.screen.tabs;
 
 import org.blackum.blackaddons.gui.screen.AutoSSOverlayPositionScreen;
 import org.blackum.blackaddons.gui.screen.RotationOverlayPositionScreen;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.feature.cheat.Freecam;
@@ -12,6 +12,8 @@ import org.blackum.blackaddons.gui.widget.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.blackum.blackaddons.feature.cheat.AutoBM;
+import org.blackum.blackaddons.feature.cheat.AutoSS;
 
 public class CheatsTabController extends SimpleTabController {
     private ResizableCard autoTntCard;

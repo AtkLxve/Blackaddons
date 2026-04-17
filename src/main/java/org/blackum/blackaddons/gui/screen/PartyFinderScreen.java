@@ -10,10 +10,10 @@ import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
-import org.blackum.blackaddons.core.manager.PartyFinderManager;
-import org.blackum.blackaddons.integration.BotIntegration;
-import org.blackum.blackaddons.core.util.JsonUtils;
-import org.blackum.blackaddons.core.util.MinecraftInstance;
+import org.blackum.blackaddons.feature.party.PartyFinderManager;
+import org.blackum.blackaddons.service.BotIntegration;
+import org.blackum.blackaddons.common.util.JsonUtils;
+import org.blackum.blackaddons.common.util.MinecraftInstance;
 import org.blackum.blackaddons.Blackaddons;
 
 import java.util.List;

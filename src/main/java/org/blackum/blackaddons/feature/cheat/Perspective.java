@@ -6,8 +6,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.KeyBindingAccessor;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.KeyBindingAccessor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;

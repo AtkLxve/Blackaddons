@@ -4,7 +4,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import org.blackum.blackaddons.gui.widget.Label;
 import org.blackum.blackaddons.gui.widget.TabPanel;
-import org.blackum.blackaddons.core.util.Constants;
+import org.blackum.blackaddons.common.constants.Constants;
 
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import java.util.Optional;

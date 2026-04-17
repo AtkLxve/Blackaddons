@@ -6,9 +6,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
-import org.blackum.blackaddons.core.model.Teammate;
-import org.blackum.blackaddons.core.util.Constants;
-import org.blackum.blackaddons.core.util.FormatUtils;
+import org.blackum.blackaddons.common.model.Teammate;
+import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.FormatUtils;
 
 public class TeammateRow extends Widget {
     private final Teammate tm;

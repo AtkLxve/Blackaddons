@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.feature.chat;
 
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 import java.util.Locale;
 import java.util.regex.Pattern;
