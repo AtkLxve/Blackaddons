@@ -6,8 +6,8 @@ import net.minecraft.client.KeyMapping;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.widget.MovementKeybindSelector;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
-import org.blackum.blackaddons.common.util.AlignUtils;
-import org.blackum.blackaddons.common.util.KeyBindingAccessor;
+import org.blackum.blackaddons.feature.waypoint.AlignUtils;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.blackum.blackaddons.feature.waypoint.Waypoint;
 
 import java.util.ArrayList;

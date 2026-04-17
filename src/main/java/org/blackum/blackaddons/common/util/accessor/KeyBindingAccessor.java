@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.accessor;
 
 import com.mojang.blaze3d.platform.InputConstants;
 

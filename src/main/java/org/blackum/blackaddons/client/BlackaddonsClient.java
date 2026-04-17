@@ -17,7 +17,8 @@ import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.command.CommandManager;
 import org.blackum.blackaddons.feature.customname.CustomNameManager;
-import org.blackum.blackaddons.feature.debug.DebugOverlayManager;
+import org.blackum.blackaddons.gui.hud.DebugHud;
+import org.blackum.blackaddons.gui.hud.LocationDebugHud;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.feature.update.UpdateManager;
 import org.blackum.blackaddons.client.render.DebugBoxRenderer;
@@ -32,8 +33,8 @@ import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.cheat.Perspective;
 import org.blackum.blackaddons.feature.cheat.RelicLook;
-import org.blackum.blackaddons.common.util.LocationUtils;
-import org.blackum.blackaddons.common.util.AlignUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import org.blackum.blackaddons.common.scheduler.Scheduler;
 import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.DungeonListener;
@@ -41,7 +42,7 @@ import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearsTracker;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.WaterBoardHandler;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.WaterBoardSolver;
-import org.blackum.blackaddons.feature.dungeon.map.DungeonMapHud;
+import org.blackum.blackaddons.gui.hud.DungeonMapHud;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonWorldScanner;
 import org.blackum.blackaddons.feature.dungeon.map.RoomData;
@@ -71,7 +72,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         Freecam.register();
         Perspective.register();
         Scheduler.register();
-        LocationUtils.register();
+        LocationDebugHud.register();
         AlignUtils.register();
         WaterBoardHandler.register();
 
@@ -124,7 +125,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             client.execute(() -> NotificationManager.addNotification("Notification", message, NotificationType.INFO));
         };
 
-        DebugOverlayManager.register();
+        DebugHud.register();
         CommandManager.register();
 
         HudRenderCallback.EVENT.register((graphics, partialTick) -> {

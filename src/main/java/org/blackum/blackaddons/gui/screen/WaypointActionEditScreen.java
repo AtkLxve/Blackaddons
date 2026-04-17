@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import org.blackum.blackaddons.gui.notification.Notification;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
 
 public class WaypointActionEditScreen extends BaseScreen {
     private static final int CUSTOM_INPUT_WIDTH = 90;
@@ -163,8 +164,8 @@ public class WaypointActionEditScreen extends BaseScreen {
 
             testNotificationButton = new Button(fieldX + fieldWidth - 50, currentY, 50, Theme.TEXTFIELD_HEIGHT, "Test", () -> {
                 NotificationManager.addNotification(
-                        org.blackum.blackaddons.common.util.FormatUtils.formatColor(action.notificationTitle != null && !action.notificationTitle.isEmpty() ? action.notificationTitle : "Test Title"),
-                        org.blackum.blackaddons.common.util.FormatUtils.formatColor(action.notificationMessage != null && !action.notificationMessage.isEmpty() ? action.notificationMessage : "Test Message"),
+                        org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(action.notificationTitle != null && !action.notificationTitle.isEmpty() ? action.notificationTitle : "Test Title"),
+                        org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(action.notificationMessage != null && !action.notificationMessage.isEmpty() ? action.notificationMessage : "Test Message"),
                         action.notificationType
                 );
             });

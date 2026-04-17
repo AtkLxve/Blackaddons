@@ -5,7 +5,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import org.blackum.blackaddons.common.config.ActionManager;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.screen.ChatActionEditScreen;
@@ -15,7 +15,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
-import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
 
 import java.util.List;
 import java.util.ArrayList;

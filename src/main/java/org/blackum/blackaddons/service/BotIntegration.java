@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.service;
 
 import org.blackum.blackaddons.common.constants.Constants;
-import org.blackum.blackaddons.common.util.MinecraftInstance;
+import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

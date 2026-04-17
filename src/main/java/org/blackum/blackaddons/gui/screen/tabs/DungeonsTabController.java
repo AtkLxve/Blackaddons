@@ -6,8 +6,8 @@ import org.blackum.blackaddons.gui.screen.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.widget.*;
 
 import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
-import org.blackum.blackaddons.common.util.FormatUtils;
-import org.blackum.blackaddons.common.util.JsonUtils;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
+import org.blackum.blackaddons.common.util.io.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

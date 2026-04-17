@@ -14,7 +14,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.Resource;
 import org.apache.commons.io.IOUtils;
 import com.mojang.blaze3d.shaders.ShaderType;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 //? if < 1.21.11 {
 /*import net.minecraft.resources.ResourceLocation;*/
 //?} else

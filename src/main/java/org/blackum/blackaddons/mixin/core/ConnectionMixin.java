@@ -14,7 +14,7 @@ import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.feature.chat.PacketLogger;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
-import org.blackum.blackaddons.common.util.PayloadHelper;
+import org.blackum.blackaddons.common.util.mc.PayloadHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.Shadow;

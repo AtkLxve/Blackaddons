@@ -5,7 +5,7 @@ import org.blackum.blackaddons.feature.waypoint.Waypoint;
 import org.blackum.blackaddons.feature.waypoint.WaypointDragState;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;

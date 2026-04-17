@@ -72,12 +72,11 @@ public class DungeonUtils {
 
                 if (!nums.isEmpty()) {
                     if (secretsPart.contains("%")) {
-                        // find the number right before the %
                         java.util.regex.Matcher pm = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)%").matcher(secretsPart);
                         if (pm.find()) {
                             stats.secretPercent = (int) Double.parseDouble(pm.group(pm.groupCount() > 0 ? 1 : 0));
                         } else {
-                            stats.secretPercent = nums.get(nums.size() - 1); // fallback to last number
+                            stats.secretPercent = nums.get(nums.size() - 1);
                         }
                     } else if (secretsPart.contains("/") || nums.size() == 1) {
                         stats.secretsFound = nums.get(0);
@@ -100,7 +99,6 @@ public class DungeonUtils {
                 stats.expectedPuzzles = Integer.parseInt(puzzleHeaderMatcher.group(1));
             }
 
-            // Mimic & Prince Tracking via TabList
             if (cleanLine.contains("Mimic:") && (cleanLine.contains("✔") || cleanLine.toLowerCase().contains("killed"))) {
                 stats.mimicKilled = true;
             }
@@ -108,7 +106,6 @@ public class DungeonUtils {
                 stats.princeKilled = true;
             }
 
-            // General Puzzle Tracking
             if (cleanLine.contains(":") && (cleanLine.contains("[✔]") || cleanLine.contains("[✖]") || cleanLine.contains("[✦]"))) {
                 String name = cleanLine.split(":")[0].trim();
                 if (!name.equalsIgnoreCase("Mimic") && !name.equalsIgnoreCase("Prince") && 

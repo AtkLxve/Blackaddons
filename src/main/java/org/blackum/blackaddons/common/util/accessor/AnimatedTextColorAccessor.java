@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.accessor;
 
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import java.util.List;

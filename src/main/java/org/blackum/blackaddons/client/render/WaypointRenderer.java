@@ -9,7 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderTypes;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.waypoint.Waypoint;
 import org.blackum.blackaddons.feature.waypoint.WaypointAnimation;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;

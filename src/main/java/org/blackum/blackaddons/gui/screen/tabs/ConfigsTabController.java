@@ -5,7 +5,7 @@ import org.blackum.blackaddons.common.config.ActionManager;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.config.ProfileManager;
 import org.blackum.blackaddons.common.constants.Constants;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;

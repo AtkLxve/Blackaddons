@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
-import org.blackum.blackaddons.common.util.JsonUtils;
-import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.io.JsonUtils;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
 import org.blackum.blackaddons.feature.dungeon.util.CatacombsUtils;
 import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
 import org.blackum.blackaddons.service.BotIntegration;

@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.mc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;

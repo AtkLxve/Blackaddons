@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.io;
 
 import com.google.gson.Gson;
 import java.io.InputStream;

@@ -26,7 +26,7 @@ import net.minecraft.world.phys.HitResult;
 
 import org.blackum.blackaddons.feature.waypoint.WaypointAnimation;
 import org.blackum.blackaddons.feature.waypoint.WaypointShape;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.animation.Animation;
 
 public class WaypointEditScreen extends BaseScreen {

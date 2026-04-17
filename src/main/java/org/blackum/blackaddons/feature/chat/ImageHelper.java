@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.feature.chat;
 
 import org.blackum.blackaddons.common.constants.Constants;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;

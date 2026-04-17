@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.feature.waypoint;
 
-import org.blackum.blackaddons.common.util.AlignUtils;
+import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -11,8 +11,8 @@ import org.blackum.blackaddons.feature.waypoint.Waypoint;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
-import org.blackum.blackaddons.common.util.FormatUtils;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import java.util.HashMap;

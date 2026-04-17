@@ -1,9 +1,7 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.mc;
 
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.model.DungeonFloor;
@@ -48,15 +46,12 @@ public class LocationUtils {
     public static boolean inDungeons() {
         if (debugDungeonMode) return true;
         
-        // Tablist is populated instantly upon joining the instance.
-        // Check this first for zero-delay detection.
         for (String line : TabListUtils.getTabListLines()) {
             if (line.toLowerCase(Locale.ROOT).contains("dungeon: catacombs")) {
                 return true;
             }
         }
 
-        // Fallback to scoreboard (which is delayed by a second or two).
         String loc = getLocation();
         for (int i = 1; i <= 7; i++) {
             if (loc.contains("(F" + i + ")") || loc.contains("(M" + i + ")")) {
@@ -131,10 +126,6 @@ public class LocationUtils {
         return 5;
     }
 
-    public static void register() {
-        HudRenderCallback.EVENT.register((graphics, partialTick) -> renderOverlay(graphics));
-    }
-
     public static List<String> getDebugInfo() {
         List<String> info = new ArrayList<>();
         if (!ConfigManager.data.showLocationDebug) return info;
@@ -193,25 +184,6 @@ public class LocationUtils {
         }
 
         return boxes;
-    }
-
-    private static void renderOverlay(GuiGraphics graphics) {
-        Minecraft mc = Minecraft.getInstance();
-        if (!ConfigManager.data.showLocationDebug || mc.options.hideGui) return;
-
-        int screenW = mc.getWindow().getGuiScaledWidth();
-        int overlayX = ConfigManager.data.locationOverlayX < 0
-                ? screenW - 170
-                : ConfigManager.data.locationOverlayX;
-        int overlayY = ConfigManager.data.locationOverlayY < 0
-                ? 65
-                : ConfigManager.data.locationOverlayY;
-
-        int y = overlayY;
-        for (String line : getDebugInfo()) {
-            graphics.drawString(mc.font, line, overlayX, y, COLOR_WHITE);
-            y += LINE_HEIGHT;
-        }
     }
 
     private static String yesNo(boolean value) {

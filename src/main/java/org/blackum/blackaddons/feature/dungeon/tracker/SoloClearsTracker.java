@@ -4,9 +4,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.model.DungeonFloor;
-import org.blackum.blackaddons.common.util.LocationUtils;
-import org.blackum.blackaddons.common.util.ScoreboardUtils;
-import org.blackum.blackaddons.common.util.TabListUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
+import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 
@@ -99,16 +99,14 @@ public class SoloClearsTracker {
         boolean mimicKilled = DungeonScore.isMimicKilled() || stats.mimicKilled;
         boolean princeDefeated = DungeonScore.isPrinceKilled() || stats.princeKilled || princeKilledThisRun;
 
-        // TRIGGER: Manual Score >= 300
         if (finalScore >= 300 && isSolo && !time.equals("Unknown") && !time.equals("00m 00s") && !time.equals("00:00")) {
             List<ConfigManager.SoloClearInfo> floorClears = floorName.equals("M7")
                     ? ConfigManager.data.m7SoloClears : ConfigManager.data.f7SoloClears;
 
-            // Determine if this is a new personal best before adding
             int newTimeSeconds = parseTimeToSeconds(time);
             boolean isNewPB = true;
             if (newTimeSeconds == Integer.MAX_VALUE) {
-                isNewPB = false; // can't parse – skip bot submission
+                isNewPB = false;
             } else {
                 for (ConfigManager.SoloClearInfo existing : floorClears) {
                     int existingSeconds = parseTimeToSeconds(existing.time);
@@ -161,15 +159,9 @@ public class SoloClearsTracker {
         }
     }
 
-    /**
-     * Converts sidebar time strings like "4m 20s" or "04m 20s" into "MM:SS"
-     * which the bot's parse_time() expects.
-     */
     private static String normalizeTimeForBot(String raw) {
         if (raw == null) return "00:00";
-        // Already colon format
         if (raw.matches("\\d+:\\d+.*")) return raw;
-        // Regex for "Xm Ys" style
         java.util.regex.Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
         if (m.find()) {
             int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;

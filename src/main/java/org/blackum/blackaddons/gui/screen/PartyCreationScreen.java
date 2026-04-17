@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.gui.screen;
 
-import org.blackum.blackaddons.common.util.MinecraftInstance;
+import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 import com.google.gson.JsonObject;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;

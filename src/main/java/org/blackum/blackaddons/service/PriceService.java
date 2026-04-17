@@ -5,7 +5,7 @@ import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.constants.Constants;
-import org.blackum.blackaddons.common.util.HttpUtils;
+import org.blackum.blackaddons.common.util.io.HttpUtils;
 
 import java.io.File;
 import java.io.FileReader;

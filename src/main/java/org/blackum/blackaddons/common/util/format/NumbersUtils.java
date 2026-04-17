@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.format;
 
 import java.text.DecimalFormat;
 

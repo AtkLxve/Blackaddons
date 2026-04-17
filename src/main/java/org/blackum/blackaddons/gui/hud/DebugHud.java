@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.feature.debug;
+package org.blackum.blackaddons.gui.hud;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 
-public class DebugOverlayManager {
+public class DebugHud {
     private static final int DEFAULT_COLOR = 0xFFFFFFFF;
     private static final int LINE_HEIGHT = 10;
 

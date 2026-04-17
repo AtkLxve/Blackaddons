@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.common.model;
 
 import com.google.gson.JsonObject;
-import org.blackum.blackaddons.common.util.JsonUtils;
+import org.blackum.blackaddons.common.util.io.JsonUtils;
 
 public class Teammate {
     public final String ign;

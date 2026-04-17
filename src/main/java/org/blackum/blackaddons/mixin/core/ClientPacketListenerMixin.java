@@ -8,7 +8,7 @@ import net.minecraft.world.entity.Entity;
 *///?} else
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
-import org.blackum.blackaddons.common.util.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

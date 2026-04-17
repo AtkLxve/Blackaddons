@@ -12,8 +12,8 @@ import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.widget.*;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.service.BotIntegration;
-import org.blackum.blackaddons.common.util.JsonUtils;
-import org.blackum.blackaddons.common.util.MinecraftInstance;
+import org.blackum.blackaddons.common.util.io.JsonUtils;
+import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 import org.blackum.blackaddons.Blackaddons;
 
 import java.util.List;

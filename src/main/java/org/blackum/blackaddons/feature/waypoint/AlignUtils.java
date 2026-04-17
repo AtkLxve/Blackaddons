@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.feature.waypoint;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -15,6 +15,7 @@ import org.blackum.blackaddons.feature.rotation.RotationManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 
 public class AlignUtils {
     private static final double ALIGN_EPSILON = 1.0E-4D;

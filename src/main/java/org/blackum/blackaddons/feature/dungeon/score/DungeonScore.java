@@ -13,14 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.blackum.blackaddons.common.util.LocationUtils;
-import org.blackum.blackaddons.common.util.ScoreboardUtils;
-import org.blackum.blackaddons.common.util.TabListUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
+import org.blackum.blackaddons.common.util.mc.TabListUtils;
 
 public class DungeonScore {
     private static final Logger LOGGER = LoggerFactory.getLogger("BlackAddons-DungeonScore");
 
-    // Patterns from Skyblocker & Tablist
     private static final Pattern SECRETS_PATTERN = Pattern
             .compile("(?i)Secrets (?:Found|):?\\s*(\\d+(?:\\.\\d+)?)(?:%|)");
     private static final Pattern PUZZLES_PATTERN = Pattern.compile("(?i).+?:\\s*\\[(.)\\]");
@@ -117,7 +116,6 @@ public class DungeonScore {
         floorHasMimics = currentFloor.matches("[FM][67]");
         isCurrentFloorEntrance = currentFloor.equals("Entrance");
 
-        // Initial puzzle count from tab
         puzzleCount = getPuzzleCountFromTab();
     }
 
@@ -198,7 +196,6 @@ public class DungeonScore {
         return bonus;
     }
 
-    // Data Extraction Helpers
     private static int getTotalRooms() {
         int completed = getCompletedRooms();
         double clear = getClearPercentage();
@@ -296,27 +293,23 @@ public class DungeonScore {
             if (cleanLine.isEmpty())
                 continue;
 
-            // Exclude known non-puzzle headers
             if (cleanLine.contains("Mimic") || cleanLine.contains("Prince") ||
                     cleanLine.contains("Secrets") || cleanLine.contains("Deaths") ||
                     cleanLine.contains("Crypts") || cleanLine.contains("Completed Rooms") ||
                     cleanLine.contains("Puzzles: ("))
                 continue;
 
-            // Special exception for Quiz: count 'in progress' (✦) as completed
             if (cleanLine.contains("Quiz") && (cleanLine.contains("\u2726") || cleanLine.contains("✦"))) {
                 completed++;
                 continue;
             }
 
-            // Check for any of the checkmark symbols
             if (cleanLine.contains("\u2714") || cleanLine.contains("\u2713") ||
                     cleanLine.contains("\u2705") || cleanLine.contains("✔")) {
                 completed++;
             }
         }
 
-        // Penalty is 10 points for each puzzle that is NOT completed
         return Math.max(0, (puzzleCount - completed)) * 10;
     }
 

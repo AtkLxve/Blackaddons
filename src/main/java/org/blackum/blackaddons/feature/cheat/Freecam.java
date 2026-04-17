@@ -10,7 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.common.util.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 

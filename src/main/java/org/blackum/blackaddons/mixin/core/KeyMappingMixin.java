@@ -2,7 +2,7 @@ package org.blackum.blackaddons.mixin.core;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import org.blackum.blackaddons.common.util.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Accessor;

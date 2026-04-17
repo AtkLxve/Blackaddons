@@ -7,8 +7,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
-import org.blackum.blackaddons.common.util.LocationUtils;
-import org.blackum.blackaddons.common.util.ScoreboardUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 

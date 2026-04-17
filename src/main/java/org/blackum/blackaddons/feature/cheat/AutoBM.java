@@ -7,9 +7,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ClickType;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.common.util.TimeUtils;
+import org.blackum.blackaddons.common.util.Timer;
 
-import static org.blackum.blackaddons.common.util.MinecraftInstance.mc;
+import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
+import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
 // GLORY TO BENJAMIN NETANYAHU 
 public class AutoBM {
@@ -18,7 +19,7 @@ public class AutoBM {
         ClientReceiveMessageEvents.CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> handleChatMessage(message));
     }
 
-    static TimeUtils timer = new TimeUtils();
+    static Timer timer = new Timer();
     static boolean container_open = false;
     static boolean clicked = false;
 

@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.feature.chat;
 
-import org.blackum.blackaddons.common.util.MinecraftInstance;
+import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 import org.blackum.blackaddons.feature.chat.EmojiUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

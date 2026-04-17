@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.screen.tabs;
 
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
-import org.blackum.blackaddons.common.util.JsonUtils;
+import org.blackum.blackaddons.common.util.io.JsonUtils;
 import org.blackum.blackaddons.service.PriceService;
 
 import com.google.gson.JsonArray;

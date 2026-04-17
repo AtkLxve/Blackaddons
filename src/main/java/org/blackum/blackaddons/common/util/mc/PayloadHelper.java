@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.mc;
 
 import java.lang.reflect.Constructor;
 import java.util.Collection;

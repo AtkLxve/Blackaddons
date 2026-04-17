@@ -322,7 +322,7 @@ public class ConfigManager {
     }
 
     public static class SoloClearInfo {
-        public String type; // Usually F7 or M7, or could keep it empty and infer from the list
+        public String type;
         public String time;
         public int secrets;
         public List<String> puzzles = new ArrayList<>();

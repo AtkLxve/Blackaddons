@@ -1,4 +1,4 @@
-package org.blackum.blackaddons.common.util;
+package org.blackum.blackaddons.common.util.mc;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.lang.reflect.Method;
@@ -186,8 +186,6 @@ public final class McCompat {
                         new String[] { "createCompositeState", "method_24297" }, false);
             }
 
-            // RenderType.create is private — must use getDeclaredMethods + setAccessible
-            // method_24045 is pre-1.21.10, method_24048 (4 args) / method_24049 (6 args) is 1.21.10+
             String[] createNames = { "create", "method_24045", "method_24048", "method_24049" };
             Object[][] argSets = {
                     { name, 1536, pipeline, compositeState },

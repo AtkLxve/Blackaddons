@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.service.BotIntegration;
-import org.blackum.blackaddons.common.util.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

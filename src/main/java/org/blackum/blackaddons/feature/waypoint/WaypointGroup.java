@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.feature.waypoint;
 
 import org.blackum.blackaddons.common.model.DungeonFloor;
-import org.blackum.blackaddons.common.util.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
 
 import java.util.UUID;
 

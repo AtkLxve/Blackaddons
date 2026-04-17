@@ -1,10 +1,15 @@
-package org.blackum.blackaddons.feature.dungeon.map;
+package org.blackum.blackaddons.gui.hud;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.common.util.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.feature.dungeon.map.Door;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
+import org.blackum.blackaddons.feature.dungeon.map.Room;
+import org.blackum.blackaddons.feature.dungeon.map.Vec2i;
 
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -113,8 +118,6 @@ public class DungeonMapHud {
             if (room.tiles.isEmpty())
                 continue;
 
-
-            // Force entrance to be cleared if it was discovered
             if (room.type == Room.Type.ENTRANCE && room.state == Room.State.DISCOVERED) {
                 room.state = Room.State.CLEARED;
             }
@@ -193,7 +196,6 @@ public class DungeonMapHud {
                     float relX = (float) mc.player.getX() + 185f;
                     float relZ = (float) mc.player.getZ() + 185f;
 
-                    // Smooth continuous geometrical mapping (reverted to original accurate math)
                     float tx = sc.x + (rs / 2f) + (relX * (rs + 4f) / 32f);
                     float tz = sc.z + (rs / 2f) + (relZ * (rs + 4f) / 32f);
 
@@ -377,7 +379,7 @@ public class DungeonMapHud {
         String[] words = name.split(" ");
         java.util.List<String> lines = new java.util.ArrayList<>();
         StringBuilder sb = new StringBuilder();
-        int maxWidth = (int)(24 / scale); // Approx room width in font pixels
+        int maxWidth = (int)(24 / scale);
         
         for (String w : words) {
             if (sb.length() > 0 && mc.font.width(sb.toString() + " " + w) > maxWidth) {

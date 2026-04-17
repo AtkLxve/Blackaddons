@@ -16,7 +16,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.FormattedCharSequence;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.common.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;

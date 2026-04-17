@@ -5,9 +5,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
-import org.blackum.blackaddons.common.util.AnimatedTextColorAccessor;
+import org.blackum.blackaddons.common.util.accessor.AnimatedTextColorAccessor;
 import org.blackum.blackaddons.mixin.core.TextColorAccessor;
-import static org.blackum.blackaddons.common.util.MinecraftInstance.mc;
+import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
+import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
 public class ChatUtils {
 
@@ -61,7 +62,7 @@ public class ChatUtils {
             float charOffset = (float) i / Math.max(1, length - 1);
             TextColor color = org.blackum.blackaddons.mixin.core.TextColorAccessor.ba$create(stops.get(0).rgb());
 
-            if ((Object) color instanceof org.blackum.blackaddons.common.util.AnimatedTextColorAccessor accessor) {
+            if ((Object) color instanceof org.blackum.blackaddons.common.util.accessor.AnimatedTextColorAccessor accessor) {
                 accessor.ba$setAnimated(true);
                 accessor.ba$setStops(stops);
                 accessor.ba$setSpeed(speed);

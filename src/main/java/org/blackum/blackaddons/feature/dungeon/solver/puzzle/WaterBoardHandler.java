@@ -12,7 +12,7 @@ import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.event.DungeonEvent;
 import org.blackum.blackaddons.common.event.PlayerInteractEvent;
 
-import org.blackum.blackaddons.common.util.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.util.ThreadUtils;
 import org.blackum.blackaddons.feature.dungeon.ScanUtils;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
@@ -62,11 +62,9 @@ public class WaterBoardHandler {
                 if (WaterBoardSolver.INSTANCE.isInactive()) {
                     manualTrigger();
                 } else {
-                    // Part 1: Sticky Reset
                     BlockPos playerPos = mc.player.blockPosition();
                     BlockPos center = WaterBoardSolver.INSTANCE.getRoomCenter();
 
-                    // 1. Check distance fallback (64 blocks, 2D)
                     if (center != null) {
                         double dx = playerPos.getX() - center.getX();
                         double dz = playerPos.getZ() - center.getZ();
@@ -77,14 +75,11 @@ public class WaterBoardHandler {
                         }
                     }
 
-                    // 2. Check room boundary (only reset if in a DIFFERENT known room AND at least
-                    // 28 blocks away)
                     int idx = (playerPos.getX() + 185) / 32 * 6 + (playerPos.getZ() + 185) / 32;
                     if (idx >= 0 && idx < 36) {
                         Room.Tile tile = DungeonMap.getTileGrid()[idx];
                         if (tile != null && tile.owner != null && tile.owner.data != null) {
                             if (!"Water Board".equals(tile.owner.data.name)) {
-                                // Double check distance to ensure we aren't just on a door boundary
                                 double dx = playerPos.getX() - center.getX();
                                 double dz = playerPos.getZ() - center.getZ();
                                 if (dx * dx + dz * dz > 28 * 28) {
@@ -107,7 +102,6 @@ public class WaterBoardHandler {
 
         BlockPos playerPos = mc.player.blockPosition();
 
-        // Optimized scan using the gate signature logic you provided
         for (int x = -16; x <= 16; x++) {
             for (int z = -16; z <= 16; z++) {
                 for (int y = 56; y <= 75; y++) {
@@ -119,7 +113,6 @@ public class WaterBoardHandler {
                         int woolCount = 0;
                         int validCount = 0;
                         for (int i = 0; i < 5; i++) {
-                            // Gate signature: check for clay board blocks relative to lever
                             BlockPos gateOffset = new BlockPos(0, -4, 10 + i);
                             BlockPos gatePos = ScanUtils.getRealCoord(gateOffset, pos, rot);
                             BlockState state = mc.level.getBlockState(gatePos);

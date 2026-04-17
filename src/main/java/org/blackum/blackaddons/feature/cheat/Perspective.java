@@ -7,7 +7,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.common.util.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;

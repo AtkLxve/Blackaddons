@@ -23,7 +23,6 @@ public class SmallColorPicker extends ColorPicker {
 
     @Override
     public void setWidth(int width) {
-        // We keep it small
     }
 
     @Override

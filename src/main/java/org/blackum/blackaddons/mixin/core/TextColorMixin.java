@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.mixin.core;
 
 import net.minecraft.network.chat.TextColor;
-import org.blackum.blackaddons.common.util.AnimatedTextColorAccessor;
+import org.blackum.blackaddons.common.util.accessor.AnimatedTextColorAccessor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

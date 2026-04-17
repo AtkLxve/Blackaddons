@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.model.SkyblockItem;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
-import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
 import com.google.gson.JsonObject;
 
 public class PetDetailWidget extends Widget {

@@ -50,9 +50,7 @@ public class WaterBoardPositionScreen extends Screen {
         graphics.pose().translate((float) this.hudX, (float) this.hudY);
         graphics.pose().scale(this.hudScale, this.hudScale);
 
-        // Preview box
         graphics.fill(0, -12, boxWidth, boxHeight, BG_COLOR);
-        // Border
         graphics.fill(0, -12, boxWidth, -11, BORDER_COLOR);
         graphics.fill(0, boxHeight - 1, boxWidth, boxHeight, BORDER_COLOR);
         graphics.fill(0, -12, 1, boxHeight, BORDER_COLOR);

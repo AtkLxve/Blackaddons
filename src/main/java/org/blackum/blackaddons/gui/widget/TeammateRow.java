@@ -8,7 +8,7 @@ import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.common.model.Teammate;
 import org.blackum.blackaddons.common.constants.Constants;
-import org.blackum.blackaddons.common.util.FormatUtils;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
 
 public class TeammateRow extends Widget {
     private final Teammate tm;
