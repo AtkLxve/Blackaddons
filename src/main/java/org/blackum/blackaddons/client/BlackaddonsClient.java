@@ -77,7 +77,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         RoomData.loadRooms();
         DungeonWorldScanner.register();
         DungeonScoreboard.register();
-        BotIntegration.authenticateWithMojang();
+        BotIntegration.authenticateWithBot();
         CustomNameManager.getInstance().fetch();
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {

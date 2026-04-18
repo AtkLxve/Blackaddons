@@ -22,6 +22,15 @@ public class EncryptionUtils {
         }
     }
 
+    public static boolean isKeySet() {
+        return secretKey != null;
+    }
+
+    public static String encryptIdentity(String uuid) {
+        String data = uuid + ":" + System.currentTimeMillis() + ":" + new SecureRandom().nextInt(1000000);
+        return encrypt(data);
+    }
+
     public static String encrypt(String strToEncrypt) {
         try {
             if (secretKey == null)
