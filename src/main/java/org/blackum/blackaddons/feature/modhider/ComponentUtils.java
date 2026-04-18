@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.feature.modhider;
 
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.mixin.core.LanguageAccessor;
 import org.blackum.blackaddons.mixin.core.LanguageManagerAccessor;
 

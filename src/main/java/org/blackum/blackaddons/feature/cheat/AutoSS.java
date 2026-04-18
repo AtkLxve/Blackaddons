@@ -18,15 +18,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.manager.RotationManager;
-import org.blackum.blackaddons.core.util.LocationUtils;
-import org.blackum.blackaddons.core.util.Scheduler;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.feature.rotation.RotationManager;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.scheduler.Scheduler;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.mixin.core.GameRendererAccessor;
-import org.blackum.blackaddons.core.util.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector4f;
@@ -597,18 +597,23 @@ public class AutoSS {
 
         int overlayX = ConfigManager.data.AutoSSOverlayX < 0 ? 10 : ConfigManager.data.AutoSSOverlayX;
         int overlayY = ConfigManager.data.AutoSSOverlayY;
+        float scale = ConfigManager.data.AutoSSOverlayScale;
 
-        int y = overlayY;
+        graphics.pose().pushMatrix();
+        graphics.pose().translate((float) overlayX, (float) overlayY);
+        graphics.pose().scale(scale, scale);
+        int y = 0;
         for (String line : debugInfo) {
-            graphics.drawString(client.font, line, overlayX, y, COLOR_TEXT_WHITE);
+            graphics.drawString(client.font, line, 0, y, COLOR_TEXT_WHITE);
             y += 10;
         }
-        graphics.drawString(client.font, ChatFormatting.YELLOW + "Solution:", overlayX, y, COLOR_TEXT_WHITE);
+        graphics.drawString(client.font, ChatFormatting.YELLOW + "Solution:", 0, y, COLOR_TEXT_WHITE);
         y += 10;
         for (int i = 0; i < solution.size(); i++) {
-            graphics.drawString(client.font, (i + 1) + ". " + solution.get(i).toShortString(), overlayX + 10, y, COLOR_TEXT_WHITE);
+            graphics.drawString(client.font, (i + 1) + ". " + solution.get(i).toShortString(), 10, y, COLOR_TEXT_WHITE);
             y += 10;
         }
+        graphics.pose().popMatrix();
 
         renderVisualNodes(graphics, tracker);
     }

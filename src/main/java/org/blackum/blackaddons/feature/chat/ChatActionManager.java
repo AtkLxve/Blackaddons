@@ -4,12 +4,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
-import org.blackum.blackaddons.core.config.ActionManager;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.common.config.ActionManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.blackum.blackaddons.common.util.format.FormatUtils;
 
 public class ChatActionManager {
     private static ChatActionManager instance;
@@ -92,10 +93,10 @@ public class ChatActionManager {
                         }
 
                         client.gui.setTimes(10, (int) (trigger.durationSeconds * 20), 20);
-                        client.gui.setTitle(Component.literal(org.blackum.blackaddons.core.util.FormatUtils.formatColor(fTitle)));
+                        client.gui.setTitle(Component.literal(org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(fTitle)));
                         if (!fSubtitle.isEmpty()) {
                             client.gui.setSubtitle(
-                                    Component.literal(org.blackum.blackaddons.core.util.FormatUtils
+                                    Component.literal(org.blackum.blackaddons.common.util.format.FormatUtils
                                                     .formatColor(fSubtitle)));
                         }
                     }
@@ -113,8 +114,8 @@ public class ChatActionManager {
                             }
                         }
                         NotificationManager.addNotification(
-                                org.blackum.blackaddons.core.util.FormatUtils.formatColor(nTitle),
-                                org.blackum.blackaddons.core.util.FormatUtils.formatColor(nMessage),
+                                org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(nTitle),
+                                org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(nMessage),
                                 trigger.notificationType
                         );
                     }

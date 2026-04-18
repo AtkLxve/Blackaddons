@@ -5,10 +5,10 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.manager.RotationManager;
-import org.blackum.blackaddons.core.util.LocationUtils;
-import org.blackum.blackaddons.core.util.ScoreboardUtils;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.feature.rotation.RotationManager;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 

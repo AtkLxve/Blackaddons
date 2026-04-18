@@ -9,12 +9,12 @@ on:
   workflow_dispatch:
     inputs:
       release_type:
-        description: 'Release Type (stable)'
+        description: "Release Type (stable)"
         required: true
-        default: 'stable'
+        default: "stable"
         type: choice
         options:
-        - stable
+          - stable
 
 jobs:
   setup:
@@ -40,18 +40,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        branch: ${{ fromJson(needs.setup.outputs.matrix) }}
+        version: ${{ fromJson(needs.setup.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
-        with:
-          ref: ${{ matrix.branch }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: "21"
+          distribution: "temurin"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
@@ -60,16 +58,16 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build -Pmod_version=${{ needs.setup.outputs.version }}
+        run: ./gradlew :${{ matrix.version }}:build -Pmod_version=${{ needs.setup.outputs.version }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: artifacts-${{ matrix.branch }}
+          name: artifacts-${{ matrix.version }}
           path: |
-            build/libs/*.jar
-            !build/libs/*-sources.jar
-            !build/libs/*-dev.jar
+            versions/${{ matrix.version }}/build/libs/*.jar
+            !versions/${{ matrix.version }}/build/libs/*-sources.jar
+            !versions/${{ matrix.version }}/build/libs/*-dev.jar
 
   release:
     if: github.event_name == 'workflow_dispatch'
@@ -100,13 +98,13 @@ jobs:
           PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           echo "## Changes" > changelog.md
           echo "" >> changelog.md
-          
+
           if [ -z "$PREV_TAG" ]; then
             LOG_CMD="git log"
           else
             LOG_CMD="git log ${PREV_TAG}..HEAD"
           fi
-          
+
           extract_commits() {
             local prefix=$1
             local title=$2
@@ -117,24 +115,24 @@ jobs:
               echo "" >> changelog.md
             fi
           }
-          
+
           extract_commits "feat" "Features"
           extract_commits "fix" "Bug Fixes"
           extract_commits "chore" "Chores"
           extract_commits "refactor" "Refactoring"
           extract_commits "docs" "Documentation"
-          
+
           OTHER_COMMITS=$($LOG_CMD --no-merges --invert-grep -i --grep="^feat" --grep="^fix" --grep="^chore" --grep="^refactor" --grep="^docs" --pretty=format:"* %s (%h)")
           if [ -n "$OTHER_COMMITS" ]; then
             echo "### Other Changes" >> changelog.md
             echo "$OTHER_COMMITS" >> changelog.md
             echo "" >> changelog.md
           fi
-          
+
           if [ -n "$PREV_TAG" ]; then
             echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${{ env.VERSION }}" >> changelog.md
           fi
-          
+
           cat changelog.md
 
       - name: Create Stable Release
@@ -151,10 +149,9 @@ jobs:
       - name: Bump Version
         run: |
           python3 scripts/bump_version.py
-        
+
       - name: Commit & Push Version Bump
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "chore: bump version"
           file_pattern: gradle.properties
-

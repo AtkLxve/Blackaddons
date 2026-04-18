@@ -1,0 +1,20 @@
+package org.blackum.blackaddons.command;
+
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import org.blackum.blackaddons.Blackaddons;
+import org.blackum.blackaddons.gui.screen.overlay.OverlayEditScreen;
+
+public final class MiscCommands {
+    private MiscCommands() {}
+
+    public static LiteralArgumentBuilder<FabricClientCommandSource> hudNode() {
+        return ClientCommandManager.literal("hud").executes(ctx -> {
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new OverlayEditScreen(null));
+            }
+            return 1;
+        });
+    }
+}

@@ -3,7 +3,7 @@ package org.blackum.blackaddons.feature.cheat;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import org.blackum.blackaddons.core.util.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.feature.chat;
 
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.core.util.Constants;
+import org.blackum.blackaddons.common.constants.Constants;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 

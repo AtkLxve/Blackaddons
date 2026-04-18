@@ -10,7 +10,10 @@
     "gui.SystemToastAccessor",
     "core.LanguageAccessor",
     "core.GameRendererAccessor",
+    "core.FontMixin",
     "render.CameraMixin",
+    "render.ShaderManagerMixin",
+    "gui.GuiRendererMixin",
     "skyhanni.CurrentChatDisplayMixin"
   ],
   "injectors": {
