@@ -28,6 +28,7 @@
     "gui.ScreenMixin",
     "gui.GuiMixin",
     "gui.EffectsInInventoryMixin",
+    "gui.GuiGraphicsAccessor",
     "core.TextColorMixin",
     "core.TextColorAccessor",
     "dungeon.MapItemDataMixin"

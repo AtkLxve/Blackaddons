@@ -479,6 +479,7 @@ public class ConfigManager {
         public int dungeonMapColorBorder = 0xFF555555;
         public boolean dungeonMapBorderEnabled = true;
         public int dungeonMapBorderThickness = 1;
+        public float dungeonMapCornerRadius = 2.0f;
 
         // Water Board Solver
         public boolean waterBoardSolverEnabled = true;
@@ -609,7 +610,8 @@ public class ConfigManager {
                 "dungeonMapShowRoomNames", "dungeonMapRoomNameScale",
                 "dungeonMapColorNameDiscovered", "dungeonMapColorNameCleared", "dungeonMapColorNameCompleted",
                 "dungeonMapUndiscoveredDarkness",
-                "dungeonMapColorBorder", "dungeonMapBorderEnabled", "dungeonMapBorderThickness"));
+                "dungeonMapColorBorder", "dungeonMapBorderEnabled", "dungeonMapBorderThickness",
+                "dungeonMapCornerRadius"));
         GROUP_MAP.put("waterBoard", List.of(
                 "waterBoardSolverEnabled", "waterBoardHudEnabled",
                 "waterBoardHudX", "waterBoardHudY", "waterBoardHudScale",

@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.hud;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.render.state.GuiRenderState;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
@@ -11,6 +12,9 @@ import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 import org.blackum.blackaddons.feature.dungeon.map.Vec2i;
+import org.blackum.blackaddons.gui.render.RoundedFillRenderState;
+import org.blackum.blackaddons.mixin.gui.GuiGraphicsAccessor;
+import org.joml.Matrix3x2f;
 
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -204,10 +208,11 @@ public class DungeonMapHud implements HudElement {
             if (funnyMap && !door.isSeen()) {
                 dclr = darken(dclr, darknessFactor);
             }
-            g.fill(
-                    dX + (int) (dp[0] * scale), dY + (int) (dp[1] * scale),
-                    dX + (int) ((dp[0] + dsz.x) * scale), dY + (int) ((dp[1] + dsz.z) * scale),
-                    dclr);
+            float dx1 = dX + dp[0] * scale;
+            float dy1 = dY + dp[1] * scale;
+            float dx2 = dx1 + dsz.x * scale;
+            float dy2 = dy1 + dsz.z * scale;
+            fillRounded(g, dx1, dy1, dx2, dy2, 0f, dclr);
         }
 
         Minecraft mc = Minecraft.getInstance();
@@ -235,15 +240,15 @@ public class DungeonMapHud implements HudElement {
 
                 int gx = gp.x;
                 int gz = gp.z;
-                int x1 = dX + (int) (gx * cellSize * scale);
-                int z1 = dY + (int) (gz * cellSize * scale);
-                int x2 = dX + (int) ((gx * cellSize + rs) * scale);
-                int z2 = dY + (int) ((gz * cellSize + rs) * scale);
+                float x1 = dX + gx * cellSize * scale;
+                float z1 = dY + gz * cellSize * scale;
+                float x2 = dX + (gx * cellSize + rs) * scale;
+                float z2 = dY + (gz * cellSize + rs) * scale;
                 int grey = ConfigManager.data.dungeonMapColorUndiscovered;
-                g.fill(x1 + 1, z1, x2 - 1, z2, grey);
-                g.fill(x1, z1 + 1, x2, z2 - 1, grey);
-                cx = (x1 + x2) / 2;
-                cz = (z1 + z2) / 2;
+                float tileRadius = ConfigManager.data.dungeonMapCornerRadius * scale;
+                fillRounded(g, x1, z1, x2, z2, tileRadius, grey);
+                cx = (int) ((x1 + x2) * 0.5f);
+                cz = (int) ((z1 + z2) * 0.5f);
             } else {
                 cx = centerX(room, dX, cellSize, rs, scale);
                 cz = centerZ(room, dY, cellSize, rs, scale);
@@ -288,6 +293,16 @@ public class DungeonMapHud implements HudElement {
         drawBorder(g, x, y, size);
     }
 
+    private static void fillRounded(GuiGraphics g, float x0, float y0, float x1, float y1, float radius, int color, boolean outTop, boolean outRight, boolean outBottom, boolean outLeft) {
+        GuiRenderState state = ((GuiGraphicsAccessor) g).getGuiRenderState();
+        Matrix3x2f pose = new Matrix3x2f(g.pose());
+        state.submitGuiElement(new RoundedFillRenderState(pose, x0, y0, x1, y1, radius, color, outTop, outRight, outBottom, outLeft, null));
+    }
+
+    private static void fillRounded(GuiGraphics g, float x0, float y0, float x1, float y1, float radius, int color) {
+        fillRounded(g, x0, y0, x1, y1, radius, color, true, true, true, true);
+    }
+
     private static void drawTiles(GuiGraphics g, Room room, Room.Type eff,
             int dX, int dY, int cellSize, int rs, float scale,
             boolean allPuzzlesKnown, boolean trapDiscovered, boolean funnyMap, float darkness) {
@@ -300,32 +315,46 @@ public class DungeonMapHud implements HudElement {
             return;
         }
 
+        float tileRadius = ConfigManager.data.dungeonMapCornerRadius * scale;
+
         if (ambiguous && !(funnyMap && room.data != null)) {
             for (Room.Tile tile : room.tiles) {
                 int gx = (tile.pos.x + 185) / 32;
                 int gz = (tile.pos.z + 185) / 32;
-                int x1 = dX + (int) (gx * cellSize * scale);
-                int x2 = dX + (int) ((gx * cellSize + rs) * scale);
-                int z1 = dY + (int) (gz * cellSize * scale);
-                int z2 = dY + (int) ((gz * cellSize + rs) * scale);
-                int mx = (x1 + x2) / 2;
+                float x1 = dX + gx * cellSize * scale;
+                float x2 = dX + (gx * cellSize + rs) * scale;
+                float z1 = dY + gz * cellSize * scale;
+                float z2 = dY + (gz * cellSize + rs) * scale;
+                float mx = (x1 + x2) * 0.5f;
 
                 int clrP = darken(ConfigManager.data.dungeonMapColorPuzzle, darkness);
                 int clrT = darken(ConfigManager.data.dungeonMapColorTrap, darkness);
-                g.fill(x1 + 1, z1, mx, z2, clrP);
-                g.fill(x1, z1 + 1, mx, z2 - 1, clrP);
 
-                g.fill(mx, z1, x2 - 1, z2, clrT);
-                g.fill(mx, z1 + 1, x2, z2 - 1, clrT);
+                boolean outTop = !hasTileAt(room, gx, gz - 1);
+                boolean outRight = !hasTileAt(room, gx + 1, gz);
+                boolean outBottom = !hasTileAt(room, gx, gz + 1);
+                boolean outLeft = !hasTileAt(room, gx - 1, gz);
 
-                int connClr = clrP;
-                if (hasTileAt(room, gx + 1, gz))
-                    g.fill(x2 - 1, z1, dX + (int) ((gx + 1) * cellSize * scale) + 1, z2, connClr);
-                if (hasTileAt(room, gx, gz + 1))
-                    g.fill(x1, z2 - 1, x2, dY + (int) ((gz + 1) * cellSize * scale) + 1, connClr);
-                if (hasTileAt(room, gx + 1, gz) && hasTileAt(room, gx, gz + 1) && hasTileAt(room, gx + 1, gz + 1))
-                    g.fill(x2 - 1, z2 - 1, dX + (int) ((gx + 1) * cellSize * scale) + 1,
-                            dY + (int) ((gz + 1) * cellSize * scale) + 1, connClr);
+                fillRounded(g, x1, z1, mx, z2, tileRadius, clrP, outTop, false, outBottom, outLeft);
+                fillRounded(g, mx, z1, x2, z2, tileRadius, clrT, outTop, outRight, outBottom, false);
+
+                if (!outRight) {
+                    float nx1 = dX + (gx + 1) * cellSize * scale;
+                    boolean outConnTop = !hasTileAt(room, gx, gz - 1) || !hasTileAt(room, gx + 1, gz - 1);
+                    boolean outConnBot = !hasTileAt(room, gx, gz + 1) || !hasTileAt(room, gx + 1, gz + 1);
+                    fillRounded(g, x2, z1, nx1, z2, tileRadius, clrP, outConnTop, false, outConnBot, false);
+                }
+                if (!outBottom) {
+                    float nz1 = dY + (gz + 1) * cellSize * scale;
+                    boolean outConnLeft = !hasTileAt(room, gx - 1, gz) || !hasTileAt(room, gx - 1, gz + 1);
+                    boolean outConnRight = !hasTileAt(room, gx + 1, gz) || !hasTileAt(room, gx + 1, gz + 1);
+                    fillRounded(g, x1, z2, x2, nz1, tileRadius, clrP, false, outConnRight, false, outConnLeft);
+                }
+                if (!outRight && !outBottom && hasTileAt(room, gx + 1, gz + 1)) {
+                    float nx1 = dX + (gx + 1) * cellSize * scale;
+                    float nz1 = dY + (gz + 1) * cellSize * scale;
+                    fillRounded(g, x2, z2, nx1, nz1, tileRadius, clrP, false, false, false, false);
+                }
             }
             return;
         }
@@ -333,25 +362,39 @@ public class DungeonMapHud implements HudElement {
         for (Room.Tile tile : room.tiles) {
             int gx = (tile.pos.x + 185) / 32;
             int gz = (tile.pos.z + 185) / 32;
-            int x1 = dX + (int) (gx * cellSize * scale);
-            int x2 = dX + (int) ((gx * cellSize + rs) * scale);
-            int z1 = dY + (int) (gz * cellSize * scale);
-            int z2 = dY + (int) ((gz * cellSize + rs) * scale);
+            float x1 = dX + gx * cellSize * scale;
+            float x2 = dX + (gx * cellSize + rs) * scale;
+            float z1 = dY + gz * cellSize * scale;
+            float z2 = dY + (gz * cellSize + rs) * scale;
             boolean shouldDarken = unopened || (funnyMap && undiscovered);
             int clr = room.mimic ? darken(ConfigManager.data.dungeonMapColorMimic, shouldDarken ? darkness : 1.0f)
                     : shouldDarken ? darken(baseColor(eff), darkness)
                     : baseColor(eff);
 
-            g.fill(x1 + 1, z1, x2 - 1, z2, clr);
-            g.fill(x1, z1 + 1, x2, z2 - 1, clr);
+            boolean outTop = !hasTileAt(room, gx, gz - 1);
+            boolean outRight = !hasTileAt(room, gx + 1, gz);
+            boolean outBottom = !hasTileAt(room, gx, gz + 1);
+            boolean outLeft = !hasTileAt(room, gx - 1, gz);
 
-            if (hasTileAt(room, gx + 1, gz))
-                g.fill(x2 - 1, z1, dX + (int) ((gx + 1) * cellSize * scale) + 1, z2, clr);
-            if (hasTileAt(room, gx, gz + 1))
-                g.fill(x1, z2 - 1, x2, dY + (int) ((gz + 1) * cellSize * scale) + 1, clr);
-            if (hasTileAt(room, gx + 1, gz) && hasTileAt(room, gx, gz + 1) && hasTileAt(room, gx + 1, gz + 1))
-                g.fill(x2 - 1, z2 - 1, dX + (int) ((gx + 1) * cellSize * scale) + 1,
-                        dY + (int) ((gz + 1) * cellSize * scale) + 1, clr);
+            fillRounded(g, x1, z1, x2, z2, tileRadius, clr, outTop, outRight, outBottom, outLeft);
+
+            if (!outRight) {
+                float nx1 = dX + (gx + 1) * cellSize * scale;
+                boolean outConnTop = !hasTileAt(room, gx, gz - 1) || !hasTileAt(room, gx + 1, gz - 1);
+                boolean outConnBot = !hasTileAt(room, gx, gz + 1) || !hasTileAt(room, gx + 1, gz + 1);
+                fillRounded(g, x2, z1, nx1, z2, tileRadius, clr, outConnTop, false, outConnBot, false);
+            }
+            if (!outBottom) {
+                float nz1 = dY + (gz + 1) * cellSize * scale;
+                boolean outConnLeft = !hasTileAt(room, gx - 1, gz) || !hasTileAt(room, gx - 1, gz + 1);
+                boolean outConnRight = !hasTileAt(room, gx + 1, gz) || !hasTileAt(room, gx + 1, gz + 1);
+                fillRounded(g, x1, z2, x2, nz1, tileRadius, clr, false, outConnRight, false, outConnLeft);
+            }
+            if (!outRight && !outBottom && hasTileAt(room, gx + 1, gz + 1)) {
+                float nx1 = dX + (gx + 1) * cellSize * scale;
+                float nz1 = dY + (gz + 1) * cellSize * scale;
+                fillRounded(g, x2, z2, nx1, nz1, tileRadius, clr, false, false, false, false);
+            }
         }
     }
 

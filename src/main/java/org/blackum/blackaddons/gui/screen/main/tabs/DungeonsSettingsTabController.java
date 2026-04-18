@@ -185,6 +185,14 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             ConfigManager.save();
         }));
 
+        final Label cornerRadiusLabel = new Label(0, 0, "Corner Radius: " + String.format("%.1f", ConfigManager.data.dungeonMapCornerRadius) + "px", Label.Style.BODY);
+        list.addItem(cornerRadiusLabel);
+        list.addItem(new Slider(0, 0, width, 0f, 5.0f, ConfigManager.data.dungeonMapCornerRadius, v -> {
+            ConfigManager.data.dungeonMapCornerRadius = v;
+            cornerRadiusLabel.setText("Corner Radius: " + String.format("%.1f", v) + "px");
+            ConfigManager.save();
+        }));
+
         list.addItem(new Label(0, 0, "Room Colors", Label.Style.TITLE));
         list.addItem(new Button(0, 0, width, 20, "Reset Map Colors", () -> {
             ConfigManager.resetDungeonMapColors();
