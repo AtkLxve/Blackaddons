@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
+import org.blackum.blackaddons.core.util.EncryptionUtils;
 public class BotIntegration {
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
@@ -317,51 +317,46 @@ public class BotIntegration {
         });
     }
 
-    private static String activeServerId = null;
+    private static boolean authKeyFetched = false;
 
     public static CompletableFuture<String> getAuthKey() {
-        if (activeServerId != null) {
-            return CompletableFuture.completedFuture(activeServerId);
+        if (authKeyFetched && EncryptionUtils.isKeySet()) {
+            return CompletableFuture.completedFuture("fetched_key_present");
         }
         return CompletableFuture.supplyAsync(() -> {
             try {
-                if (MinecraftInstance.mc.getUser() != null) {
-                    String serverId = UUID.randomUUID().toString().replace("-", "");
-                    String accessToken = MinecraftInstance.mc.getUser().getAccessToken();
-                    String profileId = MinecraftInstance.mc.getUser().getProfileId().toString().replace("-", "");
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(ConfigManager.data.botUrl + "/v1/key"))
+                        .header("Content-Type", "application/json")
+                        .header("User-Agent", Constants.BOT_USER_AGENT)
+                        .GET()
+                        .build();
 
-                    JsonObject payload = new JsonObject();
-                    payload.addProperty("accessToken", accessToken);
-                    payload.addProperty("selectedProfile", profileId);
-                    payload.addProperty("serverId", serverId);
-
-                    HttpRequest request = HttpRequest.newBuilder()
-                            .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/join"))
-                            .header("Content-Type", "application/json")
-                            .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
-                            .build();
-
-                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                    if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                        activeServerId = serverId;
-                        return serverId;
-                    } else {
-                        Blackaddons.LOGGER.warn("Mojang API join failed. Status: " + response.statusCode() + " Body: " + response.body());
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                    JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+                    if (responseJson.has("key")) {
+                        String key = responseJson.get("key").getAsString();
+                        EncryptionUtils.setKeyBase64(key);
+                        authKeyFetched = true;
+                        return "fetched_key_present";
                     }
+                } else {
+                    Blackaddons.LOGGER.warn("Bot /v1/key failed. Status: " + response.statusCode() + " Body: " + response.body());
                 }
             } catch (Exception e) {
-                Blackaddons.LOGGER.error("Failed Mojang authentication: " + e.getMessage());
+                Blackaddons.LOGGER.error("Failed to fetch bot key: " + e.getMessage());
             }
             return null;
         });
     }
 
-    public static CompletableFuture<Void> authenticateWithMojang() {
+    public static CompletableFuture<Void> authenticateWithBot() {
         return getAuthKey().thenAccept(key -> {
             if (key != null) {
-                Blackaddons.LOGGER.info("Successfully authenticated with Mojang.");
+                Blackaddons.LOGGER.info("Successfully fetched developer authentication key.");
             } else {
-                Blackaddons.LOGGER.warn("Failed to get Mojang auth key.");
+                Blackaddons.LOGGER.warn("Failed to get developer authentication key.");
             }
         });
     }
@@ -385,18 +380,22 @@ public class BotIntegration {
                     .header("Content-Type", "application/json")
                     .header("User-Agent", Constants.BOT_USER_AGENT);
 
-            if (key != null) {
-                builder.header(Constants.HEADER_PLAYER_KEY, key);
-                try {
-                    if (MinecraftInstance.mc.getUser() != null) {
-                        builder.header(Constants.HEADER_PLAYER_NAME, MinecraftInstance.mc.getUser().getName());
-                        builder.header(Constants.HEADER_PLAYER_UUID, MinecraftInstance.mc.getUser().getProfileId().toString());
-                    }
-                } catch (Exception ignored) {}
-            }
-
             if (ConfigManager.data.developerKey != null && !ConfigManager.data.developerKey.isEmpty()) {
                 builder.header(Constants.HEADER_DEVELOPER_KEY, ConfigManager.data.developerKey);
+            } else {
+                if (EncryptionUtils.isKeySet()) {
+                    try {
+                        if (MinecraftInstance.mc.getUser() != null) {
+                            String uuidStr = MinecraftInstance.mc.getUser().getProfileId().toString();
+                            String encryptedId = EncryptionUtils.encryptIdentity(uuidStr);
+                            if (encryptedId != null) {
+                                builder.header("X-Encrypted-Identity", encryptedId);
+                            }
+                            builder.header("X-Player-Name", MinecraftInstance.mc.getUser().getName());
+                            builder.header("X-Player-UUID", MinecraftInstance.mc.getUser().getProfileId().toString());
+                        }
+                    } catch (Exception ignored) {}
+                }
             }
 
             if (method.equalsIgnoreCase("POST") && jsonBody != null) {
@@ -409,7 +408,7 @@ public class BotIntegration {
                     .thenCompose(res -> {
                         if (res.statusCode() == 403 && allowRetry) {
                             Blackaddons.LOGGER.info("Authentication failed. Regenerating key and retrying...");
-                            activeServerId = null; // force re-auth
+                            authKeyFetched = false; // force re-fetch
                             return sendRequest(method, endpoint, jsonBody, false);
                         }
 
