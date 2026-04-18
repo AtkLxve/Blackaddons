@@ -1,8 +1,8 @@
 package org.blackum.blackaddons.feature.cheat;
 
 import net.fabricmc.loader.api.FabricLoader;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.Constants;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.constants.Constants;
 
 import java.io.File;
 import java.io.FileWriter;

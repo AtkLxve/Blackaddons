@@ -5,10 +5,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
-import org.blackum.blackaddons.core.util.Constants;
-import org.blackum.blackaddons.core.util.LocationUtils;
-import org.blackum.blackaddons.core.util.ScoreboardUtils;
-import org.blackum.blackaddons.core.util.TabListUtils;
+import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
+import org.blackum.blackaddons.common.util.mc.TabListUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,6 @@ public class DungeonScoreboard {
         public String dungeonClass;
         public boolean dead;
 
-        // Smoothing fields based on Noamm9 logic
         public volatile float mapX = 0f;
         public volatile float mapZ = 0f;
         public volatile float yaw = 0f;
@@ -143,7 +142,6 @@ public class DungeonScoreboard {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!LocationUtils.inDungeons())
                 return;
-            // Create selfPlayer immediately so we know we're in a dungeon.
             if (client.player != null && selfPlayer == null) {
                 selfPlayer = new DungeonPlayer(client.player.getName().getString(), "UNKNOWN");
             }
@@ -170,7 +168,7 @@ public class DungeonScoreboard {
                 if (detectedRoom != null && detectedRoom != DungeonMap.getLocalRoom()) {
                     if (detectedRoom == pendingRoom) {
                         roomEntryConfirmation++;
-                        if (roomEntryConfirmation >= 25) { // 1.25s confirmation
+                        if (roomEntryConfirmation >= 25) {
                             DungeonMap.updateLocalRoom(detectedRoom);
                             pendingRoom = null;
                             roomEntryConfirmation = 0;
@@ -263,7 +261,6 @@ public class DungeonScoreboard {
     }
 
     private static boolean isPlayerMarker(MapDecoration decor) {
-        // On Hypixel's dungeon map, all decorations are player position markers
         return true;
     }
 

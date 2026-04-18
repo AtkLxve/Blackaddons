@@ -14,14 +14,15 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.manager.CommandManager;
-import org.blackum.blackaddons.core.manager.CustomNameManager;
-import org.blackum.blackaddons.core.manager.DebugOverlayManager;
-import org.blackum.blackaddons.core.manager.PartyFinderManager;
-import org.blackum.blackaddons.core.manager.UpdateManager;
-import org.blackum.blackaddons.gui.render.DebugBoxRenderer;
-import org.blackum.blackaddons.gui.render.WaypointRenderer;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.command.CommandRegistry;
+import org.blackum.blackaddons.feature.customname.CustomNameManager;
+import org.blackum.blackaddons.gui.hud.DebugHud;
+import org.blackum.blackaddons.gui.hud.LocationDebugHud;
+import org.blackum.blackaddons.feature.party.PartyFinderManager;
+import org.blackum.blackaddons.feature.update.UpdateManager;
+import org.blackum.blackaddons.client.render.DebugBoxRenderer;
+import org.blackum.blackaddons.client.render.WaypointRenderer;
 import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
@@ -32,16 +33,18 @@ import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.cheat.Perspective;
 import org.blackum.blackaddons.feature.cheat.RelicLook;
-import org.blackum.blackaddons.core.util.LocationUtils;
-import org.blackum.blackaddons.core.util.AlignUtils;
-import org.blackum.blackaddons.core.util.Scheduler;
-import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
-import org.blackum.blackaddons.feature.dungeon.DungeonListener;
-import org.blackum.blackaddons.feature.dungeon.SoloClearsTracker;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.feature.waypoint.AlignUtils;
+import org.blackum.blackaddons.common.scheduler.Scheduler;
+import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
+import org.blackum.blackaddons.feature.dungeon.listener.DungeonListener;
+import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearsTracker;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
-import org.blackum.blackaddons.feature.dungeon.solvers.puzzles.WaterBoardHandler;
-import org.blackum.blackaddons.feature.dungeon.solvers.puzzles.WaterBoardSolver;
-import org.blackum.blackaddons.feature.dungeon.map.DungeonMapHud;
+import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardHandler;
+import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardSolver;
+import org.blackum.blackaddons.gui.hud.DungeonMapHud;
+import org.blackum.blackaddons.gui.hud.HudRegistry;
+import org.blackum.blackaddons.gui.hud.WaterBoardHud;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonWorldScanner;
 import org.blackum.blackaddons.feature.dungeon.map.RoomData;
@@ -49,11 +52,12 @@ import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
-import org.blackum.blackaddons.gui.screen.BaseScreen;
-import org.blackum.blackaddons.gui.screen.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.screen.DemoScreen;
-import org.blackum.blackaddons.gui.screen.TestMenuScreen;
-import org.blackum.blackaddons.integration.BotIntegration;
+import org.blackum.blackaddons.gui.screen.main.BaseScreen;
+import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
+import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
+import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
+import org.blackum.blackaddons.service.BotIntegration;
+import org.blackum.blackaddons.gui.notification.Notification;
 
 public class BlackaddonsClient implements ClientModInitializer {
     private static boolean internalChatMsg = false;
@@ -70,7 +74,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         Freecam.register();
         Perspective.register();
         Scheduler.register();
-        LocationUtils.register();
+        LocationDebugHud.register();
         AlignUtils.register();
         WaterBoardHandler.register();
 
@@ -123,12 +127,15 @@ public class BlackaddonsClient implements ClientModInitializer {
             client.execute(() -> NotificationManager.addNotification("Notification", message, NotificationType.INFO));
         };
 
-        DebugOverlayManager.register();
-        CommandManager.register();
+        DebugHud.register();
+        DungeonMapHud.register();
+        WaterBoardHud.register();
+        org.blackum.blackaddons.gui.hud.AutoSSHud.register();
+        org.blackum.blackaddons.gui.hud.RotationHud.register();
+        HudRegistry.install();
+        CommandRegistry.register();
 
         HudRenderCallback.EVENT.register((graphics, partialTick) -> {
-            DungeonMapHud.render(graphics);
-            WaterBoardSolver.renderHUD(graphics);
             if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
                 NotificationManager.getInstance().render(graphics);
             }

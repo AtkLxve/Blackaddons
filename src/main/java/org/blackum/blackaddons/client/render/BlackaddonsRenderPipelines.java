@@ -14,7 +14,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.Resource;
 import org.apache.commons.io.IOUtils;
 import com.mojang.blaze3d.shaders.ShaderType;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 //? if < 1.21.11 {
 /*import net.minecraft.resources.ResourceLocation;*/
 //?} else
@@ -89,6 +89,26 @@ public class BlackaddonsRenderPipelines {
             .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS)
             .withCull(false)
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .build());
+
+    public static final RenderPipeline ROUNDED_FILL = add(RenderPipeline.builder()
+            //? if < 1.21.11 {
+            /*.withLocation(ResourceLocation.fromNamespaceAndPath("blackaddons", "rounded_fill"))*/
+            /*.withVertexShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/rounded_fill"))*/
+            /*.withFragmentShader(ResourceLocation.fromNamespaceAndPath("blackaddons", "core/rounded_fill"))*/
+            //?}
+            //? if >= 1.21.11 {
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "rounded_fill"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/rounded_fill"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/rounded_fill"))
+            //?}
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
+            .withCull(false)
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .withDepthWrite(false)
             .build());
 
     private static RenderPipeline add(RenderPipeline pipeline) {

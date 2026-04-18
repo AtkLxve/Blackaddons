@@ -14,8 +14,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FormattedCharSequence;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.McCompat;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
@@ -41,7 +41,7 @@ public class VectorFontRenderer {
 
     private float getScale() {
         return VectorFontManager.getInstance().getScaleForPixelHeight(
-                org.blackum.blackaddons.core.config.ConfigManager.data.vectorTextScale);
+                org.blackum.blackaddons.common.config.ConfigManager.data.vectorTextScale);
     }
 
     private float getBaseline() {

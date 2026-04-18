@@ -10,11 +10,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.blackum.blackaddons.core.config.ConfigManager;
-import org.blackum.blackaddons.core.util.KeyBindingAccessor;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.blackum.blackaddons.mixin.core.InventoryAccessor;
 import net.minecraft.network.chat.Component;
-import org.blackum.blackaddons.core.util.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -228,14 +228,10 @@ public class AutoTNT {
     }
 
     public static class FeatureConfig {
-        // Config
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 4;
         public int UnequipDelay = 5;
-
         public boolean SwapBack = false;
-
-        // State
         boolean isTntEquipped = false;
         boolean hasClicked = false;
         int ticksSinceEquip = 0;

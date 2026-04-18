@@ -2,7 +2,7 @@ package org.blackum.blackaddons.mixin.core;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.feature.modhider.SpoofMode;
 
 import net.minecraft.client.multiplayer.KnownPacksManager;

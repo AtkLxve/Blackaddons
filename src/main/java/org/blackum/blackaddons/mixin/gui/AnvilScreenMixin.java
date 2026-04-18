@@ -2,7 +2,7 @@ package org.blackum.blackaddons.mixin.gui;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import org.blackum.blackaddons.core.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.feature.modhider.ComponentUtils;
 
 import net.minecraft.client.gui.screens.inventory.AnvilScreen;
