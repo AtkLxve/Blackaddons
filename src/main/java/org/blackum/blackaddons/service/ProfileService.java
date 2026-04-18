@@ -10,8 +10,10 @@ import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.util.io.HttpUtils;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.util.io.JsonUtils;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -20,7 +22,10 @@ import java.util.regex.Pattern;
 public class ProfileService {
     private static String skyCryptBuildId = null;
     private static long buildIdExpiry = 0;
-    private static final Pattern BUILD_ID_PATTERN = Pattern.compile("([a-z0-9]+)/get[A-Z]");
+    private static String skyCryptRjsonHeader = "__skrao";
+    private static long rjsonHeaderExpiry = 0;
+    private static final Pattern BUILD_ID_PATTERN = Pattern.compile("([a-z0-9]+)/get[A-Za-z]+");
+    private static final Pattern RJSON_HEADER_PATTERN = Pattern.compile("\"(__[a-z0-9_]{4,10})\"");
 
     public static CompletableFuture<JsonObject> getProfileStats(String player, String profileName, boolean force) {
         return getUuid(player)
@@ -60,7 +65,10 @@ public class ProfileService {
                 if (data != null)
                     return CompletableFuture.completedFuture(data);
                 return switch (priority) {
-                    case ADJECTILS -> fetchAdjectilsProfile(uuid);
+                    case SUBAT0MIC -> fetchStandardProfile(Constants.SUBAT0MIC_PROFILE_API + uuid, "Subat0mic");
+                    case ODTHEKING -> fetchStandardProfile(Constants.ODTHEKING_PROFILE_API + uuid, "ODTheKing");
+                    case PLAIN_DAWN -> fetchStandardProfile(Constants.PLAIN_DAWN_PROFILE_API + uuid, "PlainDawn");
+                    case ADJECTILS -> fetchStandardProfile(Constants.ADJECTILS_PROFILE_API + uuid, "Adjectils");
                     case SOOPY -> fetchSoopyProfile(uuid);
                     case SKYCRYPT -> fetchSkyCryptShiiyuProfile(uuid, profileName);
                 };
@@ -70,55 +78,54 @@ public class ProfileService {
         return future;
     }
 
-    private static CompletableFuture<JsonObject> fetchAdjectilsProfile(String uuid) {
-        String url = Constants.ADJECTILS_PROFILE_API + uuid;
+    private static CompletableFuture<JsonObject> fetchStandardProfile(String url, String sourceName) {
         return HttpUtils.sendGetRequest(url).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
-                try {
-                    JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
-                    if (json.has("profiles") && json.get("profiles").isJsonArray()) {
-                        for (JsonElement pEl : json.getAsJsonArray("profiles")) {
-                            if (pEl.isJsonObject()) {
-                                JsonObject p = pEl.getAsJsonObject();
-                                if (p.has("members") && p.get("members").isJsonObject()) {
-                                    JsonObject members = p.getAsJsonObject("members");
-                                    for (String mUuid : members.keySet()) {
-                                        JsonElement mEl = members.get(mUuid);
-                                        if (mEl != null && mEl.isJsonObject()) {
-                                            JsonObject m = mEl.getAsJsonObject();
-                                            if (m.has("pets_data") && m.get("pets_data").isJsonObject()) {
-                                                JsonObject petsData = m.getAsJsonObject("pets_data");
-                                                if (petsData.has("pets")) {
-                                                    m.add("pets", petsData.get("pets"));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                if (p.has("pets_data") && p.get("pets_data").isJsonObject()) {
-                                    JsonObject petsData = p.getAsJsonObject("pets_data");
-                                    if (petsData.has("pets")) {
-                                        if (p.has("members") && p.get("members").isJsonObject()) {
-                                            JsonObject members = p.getAsJsonObject("members");
-                                            if (members.has(uuid) && members.get(uuid).isJsonObject()) {
-                                                JsonObject m = members.getAsJsonObject(uuid);
-                                                if (!m.has("pets")) {
-                                                    m.add("pets", petsData.get("pets"));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+            if (res == null || res.statusCode() != 200)
+                return null;
+            try {
+                JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
+                if (!json.has("profiles") || !json.get("profiles").isJsonArray())
+                    return null;
+                normalizePetsData(json);
+                return json;
+            } catch (Exception e) {
+                Blackaddons.LOGGER.error("Failed to parse " + sourceName + " profile data: " + e.getMessage());
+                return null;
+            }
+        });
+    }
+
+    private static void normalizePetsData(JsonObject json) {
+        for (JsonElement pEl : json.getAsJsonArray("profiles")) {
+            if (!pEl.isJsonObject()) continue;
+            JsonObject p = pEl.getAsJsonObject();
+            if (p.has("members") && p.get("members").isJsonObject()) {
+                JsonObject members = p.getAsJsonObject("members");
+                for (String mUuid : members.keySet()) {
+                    JsonElement mEl = members.get(mUuid);
+                    if (mEl == null || !mEl.isJsonObject()) continue;
+                    JsonObject m = mEl.getAsJsonObject();
+                    if (m.has("pets_data") && m.get("pets_data").isJsonObject()) {
+                        JsonObject petsData = m.getAsJsonObject("pets_data");
+                        if (petsData.has("pets") && !m.has("pets")) {
+                            m.add("pets", petsData.get("pets"));
                         }
                     }
-                    return json;
-                } catch (Exception e) {
-                    Blackaddons.LOGGER.error("Failed to parse Adjectils Backend profile data: " + e.getMessage());
                 }
             }
-            return null;
-        });
+            if (p.has("pets_data") && p.get("pets_data").isJsonObject()) {
+                JsonObject petsData = p.getAsJsonObject("pets_data");
+                if (petsData.has("pets") && p.has("members") && p.get("members").isJsonObject()) {
+                    JsonObject members = p.getAsJsonObject("members");
+                    for (String mUuid : members.keySet()) {
+                        JsonElement mEl = members.get(mUuid);
+                        if (mEl == null || !mEl.isJsonObject()) continue;
+                        JsonObject m = mEl.getAsJsonObject();
+                        if (!m.has("pets")) m.add("pets", petsData.get("pets"));
+                    }
+                }
+            }
+        }
     }
 
     private static CompletableFuture<JsonObject> fetchSkyCryptShiiyuProfile(String uuid, String profileName) {
@@ -178,19 +185,20 @@ public class ProfileService {
                     }
 
                     String finalSelectedId = selectedProfile.get("profile_id").getAsString();
-                    return fetchSkyCryptDungeons(buildId, uuid, finalSelectedId).thenCompose(dungeons -> {
-                        return fetchSkyCryptAccessories(buildId, uuid, finalSelectedId).thenApply(accessories -> {
-                            if (dungeons == null) {
-                                Blackaddons.LOGGER.warn("SkyCrypt Fetch: Failed to get dungeons section for " + name);
+                    return fetchSkyCryptRemote("getCombined", buildId, uuid, finalSelectedId).thenCompose(combined -> {
+                        return fetchSkyCryptRemote("getInventories", buildId, uuid, finalSelectedId).thenApply(inventories -> {
+                            if (combined == null) {
+                                Blackaddons.LOGGER.warn("SkyCrypt Fetch: Failed to get combined data for " + name);
                                 return null;
                             }
                             Blackaddons.LOGGER.info(
-                                    "SkyCrypt Fetch: Successfully scraped data for " + name + " (" + finalSelectedId
+                                    "SkyCrypt Fetch: Successfully scraped data and inventories for " + name + " (" + finalSelectedId
                                             + ")");
-                            JsonObject normalized = normalizeSkyCryptScrapedData(stats, finalSelectedId, dungeons,
-                                    uuid);
-                            if (normalized != null && accessories != null) {
-                                mergeSkyCryptAccessories(normalized, accessories, uuid, finalSelectedId);
+                            JsonObject normalized = normalizeSkyCryptScrapedData(stats, finalSelectedId, combined, uuid);
+                            if (normalized != null) {
+                                if (inventories != null && inventories.isJsonArray()) {
+                                    mergeSkyCryptInventories(normalized, inventories.getAsJsonArray(), uuid);
+                                }
                             }
                             return normalized;
                         });
@@ -198,6 +206,263 @@ public class ProfileService {
                 });
             });
         });
+    }
+
+    private static CompletableFuture<JsonElement> fetchSkyCryptRemote(String endpoint, String buildId, String uuid,
+            String profileId) {
+        try {
+            String uuidNoDashes = uuid.replace("-", "");
+            JsonArray payloadArr = new JsonArray();
+            JsonArray header = new JsonArray();
+            header.add(skyCryptRjsonHeader);
+            header.add(1);
+            payloadArr.add(header);
+
+            JsonObject mapping = new JsonObject();
+            mapping.addProperty("profileId", 2);
+            mapping.addProperty("uuid", 3);
+            payloadArr.add(mapping);
+            payloadArr.add(profileId);
+            payloadArr.add(uuidNoDashes);
+
+            String payloadJson = payloadArr.toString();
+            String payloadB64 = Base64.getEncoder().encodeToString(payloadJson.getBytes());
+            String url = Constants.SKYCRYPT_BASE_URL + "/_app/remote/" + buildId + "/" + endpoint + "?payload="
+                    + payloadB64;
+
+            return HttpUtils.sendGetRequest(url).thenApply(res -> {
+                if (res != null && res.statusCode() == 200) {
+                    try {
+                        JsonObject envelope = JsonParser.parseString(res.body()).getAsJsonObject();
+                        if (envelope.has("type") && envelope.get("type").getAsString().equals("result")) {
+                            String resultStr = envelope.get("result").getAsString();
+                            JsonElement raw = JsonParser.parseString(resultStr);
+                            if (raw.isJsonArray()) {
+                                JsonArray rawArr = raw.getAsJsonArray();
+                                if (rawArr.size() > 0) {
+                                    return resolveRjson(rawArr.get(0), rawArr, new HashMap<>());
+                                }
+                            }
+                            return raw;
+                        }
+                    } catch (Exception e) {
+                        Blackaddons.LOGGER.error("SkyCrypt Remote (" + endpoint + "): Failed to parse result: " + e.getMessage());
+                    }
+                }
+                return null;
+            });
+        } catch (Exception e) {
+            return CompletableFuture.completedFuture(null);
+        }
+    }
+
+    private static CompletableFuture<String> getSkyCryptBuildId() {
+        if (skyCryptBuildId != null && buildIdExpiry > System.currentTimeMillis() &&
+            skyCryptRjsonHeader != null && rjsonHeaderExpiry > System.currentTimeMillis()) {
+            return CompletableFuture.completedFuture(skyCryptBuildId);
+        }
+
+        return HttpUtils.sendGetRequest(Constants.SKYCRYPT_BASE_URL + "/stats/BLACKUM").thenCompose(res -> {
+            if (res == null || res.statusCode() != 200) {
+                Blackaddons.LOGGER.error("SkyCrypt Discovery: Failed to fetch profile page");
+                return CompletableFuture.completedFuture(null);
+            }
+
+            String html = res.body();
+            Pattern appJsPattern = Pattern.compile("/_app/immutable/entry/app\\.([a-zA-Z0-9_-]+)\\.js");
+            Matcher appMatcher = appJsPattern.matcher(html);
+            if (!appMatcher.find()) {
+                Blackaddons.LOGGER.error("SkyCrypt Discovery: Failed to find app entry script in HTML");
+                return CompletableFuture.completedFuture(null);
+            }
+
+            String appJsUrl = Constants.SKYCRYPT_BASE_URL + appMatcher.group();
+            return HttpUtils.sendGetRequest(appJsUrl).thenCompose(appRes -> {
+                if (appRes == null || appRes.statusCode() != 200) {
+                    Blackaddons.LOGGER.error("SkyCrypt Discovery: Failed to fetch app entry script");
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                String appJs = appRes.body();
+                Pattern node4Pattern = Pattern.compile("nodes/4\\.([a-zA-Z0-9_-]+)\\.js");
+                Matcher nodeMatcher = node4Pattern.matcher(appJs);
+                if (!nodeMatcher.find()) {
+                    Blackaddons.LOGGER.error("SkyCrypt Discovery: Failed to find node 4 script in app entry");
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                String nodeJsUrl = Constants.SKYCRYPT_BASE_URL + "/_app/immutable/" + nodeMatcher.group();
+                return HttpUtils.sendGetRequest(nodeJsUrl).thenCompose(nodeRes -> {
+                    if (nodeRes == null || nodeRes.statusCode() != 200) {
+                        Blackaddons.LOGGER.error("SkyCrypt Discovery: Failed to fetch node 4 script");
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    String nodeJs = nodeRes.body();
+                    Pattern chunkPattern = Pattern.compile("chunks/([a-zA-Z0-9_-]+)\\.js");
+                    Matcher chunkMatcher = chunkPattern.matcher(nodeJs);
+
+                    CompletableFuture<String> discoveryFuture = CompletableFuture.completedFuture(null);
+                    while (chunkMatcher.find()) {
+                        String chunkUrl = Constants.SKYCRYPT_BASE_URL + "/_app/immutable/" + chunkMatcher.group();
+                        discoveryFuture = discoveryFuture.thenCompose(found -> {
+                            if (skyCryptBuildId != null && skyCryptRjsonHeader != null)
+                                return CompletableFuture.completedFuture(skyCryptBuildId);
+
+                            return HttpUtils.sendGetRequest(chunkUrl).thenApply(chunkRes -> {
+                                if (chunkRes != null && chunkRes.statusCode() == 200) {
+                                    String body = chunkRes.body();
+
+                                    if (skyCryptBuildId == null) {
+                                        Matcher idMatcher = BUILD_ID_PATTERN.matcher(body);
+                                        if (idMatcher.find()) {
+                                            skyCryptBuildId = idMatcher.group(1);
+                                            buildIdExpiry = System.currentTimeMillis() + 3600000;
+                                        }
+                                    }
+
+                                    if (skyCryptRjsonHeader == null || skyCryptRjsonHeader.equals("__skrao")) {
+                                        Matcher headerMatcher = RJSON_HEADER_PATTERN.matcher(body);
+                                        List<String> candidates = new ArrayList<>();
+                                        while (headerMatcher.find()) {
+                                            candidates.add(headerMatcher.group(1));
+                                        }
+                                        for (int i = 0; i <= candidates.size() - 4; i++) {
+                                            if (candidates.get(i).startsWith("__") &&
+                                                candidates.get(i + 1).startsWith("__") &&
+                                                candidates.get(i + 2).startsWith("__") &&
+                                                candidates.get(i + 3).startsWith("__")) {
+                                                skyCryptRjsonHeader = candidates.get(i);
+                                                rjsonHeaderExpiry = System.currentTimeMillis() + 3600000;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                return skyCryptBuildId;
+                            });
+                        });
+                    }
+
+                    return discoveryFuture.thenApply(foundId -> {
+                        if (skyCryptBuildId != null) {
+                            Blackaddons.LOGGER.info("SkyCrypt Discovery: Found BuildID=" + skyCryptBuildId + ", Header=" + skyCryptRjsonHeader);
+                            return skyCryptBuildId;
+                        }
+                        Blackaddons.LOGGER.error("SkyCrypt Discovery: Failed to find required identifiers in any imported chunks");
+                        return null;
+                    });
+                });
+            });
+        });
+    }
+
+    private static CompletableFuture<JsonObject> fetchSkyCryptStats(String name, String profile) {
+        String url = Constants.SKYCRYPT_STATS_API + name + (profile != null ? "/" + profile : "");
+        return HttpUtils.sendGetRequest(url).thenApply(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    return JsonParser.parseString(res.body()).getAsJsonObject();
+                } catch (Exception e) {
+                }
+            }
+            return null;
+        });
+    }
+
+    private static void mergeSkyCryptInventories(JsonObject normalized, JsonArray inventories, String uuid) {
+        try {
+            if (normalized.has("profiles")) {
+                JsonArray profiles = normalized.getAsJsonArray("profiles");
+                for (JsonElement p : profiles) {
+                    JsonObject prof = p.getAsJsonObject();
+                    if (prof.has("members")) {
+                        JsonObject members = prof.getAsJsonObject("members");
+                        if (members.has(uuid)) {
+                            JsonObject member = members.getAsJsonObject(uuid);
+                            if (!member.has("inventory")) {
+                                member.add("inventory", new JsonObject());
+                            }
+                            JsonObject inv = member.getAsJsonObject("inventory");
+                            for (JsonElement containerEl : inventories) {
+                                if (containerEl.isJsonObject()) {
+                                    JsonObject container = containerEl.getAsJsonObject();
+                                    if (container.has("name") && container.has("items")) {
+                                        String rawName = container.get("name").getAsString();
+                                        String lowerRaw = rawName.toLowerCase();
+                                        boolean isBackpack = lowerRaw.contains("backpack");
+                                        boolean isEnderChest = lowerRaw.contains("ender chest");
+
+                                        String mappedName;
+                                        if (isEnderChest) {
+                                            mappedName = "ender_chest";
+                                        } else if (isBackpack) {
+                                            mappedName = "backpack";
+                                        } else {
+                                            mappedName = switch (rawName) {
+                                                case "Inventory" -> "inv";
+                                                case "Armor" -> "armor";
+                                                case "Equipment" -> "equipment";
+                                                case "Wardrobe" -> "wardrobe";
+                                                case "Personal Vault" -> "personal_vault";
+                                                default -> lowerRaw.replace(" ", "_");
+                                            };
+                                        }
+
+                                        JsonArray itemsSlice;
+                                        if (container.has("items") && container.get("items").isJsonArray()) {
+                                            itemsSlice = container.getAsJsonArray("items");
+                                        } else if (container.has("containsItems") && container.get("containsItems").isJsonArray()) {
+                                            itemsSlice = container.getAsJsonArray("containsItems");
+                                        } else {
+                                            itemsSlice = new JsonArray();
+                                        }
+
+                                        if (isBackpack && itemsSlice.size() > 0) {
+                                            JsonObject first = itemsSlice.get(0).getAsJsonObject();
+                                            String firstId = first.has("id") ? first.get("id").getAsString() : "";
+                                            String firstDisplayName = first.has("display_name") ? first.get("display_name").getAsString() : "";
+                                            if (firstId.toLowerCase().contains("backpack") || firstDisplayName.toLowerCase().contains("backpack") || firstDisplayName.equalsIgnoreCase(rawName)) {
+                                                JsonArray contents = new JsonArray();
+                                                for (int i = 1; i < itemsSlice.size(); i++) {
+                                                    contents.add(itemsSlice.get(i));
+                                                }
+                                                itemsSlice = contents;
+                                            }
+                                        }
+
+                                        JsonObject wrapper = new JsonObject();
+                                        wrapper.add("skycrypt_items", itemsSlice);
+
+                                        if (isBackpack) {
+                                            if (!inv.has("backpack_contents")) {
+                                                inv.add("backpack_contents", new JsonObject());
+                                            }
+                                            JsonObject bpContents = inv.getAsJsonObject("backpack_contents");
+                                            int idx = 0;
+                                            while (bpContents.has("backpack_" + idx)) idx++;
+                                            bpContents.add("backpack_" + idx, wrapper);
+                                        } else {
+                                            String finalKey = mappedName + "_contents";
+                                            if (inv.has(finalKey)) {
+                                                JsonObject existing = inv.getAsJsonObject(finalKey);
+                                                if (existing.has("skycrypt_items") && wrapper.has("skycrypt_items")) {
+                                                    existing.getAsJsonArray("skycrypt_items").addAll(wrapper.getAsJsonArray("skycrypt_items"));
+                                                }
+                                            } else {
+                                                inv.add(finalKey, wrapper);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Blackaddons.LOGGER.error("SkyCrypt Inventories: Error merging data: " + e.getMessage());
+        }
     }
 
     private static CompletableFuture<String> getName(String uuid) {
@@ -215,163 +480,12 @@ public class ProfileService {
         });
     }
 
-    private static CompletableFuture<String> getSkyCryptBuildId() {
-        if (skyCryptBuildId != null && buildIdExpiry > System.currentTimeMillis()) {
-            return CompletableFuture.completedFuture(skyCryptBuildId);
-        }
-        return HttpUtils.sendGetRequest(Constants.SKYCRYPT_BASE_URL + "/stats/BLACKUM").thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
-                Matcher matcher = BUILD_ID_PATTERN.matcher(res.body());
-                if (matcher.find()) {
-                    skyCryptBuildId = matcher.group(1);
-                    buildIdExpiry = System.currentTimeMillis() + 3600000; // 1 hour
-                    Blackaddons.LOGGER.info("SkyCrypt BuildID scraped: " + skyCryptBuildId);
-                    return skyCryptBuildId;
-                }
-            }
-            Blackaddons.LOGGER.error("SkyCrypt BuildID: Failed to scrape from profile page");
-            return null;
-        });
-    }
-
-    private static CompletableFuture<JsonObject> fetchSkyCryptStats(String name, String profile) {
-        String url = Constants.SKYCRYPT_STATS_API + name + (profile != null ? "/" + profile : "");
-        return HttpUtils.sendGetRequest(url).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
-                try {
-                    return JsonParser.parseString(res.body()).getAsJsonObject();
-                } catch (Exception e) {
-                }
-            }
-            return null;
-        });
-    }
-
-    private static CompletableFuture<JsonObject> fetchSkyCryptAccessories(String buildId, String uuid,
-            String profileId) {
-        try {
-            String uuidNoDashes = uuid.replace("-", "");
-            JsonArray payloadArr = new JsonArray();
-            JsonObject mapping = new JsonObject();
-            mapping.addProperty("uuid", 1);
-            mapping.addProperty("profileId", 2);
-            payloadArr.add(mapping);
-            payloadArr.add(uuidNoDashes);
-            payloadArr.add(profileId);
-
-            String payloadJson = payloadArr.toString();
-            String payloadB64 = Base64.getEncoder().encodeToString(payloadJson.getBytes());
-            String url = Constants.SKYCRYPT_BASE_URL + "/_app/remote/" + buildId + "/getAccessoriesSection?payload="
-                    + payloadB64;
-
-            return HttpUtils.sendGetRequest(url).thenApply(res -> {
-                if (res != null && res.statusCode() == 200) {
-                    try {
-                        JsonObject envelope = JsonParser.parseString(res.body()).getAsJsonObject();
-                        if (envelope.has("type") && envelope.get("type").getAsString().equals("result")) {
-                            String resultStr = envelope.get("result").getAsString();
-                            JsonElement raw = JsonParser.parseString(resultStr);
-                            if (raw.isJsonArray()) {
-                                JsonArray rawArr = raw.getAsJsonArray();
-                                if (rawArr.size() > 0) {
-                                    JsonElement resolved = resolveRjson(rawArr.get(0), rawArr, new HashMap<>());
-                                    if (resolved.isJsonObject()) {
-                                        return resolved.getAsJsonObject();
-                                    }
-                                }
-                            }
-                            return raw.isJsonObject() ? raw.getAsJsonObject() : null;
-                        }
-                    } catch (Exception e) {
-                        Blackaddons.LOGGER.error("SkyCrypt Accessories: Failed to parse result: " + e.getMessage());
-                    }
-                }
-                return null;
-            });
-        } catch (Exception e) {
-            return CompletableFuture.completedFuture(null);
-        }
-    }
-
-    private static void mergeSkyCryptAccessories(JsonObject normalized, JsonObject accessories, String uuid,
-            String profileId) {
-        try {
-            if (accessories.has("magical_power") && !accessories.get("magical_power").isJsonNull()) {
-                int mp = accessories.get("magical_power").getAsInt();
-                JsonObject storage = new JsonObject();
-                storage.addProperty("highest_magical_power", mp);
-
-                if (normalized.has("profiles")) {
-                    JsonArray profiles = normalized.getAsJsonArray("profiles");
-                    for (JsonElement p : profiles) {
-                        JsonObject prof = p.getAsJsonObject();
-                        if (prof.has("members")) {
-                            JsonObject members = prof.getAsJsonObject("members");
-                            if (members.has(uuid)) {
-                                members.getAsJsonObject(uuid).add("accessory_bag_storage", storage);
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Blackaddons.LOGGER.error("SkyCrypt Accessories: Error merging data: " + e.getMessage());
-        }
-    }
-
-    private static CompletableFuture<JsonObject> fetchSkyCryptDungeons(String buildId, String uuid, String profileId) {
-        try {
-            String uuidNoDashes = uuid.replace("-", "");
-            JsonArray payloadArr = new JsonArray();
-            JsonObject mapping = new JsonObject();
-            mapping.addProperty("uuid", 1);
-            mapping.addProperty("profileId", 2);
-            payloadArr.add(mapping);
-            payloadArr.add(uuidNoDashes);
-            payloadArr.add(profileId);
-
-            String payloadJson = payloadArr.toString();
-            String payloadB64 = Base64.getEncoder().encodeToString(payloadJson.getBytes());
-            String url = Constants.SKYCRYPT_BASE_URL + "/_app/remote/" + buildId + "/getDungeonsSection?payload="
-                    + payloadB64;
-
-            return HttpUtils.sendGetRequest(url).thenApply(res -> {
-                if (res != null && res.statusCode() == 200) {
-                    try {
-                        JsonObject envelope = JsonParser.parseString(res.body()).getAsJsonObject();
-                        if (envelope.has("type") && envelope.get("type").getAsString().equals("result")) {
-                            String resultStr = envelope.get("result").getAsString();
-                            JsonElement raw = JsonParser.parseString(resultStr);
-                            if (raw.isJsonArray()) {
-                                JsonArray rawArr = raw.getAsJsonArray();
-                                if (rawArr.size() > 0) {
-                                    JsonElement resolved = resolveRjson(rawArr.get(0), rawArr, new HashMap<>());
-                                    if (resolved.isJsonObject()) {
-                                        return resolved.getAsJsonObject();
-                                    }
-                                }
-                            }
-                            return raw.isJsonObject() ? raw.getAsJsonObject() : null;
-                        } else {
-                            Blackaddons.LOGGER.warn("SkyCrypt Dungeons: Invalid envelope type or missing result");
-                        }
-                    } catch (Exception e) {
-                        Blackaddons.LOGGER.error("SkyCrypt Dungeons: Failed to parse result: " + e.getMessage());
-                    }
-                } else {
-                    Blackaddons.LOGGER.warn("SkyCrypt Dungeons: Request failed with status "
-                            + (res != null ? res.statusCode() : "null"));
-                }
-                return null;
-            });
-        } catch (Exception e) {
-            return CompletableFuture.completedFuture(null);
-        }
-    }
-
-    private static JsonObject normalizeSkyCryptScrapedData(JsonObject stats, String profileId, JsonObject dungeons,
+    private static JsonObject normalizeSkyCryptScrapedData(JsonObject stats, String profileId, JsonElement combinedEl,
             String uuid) {
         try {
+            if (combinedEl == null || !combinedEl.isJsonObject()) return null;
+            JsonObject combined = combinedEl.getAsJsonObject();
+
             JsonObject result = new JsonObject();
             JsonArray profilesArr = new JsonArray();
             JsonArray profilesRaw = stats.getAsJsonArray("profiles");
@@ -395,7 +509,8 @@ public class ProfileService {
             JsonObject members = new JsonObject();
             JsonObject memberData = new JsonObject();
 
-            if (dungeons != null) {
+            if (combined.has("dungeons") && combined.get("dungeons").isJsonObject()) {
+                JsonObject dungeons = combined.getAsJsonObject("dungeons");
                 JsonObject normalizedDungeons = new JsonObject();
                 JsonObject catacombs = new JsonObject();
                 double cataXp = 0.0;
@@ -496,8 +611,8 @@ public class ProfileService {
                 if (dungeons.has("stats") && dungeons.get("stats").isJsonObject()) {
                     JsonObject statsObj = dungeons.getAsJsonObject("stats");
                     if (statsObj.has("secrets") && statsObj.get("secrets").isJsonObject()) {
-                        normalizedDungeons.addProperty("secrets",
-                                JsonUtils.getInt(statsObj.getAsJsonObject("secrets"), "found"));
+                        JsonObject secretsObj = statsObj.getAsJsonObject("secrets");
+                        normalizedDungeons.addProperty("secrets", JsonUtils.getInt(secretsObj, "found"));
                     }
                     if (statsObj.has("bloodMobKills") && !statsObj.get("bloodMobKills").isJsonNull()) {
                         if (!memberData.has("player_stats")) {
@@ -516,15 +631,49 @@ public class ProfileService {
                 memberData.add("dungeons", normalizedDungeons);
             }
 
-            if (profileInfo.has("items") && !profileInfo.get("items").isJsonNull()) {
-                memberData.add("inventory", profileInfo.getAsJsonObject("items"));
-                if (profileInfo.getAsJsonObject("items").has("accessory_bag")) {
-                    memberData.add("accessory_bag_storage", profileInfo.getAsJsonObject("items").get("accessory_bag"));
+            if (combined.has("accessories") && combined.get("accessories").isJsonObject()) {
+                JsonObject acc = combined.getAsJsonObject("accessories");
+                if (acc.has("magicalPower") && acc.get("magicalPower").isJsonObject()) {
+                    JsonObject mpObj = acc.getAsJsonObject("magicalPower");
+                    if (mpObj.has("total")) {
+                        JsonObject storage = new JsonObject();
+                        storage.addProperty("highest_magical_power", mpObj.get("total").getAsInt());
+                        memberData.add("accessory_bag_storage", storage);
+                    }
                 }
             }
 
-            if (profileInfo.has("pets") && !profileInfo.get("pets").isJsonNull()) {
-                memberData.add("pets", profileInfo.get("pets"));
+            if (combined.has("pets") && combined.get("pets").isJsonObject()) {
+                JsonObject petsObj = combined.getAsJsonObject("pets");
+                if (petsObj.has("pets")) {
+                    memberData.add("pets", petsObj.get("pets"));
+                }
+            } else if (combined.has("pets") && combined.get("pets").isJsonArray()) {
+                memberData.add("pets", combined.get("pets"));
+            }
+
+            if (combined.has("gear") && combined.get("gear").isJsonObject()) {
+                JsonObject gear = combined.getAsJsonObject("gear");
+                if (!memberData.has("inventory")) {
+                    memberData.add("inventory", new JsonObject());
+                }
+                JsonObject inv = memberData.getAsJsonObject("inventory");
+
+                if (gear.has("wardrobe")) {
+                    JsonObject wardrobe = new JsonObject();
+                    wardrobe.add("skycrypt_items", gear.get("wardrobe"));
+                    inv.add("wardrobe_contents", wardrobe);
+                }
+                if (gear.has("armor") && gear.getAsJsonObject("armor").has("armor")) {
+                    JsonObject armor = new JsonObject();
+                    armor.add("skycrypt_items", gear.getAsJsonObject("armor").get("armor"));
+                    inv.add("armor_contents", armor);
+                }
+                if (gear.has("equipment") && gear.getAsJsonObject("equipment").has("equipment")) {
+                    JsonObject equipment = new JsonObject();
+                    equipment.add("skycrypt_items", gear.getAsJsonObject("equipment").get("equipment"));
+                    inv.add("equipment_contents", equipment);
+                }
             }
 
             members.add(uuid, memberData);

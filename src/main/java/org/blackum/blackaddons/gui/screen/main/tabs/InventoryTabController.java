@@ -27,8 +27,10 @@ import org.blackum.blackaddons.gui.widget.input.*;
 import org.blackum.blackaddons.gui.widget.layout.*;
 import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
+import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.feature.item.ItemDeserializer;
 import org.blackum.blackaddons.common.model.SkyblockItem;
+import org.blackum.blackaddons.gui.render.Theme;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +62,18 @@ public class InventoryTabController extends ProfileTabController {
 
     public InventoryTabController(ProfileViewerScreen screen, JsonObject profileData) {
         super(screen, profileData);
+    }
+
+    private static List<SkyblockItem> extractItems(JsonObject obj) {
+        if (obj == null)
+            return new ArrayList<>();
+        if (obj.has("data")) {
+            return ItemDeserializer.deserializeList(obj.get("data").getAsString());
+        }
+        if (obj.has("skycrypt_items") && obj.get("skycrypt_items").isJsonArray()) {
+            return ItemDeserializer.deserializeSkyCryptItems(obj.getAsJsonArray("skycrypt_items"));
+        }
+        return new ArrayList<>();
     }
 
     @Override
@@ -114,16 +128,14 @@ public class InventoryTabController extends ProfileTabController {
         if (inventory != null) {
             if (currentSubTab == SubTab.INVENTORY) {
                 if (inventory.has("equipment_contents")) {
-                    equipmentItems.addAll(ItemDeserializer.deserializeList(
-                            inventory.getAsJsonObject("equipment_contents").get("data").getAsString()));
+                    equipmentItems.addAll(extractItems(inventory.getAsJsonObject("equipment_contents")));
                 }
                 while (equipmentItems.size() < 4)
                     equipmentItems
                             .add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY_EQUIP", "COMMON"));
 
                 if (inventory.has("inv_armor")) {
-                    List<SkyblockItem> armor = ItemDeserializer
-                            .deserializeList(inventory.getAsJsonObject("inv_armor").get("data").getAsString());
+                    List<SkyblockItem> armor = extractItems(inventory.getAsJsonObject("inv_armor"));
                     java.util.Collections.reverse(armor);
                     armorItems.addAll(armor);
                 }
@@ -131,8 +143,7 @@ public class InventoryTabController extends ProfileTabController {
                     armorItems.add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY_ARMOR", "COMMON"));
 
                 if (inventory.has("inv_contents")) {
-                    List<SkyblockItem> inv = ItemDeserializer
-                            .deserializeList(inventory.getAsJsonObject("inv_contents").get("data").getAsString());
+                    List<SkyblockItem> inv = extractItems(inventory.getAsJsonObject("inv_contents"));
                     if (inv.size() >= 36) {
                         List<SkyblockItem> hotbar = inv.subList(0, 9);
                         List<SkyblockItem> mainInv = inv.subList(9, 36);
@@ -170,12 +181,11 @@ public class InventoryTabController extends ProfileTabController {
                 List<String> labels = new ArrayList<>();
 
                 if (currentSubTab == SubTab.ENDER_CHEST && inventory.has("ender_chest_contents")) {
-                    List<SkyblockItem> ecItems = ItemDeserializer.deserializeList(
-                            inventory.getAsJsonObject("ender_chest_contents").get("data").getAsString());
-                    int numPages = (int) Math.ceil(ecItems.size() / 54.0);
+                    List<SkyblockItem> ecItems = extractItems(inventory.getAsJsonObject("ender_chest_contents"));
+                    int numPages = (int) Math.ceil(ecItems.size() / (double) Constants.ENDER_CHEST_PAGE_SLOTS);
                     for (int i = 0; i < numPages; i++) {
-                        int start = i * 54;
-                        int end = Math.min(start + 54, ecItems.size());
+                        int start = i * Constants.ENDER_CHEST_PAGE_SLOTS;
+                        int end = Math.min(start + Constants.ENDER_CHEST_PAGE_SLOTS, ecItems.size());
                         sections.add(new ArrayList<>(ecItems.subList(start, end)));
                         labels.add("Page " + (i + 1));
                     }
@@ -184,12 +194,10 @@ public class InventoryTabController extends ProfileTabController {
                     int bpIdx = 1;
                     for (String key : backpacks.keySet()) {
                         JsonObject bp = backpacks.getAsJsonObject(key);
-                        if (bp.has("data")) {
-                            List<SkyblockItem> bpItems = ItemDeserializer.deserializeList(bp.get("data").getAsString());
-                            if (!bpItems.isEmpty()) {
-                                sections.add(bpItems);
-                                labels.add("Backpack " + bpIdx++);
-                            }
+                        List<SkyblockItem> bpItems = extractItems(bp);
+                        if (!bpItems.isEmpty()) {
+                            sections.add(bpItems);
+                            labels.add("Backpack " + bpIdx++);
                         }
                     }
                 }
@@ -240,7 +248,9 @@ public class InventoryTabController extends ProfileTabController {
                         List<SkyblockItem> pageItems = sections.get(i);
                         int paddedSize = ((pageItems.size() + 8) / 9) * 9;
                         if (paddedSize == 0)
-                            paddedSize = 54;
+                            paddedSize = currentSubTab == SubTab.ENDER_CHEST
+                                    ? Constants.ENDER_CHEST_PAGE_SLOTS
+                                    : Constants.BACKPACK_PAGE_SLOTS;
                         while (pageItems.size() < paddedSize) {
                             pageItems
                                     .add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY", "COMMON"));
@@ -263,11 +273,9 @@ public class InventoryTabController extends ProfileTabController {
             } else {
                 List<SkyblockItem> otherItems = new ArrayList<>();
                 if (currentSubTab == SubTab.VAULT && inventory.has("personal_vault_contents")) {
-                    otherItems.addAll(ItemDeserializer.deserializeList(
-                            inventory.getAsJsonObject("personal_vault_contents").get("data").getAsString()));
+                    otherItems.addAll(extractItems(inventory.getAsJsonObject("personal_vault_contents")));
                 } else if (currentSubTab == SubTab.WARDROBE && inventory.has("wardrobe_contents")) {
-                    otherItems.addAll(ItemDeserializer
-                            .deserializeList(inventory.getAsJsonObject("wardrobe_contents").get("data").getAsString()));
+                    otherItems.addAll(extractItems(inventory.getAsJsonObject("wardrobe_contents")));
                 }
 
                 if (!otherItems.isEmpty()) {
@@ -332,7 +340,8 @@ public class InventoryTabController extends ProfileTabController {
                     grid.setSelectedItem(selectedPet);
                 }
 
-                petDetailWidget = new PetDetailWidget(startXOffset + leftWidth + 10, 0, rightWidth, grid.getHeight());
+                int detailHeight = Math.max(grid.getHeight(), Theme.PET_DETAIL_MIN_HEIGHT);
+                petDetailWidget = new PetDetailWidget(startXOffset + leftWidth + 10, 0, rightWidth, detailHeight);
                 petDetailWidget.setPet(selectedPet);
 
                 GridRow gridRow = new GridRow(availableWidth, Math.max(grid.getHeight(), petDetailWidget.getHeight()));

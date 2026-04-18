@@ -47,6 +47,9 @@ public final class Constants {
         public static final String PLAYER_DB_API = "https://playerdb.co/api/player/minecraft/";
         public static final String ADJECTILS_PROFILE_API = "https://adjectilsbackend.adjectivenoun3215.workers.dev/v2/skyblock/profiles?uuid=";
         public static final String SOOPY_PROFILE_API = "https://soopy.dev/api/v2/player_skyblock/";
+        public static final String SUBAT0MIC_PROFILE_API = "https://subat0mic.click/get/";
+        public static final String ODTHEKING_PROFILE_API = "https://api.odtheking.com/hypixel/get/";
+        public static final String PLAIN_DAWN_PROFILE_API = "https://plain-dawn-a5d2.ryaneagers2015.workers.dev/hypixel/skyblock/profiles/";
         public static final String SKYCRYPT_BASE_URL = "https://sky.shiiyu.moe";
         public static final String SKYCRYPT_STATS_API = "https://sky.shiiyu.moe/api/stats/";
         public static final String COFL_SHINY_NECRON_HANDLE = "https://sky.coflnet.com/api/item/price/NECRON_HANDLE?IsShiny=true";
@@ -151,4 +154,8 @@ public final class Constants {
 
         // Dungeon Map
         public static final int DUNGEON_ROOM_DETECTION_BUFFER = 2;
+
+        // Inventory Layout
+        public static final int ENDER_CHEST_PAGE_SLOTS = 45;
+        public static final int BACKPACK_PAGE_SLOTS = 54;
 }

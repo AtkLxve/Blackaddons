@@ -19,6 +19,7 @@ import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.feature.rng.RngTracker;
+import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
@@ -39,6 +40,13 @@ public class TestCommands {
                 .executes(ctx -> {
                     if (Blackaddons.testMenuOpener != null)
                         Blackaddons.testMenuOpener.run();
+                    return 1;
+                }));
+
+        testNode.then(ClientCommandManager.literal("resetcache")
+                .executes(ctx -> {
+                    ProfileStateManager.getInstance().clearAllCaches();
+                    ctx.getSource().sendFeedback(Component.literal("All caches cleared."));
                     return 1;
                 }));
 

@@ -69,6 +69,7 @@ public class Theme {
     public static final float ITEM_GRID_SCALE = 2.0f;
     public static final int ITEM_GRID_SLOT_SIZE = 18;
     public static final int ITEM_GRID_PADDING = 6;
+    public static final int PET_DETAIL_MIN_HEIGHT = 220;
 
     public static final int PADDING_SMALL = 8;
     public static final int PADDING_MEDIUM = 12;

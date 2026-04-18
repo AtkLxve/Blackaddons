@@ -262,6 +262,12 @@ public class ProfileStateManager {
         leaderboardCache.clear();
     }
 
+    public void clearAllCaches() {
+        profileCache.clear();
+        rngCache.clear();
+        leaderboardCache.clear();
+    }
+
     public void loadProfileAndOpen(String player, String profileName, boolean force) {
         loadProfileAndOpen(player, profileName, force, false);
     }

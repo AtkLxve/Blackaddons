@@ -17,6 +17,7 @@ import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import com.google.gson.JsonObject;
+import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.widget.base.*;
 import org.blackum.blackaddons.gui.widget.input.*;
@@ -51,8 +52,17 @@ public class EnderChestTabController extends ProfileTabController {
             return;
         }
 
-        List<SkyblockItem> allItems = ItemDeserializer.deserializeList(
-                inventory.getAsJsonObject("ender_chest_contents").get("data").getAsString());
+        JsonObject ecObj = inventory.getAsJsonObject("ender_chest_contents");
+        List<SkyblockItem> allItems;
+        if (ecObj.has("data")) {
+            allItems = ItemDeserializer.deserializeList(ecObj.get("data").getAsString());
+        } else if (ecObj.has("skycrypt_items") && ecObj.get("skycrypt_items").isJsonArray()) {
+            allItems = ItemDeserializer.deserializeSkyCryptItems(ecObj.getAsJsonArray("skycrypt_items"));
+        } else {
+            tab.addWidget(
+                    new Label(startX + width / 2 - 50, startY + height / 2, "No Ender Chest data", Label.Style.TITLE));
+            return;
+        }
 
         if (allItems.isEmpty()) {
             tab.addWidget(
@@ -63,7 +73,7 @@ public class EnderChestTabController extends ProfileTabController {
         int btnWidth = 30;
         int btnHeight = 20;
         int btnGap = 5;
-        int maxPages = (int) Math.ceil(allItems.size() / 54.0);
+        int maxPages = (int) Math.ceil(allItems.size() / (double) Constants.ENDER_CHEST_PAGE_SLOTS);
         int totalBtnWidth = maxPages * btnWidth + (maxPages - 1) * btnGap;
         int btnX = startX + (width - totalBtnWidth) / 2;
 
@@ -85,10 +95,10 @@ public class EnderChestTabController extends ProfileTabController {
         int currentOffset = 0;
 
         for (int i = 0; i < maxPages; i++) {
-            int start = i * 54;
-            int end = Math.min(start + 54, allItems.size());
+            int start = i * Constants.ENDER_CHEST_PAGE_SLOTS;
+            int end = Math.min(start + Constants.ENDER_CHEST_PAGE_SLOTS, allItems.size());
             List<SkyblockItem> pageItems = new ArrayList<>(allItems.subList(start, end));
-            while (pageItems.size() < 54) {
+            while (pageItems.size() < Constants.ENDER_CHEST_PAGE_SLOTS) {
                 pageItems.add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY", "COMMON"));
             }
 

@@ -294,7 +294,7 @@ public class ConfigManager {
     }
 
     public enum ApiPriority {
-        ADJECTILS, SOOPY, SKYCRYPT
+        SUBAT0MIC, ODTHEKING, PLAIN_DAWN, ADJECTILS, SKYCRYPT, SOOPY
     }
 
     public enum ChatFilterMatchType {
@@ -357,7 +357,9 @@ public class ConfigManager {
         public String botUrl = Constants.DEFAULT_BOT_URL;
         public DataSource dataSource = DataSource.LOCAL;
         public List<ApiPriority> apiPriorityList = new ArrayList<>(
-                List.of(ApiPriority.ADJECTILS, ApiPriority.SOOPY, ApiPriority.SKYCRYPT));
+                List.of(ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING,
+                        ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT,
+                        ApiPriority.SOOPY));
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
         public boolean partyFinderAutoInvite = true;
@@ -623,6 +625,16 @@ public class ConfigManager {
                 }
                 if (loadedData.chatVisualFilters == null) {
                     loadedData.chatVisualFilters = new ArrayList<>();
+                }
+                if (loadedData.apiPriorityList != null) {
+                    loadedData.apiPriorityList.removeIf(java.util.Objects::isNull);
+                }
+                if (loadedData.apiPriorityList == null
+                        || loadedData.apiPriorityList.size() != ApiPriority.values().length) {
+                    loadedData.apiPriorityList = new ArrayList<>(List.of(
+                            ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING,
+                            ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT,
+                            ApiPriority.SOOPY));
                 }
                 data = loadedData;
                 normalizeLegacyActionTimings();

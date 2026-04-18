@@ -85,10 +85,15 @@ public class BackpackTabController extends ProfileTabController {
         int idx = 0;
         for (java.util.Map.Entry<String, com.google.gson.JsonElement> entry : backpacks.entrySet()) {
             JsonObject bp = entry.getValue().getAsJsonObject();
-            if (!bp.has("data"))
-                continue;
 
-            List<SkyblockItem> items = ItemDeserializer.deserializeList(bp.get("data").getAsString());
+            List<SkyblockItem> items;
+            if (bp.has("data")) {
+                items = ItemDeserializer.deserializeList(bp.get("data").getAsString());
+            } else if (bp.has("skycrypt_items") && bp.get("skycrypt_items").isJsonArray()) {
+                items = ItemDeserializer.deserializeSkyCryptItems(bp.getAsJsonArray("skycrypt_items"));
+            } else {
+                continue;
+            }
             if (items.isEmpty())
                 continue;
 

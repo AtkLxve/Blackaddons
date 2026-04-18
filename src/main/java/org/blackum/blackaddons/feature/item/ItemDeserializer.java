@@ -14,6 +14,7 @@ import net.minecraft.world.item.component.DyedItemColor;
 import org.blackum.blackaddons.common.model.SkyblockItem;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
 import net.minecraft.world.item.component.ResolvableProfile;
 import java.util.UUID;
 import com.mojang.authlib.GameProfile;
@@ -260,10 +261,25 @@ public class ItemDeserializer {
             return new SkyblockItem(ItemStack.EMPTY, null, null);
 
         String type = pet.has("type") ? pet.get("type").getAsString() : "UNKNOWN";
-        String rarity = pet.has("tier") ? pet.get("tier").getAsString() : "COMMON";
+        String rarityField = pet.has("rarity") ? "rarity" : (pet.has("tier") ? "tier" : null);
+        String rarity = rarityField != null ? pet.get(rarityField).getAsString() : "COMMON";
         String name = pet.has("display_name") ? pet.get("display_name").getAsString() : formatPetName(type);
-        long exp = pet.has("exp") ? pet.get("exp").getAsLong() : 0;
-        int level = PetUtils.getLevel(type, rarity, exp);
+        long exp = pet.has("exp") && !pet.get("exp").isJsonNull() ? pet.get("exp").getAsLong() : 0;
+        int level;
+        if (pet.has("level") && !pet.get("level").isJsonNull()) {
+            JsonElement lvlEl = pet.get("level");
+            if (lvlEl.isJsonPrimitive() && lvlEl.getAsJsonPrimitive().isNumber()) {
+                level = lvlEl.getAsInt();
+            } else {
+                try {
+                    level = Integer.parseInt(lvlEl.getAsString());
+                } catch (NumberFormatException e) {
+                    level = PetUtils.getLevel(type, rarity, exp);
+                }
+            }
+        } else {
+            level = PetUtils.getLevel(type, rarity, exp);
+        }
         String rarityCode = PetUtils.getRarityCode(rarity);
         String formattedName = String.format("§7[Lvl %d] %s%s", level, rarityCode, name);
 
@@ -279,9 +295,23 @@ public class ItemDeserializer {
         }
 
         String texture = null;
-        if (pet.has("texture") && !pet.get("texture").isJsonNull() && !pet.get("texture").getAsString().isEmpty()) {
+        if (pet.has("texture_path") && !pet.get("texture_path").isJsonNull()) {
+            String path = pet.get("texture_path").getAsString();
+            if (path.contains("/")) {
+                String hash = path.substring(path.lastIndexOf("/") + 1);
+                if (hash.contains("."))
+                    hash = hash.substring(0, hash.indexOf("."));
+                if (!hash.isEmpty()) {
+                    texture = Base64.getEncoder().encodeToString(
+                            String.format(
+                                    "{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/%s\"}}}",
+                                    hash).getBytes());
+                }
+            }
+        }
+        if (texture == null && pet.has("texture") && !pet.get("texture").isJsonNull()
+                && !pet.get("texture").getAsString().isEmpty()) {
             texture = pet.get("texture").getAsString();
-        } else if (pet.has("skin") && !pet.get("skin").isJsonNull() && !pet.get("skin").getAsString().isEmpty()) {
         }
 
         if (texture == null) {
@@ -309,6 +339,86 @@ public class ItemDeserializer {
 
         return new SkyblockItem(stack, "PET_" + type, rarity, String.valueOf(level), PetUtils.getRarityColor(rarity),
                 pet);
+    }
+
+    public static List<SkyblockItem> deserializeSkyCryptItems(JsonArray arr) {
+        List<SkyblockItem> items = new ArrayList<>();
+        if (arr == null)
+            return items;
+        for (JsonElement el : arr) {
+            if (el == null || el.isJsonNull() || !el.isJsonObject()) {
+                items.add(new SkyblockItem(ItemStack.EMPTY, "EMPTY", "COMMON"));
+                continue;
+            }
+            items.add(deserializeSkyCryptItem(el.getAsJsonObject()));
+        }
+        return items;
+    }
+
+    public static SkyblockItem deserializeSkyCryptItem(JsonObject obj) {
+        if (obj == null || obj.entrySet().isEmpty()) {
+            return new SkyblockItem(ItemStack.EMPTY, "EMPTY", "COMMON");
+        }
+
+        String skyblockId = obj.has("id") && !obj.get("id").isJsonNull() ? obj.get("id").getAsString() : null;
+        String displayName = obj.has("display_name") && !obj.get("display_name").isJsonNull()
+                ? obj.get("display_name").getAsString()
+                : null;
+        String rarity = obj.has("rarity") && !obj.get("rarity").isJsonNull() ? obj.get("rarity").getAsString()
+                : "COMMON";
+        int count = obj.has("count") && !obj.get("count").isJsonNull() ? obj.get("count").getAsInt() : 1;
+        String texturePath = obj.has("texture_path") && !obj.get("texture_path").isJsonNull()
+                ? obj.get("texture_path").getAsString()
+                : null;
+
+        Item baseItem = (texturePath != null && texturePath.contains("/head/")) ? Items.PLAYER_HEAD : Items.STONE;
+        if (skyblockId == null || skyblockId.isEmpty()) {
+            return new SkyblockItem(ItemStack.EMPTY, "EMPTY", "COMMON");
+        }
+
+        ItemStack stack = new ItemStack(baseItem);
+        stack.setCount(count > 0 ? count : 1);
+
+        if (displayName != null) {
+            stack.set(DataComponents.CUSTOM_NAME, Component.literal(displayName));
+        }
+
+        if (obj.has("lore") && obj.get("lore").isJsonArray()) {
+            List<Component> lore = new ArrayList<>();
+            for (JsonElement line : obj.getAsJsonArray("lore")) {
+                lore.add(Component.literal(line.getAsString()));
+            }
+            stack.set(DataComponents.LORE, new ItemLore(lore));
+        }
+
+        CompoundTag extra = new CompoundTag();
+        extra.putString("id", skyblockId);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(extra));
+
+        if (texturePath != null && texturePath.contains("/head/")) {
+            String hash = texturePath.substring(texturePath.lastIndexOf("/") + 1);
+            if (hash.contains("."))
+                hash = hash.substring(0, hash.indexOf("."));
+            if (!hash.isEmpty()) {
+                String texture = Base64.getEncoder().encodeToString(
+                        String.format(
+                                "{\"textures\":{\"SKIN\":{\"url\":\"http://textures.minecraft.net/texture/%s\"}}}",
+                                hash).getBytes());
+                texture = fixBase64Padding(texture);
+                if (isValidBase64(texture)) {
+                    ImmutableMultimap.Builder<String, Property> builder = ImmutableMultimap.builder();
+                    builder.put("textures", new Property("textures", texture));
+                    GameProfile profile = new GameProfile(
+                            UUID.nameUUIDFromBytes(("BlackAddonsSkyCrypt:" + skyblockId).getBytes()),
+                            "BlackAddonsItem");
+                    GameProfile profileWithProps = new GameProfile(profile.id(), profile.name(),
+                            new PropertyMap(builder.build()));
+                    stack.set(DataComponents.PROFILE, ResolvableProfile.createResolved(profileWithProps));
+                }
+            }
+        }
+
+        return new SkyblockItem(stack, skyblockId, rarity);
     }
 
     private static String formatPetName(String type) {
