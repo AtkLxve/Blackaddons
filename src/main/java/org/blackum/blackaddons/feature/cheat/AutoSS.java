@@ -597,18 +597,23 @@ public class AutoSS {
 
         int overlayX = ConfigManager.data.AutoSSOverlayX < 0 ? 10 : ConfigManager.data.AutoSSOverlayX;
         int overlayY = ConfigManager.data.AutoSSOverlayY;
+        float scale = ConfigManager.data.AutoSSOverlayScale;
 
-        int y = overlayY;
+        graphics.pose().pushMatrix();
+        graphics.pose().translate((float) overlayX, (float) overlayY);
+        graphics.pose().scale(scale, scale);
+        int y = 0;
         for (String line : debugInfo) {
-            graphics.drawString(client.font, line, overlayX, y, COLOR_TEXT_WHITE);
+            graphics.drawString(client.font, line, 0, y, COLOR_TEXT_WHITE);
             y += 10;
         }
-        graphics.drawString(client.font, ChatFormatting.YELLOW + "Solution:", overlayX, y, COLOR_TEXT_WHITE);
+        graphics.drawString(client.font, ChatFormatting.YELLOW + "Solution:", 0, y, COLOR_TEXT_WHITE);
         y += 10;
         for (int i = 0; i < solution.size(); i++) {
-            graphics.drawString(client.font, (i + 1) + ". " + solution.get(i).toShortString(), overlayX + 10, y, COLOR_TEXT_WHITE);
+            graphics.drawString(client.font, (i + 1) + ". " + solution.get(i).toShortString(), 10, y, COLOR_TEXT_WHITE);
             y += 10;
         }
+        graphics.pose().popMatrix();
 
         renderVisualNodes(graphics, tracker);
     }

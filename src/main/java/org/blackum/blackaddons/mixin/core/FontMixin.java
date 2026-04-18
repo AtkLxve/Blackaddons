@@ -7,7 +7,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.feature.customname.CustomNameManager;
-import org.blackum.blackaddons.gui.screen.BaseScreen;
+import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.render.font.CustomBakedGlyph;
 import org.blackum.blackaddons.gui.render.font.CustomFontManager;
 import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;

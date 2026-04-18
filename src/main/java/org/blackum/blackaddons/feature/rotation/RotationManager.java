@@ -566,48 +566,54 @@ public class RotationManager {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
+        float scale = ConfigManager.data.rotationOverlayScale;
         int screenW = mc.getWindow().getGuiScaledWidth();
         int overlayX = ConfigManager.data.rotationOverlayX < 0
-                ? screenW - 145
+                ? screenW - Math.round(145 * scale)
                 : ConfigManager.data.rotationOverlayX;
         int screenH = mc.getWindow().getGuiScaledHeight();
         int overlayY = ConfigManager.data.rotationOverlayY < 0
-                ? screenH - 80
+                ? screenH - Math.round(80 * scale)
                 : ConfigManager.data.rotationOverlayY;
-        int y = overlayY;
         int lineH = 10;
 
         float curYaw = normalizeYaw(mc.player.getYRot());
         float curPitch = mc.player.getXRot();
 
+        g.pose().pushMatrix();
+        g.pose().translate((float) overlayX, (float) overlayY);
+        g.pose().scale(scale, scale);
+        int y = 0;
+
         g.drawString(mc.font,
                 ChatFormatting.GOLD + "[Rotation] " + (active ? ChatFormatting.GREEN + "ACTIVE" : ChatFormatting.GRAY + "IDLE"),
-                overlayX, y, COLOR_WHITE);
+                0, y, COLOR_WHITE);
         y += lineH;
 
         if (active) {
-            g.drawString(mc.font, String.format("Yaw:   %.1f -> %.1f", curYaw, targetYawUnwrapped), overlayX, y, COLOR_WHITE);
+            g.drawString(mc.font, String.format("Yaw:   %.1f -> %.1f", curYaw, targetYawUnwrapped), 0, y, COLOR_WHITE);
             y += lineH;
-            g.drawString(mc.font, String.format("Pitch: %.1f -> %.1f", curPitch, targetPitch), overlayX, y, COLOR_WHITE);
+            g.drawString(mc.font, String.format("Pitch: %.1f -> %.1f", curPitch, targetPitch), 0, y, COLOR_WHITE);
             y += lineH;
 
             float progress = durationTicks > 0 ? Math.max(0, currentTicks / durationTicks) : 1.0f;
 
             if (!Double.isNaN(targetX)) {
-                g.drawString(mc.font, String.format("Pos: %.0f %.0f %.0f", targetX, targetY, targetZ), overlayX, y, COLOR_GRAY);
+                g.drawString(mc.font, String.format("Pos: %.0f %.0f %.0f", targetX, targetY, targetZ), 0, y, COLOR_GRAY);
                 y += lineH;
             }
 
             String extra = String.format("Spd: %.1f Curve: %.0f%%%s", ConfigManager.data.rotationSpeed, ConfigManager.data.rotationVariance * 100, ConfigManager.data.rotationHumanizerEnabled
                     ? String.format("  Hum: ON")
                     : "");
-            g.drawString(mc.font, extra, overlayX, y, COLOR_GRAY);
+            g.drawString(mc.font, extra, 0, y, COLOR_GRAY);
             y += lineH;
 
-            g.fill(overlayX, y, overlayX + OVERLAY_BAR_WIDTH, y + 4, COLOR_BAR_BG);
-            g.fill(overlayX, y, overlayX + (int) (OVERLAY_BAR_WIDTH * progress), y + 4, COLOR_BAR_FILL);
-            g.drawString(mc.font, String.format(" %.0f%%", progress * 100), overlayX + OVERLAY_BAR_WIDTH, y - 2, COLOR_GRAY);
+            g.fill(0, y, OVERLAY_BAR_WIDTH, y + 4, COLOR_BAR_BG);
+            g.fill(0, y, (int) (OVERLAY_BAR_WIDTH * progress), y + 4, COLOR_BAR_FILL);
+            g.drawString(mc.font, String.format(" %.0f%%", progress * 100), OVERLAY_BAR_WIDTH, y - 2, COLOR_GRAY);
         }
+        g.pose().popMatrix();
     }
 
     private void renderWaypoint(GuiGraphics g, DeltaTracker tracker) {

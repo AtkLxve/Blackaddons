@@ -15,7 +15,7 @@ import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
-import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
+import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.feature.rng.RngTracker;

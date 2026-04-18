@@ -11,8 +11,8 @@ import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.blackum.blackaddons.feature.chat.IrcClient;
-import org.blackum.blackaddons.gui.screen.ImagePreviewScreen;
-import org.blackum.blackaddons.gui.screen.IrcScreen;
+import org.blackum.blackaddons.gui.screen.feature.ImagePreviewScreen;
+import org.blackum.blackaddons.gui.screen.feature.IrcScreen;
 
 public class ChatCommands {
 

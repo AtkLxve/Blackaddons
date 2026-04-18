@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
-import org.blackum.blackaddons.gui.screen.BaseScreen;
+import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.feature.modhider.SpoofMode;
@@ -417,6 +417,7 @@ public class ConfigManager {
         public int AutoSSSwapMode = 0; // 0: Swap, 1: Swap and Open 2: TODO: add Swap and Open and Leap to ... class
         public int AutoSSOverlayX = -1;
         public int AutoSSOverlayY = 5;
+        public float AutoSSOverlayScale = 1.0f;
 
         public boolean RelicLookEnabled = false;
         public boolean RelicLookDebug = false;
@@ -424,12 +425,15 @@ public class ConfigManager {
         public boolean showRotationDebug = false;
         public int rotationOverlayX = -1;
         public int rotationOverlayY = 5;
+        public float rotationOverlayScale = 1.0f;
         public boolean showAlignDebug = false;
         public int alignOverlayX = -1;
         public int alignOverlayY = 125;
+        public float alignOverlayScale = 1.0f;
         public boolean showLocationDebug = false;
         public int locationOverlayX = -1;
         public int locationOverlayY = 65;
+        public float locationOverlayScale = 1.0f;
 
         public boolean rotationHumanizerEnabled = true;
         public float rotationVariance = 0.08f;

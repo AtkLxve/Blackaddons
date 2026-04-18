@@ -300,7 +300,7 @@ public class ProfileStateManager {
 
             final JsonObject finalData = data;
             if (Blackaddons.screenOpener != null) {
-                Blackaddons.screenOpener.accept(new org.blackum.blackaddons.gui.screen.ProfileViewerScreen(null, player,
+                Blackaddons.screenOpener.accept(new org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen(null, player,
                         profileName, force,
                         finalData));
             }

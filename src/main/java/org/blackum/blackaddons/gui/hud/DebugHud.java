@@ -1,48 +1,103 @@
 package org.blackum.blackaddons.gui.hud;
 
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.gui.screen.BaseScreen;
+import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 
-public class DebugHud {
+public class DebugHud implements HudElement {
     private static final int DEFAULT_COLOR = 0xFFFFFFFF;
     private static final int LINE_HEIGHT = 10;
 
     public static void register() {
-        HudRenderCallback.EVENT.register((graphics, partialTick) -> {
-            if (!BaseScreen.showDebugOverlay)
-                return;
+        HudRegistry.register(new DebugHud());
+    }
 
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.options.hideGui)
-                return;
+    @Override
+    public String id() {
+        return "debug";
+    }
 
-            int x = BaseScreen.overlayX;
-            int y = BaseScreen.overlayY;
-            float scale = BaseScreen.overlayScale;
+    @Override
+    public String displayName() {
+        return "Debug Overlay";
+    }
 
-            List<String> debugInfo = gatherDebugInfo(mc);
+    @Override
+    public boolean enabled() {
+        return BaseScreen.showDebugOverlay && !Minecraft.getInstance().options.hideGui;
+    }
 
-            graphics.pose().pushMatrix();
-            graphics.pose().translate((float) x, (float) y);
-            graphics.pose().scale(scale, scale);
+    @Override
+    public int x() {
+        return BaseScreen.overlayX;
+    }
 
-            int lineY = 0;
-            for (String line : debugInfo) {
-                graphics.drawString(mc.font, line, 0, lineY, DEFAULT_COLOR);
-                lineY += LINE_HEIGHT;
-            }
-            graphics.pose().popMatrix();
-        });
+    @Override
+    public int y() {
+        return BaseScreen.overlayY;
+    }
+
+    @Override
+    public void setPos(int x, int y) {
+        BaseScreen.overlayX = x;
+        BaseScreen.overlayY = y;
+    }
+
+    @Override
+    public void reset() {
+        BaseScreen.overlayX = 5;
+        BaseScreen.overlayY = 5;
+        BaseScreen.overlayScale = 1.0f;
+    }
+
+    @Override
+    public boolean resizable() {
+        return true;
+    }
+
+    @Override
+    public void setSize(int w, int h) {
+        float scale = Math.max(0.1f, Math.min(10.0f, w / 160.0f));
+        BaseScreen.overlayScale = scale;
+    }
+
+    @Override
+    public int width() {
+        return (int) (160 * BaseScreen.overlayScale);
+    }
+
+    @Override
+    public int height() {
+        Minecraft mc = Minecraft.getInstance();
+        return (int) (gatherDebugInfo(mc).size() * LINE_HEIGHT * BaseScreen.overlayScale);
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, DeltaTracker tracker) {
+        Minecraft mc = Minecraft.getInstance();
+        float scale = BaseScreen.overlayScale;
+        List<String> debugInfo = gatherDebugInfo(mc);
+
+        graphics.pose().pushMatrix();
+        graphics.pose().translate((float) x(), (float) y());
+        graphics.pose().scale(scale, scale);
+
+        int lineY = 0;
+        for (String line : debugInfo) {
+            graphics.drawString(mc.font, line, 0, lineY, DEFAULT_COLOR);
+            lineY += LINE_HEIGHT;
+        }
+        graphics.pose().popMatrix();
     }
 
     private static List<String> gatherDebugInfo(Minecraft mc) {

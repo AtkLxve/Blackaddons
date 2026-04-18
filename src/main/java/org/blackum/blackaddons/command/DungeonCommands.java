@@ -10,8 +10,8 @@ import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
-import org.blackum.blackaddons.gui.screen.PartyFinderScreen;
-import org.blackum.blackaddons.gui.screen.SoloLeaderboardScreen;
+import org.blackum.blackaddons.gui.screen.feature.PartyFinderScreen;
+import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 
 public class DungeonCommands {
 

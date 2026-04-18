@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.feature.waypoint;
 
-import org.blackum.blackaddons.gui.widget.Widget;
+import org.blackum.blackaddons.gui.widget.base.Widget;
 
 public class WaypointDragState {
     public boolean active = false;

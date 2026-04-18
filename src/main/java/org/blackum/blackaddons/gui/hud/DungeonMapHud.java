@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.hud;
 
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.Blackaddons;
@@ -14,7 +15,75 @@ import org.blackum.blackaddons.feature.dungeon.map.Vec2i;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-public class DungeonMapHud {
+public class DungeonMapHud implements HudElement {
+
+    public static void register() {
+        HudRegistry.register(new DungeonMapHud());
+    }
+
+    @Override
+    public String id() {
+        return "dungeon_map";
+    }
+
+    @Override
+    public String displayName() {
+        return "Dungeon Map";
+    }
+
+    @Override
+    public boolean enabled() {
+        return ConfigManager.data.dungeonMapEnabled && LocationUtils.inDungeons();
+    }
+
+    @Override
+    public int x() {
+        return ConfigManager.data.dungeonMapX;
+    }
+
+    @Override
+    public int y() {
+        return ConfigManager.data.dungeonMapY;
+    }
+
+    @Override
+    public void setPos(int x, int y) {
+        ConfigManager.data.dungeonMapX = x;
+        ConfigManager.data.dungeonMapY = y;
+    }
+
+    @Override
+    public int width() {
+        return ConfigManager.data.dungeonMapSize;
+    }
+
+    @Override
+    public int height() {
+        return ConfigManager.data.dungeonMapSize;
+    }
+
+    @Override
+    public void reset() {
+        ConfigManager.data.dungeonMapX = 4;
+        ConfigManager.data.dungeonMapY = 4;
+        ConfigManager.data.dungeonMapSize = 120;
+    }
+
+    @Override
+    public boolean resizable() {
+        return true;
+    }
+
+    @Override
+    public void setSize(int w, int h) {
+        int s = Math.max(32, Math.min(400, Math.max(w, h)));
+        ConfigManager.data.dungeonMapSize = s;
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, DeltaTracker tracker) {
+        render(graphics);
+    }
 
     private static final Object MARKER_SELF = safeRL("blackaddons", "textures/map/marker_self.png");
 

@@ -25,7 +25,7 @@ import org.blackum.blackaddons.common.util.format.FormatUtils;
 import org.blackum.blackaddons.common.util.io.JsonUtils;
 import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
-import org.blackum.blackaddons.feature.dungeon.DungeonJoinHandler;
+import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.service.BotIntegration;

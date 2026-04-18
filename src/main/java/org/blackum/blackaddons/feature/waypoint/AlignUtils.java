@@ -1,7 +1,6 @@
 package org.blackum.blackaddons.feature.waypoint;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -82,7 +81,7 @@ public class AlignUtils {
     private static int sessionAlignCount = 0;
 
     public static void register() {
-        HudRenderCallback.EVENT.register((graphics, partialTick) -> renderOverlay(graphics));
+        org.blackum.blackaddons.gui.hud.AlignDebugHud.register();
     }
 
     public static void alignToBlock(double x, double z, long timeoutMs, boolean lookAfter, boolean useLookAfterCoords, float postYaw, float postPitch, double lookAtX, double lookAtY, double lookAtZ) {
@@ -329,28 +328,29 @@ public class AlignUtils {
         return info;
     }
 
-    private static void renderOverlay(GuiGraphics graphics) {
+    public static void renderDebug(GuiGraphics graphics) {
         Minecraft mc = Minecraft.getInstance();
-        if (!ConfigManager.data.showAlignDebug || mc.options.hideGui) {
-            return;
-        }
-
         List<String> info = getDebugInfo();
         if (info.isEmpty()) {
             return;
         }
 
+        float scale = ConfigManager.data.alignOverlayScale;
         int screenW = mc.getWindow().getGuiScaledWidth();
         int overlayX = ConfigManager.data.alignOverlayX < 0
-                ? screenW - 190
+                ? screenW - Math.round(190 * scale)
                 : ConfigManager.data.alignOverlayX;
         int overlayY = ConfigManager.data.alignOverlayY;
 
-        int y = overlayY;
+        graphics.pose().pushMatrix();
+        graphics.pose().translate((float) overlayX, (float) overlayY);
+        graphics.pose().scale(scale, scale);
+        int y = 0;
         for (String line : info) {
-            graphics.drawString(mc.font, line, overlayX, y, COLOR_WHITE);
+            graphics.drawString(mc.font, line, 0, y, COLOR_WHITE);
             y += LINE_HEIGHT;
         }
+        graphics.pose().popMatrix();
     }
 
     private static float getSurfaceSlipperiness(LocalPlayer player, Minecraft mc) {

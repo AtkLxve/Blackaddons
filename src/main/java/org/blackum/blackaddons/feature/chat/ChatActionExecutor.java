@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.gui.widget.MovementKeybindSelector;
+import org.blackum.blackaddons.gui.widget.base.MovementKeybindSelector;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
