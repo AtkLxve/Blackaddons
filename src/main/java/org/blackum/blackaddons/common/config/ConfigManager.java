@@ -2,6 +2,9 @@ package org.blackum.blackaddons.common.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
@@ -16,6 +19,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -380,11 +384,6 @@ public class ConfigManager {
         public Set<String> modHiderAllowedCustomPayloadChannels = new HashSet<>(FABRIC_DEFAULT_CHANNELS);
 
         // Cheats
-        public boolean AutoTNTEnabled = false;
-        public int AutoTNTDelay = 5;
-        public int UnequipDelay = 8;
-        public boolean SwapBack = true;
-
         public AutoTNT.FeatureConfig autoTntConfig = new AutoTNT.FeatureConfig();
         public AutoBM.FeatureConfig autoBMConfig = new AutoBM.FeatureConfig();
 
@@ -560,6 +559,124 @@ public class ConfigManager {
         public Map<String, CardState> lastLoadedCardStates = new HashMap<>();
     }
 
+    private static final LinkedHashMap<String, List<String>> GROUP_MAP = new LinkedHashMap<>();
+    static {
+        GROUP_MAP.put("ui", List.of(
+                "overlayX", "overlayY", "overlayScale",
+                "showHitboxes", "showDebugOverlay",
+                "accentColor", "useCardLayout", "forcedGuiScale",
+                "cardStates", "lastLoadedCardStates"));
+        GROUP_MAP.put("bot", List.of(
+                "botUrl", "dataSource", "apiPriorityList", "developerKey",
+                "rngTrackerEnabled",
+                "partyFinderAutoInvite", "partyFinderAutoAcceptInvite",
+                "partyFinderShowStatsOnJoin", "partyFinderShowStatsOnRequest"));
+        GROUP_MAP.put("irc", List.of(
+                "ircEnabled", "ircChannels", "ircPrefix", "ircChatMode"));
+        GROUP_MAP.put("modHider", List.of(
+                "modHiderSpoofMode", "modHiderCustomClient",
+                "modHiderHideMods", "modHiderDisableCustomPayloads",
+                "modHiderAllowedMods", "modHiderAllowedCustomPayloadChannels"));
+        GROUP_MAP.put("freecam", List.of(
+                "freecamEnabled", "freecamSpeed", "freecamScrollSpeed",
+                "freecamShowHands", "freecamKeyCode", "freecamHoldMode"));
+        GROUP_MAP.put("perspective", List.of(
+                "perspectiveEnabled", "perspectiveDistance",
+                "perspectiveKeyCode", "perspectiveHoldMode",
+                "perspectiveSensitivity", "perspectiveScrollEnabled"));
+        GROUP_MAP.put("autoSS", List.of(
+                "AutoSSEnabled", "AutoSSDelay", "AutoSSDistanceLimit", "AutoSSAlerts",
+                "AutoSSRotationSpeed", "AutoSSRotationCurve",
+                "AutoSSInstantSnap", "AutoSSSkip",
+                "AutoSSAutoStart", "AutoSSAutoStartDelay",
+                "AutoSSTrySkip", "AutoSSDebug",
+                "AutoSSSwapToItem", "AutoSSSwapMode",
+                "AutoSSOverlayX", "AutoSSOverlayY", "AutoSSOverlayScale"));
+        GROUP_MAP.put("relicLook", List.of(
+                "RelicLookEnabled", "RelicLookDebug"));
+        GROUP_MAP.put("rotation", List.of(
+                "rotationHumanizerEnabled", "rotationVariance", "rotationTargetRandomness",
+                "rotationSmoothness", "rotationSpeed",
+                "rotationDistanceSlowdown", "rotationDistanceRadius", "rotationFovSlowdown",
+                "rotationStopThreshold"));
+        GROUP_MAP.put("debugOverlays", List.of(
+                "showRotationDebug", "rotationOverlayX", "rotationOverlayY", "rotationOverlayScale",
+                "showAlignDebug", "alignOverlayX", "alignOverlayY", "alignOverlayScale",
+                "showLocationDebug", "locationOverlayX", "locationOverlayY", "locationOverlayScale"));
+        GROUP_MAP.put("dungeonMap", List.of(
+                "dungeonMapEnabled", "dungeonFunnyMap",
+                "dungeonMapX", "dungeonMapY", "dungeonMapSize",
+                "dungeonMapColorNormal", "dungeonMapColorEntrance", "dungeonMapColorBlood",
+                "dungeonMapColorFairy", "dungeonMapColorPuzzle", "dungeonMapColorTrap",
+                "dungeonMapColorChampion", "dungeonMapColorMimic", "dungeonMapColorUndiscovered",
+                "dungeonMapBackgroundColor", "dungeonMapBackgroundOpacity",
+                "dungeonMapShowRoomNames", "dungeonMapRoomNameScale",
+                "dungeonMapColorNameDiscovered", "dungeonMapColorNameCleared", "dungeonMapColorNameCompleted",
+                "dungeonMapUndiscoveredDarkness",
+                "dungeonMapColorBorder", "dungeonMapBorderEnabled", "dungeonMapBorderThickness"));
+        GROUP_MAP.put("waterBoard", List.of(
+                "waterBoardSolverEnabled", "waterBoardHudEnabled",
+                "waterBoardHudX", "waterBoardHudY", "waterBoardHudScale",
+                "waterBoardTimerScale"));
+        GROUP_MAP.put("visuals", List.of(
+                "legitFullbrightEnabled", "removeFireOverlay",
+                "hideStatusEffects", "disableNearbyParticles"));
+        GROUP_MAP.put("chat", List.of(
+                "notificationDuration", "cacheDurationMinutes",
+                "disableCommandConfirmation", "disableUnsecureChatToast",
+                "chatVisualFiltersEnabled", "actionTriggersEnabled",
+                "chatVisualFilters", "chatActions", "knownAliases"));
+        GROUP_MAP.put("customText", List.of(
+                "customTextEnabled", "customTextScale", "customTextGuiOnly",
+                "customFontAntiAliasing", "customFontAntiAliasingWidth",
+                "customFontShadow", "customFontShadowColor",
+                "customFontShadowOffsetX", "customFontShadowOffsetY",
+                "customFontOutline", "customFontOutlineColor", "customFontOutlineWidth",
+                "customFontBold", "customFontBoldStrength",
+                "customFontItalic", "customFontItalicSlant",
+                "customFontGoogleName"));
+        GROUP_MAP.put("vectorText", List.of(
+                "vectorTextEnabled", "vectorTextScale"));
+        GROUP_MAP.put("dungeonScore", List.of(
+                "enableDungeonScoreTracker", "enableDungeonScoreAnnouncements",
+                "dungeonScore270Message", "dungeonScore300Message",
+                "mimicKilledMessage", "princeKilledMessage",
+                "enableMimicKilledMessage", "enablePrinceKilledMessage",
+                "f7SoloClears", "m7SoloClears"));
+    }
+
+    private static JsonObject groupJson(JsonObject flat) {
+        JsonObject out = new JsonObject();
+        for (Map.Entry<String, List<String>> entry : GROUP_MAP.entrySet()) {
+            JsonObject group = new JsonObject();
+            for (String field : entry.getValue()) {
+                if (flat.has(field)) {
+                    group.add(field, flat.remove(field));
+                }
+            }
+            if (!group.entrySet().isEmpty()) {
+                out.add(entry.getKey(), group);
+            }
+        }
+        for (Map.Entry<String, JsonElement> e : flat.entrySet()) {
+            out.add(e.getKey(), e.getValue());
+        }
+        return out;
+    }
+
+    private static void flattenJson(JsonObject root) {
+        for (String groupKey : GROUP_MAP.keySet()) {
+            JsonElement g = root.get(groupKey);
+            if (g != null && g.isJsonObject()) {
+                JsonObject group = g.getAsJsonObject();
+                for (Map.Entry<String, JsonElement> e : group.entrySet()) {
+                    root.add(e.getKey(), e.getValue());
+                }
+                root.remove(groupKey);
+            }
+        }
+    }
+
     private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
     public static void resetDungeonMapColors() {
         ConfigData defaults = new ConfigData();
@@ -597,7 +714,9 @@ public class ConfigManager {
                 }
 
                 try (FileWriter writer = new FileWriter(configFile)) {
-                    GSON.toJson(data, writer);
+                    JsonObject flat = GSON.toJsonTree(data).getAsJsonObject();
+                    JsonObject grouped = groupJson(flat);
+                    GSON.toJson(grouped, writer);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -614,7 +733,9 @@ public class ConfigManager {
         }
 
         try (FileReader reader = new FileReader(configFile)) {
-            ConfigData loadedData = GSON.fromJson(reader, ConfigData.class);
+            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+            flattenJson(root);
+            ConfigData loadedData = GSON.fromJson(root, ConfigData.class);
             if (loadedData != null) {
                 // TODO: Delete migration when enough versions have passed
                 if (loadedData.modHiderAllowedCustomPayloadChannels != null) {
