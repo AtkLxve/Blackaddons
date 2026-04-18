@@ -32,8 +32,6 @@ public class DungeonScore {
     private static boolean isCurrentFloorEntrance;
     private static boolean floorHasMimics;
 
-    private static boolean sent270;
-    private static boolean sent300;
     private static boolean mimicKilled;
     private static boolean princeKilled;
     private static boolean dungeonStarted;
@@ -57,22 +55,6 @@ public class DungeonScore {
         }
 
         score = calculateScore();
-        checkThresholds();
-    }
-
-    private static void checkThresholds() {
-        if (!ConfigManager.data.enableDungeonScoreAnnouncements)
-            return;
-
-        if (!sent270 && score >= 270 && score < 300) {
-            sendMessage("/pc " + ConfigManager.data.dungeonScore270Message);
-            sent270 = true;
-        }
-
-        if (!sent300 && score >= 300) {
-            sendMessage("/pc " + ConfigManager.data.dungeonScore300Message);
-            sent300 = true;
-        }
     }
 
     private static void sendMessage(String msg) {
@@ -87,8 +69,6 @@ public class DungeonScore {
         currentFloor = "";
         isCurrentFloorEntrance = false;
         floorHasMimics = false;
-        sent270 = false;
-        sent300 = false;
         mimicKilled = false;
         princeKilled = false;
         dungeonStarted = false;

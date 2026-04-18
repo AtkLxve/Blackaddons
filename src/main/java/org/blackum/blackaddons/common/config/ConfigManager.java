@@ -527,9 +527,6 @@ public class ConfigManager {
 
         // Dungeon Score Calculator
         public boolean enableDungeonScoreTracker = true;
-        public boolean enableDungeonScoreAnnouncements = true;
-        public String dungeonScore270Message = "270 Score Reached!";
-        public String dungeonScore300Message = "300 Score Reached!";
         public String mimicKilledMessage = "Mimic Killed!";
         public String princeKilledMessage = "Prince Killed!";
         public boolean enableMimicKilledMessage = true;
@@ -637,8 +634,7 @@ public class ConfigManager {
         GROUP_MAP.put("vectorText", List.of(
                 "vectorTextEnabled", "vectorTextScale"));
         GROUP_MAP.put("dungeonScore", List.of(
-                "enableDungeonScoreTracker", "enableDungeonScoreAnnouncements",
-                "dungeonScore270Message", "dungeonScore300Message",
+                "enableDungeonScoreTracker",
                 "mimicKilledMessage", "princeKilledMessage",
                 "enableMimicKilledMessage", "enablePrinceKilledMessage",
                 "f7SoloClears", "m7SoloClears"));
