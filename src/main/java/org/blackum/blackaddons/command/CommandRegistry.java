@@ -31,8 +31,6 @@ public class CommandRegistry {
                 cmd.then(ChatCommands.actionTriggerNode("editmode"));
                 cmd.then(CommandUtils.subcommand);
                 cmd.then(DungeonCommands.pfNode());
-                cmd.then(DungeonCommands.scoreNode());
-                cmd.then(DungeonCommands.tablistNode());
                 cmd.then(ChatCommands.previewNode());
                 cmd.then(DungeonCommands.leaderboardNode());
                 cmd.then(MiscCommands.hudNode());

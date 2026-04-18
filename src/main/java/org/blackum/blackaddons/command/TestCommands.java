@@ -12,11 +12,13 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
+import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
@@ -40,6 +42,23 @@ public class TestCommands {
                 .executes(ctx -> {
                     if (Blackaddons.testMenuOpener != null)
                         Blackaddons.testMenuOpener.run();
+                    return 1;
+                }));
+
+        testNode.then(ClientCommandManager.literal("score")
+                .executes(ctx -> {
+                    for (String line : DungeonScore.getScoreBreakdown()) {
+                        ctx.getSource().sendFeedback(Component.literal(line));
+                    }
+                    return 1;
+                }));
+
+        testNode.then(ClientCommandManager.literal("tablist")
+                .executes(ctx -> {
+                    ctx.getSource().sendFeedback(Component.literal("§e--- Current Tablist ---"));
+                    for (String line : TabListUtils.getTabListLines()) {
+                        ctx.getSource().sendFeedback(Component.literal("§7- " + line));
+                    }
                     return 1;
                 }));
 

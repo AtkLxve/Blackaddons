@@ -209,9 +209,9 @@ public abstract class BaseScreen extends Screen {
                 graphics, containerX, containerY, containerWidth, containerHeight,
                 Theme.BORDER_RADIUS_LARGE, false);
 
-        maxScroll = Math.max(0, contentHeight - (containerHeight - 40));
+        maxScroll = Math.max(0, contentHeight - containerHeight);
 
-        if (maxScroll < 32)
+        if (maxScroll < 4)
             maxScroll = 0;
 
         canScroll = maxScroll > 0;
