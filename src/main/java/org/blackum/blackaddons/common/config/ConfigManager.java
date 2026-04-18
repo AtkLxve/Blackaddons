@@ -29,6 +29,7 @@ public class ConfigManager {
     private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File OLD_CONFIG_FILE = OLD_CONFIG_DIR.resolve("config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final int API_PRIORITY_SLOTS = 3;
     
     private static File getConfigFile() {
         return ProfileManager.getActiveProfileFile(ProfileManager.Category.CONFIG);
@@ -361,9 +362,7 @@ public class ConfigManager {
         public String botUrl = Constants.DEFAULT_BOT_URL;
         public DataSource dataSource = DataSource.LOCAL;
         public List<ApiPriority> apiPriorityList = new ArrayList<>(
-                List.of(ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING,
-                        ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT,
-                        ApiPriority.SOOPY));
+                List.of(ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING, ApiPriority.PLAIN_DAWN));
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
         public boolean partyFinderAutoInvite = true;
@@ -751,11 +750,9 @@ public class ConfigManager {
                     loadedData.apiPriorityList.removeIf(java.util.Objects::isNull);
                 }
                 if (loadedData.apiPriorityList == null
-                        || loadedData.apiPriorityList.size() != ApiPriority.values().length) {
+                        || loadedData.apiPriorityList.size() != API_PRIORITY_SLOTS) {
                     loadedData.apiPriorityList = new ArrayList<>(List.of(
-                            ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING,
-                            ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT,
-                            ApiPriority.SOOPY));
+                            ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING, ApiPriority.PLAIN_DAWN));
                 }
                 data = loadedData;
                 normalizeLegacyActionTimings();

@@ -160,10 +160,9 @@ public class SettingsTabController extends SimpleTabController {
                 "Soopy (No secrets/score/inventory)");
 
         String[] tierLabels = {
-                "Primary Source", "Fallback", "Fallback 2", "Fallback 3",
-                "Fallback 4", "Fallback 5"
+                "Primary Source", "Fallback", "Fallback 2"
         };
-        for (int i = 0; i < ConfigManager.ApiPriority.values().length; i++) {
+        for (int i = 0; i < ConfigManager.API_PRIORITY_SLOTS; i++) {
             final int index = i;
             listView.addItem(new Label(0, 0, tierLabels[i], Label.Style.BODY));
             Dropdown dd = new Dropdown(0, 0, width, Theme.BUTTON_HEIGHT, (i + 1) + " Priority",
