@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import org.blackum.blackaddons.core.util.EncryptionUtils;
+import org.blackum.blackaddons.common.util.io.EncryptionUtils;
 public class BotIntegration {
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)

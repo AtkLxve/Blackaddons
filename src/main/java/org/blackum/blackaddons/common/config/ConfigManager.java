@@ -489,6 +489,17 @@ public class ConfigManager {
         public float waterBoardHudScale = 1.0f;
         public float waterBoardTimerScale = 1.0f;
 
+        // TP Maze Solver
+        public boolean teleportMazeSolverEnabled = true;
+        public boolean teleportMazePrioritizeDiagonal = true;
+        public boolean teleportMazeAutoRotate = false;
+        public float teleportMazeAutoRotateSpeed = 60.0f;
+        public int teleportMazeVisitedColor = 0xFFFF5555;
+        public int teleportMazeCorrectColor = 0xFF55FF55;
+        public int teleportMazeMultipleColor = 0xFFFFFF55;
+        public int teleportMazeTracerColor = 0xFF55FF55;
+        public float teleportMazeTracerWidth = 2.0f;
+
         // Legit
         public boolean legitFullbrightEnabled = false;
         public boolean removeFireOverlay = false;
@@ -616,6 +627,10 @@ public class ConfigManager {
                 "waterBoardSolverEnabled", "waterBoardHudEnabled",
                 "waterBoardHudX", "waterBoardHudY", "waterBoardHudScale",
                 "waterBoardTimerScale"));
+        GROUP_MAP.put("tpMaze", List.of(
+                "teleportMazeSolverEnabled", "teleportMazePrioritizeDiagonal", "teleportMazeAutoRotate",
+                "teleportMazeAutoRotateSpeed", "teleportMazeVisitedColor", "teleportMazeCorrectColor", "teleportMazeMultipleColor",
+                "teleportMazeTracerColor", "teleportMazeTracerWidth"));
         GROUP_MAP.put("visuals", List.of(
                 "legitFullbrightEnabled", "removeFireOverlay",
                 "hideStatusEffects", "disableNearbyParticles"));

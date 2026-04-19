@@ -42,6 +42,8 @@ import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearsTracker;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardHandler;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardSolver;
+import org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze.TpMazeHandler;
+import org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze.TpMazeSolver;
 import org.blackum.blackaddons.gui.hud.DungeonMapHud;
 import org.blackum.blackaddons.gui.hud.HudRegistry;
 import org.blackum.blackaddons.gui.hud.WaterBoardHud;
@@ -77,6 +79,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         LocationDebugHud.register();
         AlignUtils.register();
         WaterBoardHandler.register();
+        TpMazeHandler.register();
 
         ConfigManager.load();
         if (ConfigManager.data.customTextEnabled) {
@@ -96,6 +99,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonWorldScanner.reset();
             DungeonScoreboard.reset();
             WaterBoardSolver.reset();
+            TpMazeSolver.reset();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -104,6 +108,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonWorldScanner.reset();
             DungeonScoreboard.reset();
             WaterBoardSolver.reset();
+            TpMazeSolver.reset();
         });
 
         Blackaddons.guiOpener = () -> {

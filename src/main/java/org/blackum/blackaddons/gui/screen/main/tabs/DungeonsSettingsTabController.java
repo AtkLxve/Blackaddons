@@ -56,7 +56,35 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             });
             tab.addWidget(enableToggle);
 
-            Button positionButton = new Button(contentX, contentY + 60, contentWidth - 20, 20,
+            ToggleSwitch tpMazeToggle = new ToggleSwitch(contentX, contentY + 60, contentWidth - 20,
+                    "Enable TP Maze Solver",
+                    "Assists with solving the Teleport Maze puzzle.",
+                    ConfigManager.data.teleportMazeSolverEnabled, value -> {
+                ConfigManager.data.teleportMazeSolverEnabled = value;
+                ConfigManager.save();
+            });
+            tab.addWidget(tpMazeToggle);
+
+            ToggleSwitch tpMazeRotateToggle = new ToggleSwitch(contentX, contentY + 90, contentWidth - 20,
+                    "Auto Rotate TP Maze",
+                    "Automatically rotates your camera to the correct pad.",
+                    ConfigManager.data.teleportMazeAutoRotate, value -> {
+                ConfigManager.data.teleportMazeAutoRotate = value;
+                ConfigManager.save();
+            });
+            tab.addWidget(tpMazeRotateToggle);
+
+            final Label speedLabel = new Label(contentX, contentY + 120, "Rotation Speed: " + String.format("%.1f", ConfigManager.data.teleportMazeAutoRotateSpeed), Label.Style.BODY);
+            tab.addWidget(speedLabel);
+
+            Slider speedSlider = new Slider(contentX, contentY + 135, contentWidth - 20, 10f, 180f, ConfigManager.data.teleportMazeAutoRotateSpeed, v -> {
+                ConfigManager.data.teleportMazeAutoRotateSpeed = v;
+                speedLabel.setText("Rotation Speed: " + String.format("%.1f", v));
+                ConfigManager.save();
+            });
+            tab.addWidget(speedSlider);
+
+            Button positionButton = new Button(contentX, contentY + 165, contentWidth - 20, 20,
                     "Change HUD Position", () -> {
                 if (Blackaddons.screenOpener != null) {
                     Blackaddons.screenOpener.accept(new OverlayEditScreen(screen, "waterboard"));
@@ -64,9 +92,9 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             });
             tab.addWidget(positionButton);
 
-            tab.addWidget(new Label(contentX, contentY + 100, "Dungeon Map", Label.Style.TITLE));
+            tab.addWidget(new Label(contentX, contentY + 205, "Dungeon Map", Label.Style.TITLE));
             
-            ListView list = new ListView(contentX, contentY + 130, contentWidth - 20, 400);
+            ListView list = new ListView(contentX, contentY + 235, contentWidth - 20, 360);
             addMapSettings(list, contentWidth - 40);
             tab.addWidget(list);
 
@@ -89,11 +117,11 @@ public class DungeonsSettingsTabController extends SimpleTabController {
     }
 
     private ResizableCard createSolverCard(int x, int y) {
-        solverCard = screen.createResizableCard("puzzleSolvers", x, y, 300, 150, "Puzzle Solvers");
+        solverCard = screen.createResizableCard("puzzleSolvers", x, y, 300, 250, "Puzzle Solvers");
         int contentX = solverCard.getContentX();
         int contentY = solverCard.getContentY();
 
-        ListView listView = new ListView(contentX, contentY, 260, 110);
+        ListView listView = new ListView(contentX, contentY, 260, 210);
 
         ToggleSwitch enableToggle = new ToggleSwitch(0, 0, 260,
                 "Enable Water Board Solver",
@@ -103,6 +131,34 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             ConfigManager.save();
         });
         listView.addItem(enableToggle);
+
+        ToggleSwitch tpMazeToggle = new ToggleSwitch(0, 0, 260,
+                "Enable TP Maze Solver",
+                "Assists with solving the Teleport Maze puzzle.",
+                ConfigManager.data.teleportMazeSolverEnabled, value -> {
+            ConfigManager.data.teleportMazeSolverEnabled = value;
+            ConfigManager.save();
+        });
+        listView.addItem(tpMazeToggle);
+
+        ToggleSwitch tpMazeRotateToggle = new ToggleSwitch(0, 0, 260,
+                "Auto Rotate TP Maze",
+                "Automatically rotates your camera to the correct pad.",
+                ConfigManager.data.teleportMazeAutoRotate, value -> {
+            ConfigManager.data.teleportMazeAutoRotate = value;
+            ConfigManager.save();
+        });
+        listView.addItem(tpMazeRotateToggle);
+
+        final Label cSpeedLabel = new Label(0, 0, "Rotation Speed: " + String.format("%.1f", ConfigManager.data.teleportMazeAutoRotateSpeed), Label.Style.BODY);
+        listView.addItem(cSpeedLabel);
+
+        Slider cSpeedSlider = new Slider(0, 0, 260, 10f, 180f, ConfigManager.data.teleportMazeAutoRotateSpeed, v -> {
+            ConfigManager.data.teleportMazeAutoRotateSpeed = v;
+            cSpeedLabel.setText("Rotation Speed: " + String.format("%.1f", v));
+            ConfigManager.save();
+        });
+        listView.addItem(cSpeedSlider);
 
         Button positionButton = new Button(0, 0, 260, 20, "Change HUD Position", () -> {
             if (Blackaddons.screenOpener != null) {
