@@ -18,9 +18,9 @@ float screenPxRange() {
 }
 
 void main() {
-    float packed = effectParam;
-    float aa = (floor(packed / 16.0) - 1000.0) / 100.0;
-    float effect = mod(packed, 16.0) - 4.0;
+    float packedVal = effectParam;
+    float aa = (floor(packedVal / 16.0) - 1000.0) / 100.0;
+    float effect = mod(packedVal, 16.0) - 4.0;
     float sd = texture(Sampler0, texCoord).r - 0.5;
     float pxRange = screenPxRange();
     float screenDistance = sd * pxRange;
