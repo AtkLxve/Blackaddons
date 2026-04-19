@@ -13,6 +13,8 @@ public abstract class Widget {
     protected int y;
     protected int width;
     protected int height;
+    protected int marginLeft = 0;
+    protected int marginRight = 0;
     protected boolean visible = true;
     protected boolean enabled = true;
     protected boolean hovered = false;
@@ -23,6 +25,22 @@ public abstract class Widget {
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+
+    public int getMarginLeft() {
+        return marginLeft;
+    }
+
+    public void setMarginLeft(int marginLeft) {
+        this.marginLeft = marginLeft;
+    }
+
+    public int getMarginRight() {
+        return marginRight;
+    }
+
+    public void setMarginRight(int marginRight) {
+        this.marginRight = marginRight;
     }
 
     public abstract void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick);

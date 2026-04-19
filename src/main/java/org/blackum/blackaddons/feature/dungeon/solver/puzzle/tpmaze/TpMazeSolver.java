@@ -169,14 +169,37 @@ public class TpMazeSolver {
         Blackaddons.LOGGER.info("[TpMaze] bestPad=" + (bestPad != null ? bestPad.toShortString() : "null"));
     }
 
+    private static int rotationDelayTicks = 0;
+
+    public static void onClientTick() {
+        if (rotationDelayTicks > 0) {
+            rotationDelayTicks--;
+            if (rotationDelayTicks == 0) {
+                executeRotation();
+            }
+        }
+    }
+
     public static void onServerTeleportPost() {
         if (!active || !ConfigManager.data.teleportMazeAutoRotate || bestPad == null) return;
-        
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return;
+        rotationDelayTicks = 5;
+    }
 
-        org.blackum.blackaddons.feature.rotation.RotationManager.getInstance()
-                .rotateToBlock(bestPad.getX(), SCAN_Y, bestPad.getZ(), ConfigManager.data.teleportMazeAutoRotateSpeed);
+    private static void executeRotation() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || bestPad == null) return;
+
+        double dx = bestPad.getX() + 0.5 - mc.player.getX();
+        double dz = bestPad.getZ() + 0.5 - mc.player.getZ();
+        float targetYaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90f;
+
+        if (ConfigManager.data.teleportMazeSmoothSnap) {
+            org.blackum.blackaddons.feature.rotation.RotationManager.getInstance()
+                    .rotateTo(targetYaw, mc.player.getXRot(), ConfigManager.data.teleportMazeAutoRotateSpeed);
+        } else {
+            org.blackum.blackaddons.feature.rotation.RotationManager.getInstance()
+                    .snapToAngle(targetYaw, mc.player.getXRot());
+        }
     }
 
     public static void onRenderWorld(RenderContext context) {

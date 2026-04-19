@@ -493,6 +493,7 @@ public class ConfigManager {
         public boolean teleportMazeSolverEnabled = true;
         public boolean teleportMazePrioritizeDiagonal = true;
         public boolean teleportMazeAutoRotate = false;
+        public boolean teleportMazeSmoothSnap = true;
         public float teleportMazeAutoRotateSpeed = 60.0f;
         public int teleportMazeVisitedColor = 0xFFFF5555;
         public int teleportMazeCorrectColor = 0xFF55FF55;
@@ -628,7 +629,7 @@ public class ConfigManager {
                 "waterBoardHudX", "waterBoardHudY", "waterBoardHudScale",
                 "waterBoardTimerScale"));
         GROUP_MAP.put("tpMaze", List.of(
-                "teleportMazeSolverEnabled", "teleportMazePrioritizeDiagonal", "teleportMazeAutoRotate",
+                "teleportMazeSolverEnabled", "teleportMazePrioritizeDiagonal", "teleportMazeAutoRotate", "teleportMazeSmoothSnap",
                 "teleportMazeAutoRotateSpeed", "teleportMazeVisitedColor", "teleportMazeCorrectColor", "teleportMazeMultipleColor",
                 "teleportMazeTracerColor", "teleportMazeTracerWidth"));
         GROUP_MAP.put("visuals", List.of(

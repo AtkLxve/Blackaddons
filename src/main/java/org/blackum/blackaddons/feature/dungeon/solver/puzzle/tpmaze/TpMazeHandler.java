@@ -17,6 +17,8 @@ public class TpMazeHandler {
     private static final int RESET_DISTANCE_SQ = 30 * 30;
 
     public static void register() {
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> TpMazeSolver.onClientTick());
+        
         WorldRenderEvents.BEFORE_TRANSLUCENT.register(context -> {
             if (!ConfigManager.data.teleportMazeSolverEnabled) return;
 
