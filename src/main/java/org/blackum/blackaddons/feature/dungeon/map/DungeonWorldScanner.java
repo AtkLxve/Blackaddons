@@ -243,7 +243,15 @@ public class DungeonWorldScanner {
     }
 
     public static void updateRotationOffShape(Room room) {
-        if (room.shape == Room.Shape.S1x1 || room.tiles.size() != room.shape.tileCount) return;
+        if (room.shape == Room.Shape.S1x1) {
+            if (room.clayPos == null && !room.tiles.isEmpty()) {
+                Room.Tile t = room.tiles.get(0);
+                room.clayPos = new int[]{t.pos.x, 0, t.pos.z};
+                room.rotation = Room.Rotation.SOUTH;
+            }
+            return;
+        }
+        if (room.tiles.size() != room.shape.tileCount) return;
 
         Room.Tile topLeft = null, bottomRight = null;
         int minScore = Integer.MAX_VALUE, maxScore = Integer.MIN_VALUE;

@@ -29,9 +29,9 @@ public class ListView extends Widget {
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible()) {
-                item.setX(x);
+                item.setX(x + item.getMarginLeft());
                 item.setY(currentY);
-                item.setWidth(width - scrollbarWidth - 12);
+                item.setWidth(width - scrollbarWidth - 12 - item.getMarginLeft() - item.getMarginRight());
                 currentY += item.getHeight() + itemSpacing;
             }
         }
@@ -48,9 +48,9 @@ public class ListView extends Widget {
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible()) {
-                item.setX(x);
+                item.setX(x + item.getMarginLeft());
                 item.setY(currentY);
-                item.setWidth(width - scrollbarWidth - 12);
+                item.setWidth(width - scrollbarWidth - 12 - item.getMarginLeft() - item.getMarginRight());
 
                 if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height
                         && currentY + item.getHeight() > y && currentY < y + height) {
@@ -73,9 +73,9 @@ public class ListView extends Widget {
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible()) {
-                item.setX(x);
+                item.setX(x + item.getMarginLeft());
                 item.setY(currentY);
-                item.setWidth(width - scrollbarWidth - 12);
+                item.setWidth(width - scrollbarWidth - 12 - item.getMarginLeft() - item.getMarginRight());
 
                 item.render(graphics, mouseX, mouseY, partialTick);
 
@@ -96,9 +96,9 @@ public class ListView extends Widget {
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible() && currentY + item.getHeight() > y && currentY < y + height) {
-                item.setX(x);
+                item.setX(x + item.getMarginLeft());
                 item.setY(currentY);
-                item.setWidth(width - scrollbarWidth - 12);
+                item.setWidth(width - scrollbarWidth - 12 - item.getMarginLeft() - item.getMarginRight());
 
                 item.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
             }

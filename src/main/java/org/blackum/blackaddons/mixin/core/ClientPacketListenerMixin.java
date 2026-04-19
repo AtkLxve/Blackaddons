@@ -14,6 +14,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze.TpMazeHandler;
 
 @Mixin(ClientPacketListener.class)
 public class ClientPacketListenerMixin {
@@ -38,5 +40,15 @@ public class ClientPacketListenerMixin {
                 DungeonScore.onMimicKill();
             }
         }
+    }
+
+    @Inject(method = "handleMovePlayer", at = @At("HEAD"))
+    private void onHandlePlayerPositionPre(ClientboundPlayerPositionPacket packet, CallbackInfo ci) {
+        TpMazeHandler.onServerTeleportPre(packet);
+    }
+
+    @Inject(method = "handleMovePlayer", at = @At("TAIL"))
+    private void onHandlePlayerPositionPost(ClientboundPlayerPositionPacket packet, CallbackInfo ci) {
+        TpMazeHandler.onServerTeleportPost();
     }
 }
