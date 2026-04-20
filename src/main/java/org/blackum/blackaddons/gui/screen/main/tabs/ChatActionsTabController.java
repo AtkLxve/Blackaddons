@@ -245,6 +245,13 @@ public class ChatActionsTabController extends SimpleTabController {
                     trigger.notificationType = NotificationType.valueOf(selected);
                     ActionManager.getInstance().save();
                 });
+                typeDropdown.setColorProvider(val -> {
+                    try {
+                        return NotificationType.valueOf(val).getColor();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                });
                 typeDropdown.setSelectedIndex(trigger.notificationType.ordinal());
                 triggerWidgets.add(new SettingWrapper(0, 0, itemWidth, "Notification Type", "Color profile of the notification", typeDropdown));
 

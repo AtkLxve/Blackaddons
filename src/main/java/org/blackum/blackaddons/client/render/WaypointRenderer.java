@@ -15,6 +15,7 @@ import org.blackum.blackaddons.feature.waypoint.WaypointAnimation;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.joml.Matrix4f;
+import org.lwjgl.system.linux.CMsghdr;
 
 import java.awt.Color;
 
@@ -60,7 +61,6 @@ public class WaypointRenderer {
 
     private static void renderAnimatedWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
         VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(bufferSource);
-
         float r = color.getRed() / 255f;
         float g = color.getGreen() / 255f;
         float b = color.getBlue() / 255f;
