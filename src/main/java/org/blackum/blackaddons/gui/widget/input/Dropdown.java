@@ -26,6 +26,8 @@ public class Dropdown extends Widget {
     private boolean expanded = false;
     private Consumer<String> onSelect;
     private Runnable onExpand;
+    private java.util.function.Function<String, Integer> colorProvider;
+
 
     private Animation hoverAnimation;
     private Animation expandAnimation;
@@ -60,6 +62,11 @@ public class Dropdown extends Widget {
     public void collapse() {
         expanded = false;
     }
+
+    public void setColorProvider(java.util.function.Function<String, Integer> colorProvider) {
+        this.colorProvider = colorProvider;
+    }
+
 
     @Override
     public void onScrolled() {
@@ -137,6 +144,11 @@ public class Dropdown extends Widget {
         int textColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
         String text = selectedIndex >= 0 && selectedIndex < options.size() ? options.get(selectedIndex) : label;
 
+        if (colorProvider != null && selectedIndex >= 0) {
+            Integer color = colorProvider.apply(options.get(selectedIndex));
+            if (color != null) textColor = color;
+        }
+
         if (Minecraft.getInstance().font.width(text) > width - 20) {
             text = Minecraft.getInstance().font.plainSubstrByWidth(text, width - 25) + "...";
         }
@@ -183,12 +195,18 @@ public class Dropdown extends Widget {
                         Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.2f));
             }
 
+            int optColor = Theme.TEXT_PRIMARY;
+            if (colorProvider != null) {
+                Integer color = colorProvider.apply(option);
+                if (color != null) optColor = color;
+            }
+
             if (i == selectedIndex) {
-                graphics.drawString(Minecraft.getInstance().font, ChatFormatting.AQUA + option, x + 10,
-                        optY + (OPTION_HEIGHT - 8) / 2, Theme.ACCENT);
+                graphics.drawString(Minecraft.getInstance().font, option, x + 10,
+                        optY + (OPTION_HEIGHT - 8) / 2, colorProvider != null ? optColor : Theme.ACCENT);
             } else {
                 graphics.drawString(Minecraft.getInstance().font, option, x + 10, optY + (OPTION_HEIGHT - 8) / 2,
-                        Theme.TEXT_PRIMARY);
+                        optColor);
             }
         }
 

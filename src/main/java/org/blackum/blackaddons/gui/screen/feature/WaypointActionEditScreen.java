@@ -179,6 +179,13 @@ public class WaypointActionEditScreen extends BaseScreen {
                 action.notificationType = NotificationType.valueOf(selected);
                 WaypointManager.getInstance().save();
             });
+            notificationTypeDropdown.setColorProvider(val -> {
+                try {
+                    return NotificationType.valueOf(val).getColor();
+                } catch (Exception e) {
+                    return null;
+                }
+            });
             notificationTypeDropdown.setSelectedIndex(action.notificationType.ordinal());
             widgets.add(notificationTypeDropdown);
 
