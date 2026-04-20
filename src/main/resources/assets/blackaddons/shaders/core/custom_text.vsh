@@ -15,7 +15,7 @@ in ivec2 UV2;
 
 out vec2 texCoord;
 out vec4 vColor;
-out float effectParam;
+flat out float effectParam;
 
 void main() {
     effectParam = intBitsToFloat((UV2.y << 16) | (UV2.x & 0xFFFF));
