@@ -405,7 +405,7 @@ public class LegitTabController extends SimpleTabController {
         Label aaWidthLabel = new Label(0, 0,
                 "Antialias Width: " + String.format(Locale.ROOT, "%.2f", ConfigManager.data.customFontAntiAliasingWidth), Label.Style.BODY);
         listView.addItem(aaWidthLabel);
-        Slider aaWidthSlider = new Slider(0, 0, W, 0.05f, 1.5f, ConfigManager.data.customFontAntiAliasingWidth, val -> {
+        Slider aaWidthSlider = new Slider(0, 0, W, 0.25f, 1.5f, ConfigManager.data.customFontAntiAliasingWidth, val -> {
             float r = Math.round(val * 100f) / 100f;
             aaWidthLabel.setText("Antialias Width: " + String.format(Locale.ROOT, "%.2f", r));
         });
