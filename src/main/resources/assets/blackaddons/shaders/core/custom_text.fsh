@@ -18,12 +18,13 @@ float screenPxRange() {
 }
 
 void main() {
-    float packedVal = effectParam;
-    float aa = (floor(packedVal / 16.0) - 1000.0) / 100.0;
-    float effect = mod(packedVal, 16.0) - 4.0;
-    float sd = texture(Sampler0, texCoord).r - 0.5;
+    int raw = floatBitsToInt(effectParam);
+
+    float effect = float(raw & 0xFFFF) - 4.0;
+    float aa = (float(raw >> 16) - 1000.0) / 100.0;
+
     float pxRange = screenPxRange();
-    float screenDistance = sd * pxRange;
+    float screenDistance = (texture(Sampler0, texCoord).r - 0.5) * pxRange;
 
     float maxDist = 0.5 * pxRange;
     float required = aa + abs(effect);
