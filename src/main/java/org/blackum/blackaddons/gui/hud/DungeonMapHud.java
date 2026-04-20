@@ -17,6 +17,8 @@ import org.blackum.blackaddons.mixin.gui.GuiGraphicsAccessor;
 import org.joml.Matrix3x2f;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class DungeonMapHud implements HudElement {
@@ -199,19 +201,34 @@ public class DungeonMapHud implements HudElement {
             drawTiles(g, room, eff, dX, dY, cellSize, rs, scale, allPuzzlesKnown, trapDiscovered, funnyMap, darknessFactor);
         }
 
+        for (Room room : rooms) {
+            if (room.tiles.isEmpty())
+                continue;
+            boolean undiscovered = room.state == Room.State.UNDISCOVERED;
+            boolean unopened = room.state == Room.State.UNOPENED;
+            boolean isSpecial = (room.type == Room.Type.PUZZLE || room.type == Room.Type.TRAP);
+            if (!funnyMap && (undiscovered || (unopened && !isSpecial))) {
+                drawUndiscoveredTile(g, room, dX, dY, cellSize, rs, scale);
+            }
+        }
+
         for (Door door : DungeonMap.getDoors()) {
             if (!door.isSeen() && !(funnyMap && door.worldScanned))
                 continue;
             float[] dp = door.placement(8f, rs);
             Vec2i dsz = door.size(8f, rs);
+
+            if (dsz.x <= 4 && dsz.z <= 4)
+                continue;
+
             int dclr = doorColor(door);
             if (funnyMap && !door.isSeen()) {
                 dclr = darken(dclr, darknessFactor);
             }
-            float dx1 = dX + dp[0] * scale;
-            float dy1 = dY + dp[1] * scale;
-            float dx2 = dx1 + dsz.x * scale;
-            float dy2 = dy1 + dsz.z * scale;
+            float dx1 = dX + Math.round(dp[0] * scale);
+            float dy1 = dY + Math.round(dp[1] * scale);
+            float dx2 = dX + Math.round((dp[0] + dsz.x) * scale);
+            float dy2 = dY + Math.round((dp[1] + dsz.z) * scale);
             fillRounded(g, dx1, dy1, dx2, dy2, 0f, dclr);
         }
 
@@ -240,13 +257,10 @@ public class DungeonMapHud implements HudElement {
 
                 int gx = gp.x;
                 int gz = gp.z;
-                float x1 = dX + gx * cellSize * scale;
-                float z1 = dY + gz * cellSize * scale;
-                float x2 = dX + (gx * cellSize + rs) * scale;
-                float z2 = dY + (gz * cellSize + rs) * scale;
-                int grey = ConfigManager.data.dungeonMapColorUndiscovered;
-                float tileRadius = ConfigManager.data.dungeonMapCornerRadius * scale;
-                fillRounded(g, x1, z1, x2, z2, tileRadius, grey);
+                float x1 = snapX(dX, gx * cellSize, scale);
+                float z1 = snapY(dY, gz * cellSize, scale);
+                float x2 = snapX(dX, gx * cellSize + rs, scale);
+                float z2 = snapY(dY, gz * cellSize + rs, scale);
                 cx = (int) ((x1 + x2) * 0.5f);
                 cz = (int) ((z1 + z2) * 0.5f);
             } else {
@@ -293,14 +307,10 @@ public class DungeonMapHud implements HudElement {
         drawBorder(g, x, y, size);
     }
 
-    private static void fillRounded(GuiGraphics g, float x0, float y0, float x1, float y1, float radius, int color, boolean outTop, boolean outRight, boolean outBottom, boolean outLeft) {
+    private static void fillRounded(GuiGraphics g, float x0, float y0, float x1, float y1, float radius, int color) {
         GuiRenderState state = ((GuiGraphicsAccessor) g).getGuiRenderState();
         Matrix3x2f pose = new Matrix3x2f(g.pose());
-        state.submitGuiElement(new RoundedFillRenderState(pose, x0, y0, x1, y1, radius, color, outTop, outRight, outBottom, outLeft, null));
-    }
-
-    private static void fillRounded(GuiGraphics g, float x0, float y0, float x1, float y1, float radius, int color) {
-        fillRounded(g, x0, y0, x1, y1, radius, color, true, true, true, true);
+        state.submitGuiElement(new RoundedFillRenderState(pose, x0, y0, x1, y1, radius, color, null));
     }
 
     private static void drawTiles(GuiGraphics g, Room room, Room.Type eff,
@@ -316,86 +326,156 @@ public class DungeonMapHud implements HudElement {
         }
 
         float tileRadius = ConfigManager.data.dungeonMapCornerRadius * scale;
+        List<float[]> rects = computeRoomRects(room, dX, dY, cellSize, rs, scale);
 
         if (ambiguous && !(funnyMap && room.data != null)) {
-            for (Room.Tile tile : room.tiles) {
-                int gx = (tile.pos.x + 185) / 32;
-                int gz = (tile.pos.z + 185) / 32;
-                float x1 = dX + gx * cellSize * scale;
-                float x2 = dX + (gx * cellSize + rs) * scale;
-                float z1 = dY + gz * cellSize * scale;
-                float z2 = dY + (gz * cellSize + rs) * scale;
-                float mx = (x1 + x2) * 0.5f;
-
-                int clrP = darken(ConfigManager.data.dungeonMapColorPuzzle, darkness);
-                int clrT = darken(ConfigManager.data.dungeonMapColorTrap, darkness);
-
-                boolean outTop = !hasTileAt(room, gx, gz - 1);
-                boolean outRight = !hasTileAt(room, gx + 1, gz);
-                boolean outBottom = !hasTileAt(room, gx, gz + 1);
-                boolean outLeft = !hasTileAt(room, gx - 1, gz);
-
-                fillRounded(g, x1, z1, mx, z2, tileRadius, clrP, outTop, false, outBottom, outLeft);
-                fillRounded(g, mx, z1, x2, z2, tileRadius, clrT, outTop, outRight, outBottom, false);
-
-                if (!outRight) {
-                    float nx1 = dX + (gx + 1) * cellSize * scale;
-                    boolean outConnTop = !hasTileAt(room, gx, gz - 1) || !hasTileAt(room, gx + 1, gz - 1);
-                    boolean outConnBot = !hasTileAt(room, gx, gz + 1) || !hasTileAt(room, gx + 1, gz + 1);
-                    fillRounded(g, x2, z1, nx1, z2, tileRadius, clrP, outConnTop, false, outConnBot, false);
-                }
-                if (!outBottom) {
-                    float nz1 = dY + (gz + 1) * cellSize * scale;
-                    boolean outConnLeft = !hasTileAt(room, gx - 1, gz) || !hasTileAt(room, gx - 1, gz + 1);
-                    boolean outConnRight = !hasTileAt(room, gx + 1, gz) || !hasTileAt(room, gx + 1, gz + 1);
-                    fillRounded(g, x1, z2, x2, nz1, tileRadius, clrP, false, outConnRight, false, outConnLeft);
-                }
-                if (!outRight && !outBottom && hasTileAt(room, gx + 1, gz + 1)) {
-                    float nx1 = dX + (gx + 1) * cellSize * scale;
-                    float nz1 = dY + (gz + 1) * cellSize * scale;
-                    fillRounded(g, x2, z2, nx1, nz1, tileRadius, clrP, false, false, false, false);
-                }
+            int clrP = darken(ConfigManager.data.dungeonMapColorPuzzle, darkness);
+            int clrT = darken(ConfigManager.data.dungeonMapColorTrap, darkness);
+            for (float[] r : rects) {
+                float mx = Math.round((r[0] + r[2]) * 0.5f);
+                fillRounded(g, r[0], r[1], mx, r[3], tileRadius, clrP);
+                fillRounded(g, mx, r[1], r[2], r[3], tileRadius, clrT);
             }
             return;
         }
 
-        for (Room.Tile tile : room.tiles) {
-            int gx = (tile.pos.x + 185) / 32;
-            int gz = (tile.pos.z + 185) / 32;
-            float x1 = dX + gx * cellSize * scale;
-            float x2 = dX + (gx * cellSize + rs) * scale;
-            float z1 = dY + gz * cellSize * scale;
-            float z2 = dY + (gz * cellSize + rs) * scale;
-            boolean shouldDarken = unopened || (funnyMap && undiscovered);
-            int clr = room.mimic ? darken(ConfigManager.data.dungeonMapColorMimic, shouldDarken ? darkness : 1.0f)
-                    : shouldDarken ? darken(baseColor(eff), darkness)
-                    : baseColor(eff);
+        boolean shouldDarken = unopened || (funnyMap && undiscovered);
+        int clr = room.mimic ? darken(ConfigManager.data.dungeonMapColorMimic, shouldDarken ? darkness : 1.0f)
+                : shouldDarken ? darken(baseColor(eff), darkness)
+                : baseColor(eff);
 
-            boolean outTop = !hasTileAt(room, gx, gz - 1);
-            boolean outRight = !hasTileAt(room, gx + 1, gz);
-            boolean outBottom = !hasTileAt(room, gx, gz + 1);
-            boolean outLeft = !hasTileAt(room, gx - 1, gz);
+        for (float[] r : rects) {
+            fillRounded(g, r[0], r[1], r[2], r[3], tileRadius, clr);
+        }
+    }
 
-            fillRounded(g, x1, z1, x2, z2, tileRadius, clr, outTop, outRight, outBottom, outLeft);
+    private static void drawUndiscoveredTile(GuiGraphics g, Room room,
+            int dX, int dY, int cellSize, int rs, float scale) {
+        Vec2i gp = room.entryTile;
+        if (gp == null) {
+            Room.Tile t = getAdjacentTile(room);
+            if (t != null)
+                gp = new Vec2i((t.pos.x + 185) / 32, (t.pos.z + 185) / 32);
+        }
+        if (gp == null)
+            return;
 
-            if (!outRight) {
-                float nx1 = dX + (gx + 1) * cellSize * scale;
-                boolean outConnTop = !hasTileAt(room, gx, gz - 1) || !hasTileAt(room, gx + 1, gz - 1);
-                boolean outConnBot = !hasTileAt(room, gx, gz + 1) || !hasTileAt(room, gx + 1, gz + 1);
-                fillRounded(g, x2, z1, nx1, z2, tileRadius, clr, outConnTop, false, outConnBot, false);
+        int gx = gp.x;
+        int gz = gp.z;
+        float x1 = snapX(dX, gx * cellSize, scale);
+        float z1 = snapY(dY, gz * cellSize, scale);
+        float x2 = snapX(dX, gx * cellSize + rs, scale);
+        float z2 = snapY(dY, gz * cellSize + rs, scale);
+        int grey = ConfigManager.data.dungeonMapColorUndiscovered;
+        float tileRadius = ConfigManager.data.dungeonMapCornerRadius * scale;
+        fillRounded(g, x1, z1, x2, z2, tileRadius, grey);
+    }
+
+    private static float snapX(int dX, int mapX, float scale) {
+        return dX + Math.round(mapX * scale);
+    }
+
+    private static float snapY(int dY, int mapY, float scale) {
+        return dY + Math.round(mapY * scale);
+    }
+
+    private static List<float[]> computeRoomRects(Room room, int dX, int dY, int cellSize, int rs, float scale) {
+        List<float[]> rects = new ArrayList<>();
+        if (room.tiles.isEmpty()) return rects;
+
+        int minGx = Integer.MAX_VALUE, maxGx = Integer.MIN_VALUE;
+        int minGz = Integer.MAX_VALUE, maxGz = Integer.MIN_VALUE;
+        for (Room.Tile t : room.tiles) {
+            int gx = (t.pos.x + 185) / 32;
+            int gz = (t.pos.z + 185) / 32;
+            if (gx < minGx) minGx = gx;
+            if (gx > maxGx) maxGx = gx;
+            if (gz < minGz) minGz = gz;
+            if (gz > maxGz) maxGz = gz;
+        }
+
+        int bbArea = (maxGx - minGx + 1) * (maxGz - minGz + 1);
+        if (bbArea == room.tiles.size()) {
+            rects.add(new float[] {
+                    snapX(dX, minGx * cellSize, scale),
+                    snapY(dY, minGz * cellSize, scale),
+                    snapX(dX, maxGx * cellSize + rs, scale),
+                    snapY(dY, maxGz * cellSize + rs, scale)
+            });
+            return rects;
+        }
+
+        boolean isLShape = room.tiles.size() == 3 && bbArea == 4
+                && (maxGx - minGx) == 1 && (maxGz - minGz) == 1;
+        if (isLShape) {
+            int missingGx = minGx, missingGz = minGz;
+            outer:
+            for (int gx = minGx; gx <= maxGx; gx++) {
+                for (int gz = minGz; gz <= maxGz; gz++) {
+                    if (!hasTileAt(room, gx, gz)) {
+                        missingGx = gx;
+                        missingGz = gz;
+                        break outer;
+                    }
+                }
             }
-            if (!outBottom) {
-                float nz1 = dY + (gz + 1) * cellSize * scale;
-                boolean outConnLeft = !hasTileAt(room, gx - 1, gz) || !hasTileAt(room, gx - 1, gz + 1);
-                boolean outConnRight = !hasTileAt(room, gx + 1, gz) || !hasTileAt(room, gx + 1, gz + 1);
-                fillRounded(g, x1, z2, x2, nz1, tileRadius, clr, false, outConnRight, false, outConnLeft);
-            }
-            if (!outRight && !outBottom && hasTileAt(room, gx + 1, gz + 1)) {
-                float nx1 = dX + (gx + 1) * cellSize * scale;
-                float nz1 = dY + (gz + 1) * cellSize * scale;
-                fillRounded(g, x2, z2, nx1, nz1, tileRadius, clr, false, false, false, false);
+
+            int cornerGx = (minGx + maxGx) - missingGx;
+            int cornerGz = (minGz + maxGz) - missingGz;
+
+            rects.add(new float[] {
+                    snapX(dX, minGx * cellSize, scale),
+                    snapY(dY, cornerGz * cellSize, scale),
+                    snapX(dX, maxGx * cellSize + rs, scale),
+                    snapY(dY, cornerGz * cellSize + rs, scale)
+            });
+            rects.add(new float[] {
+                    snapX(dX, cornerGx * cellSize, scale),
+                    snapY(dY, minGz * cellSize, scale),
+                    snapX(dX, cornerGx * cellSize + rs, scale),
+                    snapY(dY, maxGz * cellSize + rs, scale)
+            });
+            return rects;
+        }
+
+        for (int gz = minGz; gz <= maxGz; gz++) {
+            int startX = -1;
+            for (int gx = minGx; gx <= maxGx + 1; gx++) {
+                if (hasTileAt(room, gx, gz)) {
+                    if (startX == -1) startX = gx;
+                } else {
+                    if (startX != -1) {
+                        rects.add(new float[] {
+                                snapX(dX, startX * cellSize, scale),
+                                snapY(dY, gz * cellSize, scale),
+                                snapX(dX, (gx - 1) * cellSize + rs, scale),
+                                snapY(dY, gz * cellSize + rs, scale)
+                        });
+                        startX = -1;
+                    }
+                }
             }
         }
+
+        for (int gx = minGx; gx <= maxGx; gx++) {
+            int startZ = -1;
+            for (int gz = minGz; gz <= maxGz + 1; gz++) {
+                if (hasTileAt(room, gx, gz)) {
+                    if (startZ == -1) startZ = gz;
+                } else {
+                    if (startZ != -1) {
+                        rects.add(new float[] {
+                                snapX(dX, gx * cellSize, scale),
+                                snapY(dY, startZ * cellSize, scale),
+                                snapX(dX, gx * cellSize + rs, scale),
+                                snapY(dY, (gz - 1) * cellSize + rs, scale)
+                        });
+                        startZ = -1;
+                    }
+                }
+            }
+        }
+        return rects;
     }
 
     private static void drawOverlay(GuiGraphics g, Minecraft mc, Room room, Room.Type eff,
