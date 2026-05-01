@@ -6,6 +6,7 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 import java.util.*;
 import net.minecraft.core.component.DataComponents;
