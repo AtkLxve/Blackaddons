@@ -95,14 +95,16 @@ public class ListView extends Widget {
 
         int currentY = y - scrollOffset;
         for (Widget item : items) {
-            if (item.isVisible() && currentY + item.getHeight() > y && currentY < y + height) {
-                item.setX(x + item.getMarginLeft());
-                item.setY(currentY);
-                item.setWidth(width - scrollbarWidth - 12 - item.getMarginLeft() - item.getMarginRight());
+            if (item.isVisible()) {
+                if (currentY + item.getHeight() > y && currentY < y + height) {
+                    item.setX(x + item.getMarginLeft());
+                    item.setY(currentY);
+                    item.setWidth(width - scrollbarWidth - 12 - item.getMarginLeft() - item.getMarginRight());
 
-                item.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
+                    item.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
+                }
+                currentY += item.getHeight() + itemSpacing;
             }
-            currentY += item.getHeight() + itemSpacing;
         }
     }
 

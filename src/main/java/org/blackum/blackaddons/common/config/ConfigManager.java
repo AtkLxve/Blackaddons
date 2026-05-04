@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.feature.cheat.AutoBM;
+import org.blackum.blackaddons.feature.cheat.AutoClicker;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -385,6 +386,7 @@ public class ConfigManager {
         // Cheats
         public AutoTNT.FeatureConfig autoTntConfig = new AutoTNT.FeatureConfig();
         public AutoBM.FeatureConfig autoBMConfig = new AutoBM.FeatureConfig();
+        public AutoClicker.FeatureConfig autoClickerConfig = new AutoClicker.FeatureConfig();
 
         public boolean freecamEnabled = false;
         public float freecamSpeed = 1.0f;
@@ -601,6 +603,7 @@ public class ConfigManager {
                 "AutoSSTrySkip", "AutoSSDebug",
                 "AutoSSSwapToItem", "AutoSSSwapMode",
                 "AutoSSOverlayX", "AutoSSOverlayY", "AutoSSOverlayScale"));
+        GROUP_MAP.put("autoClicker", List.of("autoClickerConfig"));
         GROUP_MAP.put("relicLook", List.of(
                 "RelicLookEnabled", "RelicLookDebug"));
         GROUP_MAP.put("rotation", List.of(
