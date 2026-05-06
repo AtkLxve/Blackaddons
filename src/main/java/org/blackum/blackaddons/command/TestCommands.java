@@ -19,6 +19,7 @@ import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
+import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearSampler;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
@@ -254,6 +255,19 @@ public class TestCommands {
                             }
                             return 1;
                         })));
+
+        testNode.then(ClientCommandManager.literal("lbsave")
+                .executes(ctx -> {
+                    int n = SoloClearSampler.captureSample();
+                    if (n > 0) {
+                        ctx.getSource().sendFeedback(Component.literal(
+                                "§a[lbsave] Saved sample #" + n + " → §7" + SoloClearSampler.getSamplesFile()));
+                    } else {
+                        ctx.getSource().sendFeedback(Component.literal(
+                                "§c[lbsave] Failed to save sample (see logs)"));
+                    }
+                    return 1;
+                }));
 
         return testNode;
     }
