@@ -1,6 +1,5 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
-
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -31,6 +30,8 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoSS;
 
@@ -41,6 +42,7 @@ public class CheatsTabController extends SimpleTabController {
     private ResizableCard autoBMCard;
     private ResizableCard freecamCard;
     private ResizableCard perspectiveCard;
+    private ResizableCard autoClickerCard;
     private Dropdown s2Dropdown;
     private Dropdown s3Dropdown;
     private Dropdown s4Dropdown;
@@ -111,7 +113,9 @@ public class CheatsTabController extends SimpleTabController {
             cheatsTab.addWidget(ssTickSlider);
 
             Label ssDistLabel = new Label(contentX, contentY + 290,
-                    String.format(java.util.Locale.ROOT, "Max Distance: %.1f blocks", ConfigManager.data.AutoSSDistanceLimit), Label.Style.BODY);
+                    String.format(java.util.Locale.ROOT, "Max Distance: %.1f blocks",
+                            ConfigManager.data.AutoSSDistanceLimit),
+                    Label.Style.BODY);
             cheatsTab.addWidget(ssDistLabel);
 
             Slider ssDistSlider = new Slider(contentX, contentY + 310, contentWidth - 20, 2.0f, 10.0f,
@@ -121,9 +125,9 @@ public class CheatsTabController extends SimpleTabController {
                         ConfigManager.save();
                     });
             cheatsTab.addWidget(ssDistSlider);
-            
+
             cheatsTab.addWidget(new Label(contentX, contentY + 360, "Auto Ballista Mechanic", Label.Style.TITLE));
-            
+
             ToggleSwitch bmEnableToggle = new ToggleSwitch(contentX, contentY + 390, contentWidth - 20,
                     "Enable AutoBM",
                     "Automatically clicks ballista upgrades",
@@ -137,7 +141,8 @@ public class CheatsTabController extends SimpleTabController {
         }
 
         Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("autoTnt", "autoSS", "rotationSet", "autoBM", "freecam", "perspective");
+            screen.resetCardStates("autoTnt", "autoSS", "rotationSet", "autoBM", "freecam", "perspective",
+                    "autoClicker");
         });
         cheatsTab.addWidget(resetLayout);
 
@@ -149,7 +154,8 @@ public class CheatsTabController extends SimpleTabController {
         int colWidth = 300;
         int spacing = 20;
         int[] colY = new int[numCols];
-        for (int i = 0; i < numCols; i++) colY[i] = containerY;
+        for (int i = 0; i < numCols; i++)
+            colY[i] = containerY;
 
         autoTntCard = createAutoTntCard(0, 0);
         autoSSCard = createAutoSSCard(0, 0);
@@ -157,12 +163,15 @@ public class CheatsTabController extends SimpleTabController {
         autoBMCard = createAutoBM(0, 0);
         freecamCard = createFreecamCard(0, 0);
         perspectiveCard = createPerspectiveCard(0, 0);
+        autoClickerCard = createAutoClickerCard(0, 0);
 
-        List<ResizableCard> cards = List.of(autoTntCard, autoSSCard, rotationCard, autoBMCard, freecamCard, perspectiveCard);
+        List<ResizableCard> cards = List.of(autoTntCard, autoSSCard, rotationCard, autoBMCard, freecamCard,
+                perspectiveCard, autoClickerCard);
         for (ResizableCard card : cards) {
             int shortestCol = 0;
             for (int i = 1; i < numCols; i++) {
-                if (colY[i] < colY[shortestCol]) shortestCol = i;
+                if (colY[i] < colY[shortestCol])
+                    shortestCol = i;
             }
 
             card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
@@ -176,6 +185,7 @@ public class CheatsTabController extends SimpleTabController {
         cheatsCardContainer.addCard(autoBMCard);
         cheatsCardContainer.addCard(freecamCard);
         cheatsCardContainer.addCard(perspectiveCard);
+        cheatsCardContainer.addCard(autoClickerCard);
     }
 
     private ResizableCard createAutoTntCard(int x, int y) {
@@ -248,9 +258,9 @@ public class CheatsTabController extends SimpleTabController {
                 "Enable AutoSS",
                 "Automatically solves F7 devices",
                 ConfigManager.data.AutoSSEnabled, value -> {
-            ConfigManager.data.AutoSSEnabled = value;
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSEnabled = value;
+                    ConfigManager.save();
+                });
         listView.addItem(enableToggle);
 
         Label tickLabel = new Label(0, 0,
@@ -259,70 +269,75 @@ public class CheatsTabController extends SimpleTabController {
 
         Slider tickSlider = new Slider(0, 0, 260, 0, 20,
                 ConfigManager.data.AutoSSDelay, val -> {
-            int ticks = Math.round(val);
-            if (ticks != ConfigManager.data.AutoSSDelay) {
-                ConfigManager.data.AutoSSDelay = ticks;
-                tickLabel.setText(delayLabel(ticks));
-                ConfigManager.save();
-            }
-        });
+                    int ticks = Math.round(val);
+                    if (ticks != ConfigManager.data.AutoSSDelay) {
+                        ConfigManager.data.AutoSSDelay = ticks;
+                        tickLabel.setText(delayLabel(ticks));
+                        ConfigManager.save();
+                    }
+                });
         listView.addItem(tickSlider);
 
         Label distLabel = new Label(0, 0,
-                String.format(java.util.Locale.ROOT, "Max Distance: %.1f blocks", ConfigManager.data.AutoSSDistanceLimit), Label.Style.BODY);
+                String.format(java.util.Locale.ROOT, "Max Distance: %.1f blocks",
+                        ConfigManager.data.AutoSSDistanceLimit),
+                Label.Style.BODY);
         listView.addItem(distLabel);
 
         Slider distSlider = new Slider(0, 0, 260, 2.0f, 10.0f,
                 ConfigManager.data.AutoSSDistanceLimit, val -> {
-            ConfigManager.data.AutoSSDistanceLimit = val;
-            distLabel.setText(String.format(java.util.Locale.ROOT, "Max Distance: %.1f blocks", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSDistanceLimit = val;
+                    distLabel.setText(String.format(java.util.Locale.ROOT, "Max Distance: %.1f blocks", val));
+                    ConfigManager.save();
+                });
         listView.addItem(distSlider);
 
         Label speedLabel = new Label(0, 0,
-                String.format(java.util.Locale.ROOT, "Rotation Speed: %.1f", ConfigManager.data.AutoSSRotationSpeed), Label.Style.BODY);
+                String.format(java.util.Locale.ROOT, "Rotation Speed: %.1f", ConfigManager.data.AutoSSRotationSpeed),
+                Label.Style.BODY);
         listView.addItem(speedLabel);
 
         Slider speedSlider = new Slider(0, 0, 260, 1.0f, 50.0f,
                 ConfigManager.data.AutoSSRotationSpeed, val -> {
-            ConfigManager.data.AutoSSRotationSpeed = val;
-            speedLabel.setText(String.format(java.util.Locale.ROOT, "Rotation Speed: %.1f", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSRotationSpeed = val;
+                    speedLabel.setText(String.format(java.util.Locale.ROOT, "Rotation Speed: %.1f", val));
+                    ConfigManager.save();
+                });
         listView.addItem(speedSlider);
 
         Label curveLabel = new Label(0, 0,
-                String.format(java.util.Locale.ROOT, "Rotation Curve: %.0f%%", ConfigManager.data.AutoSSRotationCurve * 100), Label.Style.BODY);
+                String.format(java.util.Locale.ROOT, "Rotation Curve: %.0f%%",
+                        ConfigManager.data.AutoSSRotationCurve * 100),
+                Label.Style.BODY);
         listView.addItem(curveLabel);
 
         Slider curveSlider = new Slider(0, 0, 260, 0.0f, 200.0f,
                 ConfigManager.data.AutoSSRotationCurve * 100, val -> {
-            ConfigManager.data.AutoSSRotationCurve = val / 100f;
-            curveLabel.setText(String.format(java.util.Locale.ROOT, "Rotation Curve: %.0f%%", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSRotationCurve = val / 100f;
+                    curveLabel.setText(String.format(java.util.Locale.ROOT, "Rotation Curve: %.0f%%", val));
+                    ConfigManager.save();
+                });
         listView.addItem(curveSlider);
 
         ToggleSwitch trySkipToggle = new ToggleSwitch(0, 0, 260,
                 "Try SS Skip",
                 "Clicks start button 3 times for potential skip",
                 ConfigManager.data.AutoSSTrySkip, value -> {
-            ConfigManager.data.AutoSSTrySkip = value;
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSTrySkip = value;
+                    ConfigManager.save();
+                });
         trySkipToggle.setVisible(ConfigManager.data.AutoSSAutoStart);
 
         ToggleSwitch autoStartToggle = new ToggleSwitch(0, 0, 260,
                 "Auto SS Start",
                 "Automatically aims and clicks the start button",
                 ConfigManager.data.AutoSSAutoStart, value -> {
-            ConfigManager.data.AutoSSAutoStart = value;
-            trySkipToggle.setVisible(value);
-            startDelayLabel.setVisible(value);
-            startDelaySlider.setVisible(value);
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSAutoStart = value;
+                    trySkipToggle.setVisible(value);
+                    startDelayLabel.setVisible(value);
+                    startDelaySlider.setVisible(value);
+                    ConfigManager.save();
+                });
         listView.addItem(autoStartToggle);
 
         startDelayLabel = new Label(0, 0,
@@ -332,13 +347,13 @@ public class CheatsTabController extends SimpleTabController {
 
         startDelaySlider = new Slider(0, 0, 260, 0, 40,
                 ConfigManager.data.AutoSSAutoStartDelay, val -> {
-            int ticks = Math.round(val);
-            if (ticks != ConfigManager.data.AutoSSAutoStartDelay) {
-                ConfigManager.data.AutoSSAutoStartDelay = ticks;
-                startDelayLabel.setText(startDelayLabel(ticks));
-                ConfigManager.save();
-            }
-        });
+                    int ticks = Math.round(val);
+                    if (ticks != ConfigManager.data.AutoSSAutoStartDelay) {
+                        ConfigManager.data.AutoSSAutoStartDelay = ticks;
+                        startDelayLabel.setText(startDelayLabel(ticks));
+                        ConfigManager.save();
+                    }
+                });
         startDelaySlider.setVisible(ConfigManager.data.AutoSSAutoStart);
         listView.addItem(startDelaySlider);
 
@@ -348,9 +363,9 @@ public class CheatsTabController extends SimpleTabController {
                 "Swap to InfiniLeap on Complete",
                 "Swaps to a specific item when device is finished",
                 ConfigManager.data.AutoSSSwapToItem, value -> {
-            ConfigManager.data.AutoSSSwapToItem = value;
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSSwapToItem = value;
+                    ConfigManager.save();
+                });
         listView.addItem(swapToItemToggle);
 
         Dropdown swapModeDropdown = new Dropdown(0, 0, 260,
@@ -367,9 +382,9 @@ public class CheatsTabController extends SimpleTabController {
                 "Debug Mode",
                 "Shows debug overlay and logs to a file",
                 ConfigManager.data.AutoSSDebug, value -> {
-            ConfigManager.data.AutoSSDebug = value;
-            ConfigManager.save();
-        });
+                    ConfigManager.data.AutoSSDebug = value;
+                    ConfigManager.save();
+                });
         listView.addItem(debugToggle);
 
         Button moveOverlayButton = new Button(0, 0, 260, 20, "Edit HUD Positions", () -> {
@@ -386,9 +401,12 @@ public class CheatsTabController extends SimpleTabController {
     }
 
     private void collapseOtherDropdowns(Dropdown active) {
-        if (s2Dropdown != null && s2Dropdown != active) s2Dropdown.collapse();
-        if (s3Dropdown != null && s3Dropdown != active) s3Dropdown.collapse();
-        if (s4Dropdown != null && s4Dropdown != active) s4Dropdown.collapse();
+        if (s2Dropdown != null && s2Dropdown != active)
+            s2Dropdown.collapse();
+        if (s3Dropdown != null && s3Dropdown != active)
+            s3Dropdown.collapse();
+        if (s4Dropdown != null && s4Dropdown != active)
+            s4Dropdown.collapse();
     }
 
     private ResizableCard createAutoBM(int x, int y) {
@@ -403,10 +421,9 @@ public class CheatsTabController extends SimpleTabController {
                 "Enabled",
                 "Enabled and disables auto BM",
                 ConfigManager.data.autoBMConfig.AutoBMEnabled, value -> {
-            ConfigManager.data.autoBMConfig.AutoBMEnabled = value;
-            ConfigManager.save();
-        }
-        );
+                    ConfigManager.data.autoBMConfig.AutoBMEnabled = value;
+                    ConfigManager.save();
+                });
         listView.addItem(enabled);
 
         Label min_fc_label = new Label(0, 0,
@@ -416,10 +433,10 @@ public class CheatsTabController extends SimpleTabController {
 
         Slider min_fc_slider = new Slider(0, 0, 260, 10.f, 1000.f,
                 ConfigManager.data.autoBMConfig.min_fc_delay, val -> {
-            ConfigManager.data.autoBMConfig.min_fc_delay = val;
-            min_fc_label.setText(String.format("Min first click delay: %.0fms", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.autoBMConfig.min_fc_delay = val;
+                    min_fc_label.setText(String.format("Min first click delay: %.0fms", val));
+                    ConfigManager.save();
+                });
         listView.addItem(min_fc_slider);
 
         Label max_fc_label = new Label(0, 0,
@@ -429,36 +446,38 @@ public class CheatsTabController extends SimpleTabController {
 
         Slider max_fc_slider = new Slider(0, 0, 260, 10.f, 1000.f,
                 ConfigManager.data.autoBMConfig.max_fc_delay, val -> {
-            ConfigManager.data.autoBMConfig.max_fc_delay = val;
-            max_fc_label.setText(String.format("Max first click delay: %.0fms", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.autoBMConfig.max_fc_delay = val;
+                    max_fc_label.setText(String.format("Max first click delay: %.0fms", val));
+                    ConfigManager.save();
+                });
         listView.addItem(max_fc_slider);
 
         Label min_between_click_label = new Label(0, 0,
-                String.format("Min between click delay: %.0fms", ConfigManager.data.autoBMConfig.min_between_click_delay),
+                String.format("Min between click delay: %.0fms",
+                        ConfigManager.data.autoBMConfig.min_between_click_delay),
                 Label.Style.BODY);
         listView.addItem(min_between_click_label);
 
         Slider min_between_click_slider = new Slider(0, 0, 260, 10.f, 1000.f,
                 ConfigManager.data.autoBMConfig.min_between_click_delay, val -> {
-            ConfigManager.data.autoBMConfig.min_between_click_delay = val;
-            min_between_click_label.setText(String.format("Min between click delay: %.0fms", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.autoBMConfig.min_between_click_delay = val;
+                    min_between_click_label.setText(String.format("Min between click delay: %.0fms", val));
+                    ConfigManager.save();
+                });
         listView.addItem(min_between_click_slider);
 
         Label max_between_click_label = new Label(0, 0,
-                String.format("Max between click delay: %.0fms", ConfigManager.data.autoBMConfig.max_between_click_delay),
+                String.format("Max between click delay: %.0fms",
+                        ConfigManager.data.autoBMConfig.max_between_click_delay),
                 Label.Style.BODY);
         listView.addItem(max_between_click_label);
 
         Slider max_between_click_slider = new Slider(0, 0, 260, 10.f, 1000.f,
                 ConfigManager.data.autoBMConfig.max_between_click_delay, val -> {
-            ConfigManager.data.autoBMConfig.max_between_click_delay = val;
-            max_between_click_label.setText(String.format("Max between click delay: %.0fms", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.autoBMConfig.max_between_click_delay = val;
+                    max_between_click_label.setText(String.format("Max between click delay: %.0fms", val));
+                    ConfigManager.save();
+                });
         listView.addItem(max_between_click_slider);
 
         autoBMCard.addChild(listView);
@@ -506,14 +525,15 @@ public class CheatsTabController extends SimpleTabController {
         listView.addItem(curveLabel);
         Slider curveSlider = new Slider(0, 0, 260, 0, 50,
                 ConfigManager.data.rotationVariance * 100, val -> {
-            ConfigManager.data.rotationVariance = val / 100f;
-            curveLabel.setText(String.format("Rotation Curve: %.0f%%", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.rotationVariance = val / 100f;
+                    curveLabel.setText(String.format("Rotation Curve: %.0f%%", val));
+                    ConfigManager.save();
+                });
         listView.addItem(curveSlider);
 
         Label randomLabel = new Label(0, 0,
-                String.format(java.util.Locale.ROOT, "Target Randomness: %.2f blocks", ConfigManager.data.rotationTargetRandomness),
+                String.format(java.util.Locale.ROOT, "Target Randomness: %.2f blocks",
+                        ConfigManager.data.rotationTargetRandomness),
                 Label.Style.BODY);
         listView.addItem(randomLabel);
         Slider randomSlider = new Slider(0, 0, 260, 0.0f, 0.49f,
@@ -549,19 +569,22 @@ public class CheatsTabController extends SimpleTabController {
         listView.addItem(slowdownSlider);
 
         Label slowdownRadiusLabel = new Label(0, 0,
-                String.format(java.util.Locale.ROOT, "Max Slowdown Distance: %.0f blocks", ConfigManager.data.rotationDistanceRadius),
+                String.format(java.util.Locale.ROOT, "Max Slowdown Distance: %.0f blocks",
+                        ConfigManager.data.rotationDistanceRadius),
                 Label.Style.BODY);
         listView.addItem(slowdownRadiusLabel);
         Slider slowdownRadiusSlider = new Slider(0, 0, 260, 5.0f, 150.0f,
                 ConfigManager.data.rotationDistanceRadius, val -> {
                     ConfigManager.data.rotationDistanceRadius = val;
-                    slowdownRadiusLabel.setText(String.format(java.util.Locale.ROOT, "Max Slowdown Distance: %.0f blocks", val));
+                    slowdownRadiusLabel
+                            .setText(String.format(java.util.Locale.ROOT, "Max Slowdown Distance: %.0f blocks", val));
                     ConfigManager.save();
                 });
         listView.addItem(slowdownRadiusSlider);
 
         Label fovLabel = new Label(0, 0,
-                String.format(java.util.Locale.ROOT, "Distance Slowdown FOV: %.0f°", ConfigManager.data.rotationFovSlowdown),
+                String.format(java.util.Locale.ROOT, "Distance Slowdown FOV: %.0f°",
+                        ConfigManager.data.rotationFovSlowdown),
                 Label.Style.BODY);
         listView.addItem(fovLabel);
         Slider fovSlider = new Slider(0, 0, 260, 0.0f, 180.0f,
@@ -612,14 +635,14 @@ public class CheatsTabController extends SimpleTabController {
                 "Enabled",
                 "Detaches camera from player",
                 ConfigManager.data.freecamEnabled, value -> {
-            if (value) {
-                Freecam.getInstance().activate();
-            } else {
-                Freecam.getInstance().deactivate();
-            }
-            ConfigManager.data.freecamEnabled = Freecam.getInstance().isActive();
-            ConfigManager.save();
-        });
+                    if (value) {
+                        Freecam.getInstance().activate();
+                    } else {
+                        Freecam.getInstance().deactivate();
+                    }
+                    ConfigManager.data.freecamEnabled = Freecam.getInstance().isActive();
+                    ConfigManager.save();
+                });
         listView.addItem(enableToggle);
 
         KeybindButton keybindButton = new KeybindButton(0, 0, 260,
@@ -648,19 +671,19 @@ public class CheatsTabController extends SimpleTabController {
 
         Slider speedSlider = new Slider(0, 0, 260, 0.1f, 10.0f,
                 ConfigManager.data.freecamSpeed, val -> {
-            ConfigManager.data.freecamSpeed = val;
-            speedLabel.setText(String.format(Locale.ROOT, "Speed: %.1f", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.freecamSpeed = val;
+                    speedLabel.setText(String.format(Locale.ROOT, "Speed: %.1f", val));
+                    ConfigManager.save();
+                });
         listView.addItem(speedSlider);
 
         ToggleSwitch showHandsToggle = new ToggleSwitch(0, 0, 260,
                 "Show Hands",
                 "Shows player hands in freecam",
                 ConfigManager.data.freecamShowHands, value -> {
-            ConfigManager.data.freecamShowHands = value;
-            ConfigManager.save();
-        });
+                    ConfigManager.data.freecamShowHands = value;
+                    ConfigManager.save();
+                });
         listView.addItem(showHandsToggle);
 
         freecamCard.addChild(listView);
@@ -679,14 +702,14 @@ public class CheatsTabController extends SimpleTabController {
                 "Enabled",
                 "Orbits camera around player",
                 ConfigManager.data.perspectiveEnabled, value -> {
-            if (value) {
-                Perspective.getInstance().activate();
-            } else {
-                Perspective.getInstance().deactivate();
-            }
-            ConfigManager.data.perspectiveEnabled = Perspective.getInstance().isActive();
-            ConfigManager.save();
-        });
+                    if (value) {
+                        Perspective.getInstance().activate();
+                    } else {
+                        Perspective.getInstance().deactivate();
+                    }
+                    ConfigManager.data.perspectiveEnabled = Perspective.getInstance().isActive();
+                    ConfigManager.save();
+                });
         listView.addItem(enableToggle);
 
         KeybindButton keybindButton = new KeybindButton(0, 0, 260,
@@ -715,10 +738,10 @@ public class CheatsTabController extends SimpleTabController {
 
         Slider distSlider = new Slider(0, 0, 260, 1.0f, 20.0f,
                 ConfigManager.data.perspectiveDistance, val -> {
-            ConfigManager.data.perspectiveDistance = val;
-            distLabel.setText(String.format(Locale.ROOT, "Distance: %.1f", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.perspectiveDistance = val;
+                    distLabel.setText(String.format(Locale.ROOT, "Distance: %.1f", val));
+                    ConfigManager.save();
+                });
         listView.addItem(distSlider);
 
         Label sensitivityLabel = new Label(0, 0,
@@ -728,25 +751,193 @@ public class CheatsTabController extends SimpleTabController {
 
         Slider sensitivitySlider = new Slider(0, 0, 260, 0.1f, 5.0f,
                 ConfigManager.data.perspectiveSensitivity, val -> {
-            ConfigManager.data.perspectiveSensitivity = val;
-            sensitivityLabel.setText(String.format(Locale.ROOT, "Sensitivity: %.1f", val));
-            ConfigManager.save();
-        });
+                    ConfigManager.data.perspectiveSensitivity = val;
+                    sensitivityLabel.setText(String.format(Locale.ROOT, "Sensitivity: %.1f", val));
+                    ConfigManager.save();
+                });
         listView.addItem(sensitivitySlider);
 
         ToggleSwitch scrollToggle = new ToggleSwitch(0, 0, 260,
                 "Scroll to Change Distance",
                 "Allows using the mouse wheel to change orbit distance",
                 ConfigManager.data.perspectiveScrollEnabled, value -> {
-            ConfigManager.data.perspectiveScrollEnabled = value;
-            ConfigManager.save();
-        });
+                    ConfigManager.data.perspectiveScrollEnabled = value;
+                    ConfigManager.save();
+                });
         listView.addItem(scrollToggle);
 
         perspectiveCard.addChild(listView);
         perspectiveCard.updateLayout();
         return perspectiveCard;
     }
+
+    private ResizableCard createAutoClickerCard(int x, int y) {
+        autoClickerCard = screen.createResizableCard("autoClicker", x, y, 300, 400, "Auto Clicker");
+        int contentX = autoClickerCard.getContentX();
+        int contentY = autoClickerCard.getContentY();
+
+        ListView listView = new ListView(contentX, contentY, 260, 350);
+
+        ToggleSwitch enableToggle = new ToggleSwitch(0, 0, 260,
+                "Enabled",
+                "Automatically clicks mouse buttons",
+                ConfigManager.data.autoClickerConfig.enabled, value -> {
+                    ConfigManager.data.autoClickerConfig.enabled = value;
+                    ConfigManager.save();
+                });
+        listView.addItem(enableToggle);
+
+        KeybindButton keybindButton = new KeybindButton(0, 0, 260,
+                "Keybind",
+                ConfigManager.data.autoClickerConfig.keybindKeyCode,
+                keyCode -> {
+                    ConfigManager.data.autoClickerConfig.keybindKeyCode = keyCode;
+                    ConfigManager.save();
+                });
+        listView.addItem(keybindButton);
+
+        Dropdown activationModeDropdown = new Dropdown(0, 0, 260,
+                "Activation Mode",
+                List.of("Toggle On/Off", "Hold Key"),
+                mode -> {
+                    ConfigManager.data.autoClickerConfig.holdMode = mode.equals("Hold Key");
+                    ConfigManager.save();
+                });
+        activationModeDropdown.setSelectedIndex(ConfigManager.data.autoClickerConfig.holdMode ? 1 : 0);
+        listView.addItem(activationModeDropdown);
+
+        ToggleSwitch holdClickToggle = new ToggleSwitch(0, 0, 260,
+                "Hold instead of clicking",
+                "Holds the mouse button down rather than repeatedly clicking",
+                ConfigManager.data.autoClickerConfig.holdClick, value -> {
+                    ConfigManager.data.autoClickerConfig.holdClick = value;
+                    ConfigManager.save();
+                });
+        listView.addItem(holdClickToggle);
+
+        AutoClickButtonSelector buttonSelector = new AutoClickButtonSelector(0, 0, 260,
+                ConfigManager.data.autoClickerConfig.buttons, buttons -> {
+                    ConfigManager.data.autoClickerConfig.buttons = new ArrayList<>(buttons);
+                    ConfigManager.save();
+                });
+        listView.addItem(buttonSelector);
+
+        Label minCpsLabel = new Label(0, 0,
+                String.format(Locale.ROOT, "Min CPS: %.1f", ConfigManager.data.autoClickerConfig.minCps),
+                Label.Style.BODY);
+        listView.addItem(minCpsLabel);
+
+        Slider minCpsSlider = new Slider(0, 0, 260, 1.0f, 20.0f,
+                ConfigManager.data.autoClickerConfig.minCps, val -> {
+                    ConfigManager.data.autoClickerConfig.minCps = val;
+                    minCpsLabel.setText(String.format(Locale.ROOT, "Min CPS: %.1f", val));
+                    if (val > ConfigManager.data.autoClickerConfig.maxCps) {
+                        ConfigManager.data.autoClickerConfig.maxCps = val;
+                    }
+                    ConfigManager.save();
+                });
+        listView.addItem(minCpsSlider);
+
+        Label maxCpsLabel = new Label(0, 0,
+                String.format(Locale.ROOT, "Max CPS: %.1f", ConfigManager.data.autoClickerConfig.maxCps),
+                Label.Style.BODY);
+        listView.addItem(maxCpsLabel);
+
+        Slider maxCpsSlider = new Slider(0, 0, 260, 1.0f, 20.0f,
+                ConfigManager.data.autoClickerConfig.maxCps, val -> {
+                    ConfigManager.data.autoClickerConfig.maxCps = val;
+                    maxCpsLabel.setText(String.format(Locale.ROOT, "Max CPS: %.1f", val));
+                    if (val < ConfigManager.data.autoClickerConfig.minCps) {
+                        ConfigManager.data.autoClickerConfig.minCps = val;
+                    }
+                    ConfigManager.save();
+                });
+        listView.addItem(maxCpsSlider);
+
+        ToggleSwitch groundOnlyToggle = new ToggleSwitch(0, 0, 260,
+                "Ground Only",
+                "Only click when standing on the ground",
+                ConfigManager.data.autoClickerConfig.groundOnly, value -> {
+                    ConfigManager.data.autoClickerConfig.groundOnly = value;
+                    ConfigManager.save();
+                });
+        listView.addItem(groundOnlyToggle);
+
+        StringListWidget itemFilterField = new StringListWidget(0, 0, 260,
+                ConfigManager.data.autoClickerConfig.itemFilters,
+                "Item name (example: terminator, hyperion)",
+                null,
+                () -> ConfigManager.save());
+                
+        ToggleSwitch itemFilterToggle = new ToggleSwitch(0, 0, 260,
+                "Item Filter",
+                "Only click when holding a specific item",
+                ConfigManager.data.autoClickerConfig.itemFilterEnabled, value -> {
+                    ConfigManager.data.autoClickerConfig.itemFilterEnabled = value;
+                    itemFilterField.setVisible(value);
+                    ConfigManager.save();
+                });
+                
+        listView.addItem(itemFilterToggle);
+        listView.addItem(itemFilterField);
+        
+        itemFilterField.setVisible(ConfigManager.data.autoClickerConfig.itemFilterEnabled);
+
+        List<String> mobSuggestions = BuiltInRegistries.ENTITY_TYPE
+                .keySet().stream()
+                .map(Object::toString)
+                .sorted()
+                .collect(Collectors.toList());
+
+        List<String> blockSuggestions = BuiltInRegistries.BLOCK
+                .keySet().stream()
+                .map(Object::toString)
+                .sorted()
+                .collect(Collectors.toList());
+
+        boolean isMobMode = "mob".equals(ConfigManager.data.autoClickerConfig.lookAtMode);
+
+        StringListWidget lookAtTargetField = new StringListWidget(0, 0, 260,
+                ConfigManager.data.autoClickerConfig.lookAtTargets,
+                isMobMode ? "example: minecraft:zombie" : "example: minecraft:stone",
+                () -> "mob".equals(ConfigManager.data.autoClickerConfig.lookAtMode)
+                        ? mobSuggestions
+                        : blockSuggestions,
+                () -> ConfigManager.save());
+
+        Dropdown lookAtModeDropdown = new Dropdown(0, 0, 260,
+                "Target Type",
+                List.of("Mob", "Block"),
+                mode -> {
+                    ConfigManager.data.autoClickerConfig.lookAtMode = mode.equals("Block") ? "block" : "mob";
+                    lookAtTargetField.setPlaceholder(mode.equals("Block") ? "example: minecraft:stone" : "example: minecraft:zombie");
+                    lookAtTargetField.refreshItems();
+                    ConfigManager.save();
+                });
+        lookAtModeDropdown.setSelectedIndex("block".equals(ConfigManager.data.autoClickerConfig.lookAtMode) ? 1 : 0);
+
+        ToggleSwitch lookAtFilterToggle = new ToggleSwitch(0, 0, 260,
+                "Look-At Filter",
+                "Only click when looking at the selected target",
+                ConfigManager.data.autoClickerConfig.lookAtFilterEnabled, value -> {
+                    ConfigManager.data.autoClickerConfig.lookAtFilterEnabled = value;
+                    lookAtModeDropdown.setVisible(value);
+                    lookAtTargetField.setVisible(value);
+                    ConfigManager.save();
+                });
+        listView.addItem(lookAtFilterToggle);
+
+        lookAtModeDropdown.setVisible(ConfigManager.data.autoClickerConfig.lookAtFilterEnabled);
+        listView.addItem(lookAtModeDropdown);
+
+        lookAtTargetField.setVisible(ConfigManager.data.autoClickerConfig.lookAtFilterEnabled);
+        listView.addItem(lookAtTargetField);
+
+        autoClickerCard.addChild(listView);
+        autoClickerCard.updateLayout();
+        return autoClickerCard;
+    }
+
     private static String delayLabel(int ticks) {
         String base = "Action Delay: " + ticks + (ticks == 1 ? " tick" : " ticks");
         return ticks <= 1 ? base + " (can be broken)" : base;

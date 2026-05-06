@@ -28,6 +28,7 @@ import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import org.blackum.blackaddons.feature.chat.IrcPrefixManager;
 import org.blackum.blackaddons.feature.cheat.AutoBM;
+import org.blackum.blackaddons.feature.cheat.AutoClicker;
 import org.blackum.blackaddons.feature.cheat.AutoSS;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.feature.cheat.Freecam;
@@ -73,6 +74,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         RelicLook.register();
         AutoSS.register();
         AutoBM.register();
+        AutoClicker.register();
         Freecam.register();
         Perspective.register();
         Scheduler.register();
