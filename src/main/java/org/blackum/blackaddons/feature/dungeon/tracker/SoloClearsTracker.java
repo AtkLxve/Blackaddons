@@ -140,6 +140,8 @@ public class SoloClearsTracker {
                     final String normalizedTime = normalizeTimeForBot(time);
                     final String submittedFloor = floorName;
                     final int submittedSecrets = stats.secretsFound;
+                    final int submittedDeaths = stats.deaths;
+                    final int submittedCrypts = stats.crypts;
                     final List<String> submittedPuzzles = new ArrayList<>(stats.completedPuzzles);
                     final boolean submittedPrince = princeDefeated;
                     final boolean submittedMimic = mimicKilled;
@@ -167,7 +169,8 @@ public class SoloClearsTracker {
                             .thenCompose(preVerified -> {
                                 Blackaddons.LOGGER.info("[SoloClears] Mojang pre-verify: {}", preVerified);
                                 return BotIntegration.sendSoloClear(player, playerUuid, submittedFloor, normalizedTime,
-                                        submittedSecrets, submittedPuzzles, submittedPrince, submittedMimic, needsVerification,
+                                        submittedSecrets, submittedDeaths, submittedCrypts,
+                                        submittedPuzzles, submittedPrince, submittedMimic, needsVerification,
                                         rawScoreboardLines, rawTablistLines, components,
                                         enterTick, clearTick, enterClock, clearClock, serverId, mapData);
                             })

@@ -308,7 +308,8 @@ public class BotIntegration {
     }
 
     public static CompletableFuture<JsonObject> sendSoloClear(String player, String playerUuid, String floor, String time,
-            int secrets, List<String> puzzles, boolean prince, boolean mimic, boolean needsVerification,
+            int secrets, int deaths, int crypts,
+            List<String> puzzles, boolean prince, boolean mimic, boolean needsVerification,
             List<String> scoreboardLines, List<String> tablistLines,
             Map<String, Integer> scoreComponents,
             long dungeonEnterTick, long clearTriggerTick,
@@ -325,6 +326,8 @@ public class BotIntegration {
         json.addProperty("floor", floor);
         json.addProperty("time", time);
         json.addProperty("secrets", secrets);
+        json.addProperty("deaths", deaths);
+        json.addProperty("crypts", crypts);
         json.addProperty("prince", prince);
         json.addProperty("mimic", mimic);
         json.addProperty("needs_verification", needsVerification);

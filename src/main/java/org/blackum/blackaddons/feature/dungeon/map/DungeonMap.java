@@ -6,7 +6,6 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
-import org.blackum.blackaddons.common.config.ConfigManager;
 
 import java.util.*;
 import net.minecraft.core.component.DataComponents;
@@ -31,7 +30,6 @@ public class DungeonMap {
     private static Room localRoom = null;
 
     public static void onMapPacket(ClientboundMapItemDataPacket packet) {
-        if (!ConfigManager.data.dungeonMapEnabled) return;
         if (!LocationUtils.inDungeons()) return;
 
         Minecraft mc = Minecraft.getInstance();
