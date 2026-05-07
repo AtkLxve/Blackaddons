@@ -59,7 +59,7 @@ public class RngTracker {
 
             LocalRngManager.getInstance().addDrop(localCat, item, 1);
 
-            BotIntegration.sendRngDrop(player, item, rarity, location);
+            BotIntegration.sendRngDrop(player, item, rarity, location, localCat);
         }
     }
 }

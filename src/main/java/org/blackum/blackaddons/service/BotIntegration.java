@@ -26,7 +26,7 @@ public class BotIntegration {
             .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
             .build();
 
-    public static void sendRngDrop(String player, String item, String rarity, String floor) {
+    public static void sendRngDrop(String player, String item, String rarity, String floor, String category) {
         if (ConfigManager.data.botUrl.isEmpty())
             return;
 
@@ -35,6 +35,8 @@ public class BotIntegration {
         json.addProperty("item", item);
         json.addProperty("rarity", rarity);
         json.addProperty("floor", floor);
+        json.addProperty("category", category);
+        json.addProperty("action", "increment");
         json.addProperty("timestamp", System.currentTimeMillis() / 1000);
 
         sendPostRequest(Constants.BOT_API_RNG, json.toString());
