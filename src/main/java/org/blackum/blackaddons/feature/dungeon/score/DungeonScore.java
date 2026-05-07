@@ -355,6 +355,19 @@ public class DungeonScore {
         return score;
     }
 
+    public static java.util.Map<String, Integer> getScoreComponents() {
+        java.util.Map<String, Integer> out = new java.util.LinkedHashMap<>();
+        if (!dungeonStarted) {
+            return out;
+        }
+        out.put("skill", calculateSkillScore());
+        out.put("explore", calculateExploreScore());
+        out.put("time", calculateTimeScore());
+        out.put("bonus", calculateBonusScore());
+        out.put("total", calculateScore());
+        return out;
+    }
+
     public static boolean isMimicKilled() {
         return mimicKilled;
     }

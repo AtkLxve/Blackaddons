@@ -10,21 +10,35 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import com.google.gson.JsonObject;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
 import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonMapSerializer;
 import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
+import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearSampler;
+import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.feature.rng.RngTracker;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
+import org.blackum.blackaddons.service.BotIntegration;
+import org.blackum.blackaddons.service.MojangAuthService;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public class TestCommands {
 
@@ -255,6 +269,127 @@ public class TestCommands {
                             return 1;
                         })));
 
+        testNode.then(ClientCommandManager.literal("lbsave")
+                .executes(ctx -> {
+                    int n = SoloClearSampler.captureSample();
+                    if (n > 0) {
+                        ctx.getSource().sendFeedback(Component.literal(
+                                "§a[lbsave] Saved sample #" + n + " → §7" + SoloClearSampler.getSamplesFile()));
+                    } else {
+                        ctx.getSource().sendFeedback(Component.literal(
+                                "§c[lbsave] Failed to save sample (see logs)"));
+                    }
+                    return 1;
+                }));
+
+        testNode.then(ClientCommandManager.literal("lbsend")
+                .executes(ctx -> runLbSend(ctx.getSource())));
+
         return testNode;
+    }
+
+    private static int runLbSend(FabricClientCommandSource source) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.getUser() == null) {
+            source.sendFeedback(Component.literal("§c[lbsend] Minecraft not ready."));
+            return 0;
+        }
+
+        DungeonFloor floor = LocationUtils.getCurrentFloor();
+        String floorName = floor != null ? floor.getDisplayName() : "F7";
+        if (!floorName.equals("F7") && !floorName.equals("M7")) {
+            floorName = "F7";
+        }
+
+        List<String> rawScoreboard = new ArrayList<>(ScoreboardUtils.getSidebarLines());
+        List<String> rawTablist = new ArrayList<>(TabListUtils.getRawTabListLines());
+        List<String> cleanTablist = TabListUtils.getTabListLines();
+        DungeonUtils.DungeonStats stats = DungeonUtils.parseDungeonStats(cleanTablist);
+        Map<String, Integer> components = new LinkedHashMap<>(DungeonScore.getScoreComponents());
+
+        String time = parseScoreboardTime(rawScoreboard);
+        if (time == null) time = "01:30";
+        final String normalizedTime = normalizeTime(time);
+
+        boolean mimicKilled = DungeonScore.isMimicKilled() || stats.mimicKilled;
+        boolean princeDefeated = DungeonScore.isPrinceKilled() || stats.princeKilled;
+
+        final String player = mc.getUser().getName();
+        final String playerUuid = mc.getUser().getProfileId().toString();
+        final String submittedFloor = floorName;
+        final int submittedSecrets = stats.secretsFound;
+        final int submittedDeaths = stats.deaths;
+        final int submittedCrypts = stats.crypts;
+        final List<String> submittedPuzzles = new ArrayList<>(stats.completedPuzzles);
+        final boolean submittedPrince = princeDefeated;
+        final boolean submittedMimic = mimicKilled;
+        final boolean needsVerification = false;
+        final long enterClock = System.currentTimeMillis() - parseTimeMs(normalizedTime);
+        final long clearClock = System.currentTimeMillis();
+        final String serverId = MojangAuthService.generateServerId();
+        final JsonObject mapData = DungeonMapSerializer.serialize();
+
+        source.sendFeedback(Component.literal(
+                "§e[lbsend] Sending " + submittedFloor + " " + normalizedTime + " for " + player + "..."));
+
+        MojangAuthService.joinServer(serverId)
+                .thenCompose(ok -> {
+                    if (!ok) {
+                        Blackaddons.LOGGER.warn("[lbsend] joinServer failed");
+                        return CompletableFuture.<Boolean>completedFuture(false);
+                    }
+                    return BotIntegration.preVerifyMojang(player, playerUuid, serverId);
+                })
+                .thenCompose(preVerified -> {
+                    Blackaddons.LOGGER.info("[lbsend] Mojang pre-verify: {}", preVerified);
+                    return BotIntegration.sendSoloClear(player, playerUuid, submittedFloor, normalizedTime,
+                            submittedSecrets, submittedDeaths, submittedCrypts,
+                            submittedPuzzles, submittedPrince, submittedMimic, needsVerification,
+                            rawScoreboard, rawTablist, components,
+                            -1L, -1L, enterClock, clearClock, serverId, mapData);
+                })
+                .thenAccept(res -> mc.execute(() -> {
+                    if (res != null) {
+                        source.sendFeedback(Component.literal("§a[lbsend] Bot accepted submission."));
+                    } else {
+                        source.sendFeedback(Component.literal("§c[lbsend] Bot rejected or returned no body. Check bot logs."));
+                    }
+                }));
+
+        return 1;
+    }
+
+    private static String parseScoreboardTime(List<String> rawLines) {
+        java.util.regex.Pattern strip = java.util.regex.Pattern.compile("§.");
+        java.util.regex.Pattern time = java.util.regex.Pattern.compile("(?i)Time Elapsed:\\s*([0-9][0-9msh:\\s]*s?)");
+        for (String raw : rawLines) {
+            String clean = raw == null ? "" : strip.matcher(raw).replaceAll("");
+            java.util.regex.Matcher m = time.matcher(clean);
+            if (m.find()) return m.group(1).trim();
+        }
+        return null;
+    }
+
+    private static String normalizeTime(String raw) {
+        if (raw == null) return "00:00";
+        if (raw.matches("\\d+:\\d+.*")) return raw;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
+        if (m.find()) {
+            int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
+            int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
+            return String.format("%02d:%02d", mins, secs);
+        }
+        return raw;
+    }
+
+    private static long parseTimeMs(String mmss) {
+        try {
+            String[] parts = mmss.split(":");
+            int mins = Integer.parseInt(parts[0]);
+            int secs = parts.length > 1 ? Integer.parseInt(parts[1].split("\\.")[0]) : 0;
+            return (mins * 60L + secs) * 1000L;
+        } catch (Exception e) {
+            return 0L;
+        }
     }
 }

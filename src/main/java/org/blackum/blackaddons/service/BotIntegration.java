@@ -21,12 +21,12 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.blackum.blackaddons.common.util.io.EncryptionUtils;
 public class BotIntegration {
-    private static final HttpClient client = HttpClient.newBuilder()
+    static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
             .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
             .build();
 
-    public static void sendRngDrop(String player, String item, String rarity, String floor) {
+    public static void sendRngDrop(String player, String item, String rarity, String floor, String category) {
         if (ConfigManager.data.botUrl.isEmpty())
             return;
 
@@ -35,6 +35,8 @@ public class BotIntegration {
         json.addProperty("item", item);
         json.addProperty("rarity", rarity);
         json.addProperty("floor", floor);
+        json.addProperty("category", category);
+        json.addProperty("action", "increment");
         json.addProperty("timestamp", System.currentTimeMillis() / 1000);
 
         sendPostRequest(Constants.BOT_API_RNG, json.toString());
@@ -283,16 +285,49 @@ public class BotIntegration {
         });
     }
 
-    public static CompletableFuture<JsonObject> sendSoloClear(String player, String floor, String time,
-            int secrets, List<String> puzzles, boolean prince, boolean mimic, boolean needsVerification) {
+    public static CompletableFuture<Boolean> preVerifyMojang(String ign, String uuid, String serverId) {
+        if (ConfigManager.data.botUrl.isEmpty() || serverId == null || serverId.isEmpty())
+            return CompletableFuture.completedFuture(false);
+
+        JsonObject json = new JsonObject();
+        json.addProperty("ign", ign);
+        json.addProperty("server_id", serverId);
+        json.addProperty("uuid", uuid);
+
+        return sendPostRequest(Constants.BOT_API_AUTH_VERIFY, json.toString()).thenApply(res -> {
+            if (res != null && res.statusCode() == 200) {
+                try {
+                    JsonObject body = JsonParser.parseString(res.body()).getAsJsonObject();
+                    return body.has("ok") && body.get("ok").getAsBoolean();
+                } catch (Exception e) {
+                    Blackaddons.LOGGER.warn("[BotIntegration] preVerifyMojang parse error: {}", e.getMessage());
+                }
+            }
+            return false;
+        });
+    }
+
+    public static CompletableFuture<JsonObject> sendSoloClear(String player, String playerUuid, String floor, String time,
+            int secrets, int deaths, int crypts,
+            List<String> puzzles, boolean prince, boolean mimic, boolean needsVerification,
+            List<String> scoreboardLines, List<String> tablistLines,
+            Map<String, Integer> scoreComponents,
+            long dungeonEnterTick, long clearTriggerTick,
+            long clientClockEnter, long clientClockClear,
+            String mojangServerId, JsonObject mapData) {
         if (ConfigManager.data.botUrl.isEmpty())
             return CompletableFuture.completedFuture(null);
 
         JsonObject json = new JsonObject();
         json.addProperty("player", player);
+        if (playerUuid != null && !playerUuid.isEmpty()) {
+            json.addProperty("uuid", playerUuid);
+        }
         json.addProperty("floor", floor);
         json.addProperty("time", time);
         json.addProperty("secrets", secrets);
+        json.addProperty("deaths", deaths);
+        json.addProperty("crypts", crypts);
         json.addProperty("prince", prince);
         json.addProperty("mimic", mimic);
         json.addProperty("needs_verification", needsVerification);
@@ -304,6 +339,43 @@ public class BotIntegration {
             }
         }
         json.add("puzzles", puzzleArray);
+
+        JsonArray sidebarArray = new JsonArray();
+        if (scoreboardLines != null) {
+            for (String line : scoreboardLines) {
+                sidebarArray.add(line);
+            }
+        }
+        json.add("scoreboard_lines", sidebarArray);
+
+        JsonArray tabArray = new JsonArray();
+        if (tablistLines != null) {
+            for (String line : tablistLines) {
+                tabArray.add(line);
+            }
+        }
+        json.add("tablist_lines", tabArray);
+
+        if (scoreComponents != null && !scoreComponents.isEmpty()) {
+            JsonObject components = new JsonObject();
+            for (Map.Entry<String, Integer> e : scoreComponents.entrySet()) {
+                components.addProperty(e.getKey(), e.getValue());
+            }
+            json.add("score_components", components);
+        }
+
+        json.addProperty("dungeon_enter_tick", dungeonEnterTick);
+        json.addProperty("clear_trigger_tick", clearTriggerTick);
+        json.addProperty("client_clock_enter", clientClockEnter);
+        json.addProperty("client_clock_clear", clientClockClear);
+
+        if (mojangServerId != null && !mojangServerId.isEmpty()) {
+            json.addProperty("mojang_server_id", mojangServerId);
+        }
+
+        if (mapData != null) {
+            json.add("map_data", mapData);
+        }
 
         return sendPostRequest(Constants.BOT_API_SOLO_CLEAR, json.toString()).thenApply(res -> {
             if (res != null && res.statusCode() >= 200 && res.statusCode() < 300) {

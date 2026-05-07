@@ -21,8 +21,8 @@ public class CommandRegistry {
             for (String alias : new String[]{Constants.BASE_COMMAND, "black", "blackaddons"}) {
                 var cmd = ClientCommandManager.literal(alias).executes(openGui);
 
+                cmd.then(TestCommands.node());
                 if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-                    cmd.then(TestCommands.node());
                     cmd.then(ProfileCommands.dailyNode());
                 }
                 cmd.then(ProfileCommands.pvNode());
@@ -34,6 +34,7 @@ public class CommandRegistry {
                 cmd.then(ChatCommands.previewNode());
                 cmd.then(DungeonCommands.leaderboardNode());
                 cmd.then(MiscCommands.hudNode());
+                cmd.then(MiscCommands.pingNode());
 
                 dispatcher.register(cmd);
             }

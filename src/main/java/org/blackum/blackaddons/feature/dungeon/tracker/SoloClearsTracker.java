@@ -11,11 +11,17 @@ import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 
 import org.blackum.blackaddons.feature.chat.ChatUtils;
-import net.minecraft.ChatFormatting;
+import org.blackum.blackaddons.feature.dungeon.map.DungeonMapSerializer;
 import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
+import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.service.BotIntegration;
+import org.blackum.blackaddons.service.MojangAuthService;
+import com.google.gson.JsonObject;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,15 +30,11 @@ public class SoloClearsTracker {
     private static boolean princeKilledThisRun = false;
     private static int ticks = 0;
     private static String lastLocation = "";
+    private static long dungeonEnterTick = -1L;
+    private static long dungeonEnterClock = 0L;
 
 
-    private static final Pattern SCORE_PATTERN = Pattern.compile("(?i)(?:Score:\\s*(\\d+))|(?:Cleared:.*?\\((\\d+)\\))");
     private static final Pattern TIME_PATTERN = Pattern.compile("(?i)(?:Elapsed|Time|Cleared:.*?\\(\\d+\\))\\s*:?\\s*[^0-9\\s]*\\s*([0-9][0-9:m\\s]*s?)");
-    
-
-    private static final Pattern COMPLETED_ROOMS_PATTERN = Pattern.compile("(?i)Completed Rooms:\\s*(\\d+)(?:/|\\s*out\\s*of\\s*)(\\d+)");
-    private static final Pattern CRYPTS_PATTERN = Pattern.compile("(?i)Crypts:\\s*(\\d+)");
-    private static final Pattern PUZZLES_HEADER_PATTERN = Pattern.compile("(?i)Puzzles:\\s*\\((\\d+)\\)");
 
     public static void tick() {
         ticks++;
@@ -43,8 +45,15 @@ public class SoloClearsTracker {
             runRecorded = false;
             lastLocation = currentLocation;
             princeKilledThisRun = false;
+            dungeonEnterTick = -1L;
+            dungeonEnterClock = 0L;
             DungeonScore.reset();
             return;
+        }
+
+        if (dungeonEnterTick < 0) {
+            dungeonEnterTick = ticks;
+            dungeonEnterClock = System.currentTimeMillis();
         }
 
         if (!lastLocation.equals(currentLocation)) {
@@ -69,22 +78,12 @@ public class SoloClearsTracker {
         boolean isSolo = false;
         String time = "Unknown";
         
-        int sidebarScore = 0;
         for (String line : scoreboardLines) {
             String cleanLine = line.trim();
             if (cleanLine.contains("Solo")) isSolo = true;
-            
             Matcher timeMatcher = TIME_PATTERN.matcher(cleanLine);
             if (timeMatcher.find()) {
                 time = timeMatcher.group(1).trim();
-            }
-            
-            Matcher scoreMatcher = SCORE_PATTERN.matcher(cleanLine);
-            if (scoreMatcher.find()) {
-                try {
-                    String strScore = scoreMatcher.group(1) != null ? scoreMatcher.group(1) : scoreMatcher.group(2);
-                    if (strScore != null) sidebarScore = Integer.parseInt(strScore);
-                } catch (NumberFormatException ignored) {}
             }
         }
 
@@ -141,12 +140,40 @@ public class SoloClearsTracker {
                     final String normalizedTime = normalizeTimeForBot(time);
                     final String submittedFloor = floorName;
                     final int submittedSecrets = stats.secretsFound;
+                    final int submittedDeaths = stats.deaths;
+                    final int submittedCrypts = stats.crypts;
                     final List<String> submittedPuzzles = new ArrayList<>(stats.completedPuzzles);
                     final boolean submittedPrince = princeDefeated;
                     final boolean submittedMimic = mimicKilled;
                     final boolean needsVerification = newTimeSeconds < 180;
-                    BotIntegration.sendSoloClear(player, submittedFloor, normalizedTime,
-                            submittedSecrets, submittedPuzzles, submittedPrince, submittedMimic, needsVerification)
+
+                    final List<String> rawScoreboardLines = new ArrayList<>(ScoreboardUtils.getSidebarLines());
+                    final List<String> rawTablistLines = new ArrayList<>(TabListUtils.getRawTabListLines());
+                    final Map<String, Integer> components = new LinkedHashMap<>(DungeonScore.getScoreComponents());
+                    final long enterTick = dungeonEnterTick;
+                    final long enterClock = dungeonEnterClock;
+                    final long clearTick = ticks;
+                    final long clearClock = System.currentTimeMillis();
+                    final String serverId = MojangAuthService.generateServerId();
+                    final String playerUuid = mc.getUser().getProfileId().toString();
+                    final JsonObject mapData = DungeonMapSerializer.serialize();
+
+                    MojangAuthService.joinServer(serverId)
+                            .thenCompose(ok -> {
+                                if (!ok) {
+                                    Blackaddons.LOGGER.warn("[SoloClears] joinServer failed, skipping pre-verify");
+                                    return CompletableFuture.<Boolean>completedFuture(false);
+                                }
+                                return BotIntegration.preVerifyMojang(player, playerUuid, serverId);
+                            })
+                            .thenCompose(preVerified -> {
+                                Blackaddons.LOGGER.info("[SoloClears] Mojang pre-verify: {}", preVerified);
+                                return BotIntegration.sendSoloClear(player, playerUuid, submittedFloor, normalizedTime,
+                                        submittedSecrets, submittedDeaths, submittedCrypts,
+                                        submittedPuzzles, submittedPrince, submittedMimic, needsVerification,
+                                        rawScoreboardLines, rawTablistLines, components,
+                                        enterTick, clearTick, enterClock, clearClock, serverId, mapData);
+                            })
                             .thenAccept(res -> {
                                 if (res != null && mc.player != null) {
                                     mc.execute(() -> mc.player.displayClientMessage(
@@ -193,8 +220,20 @@ public class SoloClearsTracker {
         return Integer.MAX_VALUE;
     }
 
+    public static long getDungeonEnterTick() {
+        return dungeonEnterTick;
+    }
+
+    public static long getDungeonEnterClock() {
+        return dungeonEnterClock;
+    }
+
+    public static int getCurrentTick() {
+        return ticks;
+    }
+
     public static void onChatMessage(Component message) {
-        String cleanText = message.getString().replaceAll("(?i)§[0-9a-fk-or]", "").trim();
+        String cleanText = message.getString().replaceAll("§.", "").trim();
         if (cleanText.contains("A Prince falls. +1 Bonus Score")) {
             princeKilledThisRun = true;
             DungeonScore.onPrinceKill();

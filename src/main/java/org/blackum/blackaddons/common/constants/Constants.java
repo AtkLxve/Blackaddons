@@ -70,6 +70,7 @@ public final class Constants {
         public static final String BOT_API_NAMES = "/v1/names";
         public static final String BOT_API_SOLO_CLEAR = "/v1/solo_clear";
         public static final String BOT_API_SOLO_LEADERBOARD = "/v1/solo_leaderboard";
+        public static final String BOT_API_AUTH_VERIFY = "/v1/auth/verify";
         
         // GitHub
         public static final String GITHUB_RELEASES_URL = "https://github.com/BLACKUM/BlackAddons/releases";
@@ -77,6 +78,9 @@ public final class Constants {
 
         // External URLs
         public static final String GITHUB_NAMES_URL = "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/main/data/custom_names.json";
+
+        // Mojang session API
+        public static final String MOJANG_SESSION_JOIN = "https://sessionserver.mojang.com/session/minecraft/join";
 
         // API Headers
         public static final String HEADER_PLAYER_KEY = "X-Player-Key";

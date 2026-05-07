@@ -15,12 +15,20 @@ public class TabListUtils {
     private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
 
     public static List<String> getTabListLines() {
+        return collectLines(true);
+    }
+
+    public static List<String> getRawTabListLines() {
+        return collectLines(false);
+    }
+
+    private static List<String> collectLines(boolean stripColor) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.getConnection() == null) return Collections.emptyList();
 
         Collection<PlayerInfo> players = mc.getConnection().getOnlinePlayers();
         PlayerInfo[] playersArray;
-        
+
         try {
             playersArray = players.toArray(new PlayerInfo[0]);
         } catch (ConcurrentModificationException e) {
@@ -36,7 +44,11 @@ public class TabListUtils {
             if (player == null) continue;
             Component name = player.getTabListDisplayName();
             String label = name != null ? name.getString() : player.getProfile().name();
-            lines.add(STRIP_COLOR_PATTERN.matcher(label).replaceAll("").trim());
+            if (stripColor) {
+                lines.add(STRIP_COLOR_PATTERN.matcher(label).replaceAll("").trim());
+            } else {
+                lines.add(label);
+            }
         }
         return lines;
     }
