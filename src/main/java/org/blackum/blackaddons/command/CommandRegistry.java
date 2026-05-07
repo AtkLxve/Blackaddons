@@ -34,6 +34,7 @@ public class CommandRegistry {
                 cmd.then(ChatCommands.previewNode());
                 cmd.then(DungeonCommands.leaderboardNode());
                 cmd.then(MiscCommands.hudNode());
+                cmd.then(MiscCommands.pingNode());
 
                 dispatcher.register(cmd);
             }

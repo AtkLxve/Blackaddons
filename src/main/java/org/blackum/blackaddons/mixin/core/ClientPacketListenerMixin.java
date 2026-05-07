@@ -2,20 +2,22 @@ package org.blackum.blackaddons.mixin.core;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.world.entity.Entity;
 //? if < 1.21.11 {
 /*import net.minecraft.world.entity.monster.Zombie;
 *///?} else
 import net.minecraft.world.entity.monster.zombie.Zombie;
-import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
-import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
+import org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze.TpMazeHandler;
+import org.blackum.blackaddons.feature.ping.PingFeature;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
-import org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze.TpMazeHandler;
 
 @Mixin(ClientPacketListener.class)
 public class ClientPacketListenerMixin {
@@ -50,5 +52,12 @@ public class ClientPacketListenerMixin {
     @Inject(method = "handleMovePlayer", at = @At("TAIL"))
     private void onHandlePlayerPositionPost(ClientboundPlayerPositionPacket packet, CallbackInfo ci) {
         TpMazeHandler.onServerTeleportPost();
+    }
+
+    @Inject(method = "handlePongResponse", at = @At("HEAD"), cancellable = true)
+    private void onHandlePongResponse(ClientboundPongResponsePacket packet, CallbackInfo ci) {
+        if (PingFeature.onPongReceive(packet.time())) {
+            ci.cancel();
+        }
     }
 }
