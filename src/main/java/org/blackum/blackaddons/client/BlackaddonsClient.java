@@ -52,6 +52,7 @@ import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonWorldScanner;
 import org.blackum.blackaddons.feature.dungeon.map.RoomData;
 import org.blackum.blackaddons.feature.rng.RngTracker;
+import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
@@ -97,6 +98,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             IrcPrefixManager.resetCache();
             IrcClient.getInstance().connect();
             UpdateManager.check();
+            ProfileStateManager.getInstance().getRngData(client.getUser().getName());
             DungeonMap.reset();
             DungeonWorldScanner.reset();
             DungeonScoreboard.reset();

@@ -14,7 +14,9 @@ import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.blackum.blackaddons.feature.rng.LocalRngManager;
 
@@ -109,6 +111,26 @@ public class ProfileStateManager {
             JsonObject botData = null;
             if (json != null && !json.has("error") && json.has("data")) {
                 botData = json.getAsJsonObject("data");
+
+                Set<String> allKnownItems = new HashSet<>();
+                if (botData.has("items")) {
+                    JsonObject itemsObj = botData.getAsJsonObject("items");
+                    for (String sub : itemsObj.keySet()) {
+                        JsonArray arr = itemsObj.getAsJsonArray(sub);
+                        for (JsonElement el : arr) {
+                            allKnownItems.add(el.getAsString());
+                        }
+                    }
+                }
+                if (botData.has("global_drops")) {
+                    JsonArray globals = botData.getAsJsonArray("global_drops");
+                    for (JsonElement el : globals) {
+                        allKnownItems.add(el.getAsString());
+                    }
+                }
+                if (!allKnownItems.isEmpty()) {
+                    LocalRngManager.getInstance().updateKnownItems(allKnownItems);
+                }
             }
 
             JsonObject localData = LocalRngManager.getInstance().getRngData();

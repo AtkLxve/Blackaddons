@@ -12,6 +12,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class LocalRngManager {
@@ -21,6 +25,7 @@ public class LocalRngManager {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private JsonObject data = new JsonObject();
+    private volatile Set<String> knownRngItems = Collections.emptySet();
 
     private LocalRngManager() {
         migrate();
@@ -130,5 +135,16 @@ public class LocalRngManager {
 
     public JsonObject getRngData() {
         return data;
+    }
+
+    public void updateKnownItems(Collection<String> items) {
+        knownRngItems = new HashSet<>(items);
+    }
+
+    public boolean isKnownRngItem(String rawItem) {
+        Set<String> items = knownRngItems;
+        if (items.isEmpty()) return false;
+        String clean = rawItem.replaceAll("§[0-9a-fk-or]", "").replaceAll("\\s*\\(\\+[^)]+\\)\\s*$", "").trim();
+        return items.contains(clean) || items.contains(rawItem);
     }
 }
