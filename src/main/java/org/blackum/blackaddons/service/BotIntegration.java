@@ -39,7 +39,7 @@ public class BotIntegration {
         json.addProperty("action", "increment");
         json.addProperty("timestamp", System.currentTimeMillis() / 1000);
 
-        sendPostRequest(Constants.BOT_API_RNG, json.toString());
+        sendMojangAuthedPostRequest(Constants.BOT_API_RNG, json);
     }
 
     public static CompletableFuture<Boolean> sendDailySync(String player) {
@@ -146,7 +146,7 @@ public class BotIntegration {
             json.addProperty("count", count);
         }
 
-        return sendPostRequest(Constants.BOT_API_RNG, json.toString()).thenApply(res -> {
+        return sendMojangAuthedPostRequest(Constants.BOT_API_RNG, json).thenApply(res -> {
             if (res != null && res.statusCode() >= 200 && res.statusCode() < 300) {
                 try {
                     JsonObject responseJson = JsonParser.parseString(res.body()).getAsJsonObject();
@@ -435,6 +435,22 @@ public class BotIntegration {
 
     private static CompletableFuture<HttpResponse<String>> sendPostRequest(String endpoint, String jsonBody) {
         return sendRequest("POST", endpoint, jsonBody, true);
+    }
+
+    private static CompletableFuture<HttpResponse<String>> sendMojangAuthedPostRequest(String endpoint, JsonObject json) {
+        if (ConfigManager.data.developerKey != null && !ConfigManager.data.developerKey.isEmpty()) {
+            return sendPostRequest(endpoint, json.toString());
+        }
+
+        String serverId = MojangAuthService.generateServerId();
+        return MojangAuthService.joinServer(serverId).thenCompose(joined -> {
+            if (!joined) {
+                Blackaddons.LOGGER.warn("Mojang joinServer failed; refusing authenticated bot POST to {}", endpoint);
+                return CompletableFuture.completedFuture(null);
+            }
+            json.addProperty("mojang_server_id", serverId);
+            return sendPostRequest(endpoint, json.toString());
+        });
     }
 
     private static CompletableFuture<HttpResponse<String>> sendGetRequest(String endpoint) {
