@@ -112,39 +112,43 @@ public class CustomBakedGlyph implements BakedGlyph {
             float skew = italic ? cfg.customFontItalicSlant * (y1 - y0) : 0f;
             boolean isSign = (displayMode != Font.DisplayMode.NORMAL) || CustomFontRenderer.inOutlinePass;
 
+            float z = isGui ? 0f : 0.02f;
+            float shadowZ = isGui ? 0f : 0.005f;
+            float outlineZ = isGui ? 0f : 0.01f;
+
             if (!isSign) {
                 if (cfg.customFontShadow) {
                     submitQuad(vertexConsumer, matrix4f, x0 + cfg.customFontShadowOffsetX + shadowOffset, y0 + cfg.customFontShadowOffsetY + shadowOffset,
-                            x1 + cfg.customFontShadowOffsetX + shadowOffset, y1 + cfg.customFontShadowOffsetY + shadowOffset,
+                            x1 + cfg.customFontShadowOffsetX + shadowOffset, y1 + cfg.customFontShadowOffsetY + shadowOffset, shadowZ,
                             sdfGlyph.u0, sdfGlyph.v0, sdfGlyph.u1, sdfGlyph.v1,
                             skew, boldStrength, ensureOpaque(cfg.customFontShadowColor), light, false);
                 } else if ((shadowColor >>> 24) != 0) {
                     submitQuad(vertexConsumer, matrix4f, x0 + shadowOffset, y0 + shadowOffset,
-                            x1 + shadowOffset, y1 + shadowOffset,
+                            x1 + shadowOffset, y1 + shadowOffset, shadowZ,
                             sdfGlyph.u0, sdfGlyph.v0, sdfGlyph.u1, sdfGlyph.v1,
                             skew, boldStrength, shadowColor, light, false);
                 }
 
                 if (cfg.customFontOutline) {
-                    submitQuad(vertexConsumer, matrix4f, x0, y0, x1, y1,
+                    submitQuad(vertexConsumer, matrix4f, x0, y0, x1, y1, outlineZ,
                             sdfGlyph.u0, sdfGlyph.v0, sdfGlyph.u1, sdfGlyph.v1,
                             skew, -(cfg.customFontOutlineWidth + boldStrength), ensureOpaque(cfg.customFontOutlineColor), light, false);
                 }
             }
 
-            submitQuad(vertexConsumer, matrix4f, x0, y0, x1, y1,
+            submitQuad(vertexConsumer, matrix4f, x0, y0, x1, y1, z,
                     sdfGlyph.u0, sdfGlyph.v0, sdfGlyph.u1, sdfGlyph.v1,
-                    skew, boldStrength, color, light, isSign);
+                    skew, boldStrength, color, light, false);
         }
 
         private void submitQuad(VertexConsumer vc, Matrix4f m,
-                                float lx0, float ly0, float lx1, float ly1,
+                                float lx0, float ly0, float lx1, float ly1, float lz,
                                 float u0, float v0, float u1, float v1,
                                 float skew, float effectZ, int c, int light, boolean hardEdge) {
-            Vector4f v1p = new Vector4f(lx0 + skew, ly0, 0, 1).mul(m);
-            Vector4f v2p = new Vector4f(lx0, ly1, 0, 1).mul(m);
-            Vector4f v3p = new Vector4f(lx1, ly1, 0, 1).mul(m);
-            Vector4f v4p = new Vector4f(lx1 + skew, ly0, 0, 1).mul(m);
+            Vector4f v1p = new Vector4f(lx0 + skew, ly0, lz, 1).mul(m);
+            Vector4f v2p = new Vector4f(lx0, ly1, lz, 1).mul(m);
+            Vector4f v3p = new Vector4f(lx1, ly1, lz, 1).mul(m);
+            Vector4f v4p = new Vector4f(lx1 + skew, ly0, lz, 1).mul(m);
             int effectBits = Float.floatToRawIntBits(CustomFontRenderer.packShaderEffect(effectZ, hardEdge));
             vc.addVertex(v1p.x(), v1p.y(), v1p.z()).setColor(c).setUv(u0, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
             vc.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(c).setUv(u0, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);

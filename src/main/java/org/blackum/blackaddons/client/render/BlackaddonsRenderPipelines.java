@@ -69,6 +69,7 @@ public class BlackaddonsRenderPipelines {
             .withCull(false)
             .withDepthTestFunction(DepthTestFunction.LEQUAL_DEPTH_TEST)
             .withDepthBias(-1.0F, -10.0F)
+            .withDepthWrite(true)
             .build());
 
     public static final RenderPipeline VECTOR_TEXT = add(RenderPipeline.builder()

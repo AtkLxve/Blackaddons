@@ -18,13 +18,9 @@ float screenPxRange() {
 }
 
 void main() {
-    int raw = floatBitsToInt(effectParam);
-
-    int low = raw & 0xFFF;
-    int high = raw >> 4;
-
-    float effect = float(low) - 4.0;
-    float aa = (float(high) - 1000.0) / 100.0;
+    float packedAa = floor(effectParam / 16.0);
+    float effect = effectParam - packedAa * 16.0 - 4.0;
+    float aa = (packedAa - 1000.0) / 100.0;
 
     float pxRange = screenPxRange();
     float sd = texture(Sampler0, texCoord).r - 0.5;
@@ -40,13 +36,16 @@ void main() {
     if (scaledEffect < 0.0) {
         float outer = smoothstep(-scaledAa, scaledAa, screenDistance + abs(scaledEffect));
         float inner = smoothstep(-scaledAa, scaledAa, screenDistance);
-        alpha = outer - inner;
+        alpha = clamp(outer - inner, 0.0, 1.0);
     } else {
         alpha = smoothstep(-scaledAa, scaledAa, screenDistance + scaledEffect);
+        float edgeTaper = smoothstep(-scaledAa, scaledAa, screenDistance + 0.4 * pxRange);
+        alpha = min(alpha, edgeTaper);
     }
 
-    if (alpha <= 0.0) {
+    float finalAlpha = vColor.a * alpha;
+    if (finalAlpha < 0.4) {
         discard;
     }
-    fragColor = vec4(vColor.rgb, vColor.a * alpha);
+    fragColor = vec4(vColor.rgb, finalAlpha);
 }
