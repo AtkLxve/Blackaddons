@@ -7,7 +7,9 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.module.AutoModule;
 
+@AutoModule(order = 900)
 public class CommandRegistry {
 
     public static void register() {

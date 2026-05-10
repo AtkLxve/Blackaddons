@@ -8,6 +8,7 @@ import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import java.util.HashSet;
 import java.util.Set;
 
+//one day bro, one day
 public final class InvWalk {
     private static boolean forcingMovement;
 

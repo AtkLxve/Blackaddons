@@ -2,10 +2,13 @@ package org.blackum.blackaddons.common.scheduler;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import org.blackum.blackaddons.common.module.AutoModule;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
+@AutoModule(order = 107)
 public class Scheduler {
     private static long currentTicks = 0;
     private static final List<Task> tasks = new CopyOnWriteArrayList<>();

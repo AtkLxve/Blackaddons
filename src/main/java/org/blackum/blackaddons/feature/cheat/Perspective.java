@@ -7,12 +7,14 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
 import java.util.Set;
 
+@AutoModule(order = 106)
 public final class Perspective {
     private static final Perspective INSTANCE = new Perspective();
     private static final int MOUSE_BIND_OFFSET = 1000;

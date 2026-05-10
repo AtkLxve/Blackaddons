@@ -3,7 +3,9 @@ package org.blackum.blackaddons.gui.hud;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 
+@AutoModule(order = 404)
 public class AutoSSHud implements HudElement {
     public static final int BASE_W = 180;
     public static final int BASE_H = 120;

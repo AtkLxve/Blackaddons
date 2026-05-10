@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.state.GuiRenderState;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.feature.dungeon.map.Door;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@AutoModule(order = 402)
 public class DungeonMapHud implements HudElement {
 
     public static void register() {

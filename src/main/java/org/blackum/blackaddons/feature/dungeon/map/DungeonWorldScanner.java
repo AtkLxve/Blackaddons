@@ -11,11 +11,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import org.blackum.blackaddons.Blackaddons;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 
 import java.util.List;
 import java.util.Set;
 
+@AutoModule(order = 300)
 public class DungeonWorldScanner {
 
     private static boolean shouldScan = false;

@@ -4,8 +4,10 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 
+@AutoModule(order = 400)
 public class LocationDebugHud implements HudElement {
     private static final int COLOR_WHITE = 0xFFFFFFFF;
     private static final int LINE_HEIGHT = 10;

@@ -6,12 +6,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.ThreadUtils;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 import org.blackum.blackaddons.client.render.RenderContext;
 
+@AutoModule(order = 201)
 public class TpMazeHandler {
 
     private static final int RESET_DISTANCE_SQ = 30 * 30;

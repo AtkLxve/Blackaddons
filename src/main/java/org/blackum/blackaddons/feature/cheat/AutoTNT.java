@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.blackum.blackaddons.mixin.core.InventoryAccessor;
 import net.minecraft.network.chat.Component;
@@ -23,6 +24,7 @@ import java.util.Random;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.BlockPos;
 
+@AutoModule(order = 100)
 public class AutoTNT {
     private static final List<Block> TARGET_BLOCKS = List.of(
             Blocks.CRACKED_STONE_BRICKS,

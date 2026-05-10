@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.Mth;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 
+@AutoModule(order = 108)
 public class AlignUtils {
     private static final double ALIGN_EPSILON = 1.0E-4D;
     private static final long DEBUG_SAMPLE_DELAY_MS = 500L;

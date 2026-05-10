@@ -19,6 +19,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.scheduler.Scheduler;
@@ -40,6 +41,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@AutoModule(order = 102)
 public class AutoSS {
     private static final BlockPos START_BUTTON = new BlockPos(110, 121, 91);
     private static final BlockPos BUTTON_CHECK_POS = new BlockPos(110, 120, 92);

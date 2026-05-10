@@ -12,12 +12,14 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.lwjgl.glfw.GLFW;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+@AutoModule(order = 104)
 public class AutoClicker {
     private static final String BUTTON_LEFT = "left";
     private static final String BUTTON_RIGHT = "right";

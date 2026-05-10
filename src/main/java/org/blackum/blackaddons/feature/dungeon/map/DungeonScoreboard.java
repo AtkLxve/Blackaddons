@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
 import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
 import org.blackum.blackaddons.common.util.mc.TabListUtils;
@@ -21,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+@AutoModule(order = 301)
 public class DungeonScoreboard {
 
     public static class DungeonPlayer {

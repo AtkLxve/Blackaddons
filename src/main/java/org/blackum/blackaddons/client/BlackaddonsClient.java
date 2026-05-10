@@ -15,10 +15,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.command.CommandRegistry;
+import org.blackum.blackaddons.common.module.ModuleManager;
 import org.blackum.blackaddons.feature.customname.CustomNameManager;
-import org.blackum.blackaddons.gui.hud.DebugHud;
-import org.blackum.blackaddons.gui.hud.LocationDebugHud;
 import org.blackum.blackaddons.feature.party.PartyFinderManager;
 import org.blackum.blackaddons.feature.update.UpdateManager;
 import org.blackum.blackaddons.client.render.DebugBoxRenderer;
@@ -27,27 +25,15 @@ import org.blackum.blackaddons.feature.chat.ChatImageHandler;
 import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import org.blackum.blackaddons.feature.chat.IrcPrefixManager;
-import org.blackum.blackaddons.feature.cheat.AutoBM;
-import org.blackum.blackaddons.feature.cheat.AutoClicker;
-import org.blackum.blackaddons.feature.cheat.AutoSS;
-import org.blackum.blackaddons.feature.cheat.AutoTNT;
-import org.blackum.blackaddons.feature.cheat.Freecam;
-import org.blackum.blackaddons.feature.cheat.Perspective;
-import org.blackum.blackaddons.feature.cheat.RelicLook;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
-import org.blackum.blackaddons.common.scheduler.Scheduler;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonListener;
 import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearsTracker;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
-import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardHandler;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardSolver;
-import org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze.TpMazeHandler;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze.TpMazeSolver;
-import org.blackum.blackaddons.gui.hud.DungeonMapHud;
 import org.blackum.blackaddons.gui.hud.HudRegistry;
-import org.blackum.blackaddons.gui.hud.WaterBoardHud;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonWorldScanner;
 import org.blackum.blackaddons.feature.dungeon.map.RoomData;
@@ -61,7 +47,6 @@ import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import org.blackum.blackaddons.service.BotIntegration;
-import org.blackum.blackaddons.gui.notification.Notification;
 
 public class BlackaddonsClient implements ClientModInitializer {
     private static boolean internalChatMsg = false;
@@ -71,26 +56,12 @@ public class BlackaddonsClient implements ClientModInitializer {
     public void onInitializeClient() {
         Blackaddons.LOGGER.info("Initializing client...");
         IrcPrefixManager.getPrefix(); 
-        AutoTNT.register();
-        RelicLook.register();
-        AutoSS.register();
-        AutoBM.register();
-        AutoClicker.register();
-        Freecam.register();
-        Perspective.register();
-        Scheduler.register();
-        LocationDebugHud.register();
-        AlignUtils.register();
-        WaterBoardHandler.register();
-        TpMazeHandler.register();
 
         ConfigManager.load();
         if (ConfigManager.data.customTextEnabled) {
             CustomFontRenderer.getInstance().init();
         }
         RoomData.loadRooms();
-        DungeonWorldScanner.register();
-        DungeonScoreboard.register();
         BotIntegration.authenticateWithBot();
         CustomNameManager.getInstance().fetch();
 
@@ -136,13 +107,8 @@ public class BlackaddonsClient implements ClientModInitializer {
             client.execute(() -> NotificationManager.addNotification("Notification", message, NotificationType.INFO));
         };
 
-        DebugHud.register();
-        DungeonMapHud.register();
-        WaterBoardHud.register();
-        org.blackum.blackaddons.gui.hud.AutoSSHud.register();
-        org.blackum.blackaddons.gui.hud.RotationHud.register();
+        ModuleManager.registerAutoModules();
         HudRegistry.install();
-        CommandRegistry.register();
 
         HudRenderCallback.EVENT.register((graphics, partialTick) -> {
             if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {

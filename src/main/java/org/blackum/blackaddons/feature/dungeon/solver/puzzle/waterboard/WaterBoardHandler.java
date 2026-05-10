@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.event.DungeonEvent;
 import org.blackum.blackaddons.common.event.PlayerInteractEvent;
+import org.blackum.blackaddons.common.module.AutoModule;
 
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.util.ThreadUtils;
@@ -19,6 +20,7 @@ import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 import org.blackum.blackaddons.client.render.RenderContext;
 
+@AutoModule(order = 200)
 public class WaterBoardHandler {
 
     public static void register() {

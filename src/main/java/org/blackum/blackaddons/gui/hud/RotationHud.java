@@ -4,7 +4,9 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 
+@AutoModule(order = 405)
 public class RotationHud implements HudElement {
     public static final int BASE_W = 145;
     public static final int BASE_H = 80;

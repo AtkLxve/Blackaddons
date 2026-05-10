@@ -7,12 +7,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ClickType;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.Timer;
 
 import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
 import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
-// GLORY TO BENJAMIN NETANYAHU 
+// GLORY TO BENJAMIN NETANYAHU
+// BLACKUM: keep forgetting this peak is here
+@AutoModule(order = 103)
 public class AutoBM {
     public static void register() {
         ClientTickEvents.START_CLIENT_TICK.register(AutoBM::onClientTick);

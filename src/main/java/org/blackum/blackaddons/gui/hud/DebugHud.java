@@ -8,12 +8,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 
+@AutoModule(order = 401)
 public class DebugHud implements HudElement {
     private static final int DEFAULT_COLOR = 0xFFFFFFFF;
     private static final int LINE_HEIGHT = 10;

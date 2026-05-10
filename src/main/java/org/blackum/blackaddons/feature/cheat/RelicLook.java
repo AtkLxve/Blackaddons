@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@AutoModule(order = 101)
 public class RelicLook {
     private static final Pattern RELIC_PICKUP_PATTERN = Pattern.compile("^([A-Za-z0-9_]+) picked the Corrupted (Red|Orange) Relic!$");
     private static final BlockPos ARCHER_TARGET = new BlockPos(51, 6, 42); // red
