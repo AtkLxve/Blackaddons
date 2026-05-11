@@ -22,6 +22,7 @@ public class SettingWrapper extends Widget {
     private Widget control;
     private boolean expanded = false;
     private Animation expandAnimation;
+    private Animation hoverAnimation;
 
     private String rightLabel;
     private int labelWidth;
@@ -43,6 +44,7 @@ public class SettingWrapper extends Widget {
         this.control = control;
 
         this.expandAnimation = new Animation(0, 0, Theme.ANIM_NORMAL, Easing::easeOut);
+        this.hoverAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
         this.labelWidth = Minecraft.getInstance().font.width(label);
 
         updateLayout();
@@ -93,8 +95,11 @@ public class SettingWrapper extends Widget {
         if (!visible)
             return;
 
+        float hover = hoverAnimation.getValue();
         int textY = y + (HEADER_HEIGHT - 8) / 2;
-        graphics.drawString(Minecraft.getInstance().font, label, x, textY, Theme.TEXT_PRIMARY);
+        int labelX = x + Math.round(hover * 2.0f);
+        graphics.drawString(Minecraft.getInstance().font, label, labelX, textY,
+                Theme.lerpColor(Theme.TEXT_PRIMARY, Theme.ACCENT, hover * 0.25f));
 
         if (rightLabel != null && !rightLabel.isEmpty()) {
             int rw = Minecraft.getInstance().font.width(rightLabel);
@@ -103,9 +108,9 @@ public class SettingWrapper extends Widget {
         }
 
         if (description != null && !description.isEmpty()) {
-            int expandX = x + labelWidth + 6;
+            int expandX = labelX + labelWidth + 6;
             int expandY = y + (HEADER_HEIGHT - EXPAND_ICON_SIZE) / 2;
-            int expandColor = Theme.withAlpha(Theme.TEXT_SECONDARY, 0.6f);
+            int expandColor = Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.ACCENT, Math.max(hover, expandAnimation.getValue()));
             graphics.drawString(Minecraft.getInstance().font, expanded ? "▼" : "▶", expandX, expandY, expandColor);
         }
 
@@ -147,6 +152,15 @@ public class SettingWrapper extends Widget {
 
     @Override
     public void tick() {
+        if (hovered && hoverAnimation.getProgress() < 1
+                && (!hoverAnimation.isRunning() || hoverAnimation.getValue() < 1)) {
+            hoverAnimation = new Animation(hoverAnimation.getValue(), 1, Theme.ANIM_HOVER, Easing::easeOut);
+            hoverAnimation.start();
+        } else if (!hovered && hoverAnimation.getProgress() > 0
+                && (!hoverAnimation.isRunning() || hoverAnimation.getValue() > 0)) {
+            hoverAnimation = new Animation(hoverAnimation.getValue(), 0, Theme.ANIM_HOVER, Easing::easeOut);
+            hoverAnimation.start();
+        }
         if (control != null)
             control.tick();
         updateLayout();

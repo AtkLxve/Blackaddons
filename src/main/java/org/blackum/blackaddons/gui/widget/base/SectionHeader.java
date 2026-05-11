@@ -9,6 +9,8 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import org.blackum.blackaddons.gui.animation.Animation;
+import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
 
 public class SectionHeader extends Widget {
@@ -16,10 +18,12 @@ public class SectionHeader extends Widget {
     private Runnable onToggle;
     private Checkbox bulkCheckbox;
     private boolean collapsed;
+    private Animation hoverAnimation;
 
     public SectionHeader(int width, String title) {
         super(0, 0, width, 25);
         this.title = ChatFormatting.BOLD + title;
+        this.hoverAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
     }
 
     public SectionHeader(int width, String title, boolean collapsed, Runnable onToggle) {
@@ -33,10 +37,12 @@ public class SectionHeader extends Widget {
         if (!visible)
             return;
 
+        float hover = hoverAnimation.getValue();
         int currentX = x;
         if (onToggle != null) {
             String arrow = collapsed ? "▶ " : "▼ ";
-            graphics.drawString(Minecraft.getInstance().font, arrow, currentX, y + 8, Theme.TEXT_SECONDARY);
+            int arrowColor = Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.ACCENT, hover);
+            graphics.drawString(Minecraft.getInstance().font, arrow, currentX + Math.round(hover * 2.0f), y + 8, arrowColor);
             currentX += 12;
         }
 
@@ -47,14 +53,15 @@ public class SectionHeader extends Widget {
             currentX += bulkCheckbox.getWidth() + 8;
         }
 
-        graphics.drawString(Minecraft.getInstance().font, title, currentX, y + 8, Theme.ACCENT);
+        graphics.drawString(Minecraft.getInstance().font, title, currentX + Math.round(hover * 2.0f), y + 8, Theme.ACCENT);
 
         int titleWidth = Minecraft.getInstance().font.width(title);
-        int lineX = currentX + titleWidth + 10;
+        int lineX = currentX + titleWidth + 10 + Math.round(hover * 2.0f);
         int lineW = width - (lineX - x);
         if (lineW > 0) {
             int centerY = y + 8 + 4;
-            graphics.fill(lineX, centerY, x + width, centerY + 1, Theme.withAlpha(Theme.TEXT_SECONDARY, 0.3f));
+            graphics.fill(lineX, centerY, x + width, centerY + 1,
+                    Theme.withAlpha(Theme.TEXT_SECONDARY, 0.25f + hover * 0.25f));
         }
     }
 
@@ -85,6 +92,15 @@ public class SectionHeader extends Widget {
 
     @Override
     public void tick() {
+        if (hovered && hoverAnimation.getProgress() < 1
+                && (!hoverAnimation.isRunning() || hoverAnimation.getValue() < 1)) {
+            hoverAnimation = new Animation(hoverAnimation.getValue(), 1, Theme.ANIM_HOVER, Easing::easeOut);
+            hoverAnimation.start();
+        } else if (!hovered && hoverAnimation.getProgress() > 0
+                && (!hoverAnimation.isRunning() || hoverAnimation.getValue() > 0)) {
+            hoverAnimation = new Animation(hoverAnimation.getValue(), 0, Theme.ANIM_HOVER, Easing::easeOut);
+            hoverAnimation.start();
+        }
         if (bulkCheckbox != null) {
             bulkCheckbox.tick();
         }

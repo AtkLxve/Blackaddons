@@ -7,6 +7,8 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.gui.GuiGraphics;
+import org.blackum.blackaddons.gui.animation.Animation;
+import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
 
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ public class ListView extends Widget {
     private int maxScroll = 0;
     private boolean draggingScrollbar = false;
     private int scrollbarWidth = 4;
+    private Animation scrollbarAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
+    private boolean scrollbarActiveTarget = false;
 
     private boolean isItemWithinViewport(Widget item) {
         return item.isVisible() && item.getY() + item.getHeight() > y - 2 && item.getY() < y + height + 2;
@@ -140,14 +144,24 @@ public class ListView extends Widget {
         if (maxScroll <= 0)
             return;
 
+        boolean active = draggingScrollbar || isMouseOverScrollbar(mouseX, mouseY) || super.isMouseOver(mouseX, mouseY);
+        float current = scrollbarAnimation.getValue();
+        if (scrollbarActiveTarget != active) {
+            scrollbarActiveTarget = active;
+            float target = active ? 1.0f : 0.0f;
+            scrollbarAnimation = new Animation(current, target, Theme.ANIM_HOVER, Easing::easeOut);
+            scrollbarAnimation.start();
+            current = scrollbarAnimation.getValue();
+        }
+
         int scrollbarX = x + width - scrollbarWidth;
         int scrollbarHeight = height;
 
         int thumbHeight = Math.max(20, (int) ((float) height / (height + maxScroll) * scrollbarHeight));
         int thumbY = y + (int) ((float) scrollOffset / maxScroll * (scrollbarHeight - thumbHeight));
 
-        int thumbColor = Theme.withAlpha(Theme.TEXT_SECONDARY,
-                (draggingScrollbar || isMouseOverScrollbar(mouseX, mouseY)) ? 0.8f : 0.4f);
+        float alpha = draggingScrollbar ? 0.85f : 0.25f + current * 0.35f;
+        int thumbColor = Theme.withAlpha(Theme.TEXT_SECONDARY, alpha);
         graphics.fill(scrollbarX, thumbY, scrollbarX + scrollbarWidth, thumbY + thumbHeight, thumbColor);
     }
 
@@ -159,6 +173,7 @@ public class ListView extends Widget {
 
     @Override
     public void tick() {
+        scrollbarAnimation.getValue();
         for (Widget item : items) {
             item.tick();
         }

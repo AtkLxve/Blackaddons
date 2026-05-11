@@ -10,6 +10,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
+import org.blackum.blackaddons.gui.animation.Animation;
+import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 
@@ -33,6 +35,8 @@ public class ResizableCard extends Card {
 
     private boolean collapsed = true;
     private int expandedHeight;
+    private Animation hoverAnimation;
+    private Animation activeAnimation;
 
     private int minX = Integer.MIN_VALUE;
     private int minY = Integer.MIN_VALUE;
@@ -53,6 +57,8 @@ public class ResizableCard extends Card {
         super(x, y, width, height, title);
         this.initialWidth = width;
         this.expandedHeight = height;
+        this.hoverAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
+        this.activeAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
 
         if (collapsed) {
             float scale = (float) width / initialWidth;
@@ -86,10 +92,14 @@ public class ResizableCard extends Card {
 
     @Override
     public void updateHoverState(int mouseX, int mouseY) {
-        super.updateHoverState(mouseX, mouseY);
+        this.hovered = isMouseOver(mouseX, mouseY);
 
-        if (collapsed)
+        if (collapsed) {
+            for (Widget child : getChildren()) {
+                child.updateHoverState(-1, -1);
+            }
             return;
+        }
 
         float scale = (float) width / initialWidth;
         int scaledMouseX = (int) ((mouseX - x) / scale + x);
@@ -107,9 +117,15 @@ public class ResizableCard extends Card {
         if (!visible)
             return;
 
-        int shadowOffset = dragging ? 8 : 4;
-        int shadowColor = Theme.withAlpha(Theme.SHADOW, dragging ? 0.4f : 0.2f);
+        float hover = hoverAnimation.getValue();
+        float active = activeAnimation.getValue();
         RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS, false);
+        if (hover > 0 || active > 0) {
+            RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS,
+                    Theme.withAlpha(0xFF000000, hover * 0.12f + active * 0.20f));
+            RenderHelper.renderRoundedOutline(graphics, x, y, width, height, Theme.BORDER_RADIUS,
+                    Theme.withAlpha(Theme.ACCENT, hover * 0.28f + active * 0.55f));
+        }
 
         float scale = (float) width / initialWidth;
 
@@ -119,13 +135,15 @@ public class ResizableCard extends Card {
         graphics.pose().translate((float) -x, (float) -y);
 
         if (getTitle() != null && !getTitle().isEmpty()) {
-            graphics.fill(x, y, x + initialWidth, y + TITLE_BAR_HEIGHT, Theme.withAlpha(Theme.SURFACE_LIGHT, 0.5f));
+            graphics.fill(x, y, x + initialWidth, y + TITLE_BAR_HEIGHT,
+                    Theme.withAlpha(0xFF000000, 0.18f + hover * 0.10f + active * 0.16f));
 
-            int titleColor = dragging ? Theme.ACCENT : Theme.TEXT_PRIMARY;
+            int titleColor = Theme.lerpColor(Theme.TEXT_PRIMARY, Theme.ACCENT, Math.max(hover * 0.55f, active));
             String arrow = collapsed ? "◀" : "▼";
+            int titleOffset = Math.round(hover * 2.0f + active * 2.0f);
 
             graphics.drawString(Minecraft.getInstance().font,
-                    getTitle(), x + getPadding(), y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
+                    getTitle(), x + getPadding() + titleOffset, y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
 
             int arrowWidth = Minecraft.getInstance().font.width(arrow);
             graphics.drawString(Minecraft.getInstance().font,
@@ -180,6 +198,8 @@ public class ResizableCard extends Card {
     @Override
     public void tick() {
         super.tick();
+        updateAnimationTarget(hoverAnimation, hovered || dragging || resizing, false);
+        updateAnimationTarget(activeAnimation, dragging || resizing, true);
         if (!collapsed) {
             updateLayout();
         }
@@ -449,6 +469,20 @@ public class ResizableCard extends Card {
     private boolean isShiftDown() {
         return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) ||
                 InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_RIGHT_SHIFT);
+    }
+
+    private void updateAnimationTarget(Animation animation, boolean targetActive, boolean activeTrack) {
+        float current = animation.getValue();
+        float target = targetActive ? 1.0f : 0.0f;
+        if ((targetActive && current < 1.0f) || (!targetActive && current > 0.0f)) {
+            Animation next = new Animation(current, target, Theme.ANIM_HOVER, Easing::easeOut);
+            next.start();
+            if (activeTrack) {
+                activeAnimation = next;
+            } else {
+                hoverAnimation = next;
+            }
+        }
     }
 
     @Override

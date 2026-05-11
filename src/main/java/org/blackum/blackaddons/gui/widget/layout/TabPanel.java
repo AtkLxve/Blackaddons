@@ -50,6 +50,7 @@ public class TabPanel extends Widget {
     private int contentPadding = 10;
 
     private Map<Integer, Animation> tabHoverAnimations = new HashMap<>();
+    private Map<Integer, Boolean> tabHoverTargets = new HashMap<>();
     private Animation selectionAnimation;
     private double tabScrollOffset = 0;
 
@@ -116,21 +117,26 @@ public class TabPanel extends Widget {
             boolean isSelected = i == selectedTabIndex;
             boolean isHovered = mouseX >= tabX && mouseX <= tabX + tabWidth &&
                     mouseY >= currentY - tabScrollOffset && mouseY <= currentY + tabHeight - tabScrollOffset;
+            setTabHoverTarget(i, isHovered && !isSelected);
 
             Animation hoverAnim = tabHoverAnimations.computeIfAbsent(i,
                     k -> new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut));
+            float hoverProgress = hoverAnim.getValue();
 
             if (isHovered && !isSelected) {
-                int hoverColor = Theme.withAlpha(Theme.SURFACE_LIGHT, 0.5f);
+                int hoverColor = Theme.withAlpha(Theme.SURFACE_LIGHT, 0.20f + hoverProgress * 0.35f);
                 graphics.fill(tabX, currentY, tabX + tabWidth, currentY + tabHeight, hoverColor);
             }
 
             int textColor = isSelected ? Theme.ACCENT : Theme.TEXT_SECONDARY;
-            if (!isSelected && hoverAnim.getValue() > 0) {
-                textColor = Theme.TEXT_PRIMARY;
+            if (!isSelected && hoverProgress > 0) {
+                textColor = Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.TEXT_PRIMARY, hoverProgress);
             }
 
             int textX = tabX + (tabWidth - Minecraft.getInstance().font.width(tab.name)) / 2;
+            if (!isSelected) {
+                textX += Math.round(hoverProgress * 3.0f);
+            }
             int textY = currentY + (tabHeight - 8) / 2;
             graphics.drawString(Minecraft.getInstance().font, tab.name, textX, textY, textColor);
 
@@ -198,8 +204,7 @@ public class TabPanel extends Widget {
     public void tick() {
         for (int i = 0; i < tabs.size(); i++) {
             Animation hoverAnim = tabHoverAnimations.get(i);
-            if (hoverAnim != null && hoverAnim.isRunning()) {
-            }
+            if (hoverAnim != null) hoverAnim.getValue();
         }
 
         if (selectedTabIndex >= 0 && selectedTabIndex < tabs.size()) {
@@ -353,6 +358,20 @@ public class TabPanel extends Widget {
                 onTabChange.accept(index);
             }
         }
+    }
+
+    private void setTabHoverTarget(int index, boolean hovered) {
+        Animation hoverAnim = tabHoverAnimations.computeIfAbsent(index,
+                k -> new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut));
+        if (tabHoverTargets.getOrDefault(index, false) == hovered) {
+            return;
+        }
+        tabHoverTargets.put(index, hovered);
+        float current = hoverAnim.getValue();
+        float target = hovered ? 1.0f : 0.0f;
+        Animation next = new Animation(current, target, Theme.ANIM_HOVER, Easing::easeOut);
+        next.start();
+        tabHoverAnimations.put(index, next);
     }
 
     public void selectTabByName(String name) {

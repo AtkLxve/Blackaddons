@@ -54,6 +54,10 @@ public class RadioButton extends Widget {
         int radioRadius = height / 2;
         RenderHelper.renderSurface(graphics, x, y, height, height,
                 radioRadius, selected);
+        if (hoverProgress > 0) {
+            RenderHelper.renderRoundedOutline(graphics, x - 1, y - 1, height + 2, height + 2,
+                    radioRadius, Theme.withAlpha(Theme.ACCENT, hoverProgress * 0.35f));
+        }
 
         if (selectProgress > 0) {
             int innerSize = (int) ((height - 10) * selectProgress);
@@ -73,7 +77,8 @@ public class RadioButton extends Widget {
         if (!label.isEmpty()) {
             int labelX = x + height + 8;
             int labelY = y + (height - 8) / 2;
-            int labelColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
+            int baseColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
+            int labelColor = Theme.lerpColor(baseColor, Theme.ACCENT, Math.max(selectProgress, hoverProgress * 0.35f));
             graphics.drawString(Minecraft.getInstance().font, label, labelX, labelY, labelColor);
         }
     }

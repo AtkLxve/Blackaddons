@@ -31,6 +31,7 @@ public class Dropdown extends Widget {
 
     private Animation hoverAnimation;
     private Animation expandAnimation;
+    private boolean hoverTarget = false;
     private double menuScrollOffset = 0;
     private static final int MAX_MENU_HEIGHT = 130;
     private static final int OPTION_HEIGHT = 25;
@@ -47,8 +48,8 @@ public class Dropdown extends Widget {
         this.options = options;
         this.onSelect = onSelect;
 
-        this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
-        this.expandAnimation = new Animation(0, 1, Theme.ANIM_CLICK, Easing::easeOutBack);
+        this.hoverAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
+        this.expandAnimation = new Animation(0, 0, Theme.ANIM_NORMAL, Easing::easeOut);
     }
 
     public void setOnExpand(Runnable onExpand) {
@@ -60,7 +61,7 @@ public class Dropdown extends Widget {
     }
 
     public void collapse() {
-        expanded = false;
+        setExpanded(false);
     }
 
     public void setColorProvider(java.util.function.Function<String, Integer> colorProvider) {
@@ -108,7 +109,7 @@ public class Dropdown extends Widget {
 
     @Override
     public boolean hasActiveOverlay() {
-        return visible && expanded;
+        return visible && (expanded || expandAnimation.getValue() > 0);
     }
 
     private int getTotalMenuHeight() {
@@ -140,6 +141,12 @@ public class Dropdown extends Widget {
             return;
 
         RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, false);
+        float hover = hoverAnimation.getValue();
+        float open = clamp01(expandAnimation.getValue());
+        if (hover > 0 || open > 0) {
+            RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL,
+                    Theme.withAlpha(Theme.GLASS_HIGHLIGHT, hover * 0.25f + open * 0.12f));
+        }
 
         int textColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
         String text = selectedIndex >= 0 && selectedIndex < options.size() ? options.get(selectedIndex) : label;
@@ -156,27 +163,32 @@ public class Dropdown extends Widget {
         int textY = y + (height - 8) / 2;
         graphics.drawString(Minecraft.getInstance().font, text, x + 10, textY, textColor);
 
-        String arrow = expanded ? "▲" : "▼";
+        String arrow = open > 0.5f ? "▲" : "▼";
         int arrowWidth = Minecraft.getInstance().font.width(arrow);
-        graphics.drawString(Minecraft.getInstance().font, arrow, x + width - 15 - arrowWidth / 2, textY,
-                Theme.TEXT_SECONDARY);
+        graphics.drawString(Minecraft.getInstance().font, arrow, x + width - 15 - arrowWidth / 2,
+                textY + Math.round(open * -1.0f), Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.ACCENT, open));
     }
 
     @Override
     public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
-        if (!visible || !expanded)
+        float open = clamp01(expandAnimation.getValue());
+        if (!visible || open <= 0)
             return;
 
         int scrollOffset = mouseY - rawMouseY;
         int totalHeight = getTotalMenuHeight();
-        int menuHeight = getMenuHeight();
+        int menuHeight = Math.max(1, Math.round(getMenuHeight() * open));
         int menuY = getMenuBaseY() - scrollOffset;
+        if (shouldOpenUpward()) {
+            menuY += getMenuHeight() - menuHeight;
+        }
 
-        graphics.fill(x - 3, menuY - 3, x + width + 3, menuY + menuHeight + 3, 0xFF000000);
+        graphics.fill(x - 3, menuY - 3, x + width + 3, menuY + menuHeight + 3,
+                Theme.withAlpha(0xFF000000, open * 0.85f));
         RenderHelper.renderSurface(graphics, x, menuY, width, menuHeight, Theme.BORDER_RADIUS_SMALL, false);
         RenderHelper.renderRoundedOutline(graphics, x, menuY, width, menuHeight, Theme.BORDER_RADIUS_SMALL,
-                Theme.withAlpha(Theme.BORDER, 0.5f));
+                Theme.withAlpha(Theme.BORDER, 0.25f + open * 0.25f));
 
         graphics.enableScissor(x, menuY, x + width, menuY + menuHeight);
 
@@ -192,7 +204,7 @@ public class Dropdown extends Widget {
 
             if (isOptHovered) {
                 graphics.fill(x + 2, optY, x + width - 2, optY + OPTION_HEIGHT,
-                        Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.2f));
+                        Theme.withAlpha(Theme.GLASS_HIGHLIGHT, 0.2f * open));
             }
 
             int optColor = Theme.TEXT_PRIMARY;
@@ -203,10 +215,11 @@ public class Dropdown extends Widget {
 
             if (i == selectedIndex) {
                 graphics.drawString(Minecraft.getInstance().font, option, x + 10,
-                        optY + (OPTION_HEIGHT - 8) / 2, colorProvider != null ? optColor : Theme.ACCENT);
+                        optY + (OPTION_HEIGHT - 8) / 2,
+                        Theme.withAlpha(colorProvider != null ? optColor : Theme.ACCENT, open));
             } else {
                 graphics.drawString(Minecraft.getInstance().font, option, x + 10, optY + (OPTION_HEIGHT - 8) / 2,
-                        optColor);
+                        Theme.withAlpha(optColor, open));
             }
         }
 
@@ -220,7 +233,7 @@ public class Dropdown extends Widget {
             double progress = menuScrollOffset / (totalHeight - menuHeight);
             int scrollBarY = (int) (menuY + progress * (menuHeight - scrollBarHeight));
             graphics.fill(scrollBarX, scrollBarY, scrollBarX + scrollBarWidth, scrollBarY + scrollBarHeight,
-                    0x88FFFFFF);
+                    Theme.withAlpha(Theme.TEXT_PRIMARY, 0.35f * open));
         }
     }
 
@@ -230,7 +243,7 @@ public class Dropdown extends Widget {
             return false;
 
         if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
-            expanded = !expanded;
+            setExpanded(!expanded);
             if (expanded && onExpand != null) {
                 onExpand.run();
             }
@@ -252,7 +265,7 @@ public class Dropdown extends Widget {
                     if (onSelect != null) {
                         onSelect.accept(options.get(clickedIndex));
                     }
-                    expanded = false;
+                    setExpanded(false);
                     Minecraft.getInstance().getSoundManager()
                             .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                     return true;
@@ -261,7 +274,7 @@ public class Dropdown extends Widget {
         }
 
         if (expanded) {
-            expanded = false;
+            setExpanded(false);
         }
 
         return false;
@@ -303,28 +316,37 @@ public class Dropdown extends Widget {
     public void setFocused(boolean focused) {
         super.setFocused(focused);
         if (!focused) {
-            expanded = false;
+            setExpanded(false);
+        }
+    }
+
+    @Override
+    public void updateHoverState(int mouseX, int mouseY) {
+        super.updateHoverState(mouseX, mouseY);
+        if (hoverTarget != hovered) {
+            hoverTarget = hovered;
+            hoverAnimation = new Animation(hoverAnimation.getValue(), hovered ? 1 : 0, Theme.ANIM_HOVER, Easing::easeOut);
+            hoverAnimation.start();
         }
     }
 
     @Override
     public void tick() {
-        if (isMouseOver(
-                Minecraft.getInstance().mouseHandler.xpos()
-                        * ((double) Minecraft.getInstance().getWindow().getGuiScaledWidth()
-                                / Minecraft.getInstance().getWindow().getScreenWidth()),
-                Minecraft.getInstance().mouseHandler.ypos()
-                        * ((double) Minecraft.getInstance().getWindow().getGuiScaledHeight()
-                                / Minecraft.getInstance().getWindow().getScreenHeight()))) {
-            if (hoverAnimation.getValue() < 1) {
-                hoverAnimation = new Animation(hoverAnimation.getValue(), 1, Theme.ANIM_HOVER, Easing::easeOut);
-                hoverAnimation.start();
-            }
-        } else {
-            if (hoverAnimation.getValue() > 0) {
-                hoverAnimation = new Animation(hoverAnimation.getValue(), 0, Theme.ANIM_HOVER, Easing::easeOut);
-                hoverAnimation.start();
-            }
+        hoverAnimation.getValue();
+        expandAnimation.getValue();
+    }
+
+    private void setExpanded(boolean expanded) {
+        if (this.expanded == expanded) {
+            return;
         }
+        this.expanded = expanded;
+        java.util.function.Function<Float, Float> easing = expanded ? Easing::easeOutCubic : Easing::easeOut;
+        expandAnimation = new Animation(expandAnimation.getValue(), expanded ? 1 : 0, Theme.ANIM_NORMAL, easing);
+        expandAnimation.start();
+    }
+
+    private static float clamp01(float value) {
+        return Math.max(0.0f, Math.min(1.0f, value));
     }
 }

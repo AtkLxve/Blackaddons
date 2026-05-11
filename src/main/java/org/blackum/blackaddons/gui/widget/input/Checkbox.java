@@ -33,7 +33,7 @@ public class Checkbox extends Widget {
         this.label = label;
         this.checked = initialState;
         this.onToggle = onToggle;
-        this.checkAnimation = new Animation(initialState ? 1 : 0, initialState ? 1 : 0, Theme.ANIM_CLICK,
+        this.checkAnimation = new Animation(initialState ? 1 : 0, initialState ? 1 : 0, Theme.ANIM_NORMAL,
                 Easing::easeOutBack);
         this.hoverAnimation = new Animation(0, 1, Theme.ANIM_HOVER, Easing::easeOut);
     }
@@ -43,15 +43,15 @@ public class Checkbox extends Widget {
         if (!visible)
             return;
 
-        float checkProgress = checkAnimation.getValue();
+        float checkProgress = Math.max(0.0f, Math.min(1.0f, checkAnimation.getValue()));
         float hoverProgress = hoverAnimation.getValue();
 
         RenderHelper.renderSurface(graphics, x, y, height, height,
                 Theme.BORDER_RADIUS_SMALL, checked);
 
         if (checkProgress > 0) {
-            int checkColor = Theme.withAlpha(Theme.ACCENT, checkProgress * 0.8f);
-            int padding = height / 5;
+            int checkColor = Theme.withAlpha(Theme.ACCENT, 0.25f + checkProgress * 0.65f);
+            int padding = 3;
             int checkSize = (int) ((height - padding * 2) * checkProgress);
             int checkX = x + padding + (height - padding * 2 - checkSize) / 2;
             int checkY = y + padding + (height - padding * 2 - checkSize) / 2;
@@ -67,7 +67,8 @@ public class Checkbox extends Widget {
         if (!label.isEmpty()) {
             int labelX = x + height + 8;
             int labelY = y + (height - 8) / 2;
-            int labelColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
+            int baseColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
+            int labelColor = Theme.lerpColor(baseColor, Theme.ACCENT, Math.max(checkProgress, hoverProgress * 0.35f));
             graphics.drawString(Minecraft.getInstance().font, label, labelX, labelY, labelColor);
         }
     }
@@ -99,7 +100,7 @@ public class Checkbox extends Widget {
 
     private void toggle() {
         checked = !checked;
-        checkAnimation = new Animation(checkAnimation.getValue(), checked ? 1 : 0, Theme.ANIM_CLICK,
+        checkAnimation = new Animation(checkAnimation.getValue(), checked ? 1 : 0, Theme.ANIM_NORMAL,
                 Easing::easeOutBack);
         checkAnimation.start();
 

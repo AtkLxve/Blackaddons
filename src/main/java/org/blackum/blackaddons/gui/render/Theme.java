@@ -91,7 +91,8 @@ public class Theme {
     public static final int CARD_SPACING = 20;
 
     public static int withAlpha(int rgb, float alpha) {
-        int a = (int) (alpha * 255) << 24;
+        float clampedAlpha = Math.max(0.0f, Math.min(1.0f, alpha));
+        int a = (int) (clampedAlpha * 255) << 24;
         return a | (rgb & 0x00FFFFFF);
     }
 
@@ -108,6 +109,6 @@ public class Theme {
         int g = (int) (ag + (bg - ag) * t);
         int b = (int) (ab + (bb - ab) * t);
 
-        return (r << 16) | (g << 8) | b;
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 }

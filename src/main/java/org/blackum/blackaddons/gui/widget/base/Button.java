@@ -54,20 +54,21 @@ public class Button extends Widget {
 
         float hoverProgress = hoverAnimation.getValue();
         float pressProgress = pressAnimation.getValue();
+        int pressOffset = Math.round(pressProgress * 2.0f);
 
-        RenderHelper.renderSurface(graphics, x, y, width, height,
+        RenderHelper.renderSurface(graphics, x, y + pressOffset, width, height,
                 Theme.BORDER_RADIUS, pressed || pressProgress > 0);
 
         if (hoverProgress > 0) {
             int highlightColor = Theme.withAlpha(Theme.GLASS_HIGHLIGHT, hoverProgress * 0.4f);
-            RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS, highlightColor);
+            RenderHelper.renderRoundedRect(graphics, x, y + pressOffset, width, height, Theme.BORDER_RADIUS, highlightColor);
         }
 
         int textColor = customTextColor != null ? customTextColor
                 : (enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY);
         int textWidth = Minecraft.getInstance().font.width(text);
         int textX = x + (width - textWidth) / 2;
-        int textY = y + (height - 8) / 2;
+        int textY = y + pressOffset + (height - 8) / 2;
         graphics.drawString(Minecraft.getInstance().font, text, textX, textY, textColor);
     }
 
