@@ -170,7 +170,7 @@ public class ProfileViewerScreen extends BaseScreen {
             }
         }
 
-        tabPanel.selectTab(lastTabIndex);
+        tabPanel.selectTabInstant(lastTabIndex);
         triggerTabSelection(lastTabIndex);
     }
 

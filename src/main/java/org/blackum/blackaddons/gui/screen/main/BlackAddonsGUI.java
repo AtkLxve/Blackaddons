@@ -130,7 +130,7 @@ public class BlackAddonsGUI extends BaseScreen {
         configsController.init(tabPanel.addTab("Configs"));
         aboutController.init(tabPanel.addTab("About"));
 
-        tabPanel.selectTab(lastTabIndex);
+        tabPanel.selectTabInstant(lastTabIndex);
         widgets.add(tabPanel);
     }
 

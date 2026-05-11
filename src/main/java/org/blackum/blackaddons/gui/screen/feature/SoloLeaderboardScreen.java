@@ -89,7 +89,7 @@ public class SoloLeaderboardScreen extends BaseScreen {
         int startIndex = FLOORS.indexOf(selectedFloor);
         if (startIndex < 0)
             startIndex = 0;
-        floorTabs.selectTab(startIndex);
+        floorTabs.selectTabInstant(startIndex);
 
         widgets.add(floorTabs);
         refreshLeaderboard();

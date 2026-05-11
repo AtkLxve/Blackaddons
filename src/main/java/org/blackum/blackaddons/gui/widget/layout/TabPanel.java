@@ -330,12 +330,24 @@ public class TabPanel extends Widget {
     }
 
     public void selectTab(int index) {
+        selectTab(index, true);
+    }
+
+    public void selectTabInstant(int index) {
+        selectTab(index, false);
+    }
+
+    private void selectTab(int index, boolean animate) {
         if (index >= 0 && index < tabs.size() && index != selectedTabIndex) {
             selectedTabIndex = index;
 
-            selectionAnimation = new Animation(selectionAnimation.getValue(), (float) index, Theme.ANIM_NORMAL,
-                    Easing::easeOut);
-            selectionAnimation.start();
+            if (animate) {
+                selectionAnimation = new Animation(selectionAnimation.getValue(), (float) index, Theme.ANIM_NORMAL,
+                        Easing::easeOut);
+                selectionAnimation.start();
+            } else {
+                selectionAnimation = new Animation(index, index, Theme.ANIM_NORMAL, Easing::easeOut);
+            }
 
             if (onTabChange != null) {
                 onTabChange.accept(index);
