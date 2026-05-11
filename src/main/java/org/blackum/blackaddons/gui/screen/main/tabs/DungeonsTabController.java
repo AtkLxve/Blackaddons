@@ -99,7 +99,7 @@ public class DungeonsTabController extends ProfileTabController {
         int magicalPower = JsonUtils.getInt(maxwell, "highest_magical_power");
 
         final int finalTotalRuns = totalRuns;
-        int effectiveW = w - 8;
+        int effectiveW = w - 16;
 
         addSectionHeader(list, "General Stats");
 
