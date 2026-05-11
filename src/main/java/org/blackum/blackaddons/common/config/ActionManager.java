@@ -30,15 +30,20 @@ public class ActionManager {
 
     public void resetToDefaults() {
         chatActions.clear();
-        chatActions.add(new ConfigManager.ChatAction(
-                "(?s).*?(?:\\[.*?\\] )?([A-Za-z0-9_]+) has invited you to join their party!.*You have 60 seconds to accept.*",
-                true,
-                "entity.cat.ambient", 1.0f, 1.0f, true, "&cParty Invite!", "&6From: &e{1}", 2.0f));
-        chatActions.add(new ConfigManager.ChatAction(
-                "Party Finder > ([A-Za-z0-9_]+) joined the dungeon group! \\((.*)\\)", 
-                true,
-                "entity.experience_orb.pickup",
-                1.0f, 1.0f, true, "&a{1} Joined!", "&7Class: &b{2}", 3.0f));
+        chatActions.addAll(createDefaultChatActions());
+    }
+
+    private static List<ConfigManager.ChatAction> createDefaultChatActions() {
+        return List.of(
+                new ConfigManager.ChatAction(
+                        "(?s).*?(?:\\[.*?\\] )?([A-Za-z0-9_]+) has invited you to join their party!.*You have 60 seconds to accept.*",
+                        true,
+                        "entity.cat.ambient", 1.0f, 1.0f, true, "&cParty Invite!", "&6From: &e{1}", 2.0f),
+                new ConfigManager.ChatAction(
+                        "Party Finder > ([A-Za-z0-9_]+) joined the dungeon group! \\((.*)\\)",
+                        true,
+                        "entity.experience_orb.pickup",
+                        1.0f, 1.0f, true, "&a{1} Joined!", "&7Class: &b{2}", 3.0f));
     }
 
     private ActionManager() {

@@ -26,6 +26,7 @@ public class ListView extends Widget {
     }
 
     private void syncItemCoordinates() {
+        updateMaxScroll();
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible()) {
@@ -45,6 +46,7 @@ public class ListView extends Widget {
     public void updateHoverState(int mouseX, int mouseY) {
         super.updateHoverState(mouseX, mouseY);
 
+        updateMaxScroll();
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible()) {
@@ -69,6 +71,7 @@ public class ListView extends Widget {
         if (!visible)
             return;
 
+        updateMaxScroll();
         graphics.enableScissor(x, y, x + width, y + height);
         int currentY = y - scrollOffset;
         for (Widget item : items) {
@@ -93,6 +96,7 @@ public class ListView extends Widget {
         if (!visible || !(super.isMouseOver(mouseX, mouseY) || hasActiveOverlay()))
             return;
 
+        updateMaxScroll();
         int currentY = y - scrollOffset;
         for (Widget item : items) {
             if (item.isVisible()) {
@@ -310,6 +314,7 @@ public class ListView extends Widget {
             totalHeight += 5;
         }
         maxScroll = Math.max(0, totalHeight - height);
+        scrollOffset = Math.max(0, Math.min(maxScroll, scrollOffset));
     }
 
     public void addItem(Widget widget) {

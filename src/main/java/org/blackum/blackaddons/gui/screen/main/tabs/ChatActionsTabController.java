@@ -292,10 +292,20 @@ public class ChatActionsTabController extends SimpleTabController {
                             .add(new ConfigManager.ChatAction("", true, "entity.experience_orb.pickup", 1.0f, 1.0f,
                                     true, "",
                                     "", 2.0f));
-                    ConfigManager.save();
+                    ActionManager.getInstance().save();
+                    lastScrollOffset = 0;
                     screen.init();
                 });
         listView.addItem(addBtn);
+
+        Button resetBtn = new Button(0, 0, itemWidth, Theme.BUTTON_HEIGHT, "Reset to Default Actions",
+                () -> {
+                    ActionManager.getInstance().resetToDefaults();
+                    ActionManager.getInstance().save();
+                    lastScrollOffset = 0;
+                    screen.init();
+                });
+        listView.addItem(resetBtn);
     }
 
     public void onSelected() {
