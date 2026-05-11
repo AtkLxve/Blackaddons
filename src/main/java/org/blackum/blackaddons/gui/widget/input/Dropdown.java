@@ -197,7 +197,7 @@ public class Dropdown extends Widget {
 
         for (int i = 0; i < options.size(); i++) {
             String option = options.get(i);
-            int optY = menuY + (i * OPTION_HEIGHT);
+            int optY = menuY + (i * OPTION_HEIGHT) + (shouldOpenUpward() ? 0 : -(getMenuHeight() - menuHeight));
 
             boolean isOptHovered = mouseX >= x && mouseX <= x + width && mouseY >= optY + scrollOffset - menuScrollOffset
                     && mouseY < optY + scrollOffset + OPTION_HEIGHT - menuScrollOffset;

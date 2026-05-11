@@ -71,6 +71,24 @@ public class ToggleSwitch extends Widget {
     }
 
     @Override
+    public void setX(int x) {
+        super.setX(x);
+        updateHeight();
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        updateHeight();
+    }
+
+    @Override
+    public void setWidth(int width) {
+        super.setWidth(width);
+        updateHeight();
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
@@ -83,7 +101,7 @@ public class ToggleSwitch extends Widget {
             int expandY = y + (SWITCH_HEIGHT - EXPAND_ICON_SIZE) / 2;
             int expandColor = Theme.withAlpha(Theme.TEXT_SECONDARY, 0.6f);
 
-            graphics.drawString(Minecraft.getInstance().font, expandAnimation.getValue() > 0.5f ? "▼" : "▶", expandX, expandY, expandColor);
+            graphics.drawString(Minecraft.getInstance().font, expanded ? "▼" : "▶", expandX, expandY, expandColor);
         }
 
         renderSwitch(graphics, mouseX, mouseY);
@@ -104,10 +122,8 @@ public class ToggleSwitch extends Widget {
         }
 
         int descY = y + SWITCH_HEIGHT + 5;
-        int visibleDescHeight = Math.max(1, (int) (descriptionHeight * expandProgress));
         int descColor = Theme.withAlpha(Theme.TEXT_SECONDARY, expandProgress);
 
-        graphics.enableScissor(x, descY, x + width, descY + visibleDescHeight);
         String[] words = description.split(" ");
         StringBuilder line = new StringBuilder();
 
@@ -122,7 +138,6 @@ public class ToggleSwitch extends Widget {
         if (!line.isEmpty()) {
             graphics.drawString(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
         }
-        graphics.disableScissor();
     }
 
     private void renderSwitch(GuiGraphics graphics, int mouseX, int mouseY) {

@@ -44,16 +44,22 @@ public class ExpandableGroup extends Widget {
             return;
         }
 
-        int currentY = y + header.getHeight() + 4;
+        int childrenHeight = 0;
+        for (Widget child : children) {
+            childrenHeight += child.getHeight() + 4;
+        }
+
+        int animatedChildrenHeight = (int) (childrenHeight * expandAnimation.getValue());
+        this.height = header.getHeight() + 4 + animatedChildrenHeight;
+
+        int slideOffset = childrenHeight - animatedChildrenHeight;
+        int currentY = y + header.getHeight() + 4 - slideOffset;
+
         for (Widget child : children) {
             child.setX(x);
             child.setY(currentY);
             currentY += child.getHeight() + 4;
         }
-
-        int childrenHeight = currentY - (y + header.getHeight() + 4);
-        int animatedChildrenHeight = (int) (childrenHeight * expandAnimation.getValue());
-        this.height = header.getHeight() + 4 + animatedChildrenHeight;
     }
 
     public void setExpanded(boolean expanded) {

@@ -37,6 +37,7 @@ public class ResizableCard extends Card {
     private int expandedHeight;
     private Animation hoverAnimation;
     private Animation activeAnimation;
+    private Animation expandAnimation;
 
     private int minX = Integer.MIN_VALUE;
     private int minY = Integer.MIN_VALUE;
@@ -59,6 +60,7 @@ public class ResizableCard extends Card {
         this.expandedHeight = height;
         this.hoverAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
         this.activeAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
+        this.expandAnimation = new Animation(collapsed ? 0 : 1, collapsed ? 0 : 1, Theme.ANIM_NORMAL, Easing::easeOut);
 
         if (collapsed) {
             float scale = (float) width / initialWidth;
@@ -71,16 +73,17 @@ public class ResizableCard extends Card {
     }
 
     public void setCollapsed(boolean collapsed) {
-        if (this.collapsed == collapsed)
-            return;
+        if (this.collapsed == collapsed) return;
         this.collapsed = collapsed;
+        
         if (collapsed) {
             this.expandedHeight = this.height;
-            float scale = (float) width / initialWidth;
-            this.height = (int) (TITLE_BAR_HEIGHT * scale);
         } else {
-            updateLayout();
+            pack();
         }
+        
+        expandAnimation = new Animation(expandAnimation == null ? (collapsed ? 1 : 0) : expandAnimation.getValue(), collapsed ? 0 : 1, Theme.ANIM_NORMAL, Easing::easeOut);
+        expandAnimation.start();
     }
 
     public void setDragBounds(int minX, int minY, int maxX, int maxY) {
@@ -88,6 +91,24 @@ public class ResizableCard extends Card {
         this.minY = minY;
         this.maxX = maxX;
         this.maxY = maxY;
+    }
+
+    @Override
+    public void setX(int x) {
+        super.setX(x);
+        updateLayout();
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        updateLayout();
+    }
+
+    @Override
+    public void setWidth(int width) {
+        super.setWidth(width);
+        updateLayout();
     }
 
     @Override
@@ -117,13 +138,15 @@ public class ResizableCard extends Card {
         if (!visible)
             return;
 
+        int currentHeight = getHeight();
+
         float hover = hoverAnimation.getValue();
         float active = activeAnimation.getValue();
-        RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS, false);
+        RenderHelper.renderSurface(graphics, x, y, width, currentHeight, Theme.BORDER_RADIUS, false);
         if (hover > 0 || active > 0) {
-            RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS,
+            RenderHelper.renderRoundedRect(graphics, x, y, width, currentHeight, Theme.BORDER_RADIUS,
                     Theme.withAlpha(0xFF000000, hover * 0.12f + active * 0.20f));
-            RenderHelper.renderRoundedOutline(graphics, x, y, width, height, Theme.BORDER_RADIUS,
+            RenderHelper.renderRoundedOutline(graphics, x, y, width, currentHeight, Theme.BORDER_RADIUS,
                     Theme.withAlpha(Theme.ACCENT, hover * 0.28f + active * 0.55f));
         }
 
@@ -150,12 +173,29 @@ public class ResizableCard extends Card {
                     arrow, x + initialWidth - getPadding() - arrowWidth, y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
         }
 
-        if (!collapsed) {
+        if (!collapsed || (expandAnimation != null && expandAnimation.getValue() > 0)) {
+            boolean scissored = expandAnimation != null && expandAnimation.getValue() < 1.0f;
+            if (scissored) {
+                graphics.enableScissor(x, y + (int)(TITLE_BAR_HEIGHT * scale), x + width, y + currentHeight);
+            }
+
+            int logicalMinHeight = TITLE_BAR_HEIGHT;
+            int logicalExpandedHeight = (int) (expandedHeight / scale);
+            float animValue = expandAnimation != null ? expandAnimation.getValue() : 1.0f;
+            int slideOffset = (int) ((logicalExpandedHeight - logicalMinHeight) * (1 - animValue));
+
             for (Widget child : getChildren()) {
                 if (child.isVisible()) {
+                    int originalY = child.getY();
+                    child.setY(originalY - slideOffset);
                     child.render(graphics, (int) ((mouseX - x) / scale + x),
                             (int) ((mouseY - y) / scale + y), partialTick);
+                    child.setY(originalY);
                 }
+            }
+
+            if (scissored) {
+                graphics.disableScissor();
             }
         }
 
@@ -163,15 +203,15 @@ public class ResizableCard extends Card {
 
         if (resizing || (!collapsed && isOverResizeHandle(mouseX, mouseY) != ResizeHandle.NONE)) {
             int handleColor = resizing ? Theme.ACCENT : Theme.withAlpha(Theme.ACCENT, 0.5f);
-            graphics.fill(x + width - RESIZE_HANDLE_SIZE, y + height - RESIZE_HANDLE_SIZE,
-                    x + width, y + height, handleColor);
+            graphics.fill(x + width - RESIZE_HANDLE_SIZE, y + currentHeight - RESIZE_HANDLE_SIZE,
+                    x + width, y + currentHeight, handleColor);
         }
     }
 
     @Override
     public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
-        if (!visible || collapsed)
+        if (!visible || (collapsed && (expandAnimation == null || expandAnimation.getValue() <= 0)))
             return;
 
         float scale = (float) width / initialWidth;
@@ -186,9 +226,17 @@ public class ResizableCard extends Card {
         int scaledRawMouseX = (int) ((rawMouseX - x) / scale + x);
         int scaledRawMouseY = (int) ((rawMouseY - y) / scale + y);
 
+        float animValue = expandAnimation != null ? expandAnimation.getValue() : 1.0f;
+        int logicalMinHeight = TITLE_BAR_HEIGHT;
+        int logicalExpandedHeight = (int) (expandedHeight / scale);
+        int slideOffset = (int) ((logicalExpandedHeight - logicalMinHeight) * (1 - animValue));
+
         for (Widget child : getChildren()) {
             if (child.isVisible()) {
+                int originalY = child.getY();
+                child.setY(originalY - slideOffset);
                 child.renderOverlay(graphics, scaledMouseX, scaledMouseY, scaledRawMouseX, scaledRawMouseY, partialTick);
+                child.setY(originalY);
             }
         }
 
@@ -196,11 +244,22 @@ public class ResizableCard extends Card {
     }
 
     @Override
+    public int getHeight() {
+        if (expandAnimation == null) {
+            return height;
+        }
+        float scale = (float) width / initialWidth;
+        int minHeight = (int) (TITLE_BAR_HEIGHT * scale);
+        return (int) (minHeight + (expandedHeight - minHeight) * expandAnimation.getValue());
+    }
+
+    @Override
     public void tick() {
         super.tick();
         updateAnimationTarget(hoverAnimation, hovered || dragging || resizing, false);
         updateAnimationTarget(activeAnimation, dragging || resizing, true);
-        if (!collapsed) {
+
+        if (!collapsed || (expandAnimation != null && expandAnimation.getValue() > 0)) {
             updateLayout();
         }
     }
@@ -502,18 +561,6 @@ public class ResizableCard extends Card {
         }
 
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
-    }
-
-    @Override
-    public void setX(int x) {
-        super.setX(x);
-        updateLayout();
-    }
-
-    @Override
-    public void setY(int y) {
-        super.setY(y);
-        updateLayout();
     }
 
     public int getExpandedHeight() {
