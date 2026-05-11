@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExpandableGroup extends Widget {
-    private final SectionHeader header;
+    private final Widget header;
     private final List<Widget> children = new ArrayList<>();
     private Animation expandAnimation;
     private boolean expanded;
 
-    public ExpandableGroup(int x, int y, int width, SectionHeader header, boolean expanded) {
+    public ExpandableGroup(int x, int y, int width, Widget header, boolean expanded) {
         super(x, y, width, header.getHeight());
         this.header = header;
         this.expanded = expanded;
@@ -40,18 +40,18 @@ public class ExpandableGroup extends Widget {
         if (!expanded && expandAnimation.getValue() == 0) {
             header.setX(x);
             header.setY(y);
-            this.height = header.getHeight();
             return;
         }
 
         int childrenHeight = 0;
         for (Widget child : children) {
-            childrenHeight += child.getHeight() + 4;
+            if (child.isVisible()) {
+                childrenHeight += child.getHeight() + 4;
+            }
         }
 
         int animatedChildrenHeight = (int) (childrenHeight * expandAnimation.getValue());
-        this.height = header.getHeight() + 4 + animatedChildrenHeight;
-
+        this.height = header.getHeight() + (animatedChildrenHeight > 0 ? 4 + animatedChildrenHeight : 0);
         int slideOffset = childrenHeight - animatedChildrenHeight;
         int currentY = y + header.getHeight() + 4 - slideOffset;
 
@@ -73,6 +73,14 @@ public class ExpandableGroup extends Widget {
 
     public boolean isExpanded() {
         return expanded;
+    }
+
+    public Widget getHeader() {
+        return header;
+    }
+
+    public List<Widget> getChildren() {
+        return children;
     }
 
     @Override
@@ -100,6 +108,21 @@ public class ExpandableGroup extends Widget {
     }
 
     @Override
+    public int getHeight() {
+        if (!expanded && expandAnimation.getValue() == 0) {
+            return header.getHeight();
+        }
+        int childrenHeight = 0;
+        for (Widget child : children) {
+            if (child.isVisible()) {
+                childrenHeight += child.getHeight() + 4;
+            }
+        }
+        int animatedChildrenHeight = (int) (childrenHeight * expandAnimation.getValue());
+        return header.getHeight() + 4 + animatedChildrenHeight;
+    }
+
+    @Override
     public void tick() {
         header.tick();
         if (expanded || expandAnimation.getValue() > 0) {
@@ -114,13 +137,14 @@ public class ExpandableGroup extends Widget {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
-
+        
+        int currentHeight = getHeight();
         header.render(graphics, mouseX, mouseY, partialTick);
 
         if (expandAnimation.getValue() > 0) {
             boolean scissored = false;
             if (expandAnimation.getValue() < 1.0f) {
-                graphics.enableScissor(x, y + header.getHeight(), x + width, y + height);
+                graphics.enableScissor(x, y + header.getHeight(), x + width, y + currentHeight);
                 scissored = true;
             }
 
@@ -137,11 +161,15 @@ public class ExpandableGroup extends Widget {
     @Override
     public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
-        if (!visible || expandAnimation.getValue() == 0)
+        if (!visible)
             return;
 
-        for (Widget child : children) {
-            child.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
+        header.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
+
+        if (expandAnimation.getValue() > 0) {
+            for (Widget child : children) {
+                child.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
+            }
         }
     }
 

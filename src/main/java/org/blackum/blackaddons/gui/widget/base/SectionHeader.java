@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
+import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
 
 public class SectionHeader extends Widget {
@@ -38,12 +39,17 @@ public class SectionHeader extends Widget {
             return;
 
         float hover = hoverAnimation.getValue();
+        if (hover > 0) {
+            RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL,
+                    Theme.withAlpha(0xFF000000, hover * 0.15f));
+        }
+
         int currentX = x;
         if (onToggle != null) {
             String arrow = collapsed ? "▶ " : "▼ ";
             int arrowColor = Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.ACCENT, hover);
-            graphics.drawString(Minecraft.getInstance().font, arrow, currentX + Math.round(hover * 2.0f), y + 8, arrowColor);
-            currentX += 12;
+            graphics.drawString(Minecraft.getInstance().font, arrow, currentX + 6, y + 8, arrowColor);
+            currentX += 16;
         }
 
         if (bulkCheckbox != null) {
@@ -53,7 +59,8 @@ public class SectionHeader extends Widget {
             currentX += bulkCheckbox.getWidth() + 8;
         }
 
-        graphics.drawString(Minecraft.getInstance().font, title, currentX + Math.round(hover * 2.0f), y + 8, Theme.ACCENT);
+        graphics.drawString(Minecraft.getInstance().font, title, currentX + Math.round(hover * 2.0f), y + 8,
+                Theme.ACCENT);
 
         int titleWidth = Minecraft.getInstance().font.width(title);
         int lineX = currentX + titleWidth + 10 + Math.round(hover * 2.0f);
@@ -92,11 +99,12 @@ public class SectionHeader extends Widget {
 
     @Override
     public void tick() {
-        if (hovered && hoverAnimation.getProgress() < 1
+        boolean canHover = onToggle != null;
+        if (canHover && hovered && hoverAnimation.getProgress() < 1
                 && (!hoverAnimation.isRunning() || hoverAnimation.getValue() < 1)) {
             hoverAnimation = new Animation(hoverAnimation.getValue(), 1, Theme.ANIM_HOVER, Easing::easeOut);
             hoverAnimation.start();
-        } else if (!hovered && hoverAnimation.getProgress() > 0
+        } else if ((!canHover || !hovered) && hoverAnimation.getProgress() > 0
                 && (!hoverAnimation.isRunning() || hoverAnimation.getValue() > 0)) {
             hoverAnimation = new Animation(hoverAnimation.getValue(), 0, Theme.ANIM_HOVER, Easing::easeOut);
             hoverAnimation.start();

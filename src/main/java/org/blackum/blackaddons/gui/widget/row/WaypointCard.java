@@ -13,6 +13,8 @@ import org.blackum.blackaddons.feature.waypoint.Waypoint;
 import org.blackum.blackaddons.feature.waypoint.WaypointDragState;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
+import org.blackum.blackaddons.gui.animation.Animation;
+import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
@@ -48,6 +50,7 @@ public class WaypointCard extends Widget {
     private boolean handlePressed = false;
     private double handlePressX = 0;
     private double handlePressY = 0;
+    private Animation hoverAnimation;
 
     private final ToggleSwitch enabledToggle;
     private final Button editBtn;
@@ -60,6 +63,7 @@ public class WaypointCard extends Widget {
         this.waypoint = waypoint;
         this.screen = screen;
         this.onChanged = onChanged;
+        this.hoverAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
 
         enabledToggle = new ToggleSwitch(0, 0, 50, "", "", waypoint.enabled, val -> {
             waypoint.enabled = val;
@@ -170,6 +174,13 @@ public class WaypointCard extends Widget {
             RenderHelper.renderRoundedOutline(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, Theme.withAlpha(Theme.ACCENT, 0.3f));
         } else {
             RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, false);
+            
+            float hover = hoverAnimation.getValue();
+            if (hover > 0) {
+                RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL,
+                        Theme.withAlpha(0xFF000000, hover * 0.15f));
+            }
+            
             renderContents(graphics, x, y, width, height, mouseX, mouseY, partialTick, false);
         }
 
@@ -273,6 +284,15 @@ public class WaypointCard extends Widget {
 
     @Override
     public void tick() {
+        if (hovered && hoverAnimation.getProgress() < 1
+                && (!hoverAnimation.isRunning() || hoverAnimation.getValue() < 1)) {
+            hoverAnimation = new Animation(hoverAnimation.getValue(), 1, Theme.ANIM_HOVER, Easing::easeOut);
+            hoverAnimation.start();
+        } else if (!hovered && hoverAnimation.getProgress() > 0
+                && (!hoverAnimation.isRunning() || hoverAnimation.getValue() > 0)) {
+            hoverAnimation = new Animation(hoverAnimation.getValue(), 0, Theme.ANIM_HOVER, Easing::easeOut);
+            hoverAnimation.start();
+        }
         for (Widget child : children) child.tick();
     }
 
