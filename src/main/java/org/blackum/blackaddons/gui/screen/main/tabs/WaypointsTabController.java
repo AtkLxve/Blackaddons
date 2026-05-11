@@ -62,7 +62,7 @@ public class WaypointsTabController extends SimpleTabController {
 
         rebuildList();
     }
-    
+
     private void updateDragPreview(double mouseY) {
         List<Widget> items = waypointList.getItems();
         Widget draggedWidget = null;

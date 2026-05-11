@@ -116,7 +116,8 @@ public class SoloClearsTracker {
                 }
             }
 
-            ConfigManager.SoloClearInfo info = new ConfigManager.SoloClearInfo(floorName, time, stats.secretsFound, stats.completedPuzzles, princeDefeated, mimicKilled);
+            final com.google.gson.JsonObject mapData = DungeonMapSerializer.serialize();
+            ConfigManager.SoloClearInfo info = new ConfigManager.SoloClearInfo(floorName, time, stats.secretsFound, stats.completedPuzzles, princeDefeated, mimicKilled, mapData);
             if (floorName.equals("M7")) {
                 ConfigManager.data.m7SoloClears.add(info);
             } else {
@@ -156,7 +157,6 @@ public class SoloClearsTracker {
                     final long clearClock = System.currentTimeMillis();
                     final String serverId = MojangAuthService.generateServerId();
                     final String playerUuid = mc.getUser().getProfileId().toString();
-                    final JsonObject mapData = DungeonMapSerializer.serialize();
 
                     MojangAuthService.joinServer(serverId)
                             .thenCompose(ok -> {

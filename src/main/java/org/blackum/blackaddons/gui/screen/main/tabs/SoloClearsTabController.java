@@ -1,32 +1,23 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
 
-import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
-import org.blackum.blackaddons.gui.screen.feature.WaypointEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointGroupEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.ChatActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.IrcScreen;
-import org.blackum.blackaddons.gui.screen.feature.ImagePreviewScreen;
-import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyFinderScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
-import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
-import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
-import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
-import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.common.config.ConfigManager.SoloClearInfo;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.widget.base.*;
-import org.blackum.blackaddons.gui.widget.input.*;
-import org.blackum.blackaddons.gui.widget.layout.*;
-import org.blackum.blackaddons.gui.widget.row.*;
-import org.blackum.blackaddons.gui.widget.editor.*;
 import net.minecraft.ChatFormatting;
 
 import java.util.List;
+
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.config.ConfigManager.SoloClearInfo;
+import org.blackum.blackaddons.gui.render.Theme;
+import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
+import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
+import org.blackum.blackaddons.gui.screen.feature.*;
+import org.blackum.blackaddons.gui.screen.main.BaseScreen;
+import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
+import org.blackum.blackaddons.gui.widget.base.*;
+import org.blackum.blackaddons.gui.widget.editor.*;
+import org.blackum.blackaddons.gui.widget.input.*;
+import org.blackum.blackaddons.gui.widget.layout.*;
+import org.blackum.blackaddons.gui.widget.row.*;
 
 public class SoloClearsTabController extends SimpleTabController {
     private String selectedFloor = "F7";
@@ -36,8 +27,8 @@ public class SoloClearsTabController extends SimpleTabController {
         super(screen);
     }
 
-    private Label bestTimeLabel;
-    private Label ao5Label;
+    private StatBox bestTimeBox;
+    private StatBox ao5Box;
 
     @Override
     public void init(TabPanel.Tab tab) {
@@ -45,14 +36,14 @@ public class SoloClearsTabController extends SimpleTabController {
         int contentY = tab.getParent().getContentY() + 20;
         int contentWidth = tab.getParent().getContentWidth() - 40;
 
-        Dropdown floorDropdown = new Dropdown(contentX, contentY, 100, "Floor", List.of("F7", "M7"), value -> {
+        Dropdown floorDropdown = new Dropdown(contentX, contentY, 120, Theme.BUTTON_HEIGHT, "Floor", List.of("F7", "M7"), value -> {
             selectedFloor = value;
             rebuildList();
         });
         floorDropdown.setSelectedOption(selectedFloor);
         tab.addWidget(floorDropdown);
 
-        Button clearButton = new Button(contentX + 110, contentY, 100, 20, "Clear Data", () -> {
+        Button clearButton = new Button(contentX + 130, contentY, 120, Theme.BUTTON_HEIGHT, "Clear Data", () -> {
             if ("F7".equals(selectedFloor)) {
                 ConfigManager.data.f7SoloClears.clear();
             } else {
@@ -63,13 +54,15 @@ public class SoloClearsTabController extends SimpleTabController {
         });
         tab.addWidget(clearButton);
 
-        bestTimeLabel = new Label(contentX, contentY + 40, "Best Time: None", Label.Style.BODY);
-        tab.addWidget(bestTimeLabel);
+        int statsY = contentY + 45;
+        int boxWidth = (contentWidth - 20) / 2;
+        bestTimeBox = new StatBox(contentX, statsY, boxWidth, "Best Time", "None");
+        tab.addWidget(bestTimeBox);
 
-        ao5Label = new Label(contentX + 150, contentY + 40, "Ao5: None", Label.Style.BODY);
-        tab.addWidget(ao5Label);
+        ao5Box = new StatBox(contentX + boxWidth + 20, statsY, boxWidth, "Average of 5", "None");
+        tab.addWidget(ao5Box);
 
-        clearsList = new ListView(contentX, contentY + 60, contentWidth, 380);
+        clearsList = new ListView(contentX, statsY + 60, contentWidth, tab.getParent().getContentHeight() - (statsY + 60 - tab.getParent().getContentY()) - 20);
         tab.addWidget(clearsList);
 
         rebuildList();
@@ -131,39 +124,17 @@ public class SoloClearsTabController extends SimpleTabController {
         String bestTimeStr = bestSeconds == Integer.MAX_VALUE ? "None" : formatSecondsToTime(bestSeconds);
         String ao5Str = countLast5 == 0 ? "None" : formatSecondsToTime(sumLast5 / countLast5);
 
-        if (bestTimeLabel != null) bestTimeLabel.setText("Best Time: §a" + bestTimeStr);
-        if (ao5Label != null) ao5Label.setText("Ao5: §e" + ao5Str);
+        if (bestTimeBox != null) bestTimeBox.setValue(bestTimeStr);
+        if (ao5Box != null) ao5Box.setValue(ao5Str);
 
         if (clears.isEmpty()) {
             clearsList.addItem(new Label(0, 0, ChatFormatting.GRAY + "No " + selectedFloor + " clears recorded yet.", Label.Style.BODY));
             return;
         }
 
-        int startIdx = Math.max(0, clears.size() - 10);
+        int startIdx = Math.max(0, clears.size() - 20);
         for (int i = clears.size() - 1; i >= startIdx; i--) {
-            SoloClearInfo info = clears.get(i);
-            String title = ChatFormatting.AQUA + "Run #" + (i + 1) + ChatFormatting.WHITE + 
-                           " | Time: " + ChatFormatting.YELLOW + info.time + ChatFormatting.WHITE +
-                           " | Secrets: " + ChatFormatting.GREEN + info.secrets + ChatFormatting.WHITE +
-                           " | Prince: " + (info.princeKilled ? ChatFormatting.GREEN + "✔" : ChatFormatting.RED + "✘") + ChatFormatting.WHITE +
-                           " | Mimic: " + (info.mimicKilled ? ChatFormatting.GREEN + "✔" : ChatFormatting.RED + "✘");
-            
-            clearsList.addItem(new Label(0, 0, title, Label.Style.BODY));
-
-            if (!info.puzzles.isEmpty()) {
-                java.util.List<String> coloredPuzzles = new java.util.ArrayList<>();
-                for (String p : info.puzzles) {
-                    if (p.equalsIgnoreCase("Quiz")) {
-                        coloredPuzzles.add(ChatFormatting.RED + p + ChatFormatting.LIGHT_PURPLE);
-                    } else {
-                        coloredPuzzles.add(p);
-                    }
-                }
-                String puzzlesJoined = String.join(", ", coloredPuzzles);
-                clearsList.addItem(new Label(10, 0, ChatFormatting.GRAY + "Puzzles: " + ChatFormatting.LIGHT_PURPLE + puzzlesJoined, Label.Style.BODY));
-            }
-
-            clearsList.addItem(new Label(0, 0, ChatFormatting.DARK_GRAY + "--------------------------------------------------", Label.Style.BODY));
+            clearsList.addItem(new SoloClearRow(clearsList.getWidth(), i, clears.get(i), selectedFloor));
             clearsList.addItem(new Widget(0, 0, 0, 5) {
                 @Override
                 public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}

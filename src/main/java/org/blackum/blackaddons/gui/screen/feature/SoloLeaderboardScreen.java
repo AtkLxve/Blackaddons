@@ -33,6 +33,8 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 import org.blackum.blackaddons.service.BotIntegration;
 import org.blackum.blackaddons.common.util.io.JsonUtils;
 import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -148,6 +150,7 @@ public class SoloLeaderboardScreen extends BaseScreen {
         private final boolean prince;
         private final boolean mimic;
         private final JsonArray puzzles;
+        private final JsonObject mapData;
 
         public RunWidget(int x, int y, int width, JsonObject data) {
             super(x, y, width, 44);
@@ -160,6 +163,7 @@ public class SoloLeaderboardScreen extends BaseScreen {
             this.prince = data.has("prince") && data.get("prince").getAsBoolean();
             this.mimic = data.has("mimic") && data.get("mimic").getAsBoolean();
             this.puzzles = data.has("puzzles") ? data.getAsJsonArray("puzzles") : new JsonArray();
+            this.mapData = data.has("map_data") && !data.get("map_data").isJsonNull() ? data.getAsJsonObject("map_data") : null;
         }
 
         @Override
@@ -175,14 +179,24 @@ public class SoloLeaderboardScreen extends BaseScreen {
                     ChatFormatting.AQUA + "" + ChatFormatting.BOLD + ign,
                     x + 38, y + 7, Theme.TEXT_PRIMARY);
 
+            int rightEdge = x + width - 8;
+            
+            if (mapData != null) {
+                int mapSize = 30;
+                int mapX = x + width - mapSize - 10;
+                int mapY = y + (height - mapSize) / 2;
+                renderMap(g, mapData, mapX, mapY);
+                rightEdge = mapX - 8;
+            }
+
             String timeLabel = "⏱ " + timeStr;
             int timeLabelW = MinecraftInstance.mc.font.width(timeLabel);
             g.drawString(MinecraftInstance.mc.font,
                     ChatFormatting.YELLOW + timeStr,
-                    x + width - timeLabelW - 8, y + 7,
+                    rightEdge - timeLabelW, y + 7,
                     Theme.TEXT_PRIMARY);
 
-            java.util.List<String> puzzleNames = new java.util.ArrayList<>();
+            List<String> puzzleNames = new ArrayList<>();
             for (JsonElement e : puzzles) {
                 puzzleNames.add(e.getAsString());
             }
@@ -195,6 +209,106 @@ public class SoloLeaderboardScreen extends BaseScreen {
                     + ChatFormatting.GRAY + "  Mimic: "
                     + (mimic ? ChatFormatting.GREEN + "✔" : ChatFormatting.RED + "✘");
             g.drawString(MinecraftInstance.mc.font, stats, x + 38, y + 26, Theme.TEXT_SECONDARY);
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (mapData != null && button == 0) {
+                int mapSize = 30;
+                int mapX = x + width - mapSize - 10;
+                int mapY = y + (height - mapSize) / 2;
+                if (mouseX >= mapX && mouseX <= mapX + mapSize && mouseY >= mapY && mouseY <= mapY + mapSize) {
+                    if (Blackaddons.screenOpener != null) {
+                        Blackaddons.screenOpener.accept(new SoloClearMapScreen(mapData, MinecraftInstance.mc.screen));
+                    }
+                    return true;
+                }
+            }
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        private void renderMap(GuiGraphics graphics, JsonObject mapData, int mapX, int mapY) {
+            if (!mapData.has("rooms")) return;
+            JsonArray rooms = mapData.getAsJsonArray("rooms");
+            
+            int cellSize = 5;
+            RenderHelper.renderRoundedRect(graphics, mapX - 2, mapY - 2, 34, 34, 2, 0xAA000000);
+            
+            for (JsonElement elem : rooms) {
+                JsonObject room = elem.getAsJsonObject();
+                String type = room.get("type").getAsString();
+                String state = room.get("state").getAsString();
+                boolean mimic = room.has("mimic") && room.get("mimic").getAsBoolean();
+                JsonArray places = room.getAsJsonArray("places");
+                
+                int color = mimic ? ConfigManager.data.dungeonMapColorMimic : getRoomColor(type, state);
+                
+                int minGx = Integer.MAX_VALUE, maxGx = Integer.MIN_VALUE;
+                int minGz = Integer.MAX_VALUE, maxGz = Integer.MIN_VALUE;
+                for (JsonElement pElem : places) {
+                    JsonArray p = pElem.getAsJsonArray();
+                    int gx = p.get(0).getAsInt();
+                    int gz = p.get(1).getAsInt();
+                    if (gx < minGx) minGx = gx;
+                    if (gx > maxGx) maxGx = gx;
+                    if (gz < minGz) minGz = gz;
+                    if (gz > maxGz) maxGz = gz;
+                }
+
+                int bbArea = (maxGx - minGx + 1) * (maxGz - minGz + 1);
+                boolean isLShape = places.size() == 3 && bbArea == 4 && (maxGx - minGx) == 1 && (maxGz - minGz) == 1;
+
+                if (bbArea == places.size()) {
+                    graphics.fill(mapX + minGx * cellSize, mapY + minGz * cellSize, mapX + (maxGx + 1) * cellSize, mapY + (maxGz + 1) * cellSize, color);
+                } else if (isLShape) {
+                    int missingGx = minGx, missingGz = minGz;
+                    for (int gx = minGx; gx <= maxGx; gx++) {
+                        for (int gz = minGz; gz <= maxGz; gz++) {
+                            boolean hasPlace = false;
+                            for (JsonElement pElem : places) {
+                                JsonArray p = pElem.getAsJsonArray();
+                                if (p.get(0).getAsInt() == gx && p.get(1).getAsInt() == gz) {
+                                    hasPlace = true;
+                                    break;
+                                }
+                            }
+                            if (!hasPlace) {
+                                missingGx = gx;
+                                missingGz = gz;
+                            }
+                        }
+                    }
+                    int cornerGx = (minGx + maxGx) - missingGx;
+                    int cornerGz = (minGz + maxGz) - missingGz;
+                    
+                    graphics.fill(mapX + minGx * cellSize, mapY + cornerGz * cellSize, mapX + (maxGx + 1) * cellSize, mapY + (cornerGz + 1) * cellSize, color);
+                    graphics.fill(mapX + cornerGx * cellSize, mapY + minGz * cellSize, mapX + (cornerGx + 1) * cellSize, mapY + (maxGz + 1) * cellSize, color);
+                } else {
+                    for (JsonElement pElem : places) {
+                        JsonArray p = pElem.getAsJsonArray();
+                        int rx = p.get(0).getAsInt();
+                        int rz = p.get(1).getAsInt();
+                        int drawX = mapX + rx * cellSize;
+                        int drawY = mapY + rz * cellSize;
+                        graphics.fill(drawX, drawY, drawX + cellSize, drawY + cellSize, color);
+                    }
+                }
+            }
+        }
+        
+        private int getRoomColor(String type, String state) {
+            if ("UNDISCOVERED".equals(state)) return ConfigManager.data.dungeonMapColorUndiscovered;
+            
+            switch (type) {
+                case "ENTRANCE": return ConfigManager.data.dungeonMapColorEntrance;
+                case "BLOOD": return ConfigManager.data.dungeonMapColorBlood;
+                case "FAIRY": return ConfigManager.data.dungeonMapColorFairy;
+                case "PUZZLE": return ConfigManager.data.dungeonMapColorPuzzle;
+                case "TRAP": return ConfigManager.data.dungeonMapColorTrap;
+                case "CHAMPION": return ConfigManager.data.dungeonMapColorChampion;
+                case "MIMIC": return ConfigManager.data.dungeonMapColorMimic;
+                default: return org.blackum.blackaddons.common.config.ConfigManager.data.dungeonMapColorNormal;
+            }
         }
     }
 }

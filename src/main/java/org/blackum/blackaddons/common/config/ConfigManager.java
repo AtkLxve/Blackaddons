@@ -334,17 +334,19 @@ public class ConfigManager {
         public List<String> puzzles = new ArrayList<>();
         public boolean princeKilled;
         public boolean mimicKilled;
+        public JsonObject mapData;
 
         public SoloClearInfo() {
         }
 
-        public SoloClearInfo(String type, String time, int secrets, List<String> puzzles, boolean princeKilled, boolean mimicKilled) {
+        public SoloClearInfo(String type, String time, int secrets, List<String> puzzles, boolean princeKilled, boolean mimicKilled, JsonObject mapData) {
             this.type = type;
             this.time = time;
             this.secrets = secrets;
             this.puzzles = puzzles;
             this.princeKilled = princeKilled;
             this.mimicKilled = mimicKilled;
+            this.mapData = mapData;
         }
     }
 
