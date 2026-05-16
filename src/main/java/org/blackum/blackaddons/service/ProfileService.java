@@ -4,18 +4,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.feature.profile.LocalTeammateManager;
 import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.util.io.HttpUtils;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.util.io.JsonUtils;
+import org.blackum.blackaddons.gui.notification.NotificationManager;
+import org.blackum.blackaddons.gui.notification.NotificationType;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +30,8 @@ public class ProfileService {
     private static long rjsonHeaderExpiry = 0;
     private static final Pattern BUILD_ID_PATTERN = Pattern.compile("([a-z0-9]+)/get[A-Za-z]+");
     private static final Pattern RJSON_HEADER_PATTERN = Pattern.compile("\"(__[a-z0-9_]{4,10})\"");
+    private static final long PRIMARY_SOURCE_FAILURE_NOTIFICATION_COOLDOWN_MS = 60_000L;
+    private static long lastPrimarySourceFailureNotificationAt = 0L;
 
     public static CompletableFuture<JsonObject> getProfileStats(String player, String profileName, boolean force) {
         return getUuid(player)
@@ -59,23 +65,70 @@ public class ProfileService {
 
     private static CompletableFuture<JsonObject> getProfileData(String uuid, String profileName) {
         CompletableFuture<JsonObject> future = CompletableFuture.completedFuture(null);
+        if (ConfigManager.data.apiPriorityList.isEmpty()) {
+            return future;
+        }
+
+        ConfigManager.ApiPriority primaryPriority = ConfigManager.data.apiPriorityList.get(0);
+        AtomicBoolean primarySourceFailureNotified = new AtomicBoolean(false);
 
         for (ConfigManager.ApiPriority priority : ConfigManager.data.apiPriorityList) {
             future = future.thenCompose(data -> {
                 if (data != null)
                     return CompletableFuture.completedFuture(data);
-                return switch (priority) {
-                    case SUBAT0MIC -> fetchStandardProfile(Constants.SUBAT0MIC_PROFILE_API + uuid, "Subat0mic");
-                    case ODTHEKING -> fetchStandardProfile(Constants.ODTHEKING_PROFILE_API + uuid, "ODTheKing");
-                    case PLAIN_DAWN -> fetchStandardProfile(Constants.PLAIN_DAWN_PROFILE_API + uuid, "PlainDawn");
-                    case ADJECTILS -> fetchStandardProfile(Constants.ADJECTILS_PROFILE_API + uuid, "Adjectils");
-                    case SOOPY -> fetchSoopyProfile(uuid);
-                    case SKYCRYPT -> fetchSkyCryptShiiyuProfile(uuid, profileName);
-                };
+                return fetchProfileData(priority, uuid, profileName).thenApply(result -> {
+                    if (result == null && priority == primaryPriority
+                            && primarySourceFailureNotified.compareAndSet(false, true)) {
+                        notifyPrimarySourceFailure(primaryPriority);
+                    }
+                    return result;
+                });
             });
         }
 
         return future;
+    }
+
+    private static CompletableFuture<JsonObject> fetchProfileData(ConfigManager.ApiPriority priority, String uuid,
+            String profileName) {
+        return switch (priority) {
+            case SUBAT0MIC -> fetchStandardProfile(Constants.SUBAT0MIC_PROFILE_API + uuid, "Subat0mic");
+            case ODTHEKING -> fetchStandardProfile(Constants.ODTHEKING_PROFILE_API + uuid, "ODTheKing");
+            case PLAIN_DAWN -> fetchStandardProfile(Constants.PLAIN_DAWN_PROFILE_API + uuid, "PlainDawn");
+            case ADJECTILS -> fetchStandardProfile(Constants.ADJECTILS_PROFILE_API + uuid, "Adjectils");
+            case SOOPY -> fetchSoopyProfile(uuid);
+            case SKYCRYPT -> fetchSkyCryptShiiyuProfile(uuid, profileName);
+        };
+    }
+
+    private static void notifyPrimarySourceFailure(ConfigManager.ApiPriority priority) {
+        long now = System.currentTimeMillis();
+        synchronized (ProfileService.class) {
+            if (now - lastPrimarySourceFailureNotificationAt < PRIMARY_SOURCE_FAILURE_NOTIFICATION_COOLDOWN_MS) {
+                return;
+            }
+            lastPrimarySourceFailureNotificationAt = now;
+        }
+
+        Minecraft client = Minecraft.getInstance();
+        if (client == null) {
+            return;
+        }
+        client.execute(() -> NotificationManager.addNotification(
+                "Primary Source Failed",
+                formatApiName(priority) + " failed. Change Primary Source in /b -> Settings tab.",
+                NotificationType.WARNING));
+    }
+
+    private static String formatApiName(ConfigManager.ApiPriority priority) {
+        return switch (priority) {
+            case SUBAT0MIC -> "Subat0mic";
+            case ODTHEKING -> "ODTheKing";
+            case PLAIN_DAWN -> "PlainDawn";
+            case ADJECTILS -> "Adjectils";
+            case SKYCRYPT -> "SkyCrypt";
+            case SOOPY -> "Soopy";
+        };
     }
 
     private static CompletableFuture<JsonObject> fetchStandardProfile(String url, String sourceName) {
