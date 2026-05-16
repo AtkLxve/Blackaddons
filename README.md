@@ -14,9 +14,10 @@ BlackAddons is a utility and quality-of-life mod for Minecraft, designed to enha
 
 ### Dungeons
 
-- **Dungeon Map**: Custom minimap with colored room types (entrance, blood, fairy, puzzle, trap, champion, mimic), optional room names, and fully configurable colors/border/background.
+- **Dungeon Map**: Custom minimap with colored room types (entrance, blood, fairy, puzzle, trap, champion, mimic), optional room names, and fully configurable colors/border/background/rounded corners.
 - **Water Board Solver**: Timer HUD for the water board puzzle (real fast).
-- **Solo Clears Tracker**: Stores your F7 and M7 solo clears locally with time, with leaderboards for pbs.
+- **TP Maze Solver**: Visually highlights correct teleport pads in the Teleport Pad Maze puzzle, complete with a tracer line to the correct pad.
+- **Solo Clears Tracker**: Stores your solo clears locally with time, secrets, map and puzzle details. Features global leaderboards (`/b leaderboard`) and an interactive in-game minimap viewer to inspect your runs directly from the menu.
 
 ### Privacy & Mod Hider
 
@@ -45,9 +46,11 @@ A global chat system that lets you communicate with other mod users across diffe
     - **Class Presets**: Configure specific classes for each S-room (S1-S4).
 - **Chat Actions**: Custom automation triggered by chat messages. Actions are configurable step by step (swapping slots, using items, rotations, etc.).
 - **Waypoint Actions**: Position-based triggers (entry/exit/GUI exit) with step-by-step automation similar to Chat Actions.
-- **Note**: Both Chat and Waypoint actions can be used to fully automate phases in F7/M7. (I didn't tell u that)
+- **Note**: Both Chat and Waypoint actions can be used to fully automate phases in F7/M7. (I didn't tell you that)
 - **AutoTNT**: Automatically interacts with specific blocks (Cracked Stone Bricks, Smooth Stone Slab, Barrier blocks) using TNT with smart delays and auto-unequip.
 - **AutoBM**: Automates buying stuff in kuudra shop (auto ballista mechanic)
+- **AutoClicker**: Advanced, highly configurable autoclicker with adjustable min/max CPS, button selection (left/right/both), toggle/hold keybinds, continuous hold click mode, ground-only checks, look-at filters (target specific entities/blocks), and held-item filters. (you can use it for mining, if you are lazy... i didn't tell you that)
+- **TP Maze cheat**: Semi-auto navigation for the Teleport Pad Maze puzzle. Automatically rotates/snaps to the correct pad.
 - **Freecam**: Detaches the camera from your player for free movement, with configurable speed, scroll sensitivity, toggle/hold keybinding, and an option to still render your hands.
 - **Perspective**: Third-person perspective with configurable distance, sensitivity, scroll zoom, and toggle/hold keybind.
 
@@ -55,7 +58,7 @@ A global chat system that lets you communicate with other mod users across diffe
 
 - **Visual Utilities**: Remove fire overlay, visually disable nearby particles (within 2 blocks), and hide status effect icons from the HUD/inventory.
 - **Fullbright**: Toggle permanent Night Vision for better visibility in dark areas.
-- **Custom Text / Vector Text**: Custom Google-font rendering for in-game text with configurable anti-aliasing, shadow, outline, bold, and italic, plus a separate vector-text mode.
+- **Custom Text / Vector Text**: Custom Google-font rendering for in-game text with configurable anti-aliasing, shadow, outline, bold, and italic.
 - **Custom GUI**: A clean, modern card-based interface for settings with movable and resizable elements.
 - **Chat Visual Filters**: Hide chat messages matching patterns (contains / starts-with / exact / regex, optional case-sensitive).
 - **Image Preview**: Inline `[Preview]` button on chat links to images/GIFs/Tenor.
@@ -73,6 +76,7 @@ A global chat system that lets you communicate with other mod users across diffe
 - `/b pv`: Open the Profile Viewer for yourself.
 - `/b pv [player] [force]`: Open the Profile Viewer for a specific player. Use the force argument to refresh cached data.
 - `/b preview [url]`: Open a full-screen preview for a direct image or Discord media link.
+- `/b ping`: Check your exact ping/latency to the server.
 - `/b em` / `/b editmode` `on | off | toggle | status`: Toggle chat / waypoint action triggers.
 - `/b commandaliases add [alias] [original command]`: Create a custom command alias.
 - `/b commandaliases del [alias]`: Remove a command alias.
@@ -85,6 +89,7 @@ A global chat system that lets you communicate with other mod users across diffe
 - **Autismo**: Helped me with rewriting, understanding java and a lot more stuff
 - **noamm**: Helping out and other stuff
 - **NotYukimii**: Helped out atk with coding his features
+- **FoundOstrich**: Helped me with testing stuff
 - **adjectiven0un**: Original XP calculation logic and API inspiration from [adjectils](https://adjectils.com/dungeon.html).
 
 ## Powered By
