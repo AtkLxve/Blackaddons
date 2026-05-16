@@ -14,6 +14,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.util.mc.McCompat;
@@ -70,11 +72,13 @@ public class CustomFontRenderer {
     private final Map<Object, RenderType> depthLayerCache = new HashMap<>();
     private final Map<Integer, TextureSetup> fallbackTextureSetupCache = new HashMap<>();
     private final Map<Integer, CustomBakedGlyph> bakedGlyphCache = new HashMap<>();
+    private final Map<Integer, List<Integer>> obfuscatedGlyphsByWidth = new HashMap<>();
 
     private float lastScaleConfig = -1f;
     private float cachedScale = 1f;
     private float cachedBaseline = 0f;
     private float cachedSdfScale = -1f;
+    private float obfuscatedGlyphBucketScale = -1f;
 
     private record PreparedAtlasEntry(int codepoint, int width, int height, int xoff, int yoff,
                                       float u0, float v0, float u1, float v1, byte[] pixels) {}
@@ -189,6 +193,7 @@ public class CustomFontRenderer {
                             bakedGlyphCache.clear();
                             lastScaleConfig = -1f;
                             cachedSdfScale = -1f;
+                            obfuscatedGlyphBucketScale = -1f;
                             atlasTexture = null;
                             atlasId = null;
                             atlasRenderType = null;
@@ -197,6 +202,7 @@ public class CustomFontRenderer {
                             atlasTextureSetup = null;
 
                             applyPreparedAsciiAtlas(atlasData);
+                            rebuildObfuscatedGlyphBuckets();
                             initialized = true;
                         } catch (Exception e) {
                             LOGGER.error("[CustomFont] Failed to apply font atlas on render thread", e);
@@ -388,6 +394,53 @@ public class CustomFontRenderer {
         CustomBakedGlyph baked = new CustomBakedGlyph(codepoint, data);
         bakedGlyphCache.put(codepoint, baked);
         return baked;
+    }
+
+    public CustomBakedGlyph getOrCreateObfuscatedBakedGlyph(int codepoint, RandomSource random) {
+        CustomFontManager.GlyphData original = manager != null ? manager.getGlyphData(codepoint) : null;
+        if (original == null || codepoint == 32) {
+            return getOrCreateBakedGlyph(codepoint);
+        }
+
+        ensureObfuscatedGlyphBuckets();
+        float scale = getCachedScale();
+        int width = Mth.ceil(original.advance * scale);
+        List<Integer> matchingGlyphs = obfuscatedGlyphsByWidth.get(width);
+        if (matchingGlyphs == null || matchingGlyphs.isEmpty()) {
+            return getOrCreateBakedGlyph(codepoint);
+        }
+
+        return getOrCreateBakedGlyph(matchingGlyphs.get(random.nextInt(matchingGlyphs.size())));
+    }
+
+    private void ensureObfuscatedGlyphBuckets() {
+        float scale = getCachedScale();
+        if (scale != obfuscatedGlyphBucketScale || obfuscatedGlyphsByWidth.isEmpty()) {
+            rebuildObfuscatedGlyphBuckets();
+        }
+    }
+
+    private void rebuildObfuscatedGlyphBuckets() {
+        obfuscatedGlyphsByWidth.clear();
+        if (manager == null) {
+            return;
+        }
+
+        float scale = getCachedScale();
+        for (int cp = 32; cp <= 126; cp++) {
+            if (!sdfGlyphCache.containsKey(cp)) {
+                continue;
+            }
+
+            int advance = manager.getGlyphAdvance(cp);
+            if (advance <= 0) {
+                continue;
+            }
+
+            int width = Mth.ceil(advance * scale);
+            obfuscatedGlyphsByWidth.computeIfAbsent(width, key -> new ArrayList<>()).add(cp);
+        }
+        obfuscatedGlyphBucketScale = scale;
     }
 
     public float getGlyphVisualLeft(CustomFontManager.GlyphData glyph, boolean bold, boolean italic, boolean shadowed, float shadowOffset) {

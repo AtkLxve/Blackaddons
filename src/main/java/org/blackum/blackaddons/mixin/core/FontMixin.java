@@ -12,6 +12,8 @@ import org.blackum.blackaddons.gui.render.font.CustomBakedGlyph;
 import org.blackum.blackaddons.gui.render.font.CustomFontManager;
 import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -21,10 +23,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Optional;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 
 @Mixin(value = Font.class, priority = 10000)
 public class FontMixin {
+    @Shadow
+    @Final
+    private RandomSource random;
 
     private static int measureVisualWidth(CustomFontRenderer renderer, CustomFontManager mgr, String text, boolean boldOverride) {
         float scale = renderer.getCachedScale();
@@ -159,7 +165,9 @@ public class FontMixin {
         if (isCustomTextActive() && !CustomFontRenderer.inOutlinePass) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
-                CustomBakedGlyph baked = renderer.getOrCreateBakedGlyph(codepoint);
+                CustomBakedGlyph baked = style.isObfuscated()
+                        ? renderer.getOrCreateObfuscatedBakedGlyph(codepoint, this.random)
+                        : renderer.getOrCreateBakedGlyph(codepoint);
                 if (baked != null) {
                     cir.setReturnValue(baked);
                 }

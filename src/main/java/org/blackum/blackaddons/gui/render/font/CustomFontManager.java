@@ -72,6 +72,19 @@ public class CustomFontManager {
         return STBTruetype.stbtt_FindGlyphIndex(fontInfo, codepoint) != 0;
     }
 
+    public int getGlyphAdvance(int codepoint) {
+        int glyphIndex = STBTruetype.stbtt_FindGlyphIndex(fontInfo, codepoint);
+        if (glyphIndex == 0) {
+            return 0;
+        }
+
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer advance = stack.mallocInt(1);
+            STBTruetype.stbtt_GetGlyphHMetrics(fontInfo, glyphIndex, advance, null);
+            return advance.get(0);
+        }
+    }
+
     public float getScaleForPixelHeight(float pixels) {
         return STBTruetype.stbtt_ScaleForPixelHeight(fontInfo, pixels);
     }

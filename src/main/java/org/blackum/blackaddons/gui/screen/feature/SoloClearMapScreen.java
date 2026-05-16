@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.screen.feature;
 import com.google.gson.JsonObject;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.render.RenderHelper;
@@ -371,8 +372,10 @@ public class SoloClearMapScreen extends BaseScreen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        this.onClose();
+    public boolean mouseClicked(MouseButtonEvent event, boolean pressed) {
+        if (pressed) {
+            this.onClose();
+        }
         return true;
     }
 }
