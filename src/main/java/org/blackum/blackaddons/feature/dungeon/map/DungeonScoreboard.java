@@ -139,11 +139,21 @@ public class DungeonScoreboard {
 
     private static Room pendingRoom = null;
     private static int roomEntryConfirmation = 0;
+    private static Room secretsRoom = null;
+    private static boolean secretsCounterInitialized = false;
+    private static int lastSecretsFound = 0;
+    private static boolean wasInDungeons = false;
 
     public static void register() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (!LocationUtils.inDungeons())
+            if (!LocationUtils.inDungeons()) {
+                if (wasInDungeons) {
+                    reset();
+                }
+                wasInDungeons = false;
                 return;
+            }
+            wasInDungeons = true;
             if (client.player != null && selfPlayer == null) {
                 selfPlayer = new DungeonPlayer(client.player.getName().getString(), "UNKNOWN");
             }
@@ -168,6 +178,7 @@ public class DungeonScoreboard {
                 }
 
                 if (detectedRoom != null && detectedRoom != DungeonMap.getLocalRoom()) {
+                    secretsRoom = detectedRoom;
                     if (detectedRoom == pendingRoom) {
                         roomEntryConfirmation++;
                         if (roomEntryConfirmation >= 25) {
@@ -179,6 +190,10 @@ public class DungeonScoreboard {
                         pendingRoom = detectedRoom;
                         roomEntryConfirmation = 1;
                     }
+                } else if (detectedRoom != null) {
+                    secretsRoom = detectedRoom;
+                    pendingRoom = null;
+                    roomEntryConfirmation = 0;
                 } else {
                     pendingRoom = null;
                     roomEntryConfirmation = 0;
@@ -209,6 +224,11 @@ public class DungeonScoreboard {
         stats.percentCleared = 0;
         stats.princeKilled = false;
         stats.mimicKilled = false;
+        pendingRoom = null;
+        roomEntryConfirmation = 0;
+        secretsRoom = null;
+        secretsCounterInitialized = false;
+        lastSecretsFound = 0;
     }
 
     public static void onChatMessage(Component message) {
@@ -300,6 +320,45 @@ public class DungeonScoreboard {
                 }
             }
         }
+
+        parseTabStats(lines);
+    }
+
+    private static void parseTabStats(List<String> lines) {
+        for (String line : lines) {
+            Matcher m;
+            if ((m = P_SECRETS.matcher(line)).matches()) {
+                int secretsFound = parseInt(m.group(1));
+                updateSecretsFound(secretsFound);
+            } else if ((m = P_SECRETS_PCT.matcher(line)).matches()) {
+                stats.secretsPercent = parseFloat(m.group(1));
+            }
+        }
+    }
+
+    private static void updateSecretsFound(int secretsFound) {
+        stats.secretsFound = secretsFound;
+
+        if (!secretsCounterInitialized) {
+            secretsCounterInitialized = true;
+            lastSecretsFound = secretsFound;
+            return;
+        }
+
+        if (secretsFound <= lastSecretsFound) {
+            return;
+        }
+
+        int delta = secretsFound - lastSecretsFound;
+        lastSecretsFound = secretsFound;
+
+        Room room = secretsRoom != null ? secretsRoom : DungeonMap.getLocalRoom();
+        if (room == null || room.data == null || room.data.secrets <= 0) {
+            return;
+        }
+
+        int found = Math.max(0, room.foundSecrets);
+        room.foundSecrets = Math.min(room.data.secrets, found + delta);
     }
 
     private static void parseSidebar() {
@@ -327,7 +386,7 @@ public class DungeonScoreboard {
                 continue;
             }
             if ((m = P_SECRETS.matcher(line)).matches()) {
-                stats.secretsFound = parseInt(m.group(1));
+                updateSecretsFound(parseInt(m.group(1)));
                 continue;
             }
             if ((m = P_SECRETS_PCT.matcher(line)).matches()) {

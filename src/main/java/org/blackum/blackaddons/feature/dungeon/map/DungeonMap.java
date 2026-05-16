@@ -282,7 +282,7 @@ public class DungeonMap {
             Room.StateUpdated su = room.updateState(placement, color);
             if (su != null) {
                 updated.add(su);
-                if (su.newState == Room.State.GREEN && room.data != null && room.foundSecrets < 0) {
+                if (su.newState == Room.State.GREEN && room.data != null) {
                     room.foundSecrets = room.data.secrets;
                 }
             }
