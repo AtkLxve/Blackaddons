@@ -51,5 +51,6 @@ public class AboutTabController extends SimpleTabController {
         aboutTab.addWidget(new Label(contentX, contentY + 30, "Version: " + version, Label.Style.BODY));
         aboutTab.addWidget(new Label(contentX, contentY + 50, "Created by Blackum", Label.Style.BODY));
         aboutTab.addWidget(new Label(contentX, contentY + 70, "Contributors: AtkLxve, Autismo, MommyYuki", Label.Style.BODY));
+        aboutTab.addWidget(new Label(contentX, contentY + 90, "Really cool rat tester: FoundOstrich", Label.Style.BODY));
     }
 }

@@ -494,7 +494,7 @@ public class ConfigManager {
         public float waterBoardTimerScale = 1.0f;
 
         // TP Maze Solver
-        public boolean teleportMazeSolverEnabled = true;
+        public boolean teleportMazeSolverEnabled = false;
         public boolean teleportMazePrioritizeDiagonal = true;
         public boolean teleportMazeAutoRotate = false;
         public boolean teleportMazeSmoothSnap = true;

@@ -14,16 +14,21 @@ import java.util.List;
 
 public class CardContainer extends Widget {
 
+    private static final int BOTTOM_VISIBILITY_BUFFER = 20;
+
     private List<ResizableCard> cards = new ArrayList<>();
     private ResizableCard activeCard = null;
+    private final int minHeight;
 
     public CardContainer(int x, int y, int width, int height) {
         super(x, y, width, height);
+        this.minHeight = height;
     }
 
     public void addCard(ResizableCard card) {
         cards.add(card);
-        card.setDragBounds(x, y, x + width, y + height);
+        updateDragBounds(card);
+        expandHeightToFitCards();
     }
 
     public void removeCard(ResizableCard card) {
@@ -86,6 +91,7 @@ public class CardContainer extends Widget {
         for (ResizableCard card : cards) {
             card.tick();
         }
+        expandHeightToFitCards();
     }
 
     @Override
@@ -110,21 +116,31 @@ public class CardContainer extends Widget {
         for (int i = cards.size() - 1; i >= 0; i--) {
             ResizableCard card = cards.get(i);
             if (card.mouseReleased(mouseX, mouseY, button)) {
+                if (card == activeCard) {
+                    activeCard = null;
+                }
+                expandHeightToFitCards();
                 return true;
             }
         }
+        activeCard = null;
         return false;
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (activeCard != null && (activeCard.isDragging() || activeCard.isResizing())) {
-            return activeCard.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+            boolean handled = activeCard.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+            if (handled) {
+                expandHeightToFitCards();
+            }
+            return handled;
         }
 
         for (int i = cards.size() - 1; i >= 0; i--) {
             ResizableCard card = cards.get(i);
             if (card.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+                expandHeightToFitCards();
                 return true;
             }
         }
@@ -168,5 +184,21 @@ public class CardContainer extends Widget {
         if (cards.remove(card)) {
             cards.add(card);
         }
+    }
+
+    private void updateDragBounds(ResizableCard card) {
+        card.setDragBounds(x, y, x + width, Integer.MAX_VALUE);
+    }
+
+    private void expandHeightToFitCards() {
+        int requiredHeight = minHeight;
+        for (ResizableCard card : cards) {
+            if (card.isVisible()) {
+                requiredHeight = Math.max(requiredHeight,
+                        card.getY() + card.getHeight() - y + Theme.SPACING_NORMAL + BOTTOM_VISIBILITY_BUFFER);
+                updateDragBounds(card);
+            }
+        }
+        height = requiredHeight;
     }
 }
