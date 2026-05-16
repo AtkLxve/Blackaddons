@@ -32,7 +32,9 @@ import org.blackum.blackaddons.feature.item.ItemDeserializer;
 import org.blackum.blackaddons.common.model.SkyblockItem;
 import org.blackum.blackaddons.gui.render.Theme;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public class InventoryTabController extends ProfileTabController {
     private PetDetailWidget petDetailWidget;
@@ -191,13 +193,12 @@ public class InventoryTabController extends ProfileTabController {
                     }
                 } else if (currentSubTab == SubTab.BACKPACKS && inventory.has("backpack_contents")) {
                     JsonObject backpacks = inventory.getAsJsonObject("backpack_contents");
-                    int bpIdx = 1;
-                    for (String key : backpacks.keySet()) {
-                        JsonObject bp = backpacks.getAsJsonObject(key);
+                    for (Map.Entry<String, JsonElement> entry : sortedBackpacks(backpacks)) {
+                        JsonObject bp = entry.getValue().getAsJsonObject();
                         List<SkyblockItem> bpItems = extractItems(bp);
                         if (!bpItems.isEmpty()) {
                             sections.add(bpItems);
-                            labels.add("Backpack " + bpIdx++);
+                            labels.add("Backpack " + backpackDisplayNumber(entry.getKey()));
                         }
                     }
                 }
@@ -351,5 +352,32 @@ public class InventoryTabController extends ProfileTabController {
                 petsListView.addItem(gridRow);
             }
         }
+    }
+
+    private static List<Map.Entry<String, JsonElement>> sortedBackpacks(JsonObject backpacks) {
+        List<Map.Entry<String, JsonElement>> entries = new ArrayList<>(backpacks.entrySet());
+        entries.sort(Comparator.comparingInt(entry -> backpackSortIndex(entry.getKey())));
+        return entries;
+    }
+
+    private static int backpackSortIndex(String key) {
+        try {
+            return Integer.parseInt(key);
+        } catch (NumberFormatException ignored) {
+        }
+
+        int underscore = key.lastIndexOf('_');
+        if (underscore >= 0 && underscore + 1 < key.length()) {
+            try {
+                return Integer.parseInt(key.substring(underscore + 1));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    private static int backpackDisplayNumber(String key) {
+        int sortIndex = backpackSortIndex(key);
+        return sortIndex == Integer.MAX_VALUE ? 1 : sortIndex + 1;
     }
 }
