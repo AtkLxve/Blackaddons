@@ -916,6 +916,18 @@ public class CheatsTabController extends SimpleTabController {
                 });
         lookAtModeDropdown.setSelectedIndex("block".equals(ConfigManager.data.autoClickerConfig.lookAtMode) ? 1 : 0);
 
+        Label lookAtDistanceLabel = new Label(0, 0,
+                String.format(Locale.ROOT, "Look-At Distance: %.1f blocks",
+                        ConfigManager.data.autoClickerConfig.lookAtFilterDistance),
+                Label.Style.BODY);
+
+        Slider lookAtDistanceSlider = new Slider(0, 0, 260, 2.0f, 100.0f,
+                ConfigManager.data.autoClickerConfig.lookAtFilterDistance, val -> {
+                    ConfigManager.data.autoClickerConfig.lookAtFilterDistance = val;
+                    lookAtDistanceLabel.setText(String.format(Locale.ROOT, "Look-At Distance: %.1f blocks", val));
+                    ConfigManager.save();
+                });
+
         ToggleSwitch lookAtFilterToggle = new ToggleSwitch(0, 0, 260,
                 "Look-At Filter",
                 "Only click when looking at the selected target",
@@ -923,6 +935,8 @@ public class CheatsTabController extends SimpleTabController {
                     ConfigManager.data.autoClickerConfig.lookAtFilterEnabled = value;
                     lookAtModeDropdown.setVisible(value);
                     lookAtTargetField.setVisible(value);
+                    lookAtDistanceLabel.setVisible(value);
+                    lookAtDistanceSlider.setVisible(value);
                     ConfigManager.save();
                 });
         listView.addItem(lookAtFilterToggle);
@@ -932,6 +946,12 @@ public class CheatsTabController extends SimpleTabController {
 
         lookAtTargetField.setVisible(ConfigManager.data.autoClickerConfig.lookAtFilterEnabled);
         listView.addItem(lookAtTargetField);
+
+        lookAtDistanceLabel.setVisible(ConfigManager.data.autoClickerConfig.lookAtFilterEnabled);
+        listView.addItem(lookAtDistanceLabel);
+
+        lookAtDistanceSlider.setVisible(ConfigManager.data.autoClickerConfig.lookAtFilterEnabled);
+        listView.addItem(lookAtDistanceSlider);
 
         autoClickerCard.addChild(listView);
         autoClickerCard.updateLayout();

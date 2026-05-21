@@ -7,9 +7,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
@@ -157,7 +159,7 @@ public class AutoClicker {
         if (!config.lookAtFilterEnabled) return true;
         if (config.lookAtTargets == null || config.lookAtTargets.isEmpty()) return true;
 
-        HitResult hit = mc.hitResult;
+        HitResult hit = getLookAtHitResult(config, mc);
         if (hit == null) return false;
 
         String keyStr = null;
@@ -182,6 +184,54 @@ public class AutoClicker {
             if (t.trim().equalsIgnoreCase(keyStr)) return true;
         }
         return false;
+    }
+
+    private static HitResult getLookAtHitResult(FeatureConfig config, Minecraft mc) {
+        double dist = config.lookAtFilterDistance;
+        
+        HitResult blockHit = mc.player.pick(dist, 0.0f, false);
+        double blockDistSq = dist * dist;
+        if (blockHit != null && blockHit.getType() != HitResult.Type.MISS) {
+            blockDistSq = blockHit.getLocation().distanceToSqr(mc.player.getEyePosition(0.0f));
+        }
+        
+        Vec3 eyePos = mc.player.getEyePosition(0.0f);
+        Vec3 viewVec = mc.player.getViewVector(0.0f);
+        Vec3 endPos = eyePos.add(viewVec.scale(dist));
+        
+        AABB searchBox = mc.player.getBoundingBox()
+                .expandTowards(viewVec.x * dist, viewVec.y * dist, viewVec.z * dist)
+                .inflate(1.0D, 1.0D, 1.0D);
+                
+        Entity closestEntity = null;
+        Vec3 closestHitVec = null;
+        double closestDistSq = blockDistSq;
+        
+        for (Entity entity : mc.level.getEntities(mc.player, searchBox, e -> e != null && !e.isSpectator() && e.isPickable())) {
+            AABB aabb = entity.getBoundingBox().inflate(entity.getPickRadius());
+            java.util.Optional<Vec3> clipResult = aabb.clip(eyePos, endPos);
+            if (aabb.contains(eyePos)) {
+                if (closestDistSq >= 0.0D) {
+                    closestEntity = entity;
+                    closestHitVec = clipResult.orElse(eyePos);
+                    closestDistSq = 0.0D;
+                }
+            } else if (clipResult.isPresent()) {
+                Vec3 hitVec = clipResult.get();
+                double distSq = eyePos.distanceToSqr(hitVec);
+                if (distSq < closestDistSq) {
+                    closestEntity = entity;
+                    closestHitVec = hitVec;
+                    closestDistSq = distSq;
+                }
+            }
+        }
+        
+        if (closestEntity != null) {
+            return new EntityHitResult(closestEntity, closestHitVec);
+        }
+        
+        return blockHit;
     }
 
     private static void fireClicks(FeatureConfig config, Minecraft mc) {
@@ -225,6 +275,7 @@ public class AutoClicker {
         public boolean lookAtFilterEnabled = false;
         public List<String> lookAtTargets = new ArrayList<>();
         public String lookAtMode = "mob";
+        public float lookAtFilterDistance = 3.5f;
         public boolean itemFilterEnabled = false;
         public List<String> itemFilters = new ArrayList<>();
         public int keybindKeyCode = -1;

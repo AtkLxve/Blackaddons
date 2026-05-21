@@ -202,10 +202,11 @@ public class AutocompleteTextField extends TextField {
         if (!showSuggestions || !visible || currentSuggestions.isEmpty())
             return;
 
+        int scrollOffsetVal = mouseY - rawMouseY;
         int suggestionHeight = 12;
         int maxItems = Math.min(currentSuggestions.size(), MAX_VISIBLE_SUGGESTIONS);
         int totalHeight = maxItems * suggestionHeight + 4;
-        int overlayY = y + height;
+        int overlayY = y + height - scrollOffsetVal;
 
         RenderHelper.renderRoundedRect(graphics, x, overlayY, width, totalHeight, Theme.BORDER_RADIUS_SMALL,
                 Theme.GLASS_FILL);
@@ -219,8 +220,9 @@ public class AutocompleteTextField extends TextField {
             int itemY = overlayY + 2 + (i * suggestionHeight);
             String suggestion = currentSuggestions.get(actualIndex);
 
-            boolean hovered = mouseX >= x && mouseX <= x + width && mouseY >= itemY
-                    && mouseY < itemY + suggestionHeight;
+            int scrolledItemY = y + height + 2 + (i * suggestionHeight);
+            boolean hovered = mouseX >= x && mouseX <= x + width && mouseY >= scrolledItemY
+                    && mouseY < scrolledItemY + suggestionHeight;
 
             if (hovered && (mouseX != lastMouseX || mouseY != lastMouseY)) {
                 selectedIndex = actualIndex;
