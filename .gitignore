@@ -49,3 +49,9 @@ Thumbs.db
 .cache/
 logs/
 /docs
+
+# Ignore all dotfiles with a few exceptions
+/.*
+!/.gitignore
+!/.gitattributes
+!/.github/
