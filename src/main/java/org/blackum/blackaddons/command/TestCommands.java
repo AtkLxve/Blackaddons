@@ -33,6 +33,9 @@ import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.service.BotIntegration;
 import org.blackum.blackaddons.service.MojangAuthService;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import java.net.URI;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -284,6 +287,43 @@ public class TestCommands {
 
         testNode.then(ClientCommandManager.literal("lbsend")
                 .executes(ctx -> runLbSend(ctx.getSource())));
+
+        testNode.then(ClientCommandManager.literal("authcheck")
+                .executes(ctx -> {
+                    String serverId = MojangAuthService.generateServerId();
+                    ctx.getSource().sendFeedback(Component.literal("§e[AuthCheck] Activating Mojang auth check..."));
+
+                    MojangAuthService.joinServer(serverId).thenAccept(ok -> {
+                        Minecraft.getInstance().execute(() -> {
+                            if (ok) {
+                                try {
+                                    String player = Minecraft.getInstance().getUser().getName();
+                                    String url = "https://sessionserver.mojang.com/session/minecraft/hasJoined?username="
+                                            + player + "&serverId=" + serverId;
+
+                                    var linkComponent = Component.literal("§b§n[Click here to verify]")
+                                            .withStyle(style -> style
+                                                    .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
+                                                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Open Mojang Session Verification in browser"))));
+
+                                    ctx.getSource().sendFeedback(Component.literal("§a[AuthCheck] Successfully joined Mojang session! ")
+                                            .append(linkComponent));
+                                } catch (Exception e) {
+                                    ctx.getSource().sendFeedback(Component.literal("§c[AuthCheck] Error creating verification link: " + e.getMessage()));
+                                }
+                            } else {
+                                ctx.getSource().sendFeedback(Component.literal("§c[AuthCheck] Mojang auth check failed (joinServer returned false)."));
+                            }
+                        });
+                    }).exceptionally(ex -> {
+                        Minecraft.getInstance().execute(() -> {
+                            ctx.getSource().sendFeedback(Component.literal("§c[AuthCheck] Mojang auth check failed with exception: " + ex.getMessage()));
+                        });
+                        return null;
+                    });
+
+                    return 1;
+                }));
 
         return testNode;
     }

@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.15-SNAPSHOT'
+    id 'fabric-loom' version '1.16.1'
     id 'maven-publish'
     id 'dev.kikugie.stonecutter'
 }
@@ -14,19 +14,21 @@ def versionProps = [
     "1.21.10": [
         minecraft: "1.21.10",
         yarn: "1.21.10+build.3",
-        loader: "0.18.1",
+        loader: "0.18.5",
         fabric: "0.138.4+1.21.10",
         modmenu: "16.0.0",
-        ias: "LgfVj4KS",
+        ias: "fgPKk2RF",
+        autoreauth: "IdoH37IY",
         jarvis: "2.1.0"
     ],
     "1.21.11": [
         minecraft: "1.21.11",
         yarn: "1.21.11+build.1",
-        loader: "0.18.1",
+        loader: "0.18.5",
         fabric: "0.141.2+1.21.11",
         modmenu: "17.0.0-beta.2",
-        ias: "oSzaukGT",
+        ias: "YUbSyjUy",
+        autoreauth: "lL6917Nl",
         jarvis: "2.1.0"
     ]
 ]
@@ -39,6 +41,7 @@ project.ext.loader_version = currentStonecutterVersion.loader
 project.ext.fabric_version = currentStonecutterVersion.fabric
 project.ext.modmenu_version = currentStonecutterVersion.modmenu
 project.ext.ias_version = currentStonecutterVersion.ias
+project.ext.autoreauth_version = currentStonecutterVersion.autoreauth
 project.ext.jarvis_version = currentStonecutterVersion.jarvis
 
 version = rootProject.mod_version
@@ -107,6 +110,7 @@ dependencies {
     modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
     modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
     modLocalRuntime "maven.modrinth:in-game-account-switcher:${project.ias_version}"
+    modLocalRuntime "maven.modrinth:auto-reauth:${project.autoreauth_version}"
 }
 
 processResources {
