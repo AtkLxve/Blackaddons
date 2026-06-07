@@ -3,25 +3,11 @@ package org.blackum.blackaddons.gui.screen.main.tabs;
 
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
-import org.blackum.blackaddons.gui.screen.feature.WaypointEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointGroupEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.ChatActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.IrcScreen;
-import org.blackum.blackaddons.gui.screen.feature.ImagePreviewScreen;
-import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyFinderScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
-import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
-import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
-import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
+
 import java.util.List;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.base.*;
 import org.blackum.blackaddons.gui.widget.input.*;
@@ -31,7 +17,6 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.feature.chat.IrcClient;
-import org.blackum.blackaddons.gui.notification.Notification;
 
 public class SettingsTabController extends SimpleTabController {
 
@@ -152,8 +137,6 @@ public class SettingsTabController extends SimpleTabController {
         listView.addItem(new Label(0, 0, "Data Source Priority", Label.Style.TITLE));
 
         List<String> apiOptions = List.of(
-                "Subat0mic (Full stats)",
-                "ODTheKing (Full stats)",
                 "PlainDawn (Full stats)",
                 "Adjectils (Full stats)",
                 "SkyCrypt (No blood mobs/MP, bugged inventory, won't fix)",
@@ -252,8 +235,6 @@ public class SettingsTabController extends SimpleTabController {
     private ConfigManager.ApiPriority parseApiName(String selected) {
         String first = selected.split(" ")[0];
         switch (first) {
-            case "Subat0mic": return ConfigManager.ApiPriority.SUBAT0MIC;
-            case "ODTheKing": return ConfigManager.ApiPriority.ODTHEKING;
             case "PlainDawn": return ConfigManager.ApiPriority.PLAIN_DAWN;
             case "Adjectils": return ConfigManager.ApiPriority.ADJECTILS;
             case "SkyCrypt": return ConfigManager.ApiPriority.SKYCRYPT;
@@ -264,8 +245,6 @@ public class SettingsTabController extends SimpleTabController {
 
     private String formatApiName(ConfigManager.ApiPriority priority) {
         switch (priority) {
-            case SUBAT0MIC: return "Subat0mic (Full stats)";
-            case ODTHEKING: return "ODTheKing (Full stats)";
             case PLAIN_DAWN: return "PlainDawn (Full stats)";
             case ADJECTILS: return "Adjectils (Full stats)";
             case SKYCRYPT: return "SkyCrypt (No blood mobs/MP, bugged inventory, won't fix)";
