@@ -17,20 +17,15 @@ import org.blackum.blackaddons.common.constants.Constants;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
 import org.blackum.blackaddons.Blackaddons;
 
 public class ConfigManager {
     private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File OLD_CONFIG_FILE = OLD_CONFIG_DIR.resolve("config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    public static final int API_PRIORITY_SLOTS = 3;
+    public static final int API_PRIORITY_SLOTS = 1;
     
     private static File getConfigFile() {
         return ProfileManager.getActiveProfileFile(ProfileManager.Category.CONFIG);
@@ -233,7 +228,7 @@ public class ConfigManager {
         }
 
         private static float clampPitch(float pitch) {
-            return Math.max(-90.0f, Math.min(90.0f, pitch));
+            return Math.clamp(pitch, -90.0f, 90.0f);
         }
     }
 
@@ -300,7 +295,7 @@ public class ConfigManager {
     }
 
     public enum ApiPriority {
-        SUBAT0MIC, ODTHEKING, PLAIN_DAWN, ADJECTILS, SKYCRYPT, SOOPY
+        PLAIN_DAWN, ADJECTILS, SKYCRYPT, SOOPY
     }
 
     public enum ChatFilterMatchType {
@@ -365,7 +360,7 @@ public class ConfigManager {
         public String botUrl = Constants.DEFAULT_BOT_URL;
         public DataSource dataSource = DataSource.LOCAL;
         public List<ApiPriority> apiPriorityList = new ArrayList<>(
-                List.of(ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING, ApiPriority.PLAIN_DAWN));
+                List.of(ApiPriority.PLAIN_DAWN));
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
         public boolean partyFinderAutoInvite = true;
@@ -771,7 +766,7 @@ public class ConfigManager {
                 if (loadedData.apiPriorityList == null
                         || loadedData.apiPriorityList.size() != API_PRIORITY_SLOTS) {
                     loadedData.apiPriorityList = new ArrayList<>(List.of(
-                            ApiPriority.SUBAT0MIC, ApiPriority.ODTHEKING, ApiPriority.PLAIN_DAWN));
+                            ApiPriority.PLAIN_DAWN));
                 }
                 data = loadedData;
                 normalizeLegacyActionTimings();
@@ -804,7 +799,7 @@ public class ConfigManager {
         if (steps == null) {
             return;
         }
-        steps.removeIf(step -> step == null);
+        steps.removeIf(Objects::isNull);
         for (ActionStep step : steps) {
             step.normalizeTiming();
         }

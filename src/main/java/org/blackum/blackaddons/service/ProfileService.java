@@ -92,8 +92,6 @@ public class ProfileService {
     private static CompletableFuture<JsonObject> fetchProfileData(ConfigManager.ApiPriority priority, String uuid,
             String profileName) {
         return switch (priority) {
-            case SUBAT0MIC -> fetchStandardProfile(Constants.SUBAT0MIC_PROFILE_API + uuid, "Subat0mic");
-            case ODTHEKING -> fetchStandardProfile(Constants.ODTHEKING_PROFILE_API + uuid, "ODTheKing");
             case PLAIN_DAWN -> fetchStandardProfile(Constants.PLAIN_DAWN_PROFILE_API + uuid, "PlainDawn");
             case ADJECTILS -> fetchStandardProfile(Constants.ADJECTILS_PROFILE_API + uuid, "Adjectils");
             case SOOPY -> fetchSoopyProfile(uuid);
@@ -122,8 +120,6 @@ public class ProfileService {
 
     private static String formatApiName(ConfigManager.ApiPriority priority) {
         return switch (priority) {
-            case SUBAT0MIC -> "Subat0mic";
-            case ODTHEKING -> "ODTheKing";
             case PLAIN_DAWN -> "PlainDawn";
             case ADJECTILS -> "Adjectils";
             case SKYCRYPT -> "SkyCrypt";
