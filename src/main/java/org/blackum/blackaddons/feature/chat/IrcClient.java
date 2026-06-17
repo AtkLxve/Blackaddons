@@ -33,6 +33,7 @@ public class IrcClient implements WebSocket.Listener {
     private final HttpClient client;
     private boolean connecting = false;
     private boolean isAdmin = false;
+    private int reconnectAttempts = 0;
 
     private ScheduledExecutorService keepAliveExecutor;
     private long lastMessageTime = System.currentTimeMillis();
@@ -88,6 +89,7 @@ public class IrcClient implements WebSocket.Listener {
                         scheduleReconnect();
                     } else {
                         this.webSocket = ws;
+                        this.reconnectAttempts = 0;
                         Blackaddons.LOGGER.info("Connected to IRC");
                         startKeepAlive();
                     }
@@ -103,6 +105,7 @@ public class IrcClient implements WebSocket.Listener {
             }
             webSocket = null;
         }
+        this.reconnectAttempts = 0;
     }
 
     private void startKeepAlive() {
@@ -334,7 +337,9 @@ public class IrcClient implements WebSocket.Listener {
 
     private void scheduleReconnect() {
         if (ConfigManager.data.ircEnabled) {
-            CompletableFuture.delayedExecutor(5, java.util.concurrent.TimeUnit.SECONDS)
+            long delay = Math.min(60, 5L * (1L << reconnectAttempts));
+            this.reconnectAttempts = Math.min(this.reconnectAttempts + 1, 10);
+            CompletableFuture.delayedExecutor(delay, java.util.concurrent.TimeUnit.SECONDS)
                     .execute(this::connect);
         }
     }
