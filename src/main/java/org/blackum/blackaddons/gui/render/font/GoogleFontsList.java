@@ -1,5 +1,7 @@
 package org.blackum.blackaddons.gui.render.font;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 
@@ -73,7 +75,10 @@ public class GoogleFontsList {
                 if (Files.exists(CACHE_FILE)) {
                     entries = loadFromCache();
                 } else {
-                    entries = fetchDirNames();
+                    entries = loadFromResources();
+                    if (entries.isEmpty()) {
+                        entries = fetchDirNames();
+                    }
                     saveToCache(entries);
                 }
 
@@ -194,8 +199,29 @@ public class GoogleFontsList {
         }
         if (result.isEmpty()) {
             Files.deleteIfExists(CACHE_FILE);
-            result = fetchDirNames();
+            result = loadFromResources();
+            if (result.isEmpty()) {
+                result = fetchDirNames();
+            }
             saveToCache(result);
+        }
+        return result;
+    }
+
+    private static List<String[]> loadFromResources() {
+        List<String[]> result = new ArrayList<>();
+        try (java.io.InputStream in = GoogleFontsList.class.getResourceAsStream("/assets/blackaddons/fontnames.json")) {
+            if (in != null) {
+                try (java.io.InputStreamReader isr = new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)) {
+                    JsonObject json = JsonParser.parseReader(isr).getAsJsonObject();
+                    for (Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
+                        String name = entry.getKey();
+                        String sha = entry.getValue().getAsString();
+                        result.add(new String[]{dirToDisplayName(name), name, sha});
+                    }
+                }
+            }
+        } catch (Exception e) {
         }
         return result;
     }

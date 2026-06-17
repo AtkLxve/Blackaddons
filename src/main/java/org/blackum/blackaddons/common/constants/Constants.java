@@ -18,7 +18,7 @@ public final class Constants {
         // Cloudflare bypass
         public static final String BROWSER_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64; x64; rv:136.0) Gecko/20100101 Firefox/136.0";
         public static final String BOT_USER_AGENT = "BlackAddons/1.0";
-        public static final int HTTP_TIMEOUT_SECONDS = 60;
+        public static final int HTTP_TIMEOUT_SECONDS = 10;
 
         // Notifications
         public static final String MOD_DETECTION_TITLE = "BlackAddons";

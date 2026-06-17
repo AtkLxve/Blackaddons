@@ -390,37 +390,53 @@ public class BotIntegration {
     }
 
     private static boolean authKeyFetched = false;
+    private static CompletableFuture<String> activeAuthKeyFuture = null;
 
-    public static CompletableFuture<String> getAuthKey() {
+    public static synchronized CompletableFuture<String> getAuthKey() {
         if (authKeyFetched && EncryptionUtils.isKeySet()) {
             return CompletableFuture.completedFuture("fetched_key_present");
         }
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(ConfigManager.data.botUrl + "/v1/key"))
-                        .header("Content-Type", "application/json")
-                        .header("User-Agent", Constants.BOT_USER_AGENT)
-                        .GET()
-                        .build();
+        if (activeAuthKeyFuture != null && !activeAuthKeyFuture.isDone()) {
+            return activeAuthKeyFuture;
+        }
 
-                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                if (response.statusCode() >= 200 && response.statusCode() < 300) {
-                    JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
-                    if (responseJson.has("key")) {
-                        String key = responseJson.get("key").getAsString();
-                        EncryptionUtils.setKeyBase64(key);
-                        authKeyFetched = true;
-                        return "fetched_key_present";
-                    }
-                } else {
-                    Blackaddons.LOGGER.warn("Bot /v1/key failed. Status: " + response.statusCode() + " Body: " + response.body());
-                }
-            } catch (Exception e) {
-                Blackaddons.LOGGER.error("Failed to fetch bot key: " + e.getMessage());
-            }
-            return null;
-        });
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ConfigManager.data.botUrl + "/v1/key"))
+                    .header("Content-Type", "application/json")
+                    .header("User-Agent", Constants.BOT_USER_AGENT)
+                    .timeout(Duration.ofSeconds(10))
+                    .GET()
+                    .build();
+
+            activeAuthKeyFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                            try {
+                                JsonObject responseJson = JsonParser.parseString(response.body()).getAsJsonObject();
+                                if (responseJson.has("key")) {
+                                    String key = responseJson.get("key").getAsString();
+                                    EncryptionUtils.setKeyBase64(key);
+                                    authKeyFetched = true;
+                                    return "fetched_key_present";
+                                }
+                            } catch (Exception e) {
+                                Blackaddons.LOGGER.error("Failed to parse bot key JSON: " + e.getMessage());
+                            }
+                        } else {
+                            Blackaddons.LOGGER.warn("Bot /v1/key failed. Status: " + response.statusCode() + " Body: " + response.body());
+                        }
+                        return null;
+                    })
+                    .exceptionally(e -> {
+                        Blackaddons.LOGGER.error("Failed to fetch bot key: " + e.getMessage());
+                        return null;
+                    });
+            return activeAuthKeyFuture;
+        } catch (Exception e) {
+            Blackaddons.LOGGER.error("Failed to build key request: " + e.getMessage());
+            return CompletableFuture.completedFuture(null);
+        }
     }
 
     public static CompletableFuture<Void> authenticateWithBot() {

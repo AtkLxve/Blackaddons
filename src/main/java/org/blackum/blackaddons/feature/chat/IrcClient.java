@@ -89,14 +89,22 @@ public class IrcClient implements WebSocket.Listener {
                         scheduleReconnect();
                     } else {
                         this.webSocket = ws;
-                        this.reconnectAttempts = 0;
                         Blackaddons.LOGGER.info("Connected to IRC");
                         startKeepAlive();
+                        CompletableFuture.delayedExecutor(30, TimeUnit.SECONDS).execute(() -> {
+                            if (this.webSocket == ws) {
+                                this.reconnectAttempts = 0;
+                            }
+                        });
                     }
                 });
     }
 
     public void disconnect() {
+        disconnect(true);
+    }
+
+    private void disconnect(boolean resetAttempts) {
         stopKeepAlive();
         if (webSocket != null) {
             try {
@@ -105,7 +113,9 @@ public class IrcClient implements WebSocket.Listener {
             }
             webSocket = null;
         }
-        this.reconnectAttempts = 0;
+        if (resetAttempts) {
+            this.reconnectAttempts = 0;
+        }
     }
 
     private void startKeepAlive() {
@@ -115,20 +125,20 @@ public class IrcClient implements WebSocket.Listener {
             if (webSocket != null) {
                 if (System.currentTimeMillis() - lastMessageTime > 30000) {
                     Blackaddons.LOGGER.warn("IRC connection timed out, reconnecting...");
-                    disconnect();
+                    disconnect(false);
                     scheduleReconnect();
                     return;
                 }
                 try {
                     webSocket.sendPing(ByteBuffer.allocate(0)).exceptionally(ex -> {
                         Blackaddons.LOGGER.error("Failed to send ping", ex);
-                        disconnect();
+                        disconnect(false);
                         scheduleReconnect();
                         return null;
                     });
                 } catch (Exception e) {
                     Blackaddons.LOGGER.error("Ping error", e);
-                    disconnect();
+                    disconnect(false);
                     scheduleReconnect();
                 }
             }

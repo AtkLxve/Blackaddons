@@ -768,7 +768,15 @@ public class ConfigManager {
                     loadedData.apiPriorityList = new ArrayList<>(List.of(
                             ApiPriority.PLAIN_DAWN));
                 }
+                boolean shouldSave = false;
+                if ("http://hypixel-skyblock-socket.pegle.com:8080".equals(loadedData.botUrl)) {
+                    loadedData.botUrl = Constants.DEFAULT_BOT_URL;
+                    shouldSave = true;
+                }
                 data = loadedData;
+                if (shouldSave) {
+                    save();
+                }
                 normalizeLegacyActionTimings();
                 Theme.ACCENT = data.accentColor;
                 Theme.refreshColors();

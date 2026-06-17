@@ -18,11 +18,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PlayerProfileManager {
 
@@ -33,6 +37,10 @@ public class PlayerProfileManager {
     private static PlayerProfileManager instance;
 
     private final Map<String, String> uuidToNameCache = new ConcurrentHashMap<>();
+    private final Map<String, Long> failedLookups = new ConcurrentHashMap<>();
+    private final Queue<UUID> pendingLookups = new ConcurrentLinkedQueue<>();
+    private final Map<UUID, CompletableFuture<String>> activeLookups = new ConcurrentHashMap<>();
+    private final AtomicBoolean workerRunning = new AtomicBoolean(false);
     private final HttpClient httpClient;
     private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
     private File cacheFile;
@@ -73,11 +81,53 @@ public class PlayerProfileManager {
             return CompletableFuture.completedFuture(cached);
         }
 
-        return fetchFromPlayerDb(uuid).thenApply(name -> {
+        Long failedTime = failedLookups.get(key);
+        if (failedTime != null && System.currentTimeMillis() - failedTime < 300000) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        return activeLookups.computeIfAbsent(uuid, u -> {
+            CompletableFuture<String> future = new CompletableFuture<>();
+            pendingLookups.add(u);
+            triggerWorker();
+            return future;
+        });
+    }
+
+    private void triggerWorker() {
+        if (workerRunning.compareAndSet(false, true)) {
+            processNextLookup();
+        }
+    }
+
+    private void processNextLookup() {
+        UUID uuid = pendingLookups.poll();
+        if (uuid == null) {
+            workerRunning.set(false);
+            if (!pendingLookups.isEmpty()) {
+                triggerWorker();
+            }
+            return;
+        }
+
+        fetchFromPlayerDb(uuid).thenAccept(name -> {
+            String key = uuid.toString().replace("-", "").toLowerCase();
+            CompletableFuture<String> future = activeLookups.remove(uuid);
             if (name != null) {
                 putAndSave(key, name);
+                if (future != null) future.complete(name);
+            } else {
+                failedLookups.put(key, System.currentTimeMillis());
+                if (future != null) future.complete(null);
             }
-            return name;
+            CompletableFuture.delayedExecutor(200, TimeUnit.MILLISECONDS).execute(this::processNextLookup);
+        }).exceptionally(ex -> {
+            String key = uuid.toString().replace("-", "").toLowerCase();
+            CompletableFuture<String> future = activeLookups.remove(uuid);
+            failedLookups.put(key, System.currentTimeMillis());
+            if (future != null) future.complete(null);
+            CompletableFuture.delayedExecutor(200, TimeUnit.MILLISECONDS).execute(this::processNextLookup);
+            return null;
         });
     }
 
