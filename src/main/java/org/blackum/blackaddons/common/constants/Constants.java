@@ -71,8 +71,8 @@ public final class Constants {
         public static final String BOT_API_AUTH_VERIFY = "/v1/auth/verify";
         
         // GitHub
-        public static final String GITHUB_RELEASES_URL = "https://github.com/BLACKUM/BlackAddons/releases";
-        public static final String GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/BLACKUM/BlackAddons/releases/latest";
+        public static final String GITHUB_RELEASES_URL = "https://github.com/BlackAddons/mod/releases";
+        public static final String GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/BlackAddons/mod/releases/latest";
 
         // External URLs
         public static final String GITHUB_NAMES_URL = "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/main/data/custom_names.json";

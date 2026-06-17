@@ -13,6 +13,7 @@ import org.blackum.blackaddons.common.constants.Constants;
 public class HttpUtils {
     private static final HttpClient client = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_1_1)
+            .followRedirects(HttpClient.Redirect.NORMAL)
             .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
             .build();
 
