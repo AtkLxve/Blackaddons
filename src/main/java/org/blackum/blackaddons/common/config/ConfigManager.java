@@ -25,7 +25,7 @@ public class ConfigManager {
     private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File OLD_CONFIG_FILE = OLD_CONFIG_DIR.resolve("config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    public static final int API_PRIORITY_SLOTS = 1;
+    public static final int API_PRIORITY_SLOTS = 3;
     
     private static File getConfigFile() {
         return ProfileManager.getActiveProfileFile(ProfileManager.Category.CONFIG);
@@ -360,7 +360,7 @@ public class ConfigManager {
         public String botUrl = Constants.DEFAULT_BOT_URL;
         public DataSource dataSource = DataSource.LOCAL;
         public List<ApiPriority> apiPriorityList = new ArrayList<>(
-                List.of(ApiPriority.PLAIN_DAWN));
+                List.of(ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT));
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
         public boolean partyFinderAutoInvite = true;
@@ -763,10 +763,24 @@ public class ConfigManager {
                 if (loadedData.apiPriorityList != null) {
                     loadedData.apiPriorityList.removeIf(java.util.Objects::isNull);
                 }
-                if (loadedData.apiPriorityList == null
-                        || loadedData.apiPriorityList.size() != API_PRIORITY_SLOTS) {
+                if (loadedData.apiPriorityList == null) {
                     loadedData.apiPriorityList = new ArrayList<>(List.of(
-                            ApiPriority.PLAIN_DAWN));
+                            ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT));
+                } else {
+                    while (loadedData.apiPriorityList.size() < API_PRIORITY_SLOTS) {
+                        ApiPriority fallback = ApiPriority.PLAIN_DAWN;
+                        for (ApiPriority p : ApiPriority.values()) {
+                            if (!loadedData.apiPriorityList.contains(p)) {
+                                fallback = p;
+                                break;
+                            }
+                        }
+                        loadedData.apiPriorityList.add(fallback);
+                    }
+                    if (loadedData.apiPriorityList.size() > API_PRIORITY_SLOTS) {
+                        loadedData.apiPriorityList = new ArrayList<>(
+                                loadedData.apiPriorityList.subList(0, API_PRIORITY_SLOTS));
+                    }
                 }
                 boolean shouldSave = false;
                 if ("http://hypixel-skyblock-socket.pegle.com:8080".equals(loadedData.botUrl)) {
