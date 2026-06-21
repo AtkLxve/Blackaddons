@@ -5,9 +5,6 @@ import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.world.entity.Entity;
-//? if < 1.21.11 {
-/*import net.minecraft.world.entity.monster.Zombie;
-*///?} else
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;

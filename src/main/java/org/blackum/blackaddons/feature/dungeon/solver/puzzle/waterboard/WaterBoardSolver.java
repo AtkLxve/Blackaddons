@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -75,7 +75,7 @@ public class WaterBoardSolver {
         return patternId == -1;
     }
 
-    public static void renderHUD(GuiGraphics graphics) {
+    public static void renderHUD(GuiGraphicsExtractor graphics) {
         if (patternId != -1 && !solution.isEmpty() && ConfigManager.data.waterBoardHudEnabled) {
             List<ClickInfo> clicks = getTicksToClicks();
             if (!clicks.isEmpty()) {
@@ -89,7 +89,7 @@ public class WaterBoardSolver {
                 graphics.pose().translate(x, y);
                 graphics.pose().scale(scale, scale);
 
-                graphics.drawString(Minecraft.getInstance().font, "§b§lWater Board", 0, -12, -1);
+                graphics.text(Minecraft.getInstance().font, "§b§lWater Board", 0, -12, -1);
 
                 for (int i = 0; i < Math.min(clicks.size(), 4); i++) {
                     ClickInfo click = clicks.get(i);
@@ -115,7 +115,7 @@ public class WaterBoardSolver {
                         timeStr = remaining <= 0 ? "§a§lCLICK" : NumbersUtils.toFixed(remaining, 1) + "s";
                     }
 
-                    graphics.drawString(Minecraft.getInstance().font, color + name + ": §f" + timeStr, 0, i * 10, -1);
+                    graphics.text(Minecraft.getInstance().font, color + name + ": §f" + timeStr, 0, i * 10, -1);
                 }
 
                 graphics.pose().popMatrix();
@@ -238,7 +238,7 @@ public class WaterBoardSolver {
                 }
 
                 if (!found) {
-                    mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal(
+                    mc.gui.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal(
                             "§c[BlackAddons Debug] §7Unknown lever clicked at: " + event.pos.getX() + ", "
                                     + event.pos.getY() + ", " + event.pos.getZ()));
                 }
@@ -277,7 +277,7 @@ public class WaterBoardSolver {
                     });
                 } else {
                     Minecraft.getInstance().gui.getChat()
-                            .addMessage(net.minecraft.network.chat.Component
+                            .addClientSystemMessage(net.minecraft.network.chat.Component
                                     .literal("§c[BlackAddons Debug] §7Solution mapping not found for gates: " + gates));
                 }
             }

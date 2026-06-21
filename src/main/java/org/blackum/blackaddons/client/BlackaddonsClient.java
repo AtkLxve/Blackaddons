@@ -10,8 +10,9 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.minecraft.resources.Identifier;
 
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
@@ -110,19 +111,22 @@ public class BlackaddonsClient implements ClientModInitializer {
         ModuleManager.registerAutoModules();
         HudRegistry.install();
 
-        HudRenderCallback.EVENT.register((graphics, partialTick) -> {
-            if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
-                NotificationManager.getInstance().render(graphics);
-            }
-        });
+        HudElementRegistry.addLast(
+                Identifier.fromNamespaceAndPath("blackaddons", "notifications"),
+                (graphics, tracker) -> {
+                    if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
+                        NotificationManager.getInstance().render(graphics);
+                    }
+                }
+        );
 
-        WorldRenderEvents.BEFORE_TRANSLUCENT.register(context -> {
-            WaypointRenderer.render(context.matrices().last().pose(), context.consumers(), 0.0f);
+        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
+            WaypointRenderer.render(context.poseStack().last().pose(), context.bufferSource(), 0.0f);
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null || mc.level == null || mc.gameRenderer == null) return;
             DebugBoxRenderer.render(
-                    context.matrices().last().pose(),
-                    context.consumers(),
+                    context.poseStack().last().pose(),
+                    context.bufferSource(),
                     mc.gameRenderer.getMainCamera().position(),
                     LocationUtils.getDebugBoxes()
             );

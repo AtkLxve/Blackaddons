@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -39,7 +39,7 @@ public class Checkbox extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -69,7 +69,7 @@ public class Checkbox extends Widget {
             int labelY = y + (height - 8) / 2;
             int baseColor = enabled ? Theme.TEXT_PRIMARY : Theme.TEXT_SECONDARY;
             int labelColor = Theme.lerpColor(baseColor, Theme.ACCENT, Math.max(checkProgress, hoverProgress * 0.35f));
-            graphics.drawString(Minecraft.getInstance().font, label, labelX, labelY, labelColor);
+            graphics.text(Minecraft.getInstance().font, label, labelX, labelY, labelColor);
         }
     }
 

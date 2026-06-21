@@ -2,7 +2,7 @@ package org.blackum.blackaddons.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.feature.ping.PingFeature;
@@ -12,7 +12,7 @@ public final class MiscCommands {
     private MiscCommands() {}
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> hudNode() {
-        return ClientCommandManager.literal("hud").executes(ctx -> {
+        return ClientCommands.literal("hud").executes(ctx -> {
             if (Blackaddons.screenOpener != null) {
                 Blackaddons.screenOpener.accept(new OverlayEditScreen(null));
             }
@@ -21,7 +21,7 @@ public final class MiscCommands {
     }
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> pingNode() {
-        return ClientCommandManager.literal("ping").executes(ctx -> {
+        return ClientCommands.literal("ping").executes(ctx -> {
             PingFeature.sendPing();
             return 1;
         });

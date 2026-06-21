@@ -3,7 +3,7 @@ package org.blackum.blackaddons.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.SharedSuggestionProvider;
 import org.blackum.blackaddons.Blackaddons;
@@ -13,7 +13,7 @@ import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 public class DungeonCommands {
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> pfNode() {
-        return ClientCommandManager.literal("pf").executes(ctx -> {
+        return ClientCommands.literal("pf").executes(ctx -> {
             if (Blackaddons.screenOpener != null) {
                 Blackaddons.screenOpener.accept(new PartyFinderScreen());
             }
@@ -22,13 +22,13 @@ public class DungeonCommands {
     }
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> leaderboardNode() {
-        return ClientCommandManager.literal("leaderboard")
+        return ClientCommands.literal("leaderboard")
                 .executes(ctx -> {
                     if (Blackaddons.screenOpener != null)
                         Blackaddons.screenOpener.accept(new SoloLeaderboardScreen("F7"));
                     return 1;
                 })
-                .then(ClientCommandManager.argument("floor", StringArgumentType.string())
+                .then(ClientCommands.argument("floor", StringArgumentType.string())
                         .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
                                 new String[]{"F7", "M7"}, builder))
                         .executes(ctx -> {
@@ -41,13 +41,13 @@ public class DungeonCommands {
 
     public static void registerStandaloneLeaderboards(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         for (String alias : new String[]{"leaderboard", "lb"}) {
-            dispatcher.register(ClientCommandManager.literal(alias)
+            dispatcher.register(ClientCommands.literal(alias)
                     .executes(ctx -> {
                         if (Blackaddons.screenOpener != null)
                             Blackaddons.screenOpener.accept(new SoloLeaderboardScreen("F7"));
                         return 1;
                     })
-                    .then(ClientCommandManager.argument("floor", StringArgumentType.string())
+                    .then(ClientCommands.argument("floor", StringArgumentType.string())
                             .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(
                                     new String[]{"F7", "M7"}, builder))
                             .executes(ctx -> {

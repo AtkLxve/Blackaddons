@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.network.chat.Component;
@@ -53,7 +53,7 @@ public class ItemGridWidget extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -79,15 +79,15 @@ public class ItemGridWidget extends Widget {
                 graphics.pose().translate(slotX + (slotSize - 2) / 2.0f, slotY + (slotSize - 2) / 2.0f);
                 graphics.pose().scale(itemScale, itemScale);
                 graphics.pose().translate(-8, -8);
-                graphics.renderItem(stack, 0, 0);
-                graphics.renderItemDecorations(Minecraft.getInstance().font, stack, 0, 0);
+                graphics.item(stack, 0, 0);
+                graphics.itemDecorations(Minecraft.getInstance().font, stack, 0, 0);
 
                 if (item.customStackText() != null) {
                     graphics.pose().pushMatrix();
                     String text = item.customStackText();
                     int textWidth = Minecraft.getInstance().font.width(text);
                     int color = item.customStackTextColor() != null ? item.customStackTextColor() : 0xFFFFFF;
-                    graphics.drawString(Minecraft.getInstance().font, text, 16 - textWidth, 9, color, true);
+                    graphics.text(Minecraft.getInstance().font, text, 16 - textWidth, 9, color, true);
                     graphics.pose().popMatrix();
                 }
 
@@ -97,7 +97,7 @@ public class ItemGridWidget extends Widget {
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
         if (!visible || !isMouseOver(mouseX, mouseY))
             return;
@@ -123,7 +123,7 @@ public class ItemGridWidget extends Widget {
                             Minecraft.getInstance().player, TooltipFlag.Default.NORMAL)) {
                         tooltip.add(ClientTooltipComponent.create(line.getVisualOrderText()));
                     }
-                    graphics.renderTooltip(Minecraft.getInstance().font, tooltip, rawMouseX, rawMouseY,
+                    graphics.tooltip(Minecraft.getInstance().font, tooltip, rawMouseX, rawMouseY,
                             DefaultTooltipPositioner.INSTANCE, null);
                 }
                 break;

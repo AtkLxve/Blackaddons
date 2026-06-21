@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.widget.base;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.RenderHelper;
@@ -60,7 +60,7 @@ public class AutoClickButtonSelector extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) return;
 
         for (Chip chip : chips) {
@@ -86,8 +86,8 @@ public class AutoClickButtonSelector extends Widget {
             int centerX = chip.x + chip.width / 2;
             int titleWidth = Minecraft.getInstance().font.width(chip.label);
             int detailWidth = Minecraft.getInstance().font.width(chip.detail);
-            graphics.drawString(Minecraft.getInstance().font, chip.label, centerX - titleWidth / 2, chip.y + 8, titleColor);
-            graphics.drawString(Minecraft.getInstance().font, chip.detail, centerX - detailWidth / 2, chip.y + 19, detailColor);
+            graphics.text(Minecraft.getInstance().font, chip.label, centerX - titleWidth / 2, chip.y + 8, titleColor);
+            graphics.text(Minecraft.getInstance().font, chip.detail, centerX - detailWidth / 2, chip.y + 19, detailColor);
         }
     }
 

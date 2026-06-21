@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -32,7 +32,7 @@ public class ChatFilterRow extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) {
             return;
         }
@@ -45,8 +45,8 @@ public class ChatFilterRow extends Widget {
             pattern = Minecraft.getInstance().font.plainSubstrByWidth(pattern, maxPatternWidth - 6) + "...";
         }
 
-        graphics.drawString(Minecraft.getInstance().font, pattern, x + 10, y + 10, Theme.TEXT_PRIMARY);
-        graphics.drawString(Minecraft.getInstance().font, describeFilter(), x + 10, y + 28, Theme.TEXT_SECONDARY);
+        graphics.text(Minecraft.getInstance().font, pattern, x + 10, y + 10, Theme.TEXT_PRIMARY);
+        graphics.text(Minecraft.getInstance().font, describeFilter(), x + 10, y + 28, Theme.TEXT_SECONDARY);
 
         toggleButton.setText(filter.enabled ? "Enabled" : "Disabled");
         toggleButton.setX(x + width - deleteButton.getWidth() - toggleButton.getWidth() - 16);

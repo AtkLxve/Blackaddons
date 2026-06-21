@@ -132,9 +132,9 @@ public class SoloClearsTracker {
                 String puzzleStr = stats.completedPuzzles.isEmpty() ? "None" : String.join(", ", stats.completedPuzzles);
                 String princeStr = princeDefeated ? "§a✔" : "§c✘";
                 String mimicStr = mimicKilled ? "§a✔" : "§c✘";
-                mc.player.displayClientMessage(ChatUtils.getMessage("§b§l" + floorName + " SOLO CLEAR DONE! §r§fTime: " + colorTime +
+                mc.player.sendSystemMessage(ChatUtils.getMessage("§b§l" + floorName + " SOLO CLEAR DONE! §r§fTime: " + colorTime +
                     " §r§fSecrets: §b" + stats.secretsFound + " §r§fPuzzles: §d[" + puzzleStr + "] " +
-                    "§r§fPrince: " + princeStr + " §r§fMimic: " + mimicStr), false);
+                    "§r§fPrince: " + princeStr + " §r§fMimic: " + mimicStr));
 
                 if (isNewPB) {
                     final String player = mc.getUser().getName();
@@ -176,8 +176,8 @@ public class SoloClearsTracker {
                             })
                             .thenAccept(res -> {
                                 if (res != null && mc.player != null) {
-                                    mc.execute(() -> mc.player.displayClientMessage(
-                                            ChatUtils.getMessage("§a[SoloClears] New PB submitted to leaderboard!"), false));
+                                    mc.execute(() -> mc.player.sendSystemMessage(
+                                            ChatUtils.getMessage("§a[SoloClears] New PB submitted to leaderboard!")));
                                 }
                             });
                 }
@@ -248,18 +248,18 @@ public class SoloClearsTracker {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 
-        mc.player.displayClientMessage(Component.literal("§b[SoloClears Debug] §fDungeon: " + LocationUtils.inDungeons() + " | Floor: " + LocationUtils.getCurrentFloor()), false);
+        mc.player.sendSystemMessage(Component.literal("§b[SoloClears Debug] §fDungeon: " + LocationUtils.inDungeons() + " | Floor: " + LocationUtils.getCurrentFloor()));
         
         List<String> scoreboardLines = ScoreboardUtils.getCleanSidebarLines();
-        mc.player.displayClientMessage(Component.literal("§e--- Sidebar Lines ---"), false);
+        mc.player.sendSystemMessage(Component.literal("§e--- Sidebar Lines ---"));
         for (String line : scoreboardLines) {
-            mc.player.displayClientMessage(Component.literal("§7- " + line), false);
+            mc.player.sendSystemMessage(Component.literal("§7- " + line));
         }
 
         List<String> tabListLines = TabListUtils.getTabListLines();
-        mc.player.displayClientMessage(Component.literal("§e--- Tablist Lines (First 20) ---"), false);
+        mc.player.sendSystemMessage(Component.literal("§e--- Tablist Lines (First 20) ---"));
         for (int i = 0; i < Math.min(20, tabListLines.size()); i++) {
-            mc.player.displayClientMessage(Component.literal("§7- " + tabListLines.get(i)), false);
+            mc.player.sendSystemMessage(Component.literal("§7- " + tabListLines.get(i)));
         }
     }
 }

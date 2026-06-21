@@ -16,7 +16,7 @@ import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
 import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.config.ActionManager;
@@ -565,8 +565,8 @@ public class ChatActionEditScreen extends BaseScreen {
     }
 
     @Override
-    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        RenderHelper.drawCenteredString(graphics, font, "Editing Steps for: " + trigger.pattern, containerX + containerWidth / 2, containerY + 20, Theme.TEXT_PRIMARY);
+    protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        RenderHelper.centeredText(graphics, font, "Editing Steps for: " + trigger.pattern, containerX + containerWidth / 2, containerY + 20, Theme.TEXT_PRIMARY);
     }
 
     private String formatOptionalCoord(double value) {

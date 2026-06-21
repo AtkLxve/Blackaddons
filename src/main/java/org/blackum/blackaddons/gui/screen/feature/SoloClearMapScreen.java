@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.screen.feature;
 
 import com.google.gson.JsonObject;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -28,8 +28,8 @@ public class SoloClearMapScreen extends BaseScreen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         graphics.fill(0, 0, this.width, this.height, 0xDD000000);
 
         if (mapData != null) {
@@ -53,7 +53,7 @@ public class SoloClearMapScreen extends BaseScreen {
         }
     }
 
-    private void renderMap(GuiGraphics graphics, JsonObject mapData, int mapX, int mapY, int cellSize) {
+    private void renderMap(GuiGraphicsExtractor graphics, JsonObject mapData, int mapX, int mapY, int cellSize) {
         if (!mapData.has("rooms"))
             return;
         JsonArray rooms = mapData.getAsJsonArray("rooms");
@@ -165,7 +165,7 @@ public class SoloClearMapScreen extends BaseScreen {
         }
     }
 
-    private void renderRoom(GuiGraphics graphics, JsonArray places, int mapX, int mapY, int cellSize,
+    private void renderRoom(GuiGraphicsExtractor graphics, JsonArray places, int mapX, int mapY, int cellSize,
             int padding, int color, int cornerRadius) {
         if (places == null || places.isEmpty())
             return;
@@ -236,7 +236,7 @@ public class SoloClearMapScreen extends BaseScreen {
         return false;
     }
 
-    private void drawRoomRect(GuiGraphics graphics, int mapX, int mapY, int cellSize, int padding, int color,
+    private void drawRoomRect(GuiGraphicsExtractor graphics, int mapX, int mapY, int cellSize, int padding, int color,
             int cornerRadius, int minGx, int minGz, int maxGx, int maxGz) {
         int x1 = mapX + minGx * cellSize + padding / 2;
         int y1 = mapY + minGz * cellSize + padding / 2;
@@ -245,7 +245,7 @@ public class SoloClearMapScreen extends BaseScreen {
         RenderHelper.renderRoundedRect(graphics, x1, y1, x2 - x1, y2 - y1, cornerRadius, color);
     }
 
-    private void drawRoomName(GuiGraphics graphics, String name, JsonArray places, int mapX, int mapY,
+    private void drawRoomName(GuiGraphicsExtractor graphics, String name, JsonArray places, int mapX, int mapY,
             int cellSize, int color) {
         if (places == null || places.isEmpty() || name == null)
             return;
@@ -342,7 +342,7 @@ public class SoloClearMapScreen extends BaseScreen {
             graphics.pose().pushMatrix();
             graphics.pose().translate((float) cx, curY);
             graphics.pose().scale(scale, scale);
-            graphics.drawCenteredString(mc.font, line, 0, -(fontH / 2), color);
+            graphics.centeredText(mc.font, line, 0, -(fontH / 2), color);
             graphics.pose().popMatrix();
         }
     }

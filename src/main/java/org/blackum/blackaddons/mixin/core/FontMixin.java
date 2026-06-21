@@ -67,9 +67,6 @@ public class FontMixin {
     }
 
     @ModifyVariable(
-            //? if < 1.21.11 {
-            /*method = "prepareText(Lnet/minecraft/util/FormattedCharSequence;FFIZI)Lnet/minecraft/client/gui/Font$PreparedText;",
-            *///?} else
             method = "prepareText(Lnet/minecraft/util/FormattedCharSequence;FFIZZI)Lnet/minecraft/client/gui/Font$PreparedText;",
             at = @At("HEAD"),
             argsOnly = true,

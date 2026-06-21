@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.hud;
 
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public interface HudElement {
     String id();
@@ -20,7 +20,7 @@ public interface HudElement {
 
     int height();
 
-    void render(GuiGraphics graphics, DeltaTracker tracker);
+    void render(GuiGraphicsExtractor graphics, DeltaTracker tracker);
 
     default void reset() {}
 

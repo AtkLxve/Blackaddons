@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze;
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
@@ -25,17 +25,17 @@ public class TpMazeHandler {
             }
         });
         
-        WorldRenderEvents.BEFORE_TRANSLUCENT.register(context -> {
+        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
             if (!ConfigManager.data.teleportMazeSolverEnabled) return;
 
             MultiBufferSource.BufferSource bufSource;
-            if (context.consumers() instanceof MultiBufferSource.BufferSource bs) {
+            if (context.bufferSource() instanceof MultiBufferSource.BufferSource bs) {
                 bufSource = bs;
             } else {
                 bufSource = Minecraft.getInstance().renderBuffers().bufferSource();
             }
 
-            RenderContext ctx = new RenderContext(context.matrices(), bufSource, 0.0f);
+            RenderContext ctx = new RenderContext(context.poseStack(), bufSource, 0.0f);
             TpMazeSolver.onRenderWorld(ctx);
         });
 

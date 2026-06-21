@@ -2,7 +2,7 @@ package org.blackum.blackaddons.gui.widget.row;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class SoloClearRow extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) return;
 
         RenderHelper.renderSurface(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, hovered);
@@ -42,12 +42,12 @@ public class SoloClearRow extends Widget {
         
         String mapDisplay = (info.type != null && !info.type.isEmpty()) ? info.type : (floor != null ? floor : "Unknown");
         String title = ChatFormatting.AQUA + mapDisplay + " Run #" + (index + 1) + ChatFormatting.WHITE + " | " + ChatFormatting.YELLOW + info.time;
-        graphics.drawString(mc.font, title, x + 10, textY, 0xFFFFFFFF);
+        graphics.text(mc.font, title, x + 10, textY, 0xFFFFFFFF);
 
         String stats = ChatFormatting.GRAY + "Secrets: " + ChatFormatting.GREEN + info.secrets +
                        ChatFormatting.GRAY + " | Prince: " + (info.princeKilled ? ChatFormatting.GREEN + "✔" : ChatFormatting.RED + "✘") +
                        ChatFormatting.GRAY + " | Mimic: " + (info.mimicKilled ? ChatFormatting.GREEN + "✔" : ChatFormatting.RED + "✘");
-        graphics.drawString(mc.font, stats, x + 10, textY + 12, 0xFFFFFFFF);
+        graphics.text(mc.font, stats, x + 10, textY + 12, 0xFFFFFFFF);
 
         int rightEdge = x + width - 10;
         
@@ -70,11 +70,11 @@ public class SoloClearRow extends Widget {
             }
             String puzzlesJoined = ChatFormatting.GRAY + "Puzzles: " + ChatFormatting.LIGHT_PURPLE + String.join(", ", coloredPuzzles);
             int puzzlesWidth = mc.font.width(puzzlesJoined);
-            graphics.drawString(mc.font, puzzlesJoined, rightEdge - puzzlesWidth, textY + 6, 0xFFFFFFFF);
+            graphics.text(mc.font, puzzlesJoined, rightEdge - puzzlesWidth, textY + 6, 0xFFFFFFFF);
         }
     }
 
-    private void renderMap(GuiGraphics graphics, JsonObject mapData, int mapX, int mapY) {
+    private void renderMap(GuiGraphicsExtractor graphics, JsonObject mapData, int mapX, int mapY) {
         if (!mapData.has("rooms")) return;
         JsonArray rooms = mapData.getAsJsonArray("rooms");
         

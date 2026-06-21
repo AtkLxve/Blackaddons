@@ -6,7 +6,7 @@ import org.blackum.blackaddons.gui.widget.layout.*;
 import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class GridRow extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
         for (Map.Entry<Widget, Integer> entry : children) {
@@ -49,7 +49,7 @@ public class GridRow extends Widget {
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
         if (!visible)
             return;

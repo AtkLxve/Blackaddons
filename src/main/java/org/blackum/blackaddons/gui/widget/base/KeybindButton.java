@@ -8,7 +8,7 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.lwjgl.glfw.GLFW;
@@ -30,7 +30,7 @@ public class KeybindButton extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) {
             return;
         }
@@ -45,7 +45,7 @@ public class KeybindButton extends Widget {
 
         int textX = x + 10;
         int textY = y + (height - 8) / 2;
-        graphics.drawString(Minecraft.getInstance().font, text, textX, textY, textColor);
+        graphics.text(Minecraft.getInstance().font, text, textX, textY, textColor);
     }
 
     @Override

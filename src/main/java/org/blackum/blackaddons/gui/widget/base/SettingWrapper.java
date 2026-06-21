@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -91,19 +91,19 @@ public class SettingWrapper extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
         float hover = hoverAnimation.getValue();
         int textY = y + (HEADER_HEIGHT - 8) / 2;
         int labelX = x + Math.round(hover * 2.0f);
-        graphics.drawString(Minecraft.getInstance().font, label, labelX, textY,
+        graphics.text(Minecraft.getInstance().font, label, labelX, textY,
                 Theme.lerpColor(Theme.TEXT_PRIMARY, Theme.ACCENT, hover * 0.25f));
 
         if (rightLabel != null && !rightLabel.isEmpty()) {
             int rw = Minecraft.getInstance().font.width(rightLabel);
-            graphics.drawString(Minecraft.getInstance().font, rightLabel, x + width - rw - 10, textY,
+            graphics.text(Minecraft.getInstance().font, rightLabel, x + width - rw - 10, textY,
                     Theme.TEXT_SECONDARY);
         }
 
@@ -111,7 +111,7 @@ public class SettingWrapper extends Widget {
             int expandX = labelX + labelWidth + 6;
             int expandY = y + (HEADER_HEIGHT - EXPAND_ICON_SIZE) / 2;
             int expandColor = Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.ACCENT, Math.max(hover, expandAnimation.getValue()));
-            graphics.drawString(Minecraft.getInstance().font, expanded ? "▼" : "▶", expandX, expandY, expandColor);
+            graphics.text(Minecraft.getInstance().font, expanded ? "▼" : "▶", expandX, expandY, expandColor);
         }
 
         if (description != null && !description.isEmpty() && expandAnimation.getValue() > 0) {
@@ -124,14 +124,14 @@ public class SettingWrapper extends Widget {
 
             for (String word : words) {
                 if (Minecraft.getInstance().font.width(line + word) > width - 20 && !line.isEmpty()) {
-                    graphics.drawString(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
+                    graphics.text(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
                     descY += 10;
                     line = new StringBuilder();
                 }
                 line.append(word).append(" ");
             }
             if (!line.isEmpty()) {
-                graphics.drawString(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
+                graphics.text(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
             }
         }
 
@@ -141,7 +141,7 @@ public class SettingWrapper extends Widget {
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
         if (!visible)
             return;

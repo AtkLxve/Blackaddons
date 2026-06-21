@@ -6,7 +6,7 @@ import org.blackum.blackaddons.gui.widget.layout.*;
 import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public abstract class Widget {
     protected int x;
@@ -43,9 +43,9 @@ public abstract class Widget {
         this.marginRight = marginRight;
     }
 
-    public abstract void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick);
+    public abstract void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick);
 
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
     }
 

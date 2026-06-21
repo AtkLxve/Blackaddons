@@ -20,7 +20,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -147,7 +147,7 @@ public class PartyFinderScreen extends BaseScreen {
     }
 
     @Override
-    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
     }
 
     private static class PartyWidget extends Widget {
@@ -167,16 +167,16 @@ public class PartyFinderScreen extends BaseScreen {
         }
 
         @Override
-        public void render(GuiGraphics g, int mx, int my, float p) {
+        public void render(GuiGraphicsExtractor g, int mx, int my, float p) {
             RenderHelper.renderSurface(g, x, y, width, height, Theme.BORDER_RADIUS_SMALL, false);
 
-            g.drawString(MinecraftInstance.mc.font, leader, x + 10, y + 10, Theme.ACCENT);
-            g.drawString(MinecraftInstance.mc.font, ChatFormatting.GRAY + note, x + 10, y + 25,
+            g.text(MinecraftInstance.mc.font, leader, x + 10, y + 10, Theme.ACCENT);
+            g.text(MinecraftInstance.mc.font, ChatFormatting.GRAY + note, x + 10, y + 25,
                     Theme.TEXT_SECONDARY);
 
             String countText = memberCount + "/" + maxSize;
             int countWidth = MinecraftInstance.mc.font.width(countText);
-            g.drawString(MinecraftInstance.mc.font, countText, x + width - countWidth - 80, y + 20,
+            g.text(MinecraftInstance.mc.font, countText, x + width - countWidth - 80, y + 20,
                     Theme.TEXT_PRIMARY);
 
             boolean hovered = mx >= x + width - 70 && mx <= x + width - 10 && my >= y + 15 && my <= y + 35;
@@ -184,7 +184,7 @@ public class PartyFinderScreen extends BaseScreen {
                     hovered ? Theme.withAlpha(Theme.ACCENT, 0.4f) : Theme.withAlpha(Theme.ACCENT, 0.2f));
 
             int joinWidth = MinecraftInstance.mc.font.width("Join");
-            g.drawString(MinecraftInstance.mc.font, "Join", x + width - 70 + (60 - joinWidth) / 2, y + 21,
+            g.text(MinecraftInstance.mc.font, "Join", x + width - 70 + (60 - joinWidth) / 2, y + 21,
                     Theme.TEXT_PRIMARY);
         }
 

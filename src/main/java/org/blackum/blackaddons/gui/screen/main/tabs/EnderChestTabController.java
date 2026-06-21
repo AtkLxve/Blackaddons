@@ -114,7 +114,7 @@ public class EnderChestTabController extends ProfileTabController {
 
             listView.addItem(new Widget(0, 0, 0, 20) {
                 @Override
-                public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY,
+                public void render(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                         float partialTick) {
                 }
             });

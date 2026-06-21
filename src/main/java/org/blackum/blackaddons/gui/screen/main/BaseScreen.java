@@ -18,7 +18,7 @@ import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.*;
 import net.minecraft.network.chat.Component;
@@ -187,7 +187,7 @@ public abstract class BaseScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         float scale = getGuiScaleFactor();
         
         int scaledMouseX = (int)(mouseX / scale);
@@ -288,10 +288,10 @@ public abstract class BaseScreen extends Screen {
         NotificationManager.getInstance().render(graphics);
     }
 
-    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
     }
 
-    protected void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
+    protected void renderTooltips(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     }
 
     @Override
@@ -325,7 +325,7 @@ public abstract class BaseScreen extends Screen {
         if (showClickDebug && mc.player != null) {
             String msg = String.format("%s[Click] Scaled: %.1f,%.1f (Raw: %.1f,%.1f, Scale: %.2f)", 
                     ChatFormatting.YELLOW, mouseX, mouseY, mc.mouseHandler.xpos(), mc.mouseHandler.ypos(), scale);
-            mc.player.displayClientMessage(Component.literal(msg), false);
+            mc.player.sendSystemMessage(Component.literal(msg));
         }
 
         if (canScroll) {
@@ -465,7 +465,7 @@ public abstract class BaseScreen extends Screen {
     public boolean charTyped(CharacterEvent event) {
         if (getFocusedWidget() != null && getFocusedWidget().isVisible() && getFocusedWidget().isEnabled()) {
             char character = (char) event.codepoint();
-            if (getFocusedWidget().charTyped(character, event.modifiers())) {
+            if (getFocusedWidget().charTyped(character, 0)) {
                 return true;
             }
         }

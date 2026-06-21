@@ -17,7 +17,7 @@ import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -65,13 +65,13 @@ public class OverlayEditScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         g.fill(0, 0, this.width, this.height, 0x80000000);
 
-        g.drawCenteredString(font, "Drag to move | Drag corner to resize | Scroll on selected to scale | Right-click to reset | Esc to save",
+        g.centeredText(font, "Drag to move | Drag corner to resize | Scroll on selected to scale | Right-click to reset | Esc to save",
                 this.width / 2, 8, HINT_COLOR);
         if (selected != null) {
-            g.drawCenteredString(font, "Selected: " + selected.displayName()
+            g.centeredText(font, "Selected: " + selected.displayName()
                     + "  @" + selected.x() + "," + selected.y()
                     + "  " + selected.width() + "x" + selected.height(),
                     this.width / 2, 22, 0xFFFFFFFF);
@@ -88,7 +88,7 @@ public class OverlayEditScreen extends Screen {
 
             int labelY = ey - font.lineHeight - 1;
             if (labelY < 0) labelY = ey + 1;
-            g.drawString(font, e.displayName(), ex + 2, labelY, color | 0xFF000000);
+            g.text(font, e.displayName(), ex + 2, labelY, color | 0xFF000000);
 
             if (e.resizable() && e == selected) {
                 int hx = ex + ew - HANDLE_SIZE;
@@ -98,7 +98,7 @@ public class OverlayEditScreen extends Screen {
         }
     }
 
-    private static void drawOutline(GuiGraphics g, int x, int y, int w, int h, int color) {
+    private static void drawOutline(GuiGraphicsExtractor g, int x, int y, int w, int h, int color) {
         g.fill(x, y, x + w, y + 1, color);
         g.fill(x, y + h - 1, x + w, y + h, color);
         g.fill(x, y, x + 1, y + h, color);

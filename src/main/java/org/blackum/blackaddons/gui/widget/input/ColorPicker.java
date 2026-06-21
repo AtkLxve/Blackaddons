@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.ColorUtils;
 import org.blackum.blackaddons.gui.render.RenderHelper;
@@ -117,7 +117,7 @@ public class ColorPicker extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -140,7 +140,7 @@ public class ColorPicker extends Widget {
         renderValues(graphics, mouseX, mouseY, partialTick, innerX, currentY, sbWidth);
     }
 
-    protected void renderSBArea(GuiGraphics graphics, int x, int y, int width, int height) {
+    protected void renderSBArea(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         int baseColor = ColorUtils.hsvToRgb(hull, 1f, 1f);
         graphics.fill(x, y, x + width, y + height, baseColor | 0xFF000000);
 
@@ -159,16 +159,10 @@ public class ColorPicker extends Widget {
         int cursorX = x + (int) (saturation * width);
         int cursorY = y + (int) ((1f - brightness) * height);
 
-        //? if < 1.21.11 {
-        /*graphics.fill(cursorX - 4, cursorY - 4, cursorX + 4, cursorY - 3, Theme.TEXT_PRIMARY);
-        graphics.fill(cursorX - 4, cursorY + 3, cursorX + 4, cursorY + 4, Theme.TEXT_PRIMARY);
-        graphics.fill(cursorX - 4, cursorY - 3, cursorX - 3, cursorY + 3, Theme.TEXT_PRIMARY);
-        graphics.fill(cursorX + 3, cursorY - 3, cursorX + 4, cursorY + 3, Theme.TEXT_PRIMARY);
-        *///?} else
-        graphics.renderOutline(cursorX - 4, cursorY - 4, 8, 8, Theme.TEXT_PRIMARY);
+        graphics.outline(cursorX - 4, cursorY - 4, 8, 8, Theme.TEXT_PRIMARY);
     }
 
-    protected void renderHueSlider(GuiGraphics graphics, int x, int y, int width, int height) {
+    protected void renderHueSlider(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         for (int i = 0; i < width; i++) {
             float h = (float) i / width;
             int color = ColorUtils.hsvToRgb(h, 1f, 1f);
@@ -179,7 +173,7 @@ public class ColorPicker extends Widget {
         graphics.fill(selectorX - 2, y - 2, selectorX + 2, y + height + 2, Theme.TEXT_PRIMARY);
     }
 
-    protected void renderAlphaSlider(GuiGraphics graphics, int x, int y, int width, int height) {
+    protected void renderAlphaSlider(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         int baseColor = ColorUtils.hsvToRgb(hull, saturation, brightness) & 0xFFFFFF;
 
         graphics.fill(x, y, x + width, y + height, Theme.SURFACE_LIGHT);
@@ -194,7 +188,7 @@ public class ColorPicker extends Widget {
         graphics.fill(selectorX - 2, y - 2, selectorX + 2, y + height + 2, Theme.TEXT_PRIMARY);
     }
 
-    private void renderValues(GuiGraphics graphics, int mouseX, int mouseY, float partialTick, int x, int y,
+    private void renderValues(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick, int x, int y,
             int width) {
         int currentColor = ColorUtils.hsvToRgb(hull, saturation, brightness);
         int packedColor = ((int) (alpha * 255) << 24) | (currentColor & 0xFFFFFF);
@@ -211,7 +205,7 @@ public class ColorPicker extends Widget {
         rgbaField.setWidth(fieldWidth);
         rgbaField.render(graphics, mouseX, mouseY, partialTick);
 
-        graphics.drawString(Minecraft.getInstance().font, "RGBA:", fieldX + 3, y, Theme.TEXT_SECONDARY);
+        graphics.text(Minecraft.getInstance().font, "RGBA:", fieldX + 3, y, Theme.TEXT_SECONDARY);
     }
 
     @Override

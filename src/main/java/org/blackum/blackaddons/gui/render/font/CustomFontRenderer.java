@@ -8,8 +8,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GlyphRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.GlyphRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.server.packs.resources.Resource;
@@ -23,9 +23,6 @@ import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-//? if < 1.21.11 {
-/*import net.minecraft.client.renderer.RenderType;*/
-//?} else
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 import java.io.File;
@@ -349,9 +346,6 @@ public class CustomFontRenderer {
         atlasId = McCompat.registerTexture(atlasTexture, "blackaddons", "custom_sdf_atlas");
         atlasRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas", BlackaddonsRenderPipelines.CUSTOM_TEXT, atlasId);
         atlasDepthRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas_depth", BlackaddonsRenderPipelines.CUSTOM_TEXT_DEPTH, atlasId);
-        //? if < 1.21.11 {
-        /*atlasTextureSetup = TextureSetup.singleTexture(atlasTexture.getTextureView());*/
-        //?} else
         atlasTextureSetup = TextureSetup.singleTexture(atlasTexture.getTextureView(), atlasTexture.getSampler());
     }
 
@@ -482,23 +476,11 @@ public class CustomFontRenderer {
                 curX[0] += glyph.advance * scale;
             } else {
                 FormattedCharSequence singleChar = sink -> sink.accept(0, style, cp);
-                //? if < 1.21.11 {
-                /*font.prepareText(singleChar, curX[0], y, argb, false, 0)*/
-                //?} else
                 font.prepareText(singleChar, curX[0], y, argb, false, false, 0)
                         .visit(new Font.GlyphVisitor() {
-                            //? if < 1.21.11 {
-                            /*@Override
-                            public void acceptEffect(TextRenderable effect) {
-                            }*/
-                            //?}
-
                             @Override
-                            //? if < 1.21.11 {
-                            /*public void acceptGlyph(TextRenderable styled) {*/
-                            //?} else
                             public void acceptGlyph(TextRenderable.Styled styled) {
-                                renderState.submitGlyphToCurrentLayer(new GlyphRenderState(new Matrix3x2f(pose), styled, scissor));
+                                renderState.addGlyphToCurrentLayer(new GlyphRenderState(new Matrix3x2f(pose), styled, scissor));
                             }
                         });
                 curX[0] += font.width(singleChar);
@@ -568,14 +550,11 @@ public class CustomFontRenderer {
         } else {
             textureSetup = fallbackTextureSetupCache.computeIfAbsent(codepoint, cp -> {
                 DynamicTexture tex = textureCache.computeIfAbsent(cp, this::createGlyphTexture);
-                //? if < 1.21.11 {
-                /*return TextureSetup.singleTexture(tex.getTextureView());*/
-                //?} else
                 return TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler());
             });
         }
 
-        renderState.submitGlyphToCurrentLayer(new CustomGlyphRenderState(
+        renderState.addGlyphToCurrentLayer(new CustomGlyphRenderState(
                 BlackaddonsRenderPipelines.CUSTOM_TEXT, textureSetup, new Matrix3x2f(pose),
                 sx0, sy0, sx1, sy1,
                 sdfGlyph.u0, sdfGlyph.v0, sdfGlyph.u1, sdfGlyph.v1,

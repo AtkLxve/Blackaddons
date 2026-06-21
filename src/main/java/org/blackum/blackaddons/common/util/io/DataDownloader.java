@@ -14,7 +14,7 @@ public class DataDownloader {
         try {
             InputStream stream = DataDownloader.class.getResourceAsStream("/assets/blackaddons/puzzles/" + fileName);
             if (stream == null) {
-                Minecraft.getInstance().gui.getChat().addMessage(
+                Minecraft.getInstance().gui.getChat().addClientSystemMessage(
                         net.minecraft.network.chat.Component.literal("§d[BlackAddons Debug] §cResource Missing: §f/assets/blackaddons/puzzles/" + fileName)
                 );
                 return null;
@@ -23,7 +23,7 @@ public class DataDownloader {
                 return GSON.fromJson(reader, type);
             }
         } catch (Exception e) {
-            Minecraft.getInstance().gui.getChat().addMessage(
+            Minecraft.getInstance().gui.getChat().addClientSystemMessage(
                     net.minecraft.network.chat.Component.literal("§d[BlackAddons Debug] §cError Loading JSON: §f" + fileName + " (" + e.getMessage() + ")")
             );
             e.printStackTrace();

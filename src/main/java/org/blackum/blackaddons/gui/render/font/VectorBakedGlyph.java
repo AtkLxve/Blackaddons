@@ -11,11 +11,8 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Style;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector4f;
-//? if < 1.21.11 {
-/*import net.minecraft.client.renderer.RenderType;*/
-//?} else
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class VectorBakedGlyph implements BakedGlyph {
@@ -39,26 +36,12 @@ public class VectorBakedGlyph implements BakedGlyph {
         };
     }
 
-    //? if < 1.21.11 {
-    /*@Override
-    public TextRenderable createGlyph(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset) {
-        return new VectorTextRenderable(codepoint, glyphData, x, y, color, shadowColor, style, boldOffset, shadowOffset);
-    }*/
-    //?}
-
-    //? if >= 1.21.11 {
     @Override
     public TextRenderable.Styled createGlyph(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset) {
         return new VectorTextRenderable(codepoint, glyphData, x, y, color, shadowColor, style, boldOffset, shadowOffset);
     }
-    //?}
 
-    //? if < 1.21.11 {
-    /*public static class VectorTextRenderable implements TextRenderable {*/
-    //?}
-    //? if >= 1.21.11 {
     public static class VectorTextRenderable implements TextRenderable.Styled {
-    //?}
         private final int codepoint;
         private final VectorFontManager.GlyphData glyphData;
         private final float x, y;
@@ -84,12 +67,10 @@ public class VectorBakedGlyph implements BakedGlyph {
             this.shadowOffset = shadowOffset;
         }
 
-        //? if >= 1.21.11 {
         @Override
         public Style style() {
             return this.style;
         }
-        //?}
 
         private float getScale() {
             float size = ConfigManager.data.vectorTextScale;
@@ -101,7 +82,7 @@ public class VectorBakedGlyph implements BakedGlyph {
         }
 
         @Override
-        public void render(Matrix4f matrix4f, VertexConsumer vertexConsumer, int light, boolean isGui) {
+        public void render(Matrix4fc matrix4f, VertexConsumer vertexConsumer, int light, boolean isGui) {
             if (glyphData.curves.isEmpty()) {
                 return;
             }

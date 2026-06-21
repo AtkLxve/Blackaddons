@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.Mth;
@@ -330,7 +330,7 @@ public class AlignUtils {
         return info;
     }
 
-    public static void renderDebug(GuiGraphics graphics) {
+    public static void renderDebug(GuiGraphicsExtractor graphics) {
         Minecraft mc = Minecraft.getInstance();
         List<String> info = getDebugInfo();
         if (info.isEmpty()) {
@@ -349,7 +349,7 @@ public class AlignUtils {
         graphics.pose().scale(scale, scale);
         int y = 0;
         for (String line : info) {
-            graphics.drawString(mc.font, line, 0, y, COLOR_WHITE);
+            graphics.text(mc.font, line, 0, y, COLOR_WHITE);
             y += LINE_HEIGHT;
         }
         graphics.pose().popMatrix();

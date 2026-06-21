@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import java.util.function.Consumer;
 
 public class PaginationWidget extends Widget {
@@ -47,7 +47,7 @@ public class PaginationWidget extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -61,7 +61,7 @@ public class PaginationWidget extends Widget {
         next.render(graphics, mouseX, mouseY, partialTick);
 
         String pageStr = currentPage + " / " + (totalPages > 0 ? totalPages : "?");
-        graphics.drawCenteredString(Minecraft.getInstance().font, pageStr, mid, y + 8, 0xFFAAAAAA);
+        graphics.centeredText(Minecraft.getInstance().font, pageStr, mid, y + 8, 0xFFAAAAAA);
     }
 
     @Override

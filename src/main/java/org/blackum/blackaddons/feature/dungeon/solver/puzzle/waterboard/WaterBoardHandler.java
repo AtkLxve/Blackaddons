@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard;
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -24,19 +24,19 @@ import org.blackum.blackaddons.client.render.RenderContext;
 public class WaterBoardHandler {
 
     public static void register() {
-        WorldRenderEvents.BEFORE_TRANSLUCENT.register(context -> {
+        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
             if (!ConfigManager.data.waterBoardSolverEnabled)
                 return;
 
             MultiBufferSource.BufferSource bufSource;
-            if (context.consumers() instanceof MultiBufferSource.BufferSource bs) {
+            if (context.bufferSource() instanceof MultiBufferSource.BufferSource bs) {
                 bufSource = bs;
             } else {
                 bufSource = Minecraft.getInstance().renderBuffers().bufferSource();
             }
 
             RenderContext ctx = new RenderContext(
-                    context.matrices(),
+                    context.poseStack(),
                     bufSource,
                     0.0f);
             WaterBoardSolver.onRenderWorld(ctx);

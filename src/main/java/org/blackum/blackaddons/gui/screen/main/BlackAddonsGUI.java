@@ -17,7 +17,7 @@ import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.config.ConfigManager;
@@ -366,7 +366,7 @@ public class BlackAddonsGUI extends BaseScreen {
             final Checkbox finalCb = cb;
             wrapper = new Widget(0, 0, 0, 0) {
                 @Override
-                public void render(GuiGraphics g, int mx, int my, float p) {
+                public void render(GuiGraphicsExtractor g, int mx, int my, float p) {
                     finalCb.setX(getX());
                     finalCb.setY(getY());
                     finalCb.setWidth(getWidth());
@@ -406,17 +406,17 @@ public class BlackAddonsGUI extends BaseScreen {
     }
 
     @Override
-    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY,
+    protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
             float partialTick) {
         String title = "BlackAddons Control Panel";
         int titleWidth = font.width(title);
-        graphics.drawString(font, title, containerX + (containerWidth - titleWidth) / 2, containerY + 15,
+        graphics.text(font, title, containerX + (containerWidth - titleWidth) / 2, containerY + 15,
                 Theme.TEXT_PRIMARY);
         currentTooltip = null;
     }
 
     @Override
-    protected void renderTooltips(GuiGraphics graphics, int mouseX, int mouseY) {
+    protected void renderTooltips(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         String tooltip = currentTooltip;
         if (tooltip != null && !tooltip.isEmpty()) {
             int tooltipWidth = font.width(tooltip) + Theme.PADDING_SMALL;
@@ -438,7 +438,7 @@ public class BlackAddonsGUI extends BaseScreen {
                     Theme.ACCENT);
             graphics.fill(tooltipXPos + tooltipWidth + 1, tooltipYPos - 2, tooltipXPos + tooltipWidth + 2,
                     tooltipYPos + Theme.PADDING + 2, Theme.ACCENT);
-            graphics.drawString(font, tooltip, tooltipXPos, tooltipYPos, Theme.TEXT_PRIMARY);
+            graphics.text(font, tooltip, tooltipXPos, tooltipYPos, Theme.TEXT_PRIMARY);
         }
     }
 

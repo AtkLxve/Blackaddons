@@ -2,9 +2,9 @@ name: Build BlackAddons
 
 on:
   push:
-    branches: [ "multiversion-1.21.10-11" ]
+    branches: [ "multiversion-26.1.2-26.2" ]
   pull_request:
-    branches: [ "multiversion-1.21.10-11" ]
+    branches: [ "multiversion-26.1.2-26.2" ]
 
 jobs:
   build:

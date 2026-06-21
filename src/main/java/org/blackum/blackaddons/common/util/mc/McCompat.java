@@ -4,8 +4,10 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
+import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceKey;
@@ -289,7 +291,7 @@ public final class McCompat {
         return resource;
     }
 
-    public static void blitGuiTexture(GuiGraphics graphics, Object pipeline, Object location, int x, int y,
+    public static void blitGuiTexture(GuiGraphicsExtractor graphics, Object pipeline, Object location, int x, int y,
                                       float u, float v, int width, int height, int textureWidth, int textureHeight,
                                       int imageWidth, int imageHeight) {
         invokeBest(graphics, new String[] { "blit", "method_25293", "method_25302" }, pipeline, location, x, y, u, v, width, height,
@@ -300,6 +302,12 @@ public final class McCompat {
         Object renderType = getWaypointRenderType();
         Object buffer = invokeBest(bufferSource, new String[] { "getBuffer", "method_73477" }, renderType);
         return (VertexConsumer) buffer;
+    }
+
+    public static float getFov(GameRenderer renderer, Camera camera, float partialTicks, boolean useFovSetting) {
+        Object fov = invokeDeclaredBest(renderer, new String[] { "getFov", "method_3196", "a" },
+                camera, partialTicks, useFovSetting);
+        return ((Number) fov).floatValue();
     }
 
     private static Object getWaypointRenderType() {

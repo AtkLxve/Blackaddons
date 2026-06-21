@@ -19,7 +19,7 @@ import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import com.google.gson.JsonObject;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 
 import org.blackum.blackaddons.gui.widget.base.*;
@@ -270,18 +270,18 @@ public class ProfileViewerScreen extends BaseScreen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         renderConfetti(graphics);
     }
 
     @Override
-    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!isLoading && profileData != null) {
             String label = "Viewing: " + player;
             int x = containerX + 10;
             int y = containerY + containerHeight - 25;
-            graphics.drawString(Minecraft.getInstance().font, label, x, y, Theme.TEXT_SECONDARY);
+            graphics.text(Minecraft.getInstance().font, label, x, y, Theme.TEXT_SECONDARY);
         }
     }
 
@@ -313,7 +313,7 @@ public class ProfileViewerScreen extends BaseScreen {
         confetti.tick(width, height);
     }
 
-    private void renderConfetti(GuiGraphics graphics) {
+    private void renderConfetti(GuiGraphicsExtractor graphics) {
         confetti.render(graphics);
     }
 }

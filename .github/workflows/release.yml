@@ -33,7 +33,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          echo "matrix=[\"1.21.10\", \"1.21.11\"]" >> $GITHUB_OUTPUT
+          echo "matrix=[\"26.1.2\", \"26.2\"]" >> $GITHUB_OUTPUT
 
   build:
     needs: setup

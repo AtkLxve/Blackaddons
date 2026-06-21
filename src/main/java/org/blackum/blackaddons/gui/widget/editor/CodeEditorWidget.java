@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -68,7 +68,7 @@ public class CodeEditorWidget extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -90,7 +90,7 @@ public class CodeEditorWidget extends Widget {
 
             String lineNum = String.valueOf(i + 1);
             int lineNumWidth = Minecraft.getInstance().font.width(lineNum);
-            graphics.drawString(Minecraft.getInstance().font, lineNum, x + gutterWidth - lineNumWidth - 4, drawY,
+            graphics.text(Minecraft.getInstance().font, lineNum, x + gutterWidth - lineNumWidth - 4, drawY,
                     Theme.TEXT_SECONDARY, false);
 
             String lineText = lines.get(i).toString();
@@ -139,12 +139,12 @@ public class CodeEditorWidget extends Widget {
                 for (int j = 0; j < lineText.length(); j++) {
                     Style style = (styles != null && j < styles.size()) ? styles.get(j) : Style.EMPTY;
                     String charStr = String.valueOf(lineText.charAt(j));
-                    graphics.drawString(Minecraft.getInstance().font, Component.literal(charStr).setStyle(style),
+                    graphics.text(Minecraft.getInstance().font, Component.literal(charStr).setStyle(style),
                             currentX, drawY, Theme.TEXT_PRIMARY, false);
                     currentX += Minecraft.getInstance().font.width(charStr);
                 }
             } else {
-                graphics.drawString(Minecraft.getInstance().font, lineText, textX - scrollX, drawY, Theme.TEXT_PRIMARY,
+                graphics.text(Minecraft.getInstance().font, lineText, textX - scrollX, drawY, Theme.TEXT_PRIMARY,
                         false);
             }
         }

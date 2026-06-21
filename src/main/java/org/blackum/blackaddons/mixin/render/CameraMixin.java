@@ -1,11 +1,8 @@
 package org.blackum.blackaddons.mixin.render;
 
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.world.entity.Entity;
-//? if < 1.21.11 {
-/*import net.minecraft.world.level.BlockGetter;
-*///?} else
-import net.minecraft.world.level.Level;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.cheat.Perspective;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,16 +15,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Camera.class)
 public abstract class CameraMixin {
     @Shadow private boolean detached;
+    @Shadow private Entity entity;
     @Shadow protected abstract void setRotation(float yaw, float pitch);
     @Shadow protected abstract void setPosition(double x, double y, double z);
     @Shadow protected abstract void move(float x, float y, float z);
     @Shadow protected abstract float getMaxZoom(float startingDistance);
+    @Shadow public abstract float getCameraEntityPartialTicks(DeltaTracker deltaTracker);
 
-    @Inject(method = "setup", at = @At("TAIL"))
-    //? if < 1.21.11 {
-    /*private void onSetupTail(BlockGetter level, Entity entity, boolean detached, boolean flipped, float tickDelta, CallbackInfo ci) {
-    *///?} else
-    private void onSetupTail(Level level, Entity entity, boolean detached, boolean flipped, float tickDelta, CallbackInfo ci) {
+    @Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;alignWithEntity(F)V", shift = At.Shift.AFTER))
+    private void onUpdateAfterAlign(DeltaTracker deltaTracker, CallbackInfo ci) {
+        Entity entity = this.entity;
+        if (entity == null) {
+            return;
+        }
+
+        float tickDelta = getCameraEntityPartialTicks(deltaTracker);
         if (Freecam.getInstance().isActive()) {
             this.detached = true;
             setPosition(

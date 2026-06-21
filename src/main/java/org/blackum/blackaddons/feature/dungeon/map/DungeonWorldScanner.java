@@ -29,7 +29,7 @@ public class DungeonWorldScanner {
             if (LocationUtils.inDungeons()) shouldScan = true;
         });
 
-        ClientTickEvents.END_WORLD_TICK.register(world -> {
+        ClientTickEvents.END_LEVEL_TICK.register(world -> {
             if (shouldScan) {
                 scan();
                 shouldScan = false;

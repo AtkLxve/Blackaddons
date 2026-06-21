@@ -8,7 +8,7 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.RenderHelper;
@@ -34,7 +34,7 @@ public class SectionHeader extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -48,7 +48,7 @@ public class SectionHeader extends Widget {
         if (onToggle != null) {
             String arrow = collapsed ? "▶ " : "▼ ";
             int arrowColor = Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.ACCENT, hover);
-            graphics.drawString(Minecraft.getInstance().font, arrow, currentX + 6, y + 8, arrowColor);
+            graphics.text(Minecraft.getInstance().font, arrow, currentX + 6, y + 8, arrowColor);
             currentX += 16;
         }
 
@@ -59,7 +59,7 @@ public class SectionHeader extends Widget {
             currentX += bulkCheckbox.getWidth() + 8;
         }
 
-        graphics.drawString(Minecraft.getInstance().font, title, currentX + Math.round(hover * 2.0f), y + 8,
+        graphics.text(Minecraft.getInstance().font, title, currentX + Math.round(hover * 2.0f), y + 8,
                 Theme.ACCENT);
 
         int titleWidth = Minecraft.getInstance().font.width(title);

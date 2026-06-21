@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -89,33 +89,33 @@ public class ToggleSwitch extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
         int textY = y + (SWITCH_HEIGHT - 8) / 2;
-        graphics.drawString(Minecraft.getInstance().font, label, x, textY, labelColor);
+        graphics.text(Minecraft.getInstance().font, label, x, textY, labelColor);
 
         if (description != null && !description.isEmpty()) {
             int expandX = x + labelWidth + 6;
             int expandY = y + (SWITCH_HEIGHT - EXPAND_ICON_SIZE) / 2;
             int expandColor = Theme.withAlpha(Theme.TEXT_SECONDARY, 0.6f);
 
-            graphics.drawString(Minecraft.getInstance().font, expanded ? "▼" : "▶", expandX, expandY, expandColor);
+            graphics.text(Minecraft.getInstance().font, expanded ? "▼" : "▶", expandX, expandY, expandColor);
         }
 
         renderSwitch(graphics, mouseX, mouseY);
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
         if (!visible)
             return;
         renderDescription(graphics);
     }
 
-    private void renderDescription(GuiGraphics graphics) {
+    private void renderDescription(GuiGraphicsExtractor graphics) {
         float expandProgress = expandAnimation.getValue();
         if (description == null || description.isEmpty() || expandProgress <= 0) {
             return;
@@ -129,18 +129,18 @@ public class ToggleSwitch extends Widget {
 
         for (String word : words) {
             if (Minecraft.getInstance().font.width(line + word) > width - 20 && !line.isEmpty()) {
-                graphics.drawString(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
+                graphics.text(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
                 descY += 10;
                 line = new StringBuilder();
             }
             line.append(word).append(" ");
         }
         if (!line.isEmpty()) {
-            graphics.drawString(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
+            graphics.text(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
         }
     }
 
-    private void renderSwitch(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderSwitch(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         float toggleProgress = toggleAnimation.getValue();
         float hoverProgress = hoverAnimation.getValue();
 

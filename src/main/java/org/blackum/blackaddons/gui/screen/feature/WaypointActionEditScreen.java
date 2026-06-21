@@ -16,7 +16,7 @@ import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
 import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.config.ActionManager;
@@ -813,7 +813,7 @@ public class WaypointActionEditScreen extends BaseScreen {
     }
 
     @Override
-    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         String title = "Editing Actions for: " + (waypoint.name != null && !waypoint.name.isEmpty() ? waypoint.name : "Unnamed Waypoint");
         if (minecraft.player != null) {
             double dist = Math.sqrt(Math.pow(waypoint.x - minecraft.player.getX(), 2) +
@@ -821,7 +821,7 @@ public class WaypointActionEditScreen extends BaseScreen {
                     Math.pow(waypoint.z - minecraft.player.getZ(), 2));
             title += String.format(java.util.Locale.ROOT, " (%.1fm)", dist);
         }
-        RenderHelper.drawCenteredString(graphics, font, title, containerX + containerWidth / 2, containerY + 20, Theme.TEXT_PRIMARY);
+        RenderHelper.centeredText(graphics, font, title, containerX + containerWidth / 2, containerY + 20, Theme.TEXT_PRIMARY);
     }
 
     private String formatOptionalCoord(double value) {

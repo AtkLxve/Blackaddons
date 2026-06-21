@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.gui.hud;
 
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardSolver;
@@ -75,7 +75,7 @@ public class WaterBoardHud implements HudElement {
     }
 
     @Override
-    public void render(GuiGraphics graphics, DeltaTracker tracker) {
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker tracker) {
         WaterBoardSolver.renderHUD(graphics);
     }
 }

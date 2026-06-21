@@ -264,7 +264,7 @@ public class InventoryTabController extends ProfileTabController {
 
                         Widget spacer = new Widget(0, 0, 0, 20) {
                             @Override
-                            public void render(net.minecraft.client.gui.GuiGraphics g, int mx, int my, float pt) {
+                            public void render(net.minecraft.client.gui.GuiGraphicsExtractor g, int mx, int my, float pt) {
                             }
                         };
                         pagedListView.addItem(spacer);

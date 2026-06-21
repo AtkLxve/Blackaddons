@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.feature.waypoint.WaypointDragState;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
@@ -139,7 +139,7 @@ public class WaypointGroupCard extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) return;
 
         boolean dragged = isBeingDragged();
@@ -171,17 +171,17 @@ public class WaypointGroupCard extends Widget {
         }
     }
 
-    private void renderContents(GuiGraphics graphics, int rx, int ry, int rw, int rh, int mx, int my, float pt, boolean isGhost) {
+    private void renderContents(GuiGraphicsExtractor graphics, int rx, int ry, int rw, int rh, int mx, int my, float pt, boolean isGhost) {
         renderDragHandle(graphics, rx, ry, rh, mx, my, isGhost);
 
         String arrow = group.collapsed ? "▶ " : "▼ ";
         int textY = ry + (rh - 8) / 2;
         int contentX = rx + CARD_PADDING + HANDLE_WIDTH + 4 + indent;
-        graphics.drawString(Minecraft.getInstance().font, arrow, contentX, textY, Theme.TEXT_SECONDARY);
+        graphics.text(Minecraft.getInstance().font, arrow, contentX, textY, Theme.TEXT_SECONDARY);
 
         String name = group.name != null ? group.name : "Group";
         int nameColor = group.enabled ? Theme.ACCENT : Theme.TEXT_SECONDARY;
-        graphics.drawString(Minecraft.getInstance().font, name, contentX + 16, textY, nameColor);
+        graphics.text(Minecraft.getInstance().font, name, contentX + 16, textY, nameColor);
 
         int pillX = contentX + 16 + Minecraft.getInstance().font.width(name) + 8;
         renderPills(graphics, pillX, textY - 2);
@@ -193,7 +193,7 @@ public class WaypointGroupCard extends Widget {
         }
     }
 
-    private void renderDragHandle(GuiGraphics graphics, int rx, int ry, int rh, int mx, int my, boolean isGhost) {
+    private void renderDragHandle(GuiGraphicsExtractor graphics, int rx, int ry, int rh, int mx, int my, boolean isGhost) {
         boolean hovered = !isGhost && isInHandleArea(mx, my);
         int dotColor = hovered ? Theme.TEXT_PRIMARY : Theme.withAlpha(Theme.TEXT_SECONDARY, 0.5f);
         int dotSize = 2;
@@ -209,7 +209,7 @@ public class WaypointGroupCard extends Widget {
         }
     }
 
-    private void renderPills(GuiGraphics graphics, int startX, int pillY) {
+    private void renderPills(GuiGraphicsExtractor graphics, int startX, int pillY) {
         int px = startX;
         if (group.inDungeonFilter != null) {
             String label = group.inDungeonFilter ? "Dungeon" : "No Dungeon";
@@ -227,18 +227,18 @@ public class WaypointGroupCard extends Widget {
         }
     }
 
-    private int drawPill(GuiGraphics graphics, int px, int py, String text, int bgColor) {
+    private int drawPill(GuiGraphicsExtractor graphics, int px, int py, String text, int bgColor) {
         int textW = Minecraft.getInstance().font.width(text);
         int pillW = textW + PILL_PADDING_H * 2;
         graphics.fill(px, py, px + pillW, py + PILL_HEIGHT, bgColor);
         graphics.fill(px, py, px + pillW, py + 1, Theme.withAlpha(Theme.TEXT_SECONDARY, 0.4f));
         graphics.fill(px, py + PILL_HEIGHT - 1, px + pillW, py + PILL_HEIGHT, Theme.withAlpha(Theme.TEXT_SECONDARY, 0.4f));
-        graphics.drawString(Minecraft.getInstance().font, text, px + PILL_PADDING_H, py + (PILL_HEIGHT - 8) / 2, Theme.TEXT_PRIMARY);
+        graphics.text(Minecraft.getInstance().font, text, px + PILL_PADDING_H, py + (PILL_HEIGHT - 8) / 2, Theme.TEXT_PRIMARY);
         return px + pillW + 4;
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY, float partialTick) {
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY, float partialTick) {
         if (!visible) return;
 
         if (isBeingDragged()) {

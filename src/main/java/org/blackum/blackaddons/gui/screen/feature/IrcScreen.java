@@ -17,7 +17,7 @@ import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -340,12 +340,12 @@ public class IrcScreen extends BaseScreen implements IrcClient.IrcAuthListener {
         }
 
         @Override
-        public void render(GuiGraphics g, int mx, int my, float p) {
+        public void render(GuiGraphicsExtractor g, int mx, int my, float p) {
             int currentY = y + 6;
             for (FormattedCharSequence line : lines) {
                 if (line == null)
                     continue;
-                g.drawString(MinecraftInstance.mc.font, line, x + 10, currentY, Theme.TEXT_PRIMARY, false);
+                g.text(MinecraftInstance.mc.font, line, x + 10, currentY, Theme.TEXT_PRIMARY, false);
                 currentY += MinecraftInstance.mc.font.lineHeight + 2;
             }
         }

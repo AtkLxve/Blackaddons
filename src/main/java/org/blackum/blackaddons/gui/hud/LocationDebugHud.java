@@ -2,7 +2,7 @@ package org.blackum.blackaddons.gui.hud;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
@@ -86,7 +86,7 @@ public class LocationDebugHud implements HudElement {
     }
 
     @Override
-    public void render(GuiGraphics graphics, DeltaTracker tracker) {
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker tracker) {
         Minecraft mc = Minecraft.getInstance();
         float scale = ConfigManager.data.locationOverlayScale;
         int overlayX = x();
@@ -96,7 +96,7 @@ public class LocationDebugHud implements HudElement {
         graphics.pose().scale(scale, scale);
         int yy = 0;
         for (String line : LocationUtils.getDebugInfo()) {
-            graphics.drawString(mc.font, line, 0, yy, COLOR_WHITE);
+            graphics.text(mc.font, line, 0, yy, COLOR_WHITE);
             yy += LINE_HEIGHT;
         }
         graphics.pose().popMatrix();

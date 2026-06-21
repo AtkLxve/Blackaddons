@@ -1,53 +1,24 @@
 package org.blackum.blackaddons.mixin.render;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.OptionInstance;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.client.renderer.LightmapRenderStateExtractor;
+import net.minecraft.client.renderer.state.LightmapRenderState;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(LightTexture.class)
+@Mixin(LightmapRenderStateExtractor.class)
 public class FullbrightMixin {
-    
-    @WrapOperation(method = "updateLightTexture",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;",
-                    ordinal = 1))
-    private Object wrapDarknessScale(OptionInstance<?> instance, Operation<Object> original) {
-        return ConfigManager.data.legitFullbrightEnabled ? 0.0 : original.call(instance);
-    }
 
-    @WrapOperation(method = "updateLightTexture",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/OptionInstance;get()Ljava/lang/Object;",
-                    ordinal = 2))
-    private Object wrapGamma(OptionInstance<?> instance, Operation<Object> original) {
-        return ConfigManager.data.legitFullbrightEnabled ? 10.0 : original.call(instance);
-    }
-
-    @WrapOperation(method = "updateLightTexture",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/GameRenderer;getDarkenWorldAmount(F)F"))
-    private float wrapDarkenWorld(GameRenderer renderer, float f, Operation<Float> original) {
-        return ConfigManager.data.legitFullbrightEnabled ? 0.0F : original.call(renderer, f);
-    }
-
-    @WrapOperation(method = "updateLightTexture",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/level/dimension/DimensionType;ambientLight()F"))
-    private float wrapAmbientLight(DimensionType type, Operation<Float> original) {
-        return ConfigManager.data.legitFullbrightEnabled ? 1.0F : original.call(type);
-    }
-
-    @WrapOperation(method = "updateLightTexture",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/world/level/dimension/DimensionType;ambientLight()F",
-                    ordinal = 0))
-    private float wrapSkyFactor(DimensionType type, Operation<Float> original) {
-        return ConfigManager.data.legitFullbrightEnabled ? 1.0F : original.call(type);
+    @Inject(method = "extract", at = @At("TAIL"))
+    private void onExtract(LightmapRenderState state, float tick, CallbackInfo ci) {
+        if (ConfigManager.data.legitFullbrightEnabled) {
+            state.nightVisionEffectIntensity = 1.0f;
+            state.nightVisionColor = LightmapRenderStateExtractor.WHITE;
+            state.darknessEffectScale = 0.0f;
+            state.bossOverlayWorldDarkening = 0.0f;
+            state.brightness = 10.0f;
+        }
     }
 }

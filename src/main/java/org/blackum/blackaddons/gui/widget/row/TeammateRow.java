@@ -8,7 +8,7 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -46,7 +46,7 @@ public class TeammateRow extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -59,9 +59,9 @@ public class TeammateRow extends Widget {
         int cx = x + 2;
         int cy = y + 5;
 
-        graphics.drawString(Minecraft.getInstance().font, tm.ign, cx, cy, Theme.ACCENT);
+        graphics.text(Minecraft.getInstance().font, tm.ign, cx, cy, Theme.ACCENT);
         cx += COL_IGN;
-        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.WHITE + String.valueOf(tm.count), cx, cy,
+        graphics.text(Minecraft.getInstance().font, ChatFormatting.WHITE + String.valueOf(tm.count), cx, cy,
                 0xFFFFFFFF);
         cx += COL_RUNS;
 
@@ -74,7 +74,7 @@ public class TeammateRow extends Widget {
             case "tank" -> classColor = 0xFF55FF55;
         }
 
-        graphics.drawString(Minecraft.getInstance().font, tm.lastClass, cx, cy, classColor);
+        graphics.text(Minecraft.getInstance().font, tm.lastClass, cx, cy, classColor);
         int classWidth = Minecraft.getInstance().font.width(tm.lastClass);
 
         if (tm.lastClassLevel >= 0) {
@@ -92,7 +92,7 @@ public class TeammateRow extends Widget {
             } else if (tm.lastClassLevel >= 10) {
                 lvlColor = 0xFFFFFFFF;
             }
-            graphics.drawString(Minecraft.getInstance().font, " " + tm.lastClassLevel, cx + classWidth, cy, lvlColor);
+            graphics.text(Minecraft.getInstance().font, " " + tm.lastClassLevel, cx + classWidth, cy, lvlColor);
         }
         cx += COL_CLASS;
 
@@ -111,11 +111,11 @@ public class TeammateRow extends Widget {
                 case "Infernal" -> floorColor = 0xFFAA0000;
             }
         }
-        graphics.drawString(Minecraft.getInstance().font, tm.lastFloor, cx, cy, floorColor);
+        graphics.text(Minecraft.getInstance().font, tm.lastFloor, cx, cy, floorColor);
         cx += COL_FLOOR;
 
         String timeAgo = FormatUtils.formatRelativeTime(tm.lastTs);
-        graphics.drawString(Minecraft.getInstance().font, ChatFormatting.GRAY + timeAgo, cx, cy, 0xFFFFFFFF);
+        graphics.text(Minecraft.getInstance().font, ChatFormatting.GRAY + timeAgo, cx, cy, 0xFFFFFFFF);
 
         inviteBtn.render(graphics, mouseX, mouseY, partialTick);
     }

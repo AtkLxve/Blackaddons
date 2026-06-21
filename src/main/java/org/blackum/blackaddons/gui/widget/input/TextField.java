@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -53,7 +53,7 @@ public class TextField extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -73,7 +73,7 @@ public class TextField extends Widget {
 
         if (text.isEmpty() && !focused) {
             int placeholderColor = Theme.withAlpha(Theme.TEXT_SECONDARY, 0.6f);
-            graphics.drawString(Minecraft.getInstance().font, placeholder, textX, textY, placeholderColor);
+            graphics.text(Minecraft.getInstance().font, placeholder, textX, textY, placeholderColor);
         } else {
             if (hasSelection()) {
                 int start = Math.min(selectionStart, selectionEnd);
@@ -83,7 +83,7 @@ public class TextField extends Widget {
                 graphics.fill(selStartX, textY - 1, selEndX, textY + 9, Theme.withAlpha(Theme.ACCENT, 0.4f));
             }
 
-            graphics.drawString(Minecraft.getInstance().font, text, textX, textY, Theme.TEXT_PRIMARY);
+            graphics.text(Minecraft.getInstance().font, text, textX, textY, Theme.TEXT_PRIMARY);
 
             if (focused && cursorVisible && !hasSelection()) {
                 int cursorX = textX + Minecraft.getInstance().font.width(text.substring(0, cursorPosition));

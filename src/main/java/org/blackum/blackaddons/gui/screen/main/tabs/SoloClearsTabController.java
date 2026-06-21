@@ -137,7 +137,7 @@ public class SoloClearsTabController extends SimpleTabController {
             clearsList.addItem(new SoloClearRow(clearsList.getWidth(), i, clears.get(i), selectedFloor));
             clearsList.addItem(new Widget(0, 0, 0, 5) {
                 @Override
-                public void render(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
+                public void render(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {}
             });
         }
     }

@@ -13,13 +13,13 @@ pluginManagement {
 }
 
 plugins {
-    id 'dev.kikugie.stonecutter' version '0.9'
+    id 'dev.kikugie.stonecutter' version '0.9.6'
 }
 
 rootProject.name = 'BlackAddons'
 
 stonecutter {
     create(rootProject) {
-        versions '1.21.10', '1.21.11'
+        versions '26.1.2', '26.2'
     }
 }

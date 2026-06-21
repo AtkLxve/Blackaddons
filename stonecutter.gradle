@@ -5,10 +5,5 @@ stonecutter.parameters {
             replace("Identifier", "ResourceLocation")
             replace(".identifier()", ".location()")
         }
-        string(current.parsed < "1.21.11") {
-            replace("net.minecraft.util.Util", "net.minecraft.Util")
-            replace("net.minecraft.client.renderer.rendertype", "net.minecraft.client.renderer")
-            replace("RenderTypes", "RenderType")
-        }
     }
 }

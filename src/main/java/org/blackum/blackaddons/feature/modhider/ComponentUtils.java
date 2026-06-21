@@ -24,9 +24,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-/**
- * Ported from ClientSpoofer-1.21.11.
- */
 public class ComponentUtils {
     private static final Language language = LanguageAccessor.invokeLoadDefault();
     private static final Map<ClientPacketListener, Language> serverLanguages = new IdentityHashMap<>();

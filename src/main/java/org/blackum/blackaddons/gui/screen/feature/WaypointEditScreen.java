@@ -17,7 +17,7 @@ import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.feature.waypoint.Waypoint;
@@ -108,7 +108,7 @@ public class WaypointEditScreen extends BaseScreen {
         nameField = new TextField(0, 0, itemWidth, Theme.TEXTFIELD_HEIGHT, "Name");
         nameField.setText(waypoint.name != null ? waypoint.name : "");
         list.addItem(nameField);
-        list.addItem(new Widget(0, 0, itemWidth, 5) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 5) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Coordinates", Label.Style.CAPTION));
         xField = new TextField(0, 0, itemWidth, Theme.TEXTFIELD_HEIGHT, "X");
@@ -150,7 +150,7 @@ public class WaypointEditScreen extends BaseScreen {
             }
         });
         list.addItem(currentPosBtn);
-        list.addItem(new Widget(0, 0, itemWidth, 5) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 5) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Animation style", Label.Style.CAPTION));
         WaypointAnimation[] anims = WaypointAnimation.values();
@@ -169,13 +169,13 @@ public class WaypointEditScreen extends BaseScreen {
             });
         animDropdown.setSelectedOption(waypoint.animation.toString());
         list.addItem(animDropdown);
-        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Color Selection", Label.Style.CAPTION));
         int pickerX = (itemWidth - ColorPicker.WIDTH) / 2;
         ColorPicker picker = new ColorPicker(pickerX, 0, waypoint.color, color -> waypoint.color = color);
         list.addItem(picker);
-        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Shape", Label.Style.CAPTION));
         WaypointShape[] shapes = WaypointShape.values();
@@ -196,7 +196,7 @@ public class WaypointEditScreen extends BaseScreen {
         list.addItem(shapeDropdown);
         showFullShapeCheckbox = new Checkbox(0, 0, "Show Full Shape", waypoint.showFullShape, val -> waypoint.showFullShape = val);
         list.addItem(showFullShapeCheckbox);
-        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Radius", Label.Style.CAPTION));
         GridRow radiusRow = new GridRow(itemWidth, 20);
@@ -219,7 +219,7 @@ public class WaypointEditScreen extends BaseScreen {
                 }
             } catch (NumberFormatException ignored) {}
         });
-        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 10) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Height", Label.Style.CAPTION));
         GridRow heightRow = new GridRow(itemWidth, 20);
@@ -242,7 +242,7 @@ public class WaypointEditScreen extends BaseScreen {
                 }
             } catch (NumberFormatException ignored) {}
         });
-        list.addItem(new Widget(0, 0, itemWidth, 15) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 15) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         list.addItem(new Label(0, 0, "Reuse Cooldown", Label.Style.CAPTION));
         GridRow cooldownRow = new GridRow(itemWidth, Theme.TEXTFIELD_HEIGHT);
@@ -262,7 +262,7 @@ public class WaypointEditScreen extends BaseScreen {
         cooldownRow.addChild(cooldownField, itemWidth - CUSTOM_INPUT_WIDTH);
         list.addItem(cooldownRow);
         list.addItem(new Label(0, 0, "0.000 = disabled", Label.Style.CAPTION));
-        list.addItem(new Widget(0, 0, itemWidth, 15) { @Override public void render(GuiGraphics g, int mx, int my, float pt) {} });
+        list.addItem(new Widget(0, 0, itemWidth, 15) { @Override public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {} });
 
         GridRow btnRow = new GridRow(itemWidth, 20);
         Button saveBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, 20, "Save", () -> {
@@ -339,8 +339,8 @@ public class WaypointEditScreen extends BaseScreen {
     }
 
     @Override
-    protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        RenderHelper.drawCenteredString(graphics, font, getTitle().getString(), containerX + containerWidth / 2, containerY + 20, Theme.TEXT_PRIMARY);
+    protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        RenderHelper.centeredText(graphics, font, getTitle().getString(), containerX + containerWidth / 2, containerY + 20, Theme.TEXT_PRIMARY);
     }
 
     private void updateTextField(TextField field, float value) {

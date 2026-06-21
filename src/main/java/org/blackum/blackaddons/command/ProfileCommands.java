@@ -2,7 +2,7 @@ package org.blackum.blackaddons.command;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.common.constants.Constants;
@@ -14,19 +14,19 @@ import org.blackum.blackaddons.service.BotIntegration;
 public class ProfileCommands {
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> pvNode() {
-        return ClientCommandManager.literal("pv")
+        return ClientCommands.literal("pv")
                 .executes(ctx -> {
                     String player = Minecraft.getInstance().getUser().getName();
                     ProfileStateManager.getInstance().loadProfileAndOpen(player, null, false);
                     return 1;
                 })
-                .then(ClientCommandManager.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
+                .then(ClientCommands.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
                         .executes(ctx -> {
                             String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                             ProfileStateManager.getInstance().loadProfileAndOpen(ign, null, false);
                             return 1;
                         })
-                        .then(ClientCommandManager.literal("force")
+                        .then(ClientCommands.literal("force")
                                 .executes(ctx -> {
                                     String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                                     ProfileStateManager.getInstance().loadProfileAndOpen(ign, null, true);
@@ -35,7 +35,7 @@ public class ProfileCommands {
     }
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> dailyNode() {
-        return ClientCommandManager.literal("daily")
+        return ClientCommands.literal("daily")
                 .executes(ctx -> {
                     String player = Minecraft.getInstance().getUser().getName();
                     NotificationManager.addNotification("Daily Sync", "Syncing stats with bot...", NotificationType.INFO);

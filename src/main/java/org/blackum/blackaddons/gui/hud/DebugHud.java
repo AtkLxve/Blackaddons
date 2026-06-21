@@ -5,7 +5,7 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
@@ -85,7 +85,7 @@ public class DebugHud implements HudElement {
     }
 
     @Override
-    public void render(GuiGraphics graphics, DeltaTracker tracker) {
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker tracker) {
         Minecraft mc = Minecraft.getInstance();
         float scale = BaseScreen.overlayScale;
         List<String> debugInfo = gatherDebugInfo(mc);
@@ -96,7 +96,7 @@ public class DebugHud implements HudElement {
 
         int lineY = 0;
         for (String line : debugInfo) {
-            graphics.drawString(mc.font, line, 0, lineY, DEFAULT_COLOR);
+            graphics.text(mc.font, line, 0, lineY, DEFAULT_COLOR);
             lineY += LINE_HEIGHT;
         }
         graphics.pose().popMatrix();

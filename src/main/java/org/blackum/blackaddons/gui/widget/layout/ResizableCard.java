@@ -6,7 +6,7 @@ import org.blackum.blackaddons.gui.widget.layout.*;
 import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.Minecraft;
 import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.glfw.GLFW;
@@ -134,7 +134,7 @@ public class ResizableCard extends Card {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -165,11 +165,11 @@ public class ResizableCard extends Card {
             String arrow = collapsed ? "◀" : "▼";
             int titleOffset = Math.round(hover * 2.0f + active * 2.0f);
 
-            graphics.drawString(Minecraft.getInstance().font,
+            graphics.text(Minecraft.getInstance().font,
                     getTitle(), x + getPadding() + titleOffset, y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
 
             int arrowWidth = Minecraft.getInstance().font.width(arrow);
-            graphics.drawString(Minecraft.getInstance().font,
+            graphics.text(Minecraft.getInstance().font,
                     arrow, x + initialWidth - getPadding() - arrowWidth, y + (TITLE_BAR_HEIGHT - 8) / 2, titleColor);
         }
 
@@ -209,7 +209,7 @@ public class ResizableCard extends Card {
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
         if (!visible || (collapsed && (expandAnimation == null || expandAnimation.getValue() <= 0)))
             return;

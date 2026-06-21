@@ -8,7 +8,7 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -46,7 +46,7 @@ public class LeaderboardRow extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -66,11 +66,11 @@ public class LeaderboardRow extends Widget {
         else if (rank == 3)
             rankStr = ChatFormatting.RED + "🥉";
 
-        graphics.drawString(mc.font, rankStr, x + 5, y + 6, 0xFFFFFFFF);
-        graphics.drawString(mc.font, ign, x + 30, y + 6, isCurrentPlayer ? 0xFFFFFFFF : Theme.ACCENT);
+        graphics.text(mc.font, rankStr, x + 5, y + 6, 0xFFFFFFFF);
+        graphics.text(mc.font, ign, x + 30, y + 6, isCurrentPlayer ? 0xFFFFFFFF : Theme.ACCENT);
 
         String valStr = isRuns ? String.format("%,.0f Runs", value) : String.format("%,.0f XP", value);
         int valW = mc.font.width(valStr);
-        graphics.drawString(mc.font, ChatFormatting.WHITE + valStr, x + width - valW - 5, y + 6, 0xFFFFFFFF);
+        graphics.text(mc.font, ChatFormatting.WHITE + valStr, x + width - valW - 5, y + 6, 0xFFFFFFFF);
     }
 }

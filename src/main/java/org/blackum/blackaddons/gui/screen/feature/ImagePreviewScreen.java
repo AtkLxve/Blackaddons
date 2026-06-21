@@ -16,7 +16,7 @@ import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
 import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.render.Theme;
 import net.minecraft.ChatFormatting;
@@ -68,8 +68,8 @@ public class ImagePreviewScreen extends BaseScreen {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
 
         graphics.fill(0, 0, this.width, this.height, 0xAA000000);
 
@@ -77,7 +77,7 @@ public class ImagePreviewScreen extends BaseScreen {
             String text = "Downloading... " + (int) (progress * 100) + "%";
             int textX = (this.width - this.font.width(text)) / 2;
             int textY = this.height / 2 - 10;
-            graphics.drawString(this.font, text, textX, textY, 0xFFFFFF);
+            graphics.text(this.font, text, textX, textY, 0xFFFFFF);
 
             int barW = 200;
             int barH = 4;
@@ -88,7 +88,7 @@ public class ImagePreviewScreen extends BaseScreen {
             int progressW = (int) (barW * progress);
             graphics.fill(barX, barY, barX + progressW, barY + barH, Theme.ACCENT);
         } else if (error != null) {
-            graphics.drawString(this.font, error, (this.width - this.font.width(error)) / 2, this.height / 2, 0xFF5555);
+            graphics.text(this.font, error, (this.width - this.font.width(error)) / 2, this.height / 2, 0xFF5555);
         } else if (imageInfo != null && !imageInfo.frames().isEmpty()) {
             ImageHelper.FrameInfo currentFrame = getCurrentFrame();
 

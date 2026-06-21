@@ -18,7 +18,7 @@ import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.widget.base.*;
@@ -45,8 +45,8 @@ public class TestMenuScreen extends BaseScreen {
         private void sendMessage(String message) {
                 var player = Minecraft.getInstance().player;
                 if (player != null) {
-                        player.displayClientMessage(Component.literal(
-                                        ChatFormatting.AQUA + "[Test] " + ChatFormatting.WHITE + message), false);
+                        player.sendSystemMessage(Component.literal(
+                                        ChatFormatting.AQUA + "[Test] " + ChatFormatting.WHITE + message));
                 }
         }
 
@@ -208,13 +208,13 @@ public class TestMenuScreen extends BaseScreen {
         }
 
         @Override
-        protected void renderScrolledContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderScrolledContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
                 String titleText = "Widget Test Menu";
                 int titleWidth = this.font.width(titleText);
-                graphics.drawString(this.font, titleText, containerX + (containerWidth - titleWidth) / 2,
+                graphics.text(this.font, titleText, containerX + (containerWidth - titleWidth) / 2,
                                 containerY + 20, -1);
 
-                graphics.drawString(this.font, "Test all widgets:", containerX + 30, containerY + 40,
+                graphics.text(this.font, "Test all widgets:", containerX + 30, containerY + 40,
                                 Theme.TEXT_SECONDARY);
         }
 

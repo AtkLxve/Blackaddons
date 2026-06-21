@@ -2,13 +2,12 @@ package org.blackum.blackaddons.feature.cheat;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -26,8 +25,8 @@ import org.blackum.blackaddons.common.scheduler.Scheduler;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.blackum.blackaddons.gui.render.Theme;
-import org.blackum.blackaddons.mixin.core.GameRendererAccessor;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector4f;
@@ -108,7 +107,6 @@ public class AutoSS {
         ClientTickEvents.END_CLIENT_TICK.register(AutoSS::onClientTick);
         ClientReceiveMessageEvents.GAME.register((message, overlay) -> handleChatMessage(message));
         ClientReceiveMessageEvents.CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> handleChatMessage(message));
-        HudRenderCallback.EVENT.register(AutoSS::onRenderHud);
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             handleClick(hitResult.getBlockPos());
@@ -561,7 +559,7 @@ public class AutoSS {
         });
     }
 
-    private static void onRenderHud(GuiGraphics graphics, net.minecraft.client.DeltaTracker tracker) {
+    public static void renderHud(GuiGraphicsExtractor graphics, net.minecraft.client.DeltaTracker tracker) {
         if (!ConfigManager.data.AutoSSDebug || !ConfigManager.data.AutoSSEnabled) return;
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
@@ -607,13 +605,13 @@ public class AutoSS {
         graphics.pose().scale(scale, scale);
         int y = 0;
         for (String line : debugInfo) {
-            graphics.drawString(client.font, line, 0, y, COLOR_TEXT_WHITE);
+            graphics.text(client.font, line, 0, y, COLOR_TEXT_WHITE);
             y += 10;
         }
-        graphics.drawString(client.font, ChatFormatting.YELLOW + "Solution:", 0, y, COLOR_TEXT_WHITE);
+        graphics.text(client.font, ChatFormatting.YELLOW + "Solution:", 0, y, COLOR_TEXT_WHITE);
         y += 10;
         for (int i = 0; i < solution.size(); i++) {
-            graphics.drawString(client.font, (i + 1) + ". " + solution.get(i).toShortString(), 10, y, COLOR_TEXT_WHITE);
+            graphics.text(client.font, (i + 1) + ". " + solution.get(i).toShortString(), 10, y, COLOR_TEXT_WHITE);
             y += 10;
         }
         graphics.pose().popMatrix();
@@ -621,7 +619,7 @@ public class AutoSS {
         renderVisualNodes(graphics, tracker);
     }
 
-    private static void renderVisualNodes(GuiGraphics g, net.minecraft.client.DeltaTracker tracker) {
+    private static void renderVisualNodes(GuiGraphicsExtractor g, net.minecraft.client.DeltaTracker tracker) {
         Minecraft mc = Minecraft.getInstance();
         if (!ConfigManager.data.AutoSSDebug || mc.player == null || mc.gameRenderer == null || solution.isEmpty()) return;
 
@@ -630,9 +628,9 @@ public class AutoSS {
         int screenH = mc.getWindow().getGuiScaledHeight();
 
         float partialTicks = tracker.getGameTimeDeltaTicks();
-        float fov = (float) Math.toRadians(((GameRendererAccessor) mc.gameRenderer).invokeGetFov(mc.gameRenderer.getMainCamera(), partialTicks, true));
+        float fov = (float) Math.toRadians(McCompat.getFov(mc.gameRenderer, mc.gameRenderer.getMainCamera(), partialTicks, true));
         float aspect = (float) mc.getWindow().getWidth() / (float) mc.getWindow().getHeight();
-        Matrix4f proj = new Matrix4f().perspective(fov, aspect, 0.05f, mc.gameRenderer.getRenderDistance() * 4.0f);
+        Matrix4f proj = new Matrix4f().perspective(fov, aspect, 0.05f, mc.options.getEffectiveRenderDistance() * 16.0f * 4.0f);
 
         Quaternionf camRot = new Quaternionf(mc.gameRenderer.getMainCamera().rotation());
         camRot.conjugate();
@@ -673,7 +671,7 @@ public class AutoSS {
             int textW = mc.font.width(text);
 
             g.fill(ix - NODE_MARKER_HALF_SIZE, iy - NODE_MARKER_HALF_SIZE, ix + NODE_MARKER_HALF_SIZE, iy + NODE_MARKER_HALF_SIZE, COLOR_MARKER_BG);
-            g.drawString(mc.font, text, ix - textW / 2, iy - 4, color, true);
+            g.text(mc.font, text, ix - textW / 2, iy - 4, color, true);
         }
     }
 

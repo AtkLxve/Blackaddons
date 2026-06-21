@@ -25,7 +25,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -246,13 +246,13 @@ public class RngTabController extends ProfileTabController {
         int statsBarY = tab.getParent().getY() + tab.getParent().getHeight() - 30;
         rngStatsBar = new Widget(cx, statsBarY, w - 10, 25) {
             @Override
-            public void render(GuiGraphics graphics, int mouseX, int mouseY,
+            public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                     float partialTick) {
                 RenderHelper.renderRoundedRect(graphics, x, y, width, height,
                         Theme.BORDER_RADIUS, Theme.BACKGROUND_SECONDARY);
 
                 String stats = calculateRngStats();
-                graphics.drawString(Minecraft.getInstance().font, stats, x + 10, y + 8, Theme.ACCENT);
+                graphics.text(Minecraft.getInstance().font, stats, x + 10, y + 8, Theme.ACCENT);
             }
         };
         tab.addWidget(rngStatsBar);
@@ -538,14 +538,13 @@ public class RngTabController extends ProfileTabController {
                             Component.literal("Count"));
                     inputBox.setMaxLength(10);
                     inputBox.setValue(String.valueOf(count));
-                    inputBox.setFilter(s -> s.matches("[0-9]*"));
                     this.addRenderableWidget(inputBox);
 
                     this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
                             Component.literal("Confirm"),
                             btn -> {
                                 try {
-                                    int newCountVal = Integer.parseInt(inputBox.getValue());
+                                    int newCountVal = Integer.parseInt(inputBox.getValue().replaceAll("[^0-9]", ""));
                                     String cat = (RngTabController.this.rngGlobalDrops != null
                                             && RngTabController.this.rngGlobalDrops.contains(itemName))
                                                     ? "Global"
@@ -584,18 +583,17 @@ public class RngTabController extends ProfileTabController {
                     setInitialFocus(inputBox);
                 }
 
-                @Override
-                public void render(GuiGraphics graphics, int mouseX, int mouseY,
+                public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                         float partialTick) {
-                    super.render(graphics, mouseX, mouseY, partialTick);
-                    graphics.drawCenteredString(mc.font, "Set count for " + itemName, width / 2, height / 2 - 35,
+                    super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+                    graphics.centeredText(mc.font, "Set count for " + itemName, width / 2, height / 2 - 35,
                             0xFFFFFFFF);
                 }
             });
         }
 
         @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
             float hover = hoverAnimation.getValue();
             if (hover > 0) {
                 int color = Theme.withAlpha(Theme.GLASS_HIGHLIGHT, hover * 0.15f);
@@ -615,14 +613,14 @@ public class RngTabController extends ProfileTabController {
                     : "";
 
             int textColor = count > 0 ? Theme.ACCENT : 0xFF888888;
-            graphics.drawString(Minecraft.getInstance().font, displayName, x + 5, y + 8, textColor);
+            graphics.text(Minecraft.getInstance().font, displayName, x + 5, y + 8, textColor);
 
             int rightMargin = expanded ? 250 : 120;
             int countX = x + width - rightMargin;
             int profitX = x + width - (rightMargin - 50);
 
-            graphics.drawString(Minecraft.getInstance().font, countStr, countX, y + 8, 0xFFFFFFFF);
-            graphics.drawString(Minecraft.getInstance().font, profitStr, profitX, y + 8, 0xFFFFFFFF);
+            graphics.text(Minecraft.getInstance().font, countStr, countX, y + 8, 0xFFFFFFFF);
+            graphics.text(Minecraft.getInstance().font, profitStr, profitX, y + 8, 0xFFFFFFFF);
 
             if (expanded) {
                 minusBtn.render(graphics, mouseX, mouseY, partialTick);

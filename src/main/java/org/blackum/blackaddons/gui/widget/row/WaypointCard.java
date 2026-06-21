@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.common.config.ConfigManager.WaypointAction;
 import org.blackum.blackaddons.feature.waypoint.Waypoint;
 import org.blackum.blackaddons.feature.waypoint.WaypointDragState;
@@ -164,7 +164,7 @@ public class WaypointCard extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) return;
 
         boolean dragged = isBeingDragged();
@@ -194,7 +194,7 @@ public class WaypointCard extends Widget {
         }
     }
 
-    private void renderContents(GuiGraphics graphics, int renderX, int renderY, int renderWidth, int renderHeight, int mouseX, int mouseY, float partialTick, boolean isGhost) {
+    private void renderContents(GuiGraphicsExtractor graphics, int renderX, int renderY, int renderWidth, int renderHeight, int mouseX, int mouseY, float partialTick, boolean isGhost) {
         renderDragHandle(graphics, renderX, renderY, renderHeight, mouseX, mouseY, isGhost);
 
         int swatchX = renderX + CARD_PADDING + CONTENT_OFFSET + indent;
@@ -213,7 +213,7 @@ public class WaypointCard extends Widget {
         if (group != null) {
             nameText += " §7(in " + group.name + ")";
         }
-        graphics.drawString(Minecraft.getInstance().font, nameText, nameX, renderY + CARD_PADDING + (ROW_HEIGHT - 8) / 2, nameColor);
+        graphics.text(Minecraft.getInstance().font, nameText, nameX, renderY + CARD_PADDING + (ROW_HEIGHT - 8) / 2, nameColor);
 
         Minecraft mc = Minecraft.getInstance();
         String coords = String.format(Locale.ROOT, "%.0f, %.0f, %.0f", waypoint.x, waypoint.y, waypoint.z);
@@ -224,7 +224,7 @@ public class WaypointCard extends Widget {
             infoText += " §8• §7" + String.format(Locale.ROOT, "%.0fm", dist);
         }
 
-        graphics.drawString(mc.font, infoText, swatchX, renderY + CARD_PADDING + ROW_HEIGHT + 4 + (ROW_HEIGHT - 8) / 2, Theme.TEXT_SECONDARY);
+        graphics.text(mc.font, infoText, swatchX, renderY + CARD_PADDING + ROW_HEIGHT + 4 + (ROW_HEIGHT - 8) / 2, Theme.TEXT_SECONDARY);
 
         int dividerY = renderY + CARD_PADDING + ROW_HEIGHT * 2 + 6;
         graphics.fill(renderX + CARD_PADDING, dividerY, renderX + renderWidth - CARD_PADDING, dividerY + 1, 0x11FFFFFF);
@@ -236,7 +236,7 @@ public class WaypointCard extends Widget {
         }
     }
 
-    private void renderDragHandle(GuiGraphics graphics, int rx, int ry, int rh, int mx, int my, boolean isGhost) {
+    private void renderDragHandle(GuiGraphicsExtractor graphics, int rx, int ry, int rh, int mx, int my, boolean isGhost) {
         boolean hovered = !isGhost && isInHandleArea(mx, my);
         int dotColor = hovered ? Theme.TEXT_PRIMARY : Theme.withAlpha(Theme.TEXT_SECONDARY, 0.3f);
         int dotSize = 2;
@@ -254,7 +254,7 @@ public class WaypointCard extends Widget {
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY, float partialTick) {
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY, float partialTick) {
         if (!visible) return;
 
         if (isBeingDragged()) {

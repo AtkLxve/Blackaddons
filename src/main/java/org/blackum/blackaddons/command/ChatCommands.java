@@ -3,7 +3,7 @@ package org.blackum.blackaddons.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.Blackaddons;
@@ -54,30 +54,30 @@ public class ChatCommands {
     }
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> actionTriggerNode(String name) {
-        return ClientCommandManager.literal(name)
+        return ClientCommands.literal(name)
                 .executes(ctx -> handleActionTriggerMode(ctx.getSource(), !ConfigManager.data.actionTriggersEnabled))
-                .then(ClientCommandManager.literal("on")
+                .then(ClientCommands.literal("on")
                         .executes(ctx -> handleActionTriggerMode(ctx.getSource(), true)))
-                .then(ClientCommandManager.literal("off")
+                .then(ClientCommands.literal("off")
                         .executes(ctx -> handleActionTriggerMode(ctx.getSource(), false)))
-                .then(ClientCommandManager.literal("toggle")
+                .then(ClientCommands.literal("toggle")
                         .executes(ctx -> handleActionTriggerMode(ctx.getSource(), !ConfigManager.data.actionTriggersEnabled)))
-                .then(ClientCommandManager.literal("status")
+                .then(ClientCommands.literal("status")
                         .executes(ctx -> sendActionTriggerModeStatus(ctx.getSource())));
     }
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> ircNode() {
-        return ClientCommandManager.literal("irc")
-                .then(ClientCommandManager.literal("on")
+        return ClientCommands.literal("irc")
+                .then(ClientCommands.literal("on")
                         .executes(ctx -> handleIrcChatMode(ctx.getSource(), true)))
-                .then(ClientCommandManager.literal("off")
+                .then(ClientCommands.literal("off")
                         .executes(ctx -> handleIrcChatMode(ctx.getSource(), false)))
-                .then(ClientCommandManager.literal("toggle")
+                .then(ClientCommands.literal("toggle")
                         .executes(ctx -> handleIrcChatMode(ctx.getSource(), !ConfigManager.data.ircChatMode)))
-                .then(ClientCommandManager.literal("status")
+                .then(ClientCommands.literal("status")
                         .executes(ctx -> sendIrcChatModeStatus(ctx.getSource())))
-                .then(ClientCommandManager.literal("msg")
-                        .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+                .then(ClientCommands.literal("msg")
+                        .then(ClientCommands.argument("message", StringArgumentType.greedyString())
                                 .executes(ctx -> {
                                     String messageArg = StringArgumentType.getString(ctx, "message");
                                     if (messageArg != null) {
@@ -94,8 +94,8 @@ public class ChatCommands {
     }
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> previewNode() {
-        return ClientCommandManager.literal("preview")
-                .then(ClientCommandManager.argument("url", StringArgumentType.greedyString())
+        return ClientCommands.literal("preview")
+                .then(ClientCommands.argument("url", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             String url = StringArgumentType.getString(ctx, "url");
                             if (Blackaddons.screenOpener != null) {
@@ -106,8 +106,8 @@ public class ChatCommands {
     }
 
     public static void registerStandaloneIrc(CommandDispatcher<FabricClientCommandSource> dispatcher) {
-        dispatcher.register(ClientCommandManager.literal("irc")
-                .then(ClientCommandManager.argument("message", StringArgumentType.greedyString())
+        dispatcher.register(ClientCommands.literal("irc")
+                .then(ClientCommands.argument("message", StringArgumentType.greedyString())
                         .executes(ctx -> {
                             String messageArg = StringArgumentType.getString(ctx, "message");
                             if (messageArg != null) {

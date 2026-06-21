@@ -8,8 +8,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GlyphRenderState;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.GlyphRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FormattedCharSequence;
@@ -20,9 +20,6 @@ import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-//? if < 1.21.11 {
-/*import net.minecraft.client.renderer.RenderType;*/
-//?} else
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 import java.io.InputStream;
@@ -101,23 +98,11 @@ public class VectorFontRenderer {
                 curX[0] += getAdvance(cp);
             } else {
                 FormattedCharSequence singleChar = sink -> sink.accept(0, style, cp);
-                //? if < 1.21.11 {
-                /*font.prepareText(singleChar, curX[0], y, argb, false, 0)*/
-                //?} else
                 font.prepareText(singleChar, curX[0], y, argb, false, false, 0)
                         .visit(new Font.GlyphVisitor() {
-                            //? if < 1.21.11 {
-                            /*@Override
-                            public void acceptEffect(TextRenderable effect) {
-                            }*/
-                            //?}
-
                             @Override
-                            //? if < 1.21.11 {
-                            /*public void acceptGlyph(TextRenderable styled) {*/
-                            //?} else
                             public void acceptGlyph(TextRenderable.Styled styled) {
-                                renderState.submitGlyphToCurrentLayer(
+                                renderState.addGlyphToCurrentLayer(
                                         new GlyphRenderState(new Matrix3x2f(pose), styled, scissor));
                             }
                         });
@@ -147,9 +132,6 @@ public class VectorFontRenderer {
         if (glyph == null || glyph.curves.isEmpty()) return;
 
         DynamicTexture texture = textureCache.computeIfAbsent(codepoint, cp -> createCurveTexture(glyph));
-        //? if < 1.21.11 {
-        /*TextureSetup textureSetup = TextureSetup.singleTexture(texture.getTextureView());*/
-        //?} else
         TextureSetup textureSetup = TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler());
 
         float scale = getScale();
@@ -160,7 +142,7 @@ public class VectorFontRenderer {
         float sy1 = y + baseline - glyph.y0 * scale;
 
         int argb = (color & 0xFF000000) == 0 ? (color | 0xFF000000) : color;
-        renderState.submitGlyphToCurrentLayer(new VectorGlyphRenderState(
+        renderState.addGlyphToCurrentLayer(new VectorGlyphRenderState(
                 BlackaddonsRenderPipelines.VECTOR_TEXT, textureSetup, pose, sx0, sy0, sx1, sy1, argb, scissor));
     }
 

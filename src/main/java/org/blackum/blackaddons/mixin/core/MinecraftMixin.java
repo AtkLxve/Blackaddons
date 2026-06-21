@@ -13,9 +13,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MinecraftMixin {
 
     @Shadow
-    public abstract void resizeDisplay();
-
-    @Shadow
     public Screen screen;
 
     @Inject(method = "setScreen", at = @At("HEAD"))
@@ -27,6 +24,18 @@ public abstract class MinecraftMixin {
 
     @Inject(method = "setScreen", at = @At("TAIL"))
     private void onSetScreen(Screen screen, CallbackInfo ci) {
-        this.resizeDisplay();
+        invokeResizeDisplay();
+    }
+
+    private void invokeResizeDisplay() {
+        for (String name : new String[] { "resizeDisplay", "method_15993", "a" }) {
+            try {
+                var method = Minecraft.class.getDeclaredMethod(name);
+                method.setAccessible(true);
+                method.invoke((Minecraft) (Object) this);
+                return;
+            } catch (ReflectiveOperationException ignored) {
+            }
+        }
     }
 }

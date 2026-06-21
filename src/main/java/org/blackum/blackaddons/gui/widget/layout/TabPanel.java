@@ -7,7 +7,7 @@ import org.blackum.blackaddons.gui.widget.row.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -90,7 +90,7 @@ public class TabPanel extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible)
             return;
 
@@ -98,7 +98,7 @@ public class TabPanel extends Widget {
         renderContent(graphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderTabs(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderTabs(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         int tabX = x;
         int tabY = y;
 
@@ -138,7 +138,7 @@ public class TabPanel extends Widget {
                 textX += Math.round(hoverProgress * 3.0f);
             }
             int textY = currentY + (tabHeight - 8) / 2;
-            graphics.drawString(Minecraft.getInstance().font, tab.name, textX, textY, textColor);
+            graphics.text(Minecraft.getInstance().font, tab.name, textX, textY, textColor);
 
             if (isSelected) {
                 int lineX = tabX + tabWidth - 3;
@@ -152,7 +152,7 @@ public class TabPanel extends Widget {
         graphics.disableScissor();
     }
 
-    private void renderContent(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    private void renderContent(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (selectedTabIndex < 0 || selectedTabIndex >= tabs.size())
             return;
 
@@ -165,7 +165,7 @@ public class TabPanel extends Widget {
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
             float partialTick) {
         if (!visible)
             return;

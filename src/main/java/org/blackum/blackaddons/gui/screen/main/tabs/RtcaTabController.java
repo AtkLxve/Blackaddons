@@ -25,7 +25,7 @@ import org.blackum.blackaddons.service.LocalRtcaService;
 import com.google.gson.JsonObject;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -299,7 +299,7 @@ public class RtcaTabController extends ProfileTabController {
 
                 simResultsList.addItem(new Widget(0, 0, 0, 5) {
                     @Override
-                    public void render(GuiGraphics g, int x, int y, float p) {
+                    public void render(GuiGraphicsExtractor g, int x, int y, float p) {
                     }
                 });
             }
@@ -395,8 +395,8 @@ public class RtcaTabController extends ProfileTabController {
                 screen.startConfetti();
                 simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 25) {
                     @Override
-                    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                        graphics.drawCenteredString(Minecraft.getInstance().font,
+                    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+                        graphics.centeredText(Minecraft.getInstance().font,
                                 ChatFormatting.GOLD.toString() + ChatFormatting.BOLD + "🎉 Congratulations "
                                         + screen.getPlayer()
                                         + ", you already hit Class Average 50! 🎉",
@@ -405,8 +405,8 @@ public class RtcaTabController extends ProfileTabController {
                 });
                 simResultsList.addItem(new Widget(0, 0, simResultsList.getWidth(), 30) {
                     @Override
-                    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-                        graphics.drawCenteredString(Minecraft.getInstance().font,
+                    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+                        graphics.centeredText(Minecraft.getInstance().font,
                                 ChatFormatting.YELLOW
                                         + "You don't need this simulation anymore. Go touch some grass! 🌱",
                                 x + width / 2, y + 5, 0xFFFFD700);
@@ -417,7 +417,7 @@ public class RtcaTabController extends ProfileTabController {
 
             simResultsList.addItem(new Widget(0, 0, 0, 5) {
                 @Override
-                public void render(GuiGraphics g, int x, int y, float p) {
+                public void render(GuiGraphicsExtractor g, int x, int y, float p) {
                 }
             });
             addSectionHeader(simResultsList, "Class Simulation");
@@ -427,7 +427,7 @@ public class RtcaTabController extends ProfileTabController {
             simResultsList.addItem(new Widget(0, 0, 0, 5) {
 
                 @Override
-                public void render(GuiGraphics g, int x, int y, float p) {
+                public void render(GuiGraphicsExtractor g, int x, int y, float p) {
                 }
             });
 
@@ -462,7 +462,7 @@ public class RtcaTabController extends ProfileTabController {
 
             simResultsList.addItem(new Widget(0, 0, 0, 5) {
                 @Override
-                public void render(GuiGraphics g, int x, int y, float p) {
+                public void render(GuiGraphicsExtractor g, int x, int y, float p) {
                 }
             });
 

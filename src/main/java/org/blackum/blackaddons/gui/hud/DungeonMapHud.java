@@ -2,8 +2,8 @@ package org.blackum.blackaddons.gui.hud;
 
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
@@ -14,7 +14,7 @@ import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 import org.blackum.blackaddons.feature.dungeon.map.Vec2i;
 import org.blackum.blackaddons.gui.render.RoundedFillRenderState;
-import org.blackum.blackaddons.mixin.gui.GuiGraphicsAccessor;
+import org.blackum.blackaddons.mixin.gui.GuiGraphicsExtractorAccessor;
 import org.joml.Matrix3x2f;
 
 import java.lang.reflect.Method;
@@ -89,7 +89,7 @@ public class DungeonMapHud implements HudElement {
     }
 
     @Override
-    public void render(GuiGraphics graphics, DeltaTracker tracker) {
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker tracker) {
         render(graphics);
     }
 
@@ -117,7 +117,7 @@ public class DungeonMapHud implements HudElement {
         return null;
     }
 
-    public static void render(GuiGraphics g) {
+    public static void render(GuiGraphicsExtractor g) {
         if (!ConfigManager.data.dungeonMapEnabled)
             return;
         if (!LocationUtils.inDungeons())
@@ -309,13 +309,13 @@ public class DungeonMapHud implements HudElement {
         drawBorder(g, x, y, size);
     }
 
-    private static void fillRounded(GuiGraphics g, float x0, float y0, float x1, float y1, float radius, int color) {
-        GuiRenderState state = ((GuiGraphicsAccessor) g).getGuiRenderState();
+    private static void fillRounded(GuiGraphicsExtractor g, float x0, float y0, float x1, float y1, float radius, int color) {
+        GuiRenderState state = ((GuiGraphicsExtractorAccessor) g).getGuiRenderState();
         Matrix3x2f pose = new Matrix3x2f(g.pose());
-        state.submitGuiElement(new RoundedFillRenderState(pose, x0, y0, x1, y1, radius, color, null));
+        state.addGuiElement(new RoundedFillRenderState(pose, x0, y0, x1, y1, radius, color, null));
     }
 
-    private static void drawTiles(GuiGraphics g, Room room, Room.Type eff,
+    private static void drawTiles(GuiGraphicsExtractor g, Room room, Room.Type eff,
             int dX, int dY, int cellSize, int rs, float scale,
             boolean allPuzzlesKnown, boolean trapDiscovered, boolean funnyMap, float darkness) {
         boolean undiscovered = room.state == Room.State.UNDISCOVERED;
@@ -351,7 +351,7 @@ public class DungeonMapHud implements HudElement {
         }
     }
 
-    private static void drawUndiscoveredTile(GuiGraphics g, Room room,
+    private static void drawUndiscoveredTile(GuiGraphicsExtractor g, Room room,
             int dX, int dY, int cellSize, int rs, float scale) {
         Vec2i gp = room.entryTile;
         if (gp == null) {
@@ -480,7 +480,7 @@ public class DungeonMapHud implements HudElement {
         return rects;
     }
 
-    private static void drawOverlay(GuiGraphics g, Minecraft mc, Room room, Room.Type eff,
+    private static void drawOverlay(GuiGraphicsExtractor g, Minecraft mc, Room room, Room.Type eff,
             int cx, int cz, float scale, boolean ambiguous, boolean funnyMap, float darkness) {
         boolean hasName = room.data != null;
         if (ConfigManager.data.dungeonMapShowRoomNames && hasName && room.state != Room.State.UNDISCOVERED && room.state != Room.State.UNOPENED) {
@@ -532,7 +532,7 @@ public class DungeonMapHud implements HudElement {
         }
     }
 
-    private static void drawCheckProcedural(GuiGraphics g, int cx, int cy, int color, int shadowColor) {
+    private static void drawCheckProcedural(GuiGraphicsExtractor g, int cx, int cy, int color, int shadowColor) {
         int x = cx - 6;
         int y = cy - 5;
 
@@ -551,22 +551,22 @@ public class DungeonMapHud implements HudElement {
         g.fill(x + 10, y, x + 12, y + 2, color);
     }
 
-    private static void drawCheckmark(GuiGraphics g, Minecraft mc, int cx, int cz, int color) {
+    private static void drawCheckmark(GuiGraphicsExtractor g, Minecraft mc, int cx, int cz, int color) {
         int h = mc.font.lineHeight / 2;
-        scaled(g, cx, cz, 1.5f, () -> g.drawCenteredString(mc.font, "\u2713", 0, -h, color));
+        scaled(g, cx, cz, 1.5f, () -> g.centeredText(mc.font, "\u2713", 0, -h, color));
     }
 
-    private static void drawXMark(GuiGraphics g, Minecraft mc, int cx, int cz, int color) {
+    private static void drawXMark(GuiGraphicsExtractor g, Minecraft mc, int cx, int cz, int color) {
         int h = mc.font.lineHeight / 2;
-        scaled(g, cx, cz, 1.5f, () -> g.drawCenteredString(mc.font, "\u2717", 0, -h, color));
+        scaled(g, cx, cz, 1.5f, () -> g.centeredText(mc.font, "\u2717", 0, -h, color));
     }
 
-    private static void drawQuestionMark(GuiGraphics g, Minecraft mc, int cx, int cz, int color) {
+    private static void drawQuestionMark(GuiGraphicsExtractor g, Minecraft mc, int cx, int cz, int color) {
         int h = mc.font.lineHeight / 2;
-        scaled(g, cx, cz, 1.5f, () -> g.drawCenteredString(mc.font, "?", 0, -h, color));
+        scaled(g, cx, cz, 1.5f, () -> g.centeredText(mc.font, "?", 0, -h, color));
     }
 
-    private static void drawName(GuiGraphics g, Minecraft mc, int cx, int cz, String name, int color) {
+    private static void drawName(GuiGraphicsExtractor g, Minecraft mc, int cx, int cz, String name, int color) {
         int fontH = mc.font.lineHeight;
         float scale = ConfigManager.data.dungeonMapRoomNameScale;
         
@@ -592,12 +592,12 @@ public class DungeonMapHud implements HudElement {
         for (int i = 0; i < lines.size(); i++) {
             final String line = lines.get(i);
             float curY = startY + i * fontH * scale + (fontH * scale / 2f);
-            scaled(g, cx, (int)curY, scale, () -> g.drawCenteredString(mc.font, line, 0, -(fontH / 2), color));
+            scaled(g, cx, (int)curY, scale, () -> g.centeredText(mc.font, line, 0, -(fontH / 2), color));
         }
     }
 
 
-    private static void scaled(GuiGraphics g, int cx, int cz, float s, Runnable draw) {
+    private static void scaled(GuiGraphicsExtractor g, int cx, int cz, float s, Runnable draw) {
         g.pose().pushMatrix();
         g.pose().translate((float) cx, (float) cz);
         g.pose().scale(s, s);
@@ -793,7 +793,7 @@ public class DungeonMapHud implements HudElement {
         }
     }
 
-    private static void drawPlayerPin(GuiGraphics g, int cx, int cy, int color, float yaw) {
+    private static void drawPlayerPin(GuiGraphicsExtractor g, int cx, int cy, int color, float yaw) {
         g.pose().pushMatrix();
         try {
             g.pose().translate((float) cx, (float) cy);
@@ -848,7 +848,7 @@ public class DungeonMapHud implements HudElement {
         }
     }
 
-    private static void drawPlayerDot(GuiGraphics g, int cx, int cy, int color, float yaw) {
+    private static void drawPlayerDot(GuiGraphicsExtractor g, int cx, int cy, int color, float yaw) {
         int r = (color >> 16) & 0xFF, ge = (color >> 8) & 0xFF, b = color & 0xFF;
         int bc = 0xFF000000 | ((r / 2) << 16) | ((ge / 2) << 8) | (b / 2);
         g.fill(cx - 2, cy - 1, cx + 3, cy, bc);
@@ -861,7 +861,7 @@ public class DungeonMapHud implements HudElement {
         g.fill(cx + dx, cy + dz, cx + dx + 1, cy + dz + 1, 0xFFFFFFFF);
     }
 
-    private static void drawBorder(GuiGraphics g, int x, int y, int size) {
+    private static void drawBorder(GuiGraphicsExtractor g, int x, int y, int size) {
         if (!ConfigManager.data.dungeonMapBorderEnabled) return;
         int color = ConfigManager.data.dungeonMapColorBorder;
         int t = ConfigManager.data.dungeonMapBorderThickness;

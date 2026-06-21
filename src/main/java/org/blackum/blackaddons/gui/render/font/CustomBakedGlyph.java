@@ -11,11 +11,8 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Style;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector4f;
-//? if < 1.21.11 {
-/*import net.minecraft.client.renderer.RenderType;*/
-//?} else
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class CustomBakedGlyph implements BakedGlyph {
@@ -34,26 +31,12 @@ public class CustomBakedGlyph implements BakedGlyph {
         return glyphInfo;
     }
 
-    //? if < 1.21.11 {
-    /*@Override
-    public TextRenderable createGlyph(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset) {
-        return new CustomTextRenderable(codepoint, glyphData, x, y, color, shadowColor, style, boldOffset, shadowOffset);
-    }*/
-    //?}
-
-    //? if >= 1.21.11 {
     @Override
     public TextRenderable.Styled createGlyph(float x, float y, int color, int shadowColor, Style style, float boldOffset, float shadowOffset) {
         return new CustomTextRenderable(codepoint, glyphData, x, y, color, shadowColor, style, boldOffset, shadowOffset);
     }
-    //?}
 
-    //? if < 1.21.11 {
-    /*public static class CustomTextRenderable implements TextRenderable {*/
-    //?}
-    //? if >= 1.21.11 {
     public static class CustomTextRenderable implements TextRenderable.Styled {
-    //?}
         private final int codepoint;
         private final CustomFontManager.GlyphData glyphData;
         private final float x;
@@ -83,15 +66,13 @@ public class CustomBakedGlyph implements BakedGlyph {
             this.shadowOffset = shadowOffset;
         }
 
-        //? if >= 1.21.11 {
         @Override
         public Style style() {
             return style;
         }
-        //?}
 
         @Override
-        public void render(Matrix4f matrix4f, VertexConsumer vertexConsumer, int light, boolean isGui) {
+        public void render(Matrix4fc matrix4f, VertexConsumer vertexConsumer, int light, boolean isGui) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             CustomFontRenderer.SdfGlyph sdfGlyph = renderer.getSdfGlyph(codepoint);
             if (sdfGlyph == null) {
@@ -141,7 +122,7 @@ public class CustomBakedGlyph implements BakedGlyph {
                     skew, boldStrength, color, light, false);
         }
 
-        private void submitQuad(VertexConsumer vc, Matrix4f m,
+        private void submitQuad(VertexConsumer vc, Matrix4fc m,
                                 float lx0, float ly0, float lx1, float ly1, float lz,
                                 float u0, float v0, float u1, float v1,
                                 float skew, float effectZ, int c, int light, boolean hardEdge) {

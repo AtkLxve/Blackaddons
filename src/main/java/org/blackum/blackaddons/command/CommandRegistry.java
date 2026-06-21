@@ -1,7 +1,7 @@
 package org.blackum.blackaddons.command;
 
 import com.mojang.brigadier.Command;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
@@ -21,7 +21,7 @@ public class CommandRegistry {
             };
 
             for (String alias : new String[]{Constants.BASE_COMMAND, "black", "blackaddons"}) {
-                var cmd = ClientCommandManager.literal(alias).executes(openGui);
+                var cmd = ClientCommands.literal(alias).executes(openGui);
 
                 cmd.then(TestCommands.node());
                 if (FabricLoader.getInstance().isDevelopmentEnvironment()) {

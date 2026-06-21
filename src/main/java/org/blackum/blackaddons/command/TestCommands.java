@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -46,23 +46,23 @@ import java.util.concurrent.CompletableFuture;
 public class TestCommands {
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> node() {
-        var testNode = ClientCommandManager.literal("test");
+        var testNode = ClientCommands.literal("test");
 
-        testNode.then(ClientCommandManager.literal("DebugGui")
+        testNode.then(ClientCommands.literal("DebugGui")
                 .executes(ctx -> {
                     if (Blackaddons.guiOpener != null)
                         Blackaddons.guiOpener.run();
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("TestMenu")
+        testNode.then(ClientCommands.literal("TestMenu")
                 .executes(ctx -> {
                     if (Blackaddons.testMenuOpener != null)
                         Blackaddons.testMenuOpener.run();
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("score")
+        testNode.then(ClientCommands.literal("score")
                 .executes(ctx -> {
                     for (String line : DungeonScore.getScoreBreakdown()) {
                         ctx.getSource().sendFeedback(Component.literal(line));
@@ -70,7 +70,7 @@ public class TestCommands {
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("tablist")
+        testNode.then(ClientCommands.literal("tablist")
                 .executes(ctx -> {
                     ctx.getSource().sendFeedback(Component.literal("§e--- Current Tablist ---"));
                     for (String line : TabListUtils.getTabListLines()) {
@@ -79,21 +79,21 @@ public class TestCommands {
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("resetcache")
+        testNode.then(ClientCommands.literal("resetcache")
                 .executes(ctx -> {
                     ProfileStateManager.getInstance().clearAllCaches();
                     ctx.getSource().sendFeedback(Component.literal("All caches cleared."));
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("resetalign")
+        testNode.then(ClientCommands.literal("resetalign")
                 .executes(ctx -> {
                     AlignUtils.resetSessionStats();
                     ctx.getSource().sendFeedback(Component.literal("Alignment session stats reset."));
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("dungeonforce")
+        testNode.then(ClientCommands.literal("dungeonforce")
                 .executes(ctx -> {
                     LocationUtils.debugDungeonMode = !LocationUtils.debugDungeonMode;
                     ctx.getSource().sendFeedback(Component.literal("Debug dungeon mode: "
@@ -101,16 +101,16 @@ public class TestCommands {
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("resetdungeon")
+        testNode.then(ClientCommands.literal("resetdungeon")
                 .executes(ctx -> {
                     DungeonMap.reset();
                     ctx.getSource().sendFeedback(Component.literal("Dungeon map reset."));
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("rotate")
-                .then(ClientCommandManager.argument("yaw", FloatArgumentType.floatArg(-180, 180))
-                        .then(ClientCommandManager.argument("pitch", FloatArgumentType.floatArg(-90, 90))
+        testNode.then(ClientCommands.literal("rotate")
+                .then(ClientCommands.argument("yaw", FloatArgumentType.floatArg(-180, 180))
+                        .then(ClientCommands.argument("pitch", FloatArgumentType.floatArg(-90, 90))
                                 .executes(ctx -> {
                                     float yaw = FloatArgumentType.getFloat(ctx, "yaw");
                                     float pitch = FloatArgumentType.getFloat(ctx, "pitch");
@@ -119,10 +119,10 @@ public class TestCommands {
                                     return 1;
                                 }))));
 
-        testNode.then(ClientCommandManager.literal("rotateTo")
-                .then(ClientCommandManager.argument("x", FloatArgumentType.floatArg())
-                        .then(ClientCommandManager.argument("y", FloatArgumentType.floatArg())
-                                .then(ClientCommandManager.argument("z", FloatArgumentType.floatArg())
+        testNode.then(ClientCommands.literal("rotateTo")
+                .then(ClientCommands.argument("x", FloatArgumentType.floatArg())
+                        .then(ClientCommands.argument("y", FloatArgumentType.floatArg())
+                                .then(ClientCommands.argument("z", FloatArgumentType.floatArg())
                                         .executes(ctx -> {
                                             float x = FloatArgumentType.getFloat(ctx, "x");
                                             float y = FloatArgumentType.getFloat(ctx, "y");
@@ -132,13 +132,13 @@ public class TestCommands {
                                             return 1;
                                         })))));
 
-        testNode.then(ClientCommandManager.literal("rng")
-                .then(ClientCommandManager.argument(Constants.CMD_ARG_TYPE, StringArgumentType.string())
+        testNode.then(ClientCommands.literal("rng")
+                .then(ClientCommands.argument(Constants.CMD_ARG_TYPE, StringArgumentType.string())
                         .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                                 new String[]{Constants.DROP_TYPE_RARE, Constants.DROP_TYPE_CRAZY, Constants.DROP_TYPE_PRAY},
                                 builder))
-                        .then(ClientCommandManager.argument(Constants.CMD_ARG_MAGIC_FIND, IntegerArgumentType.integer(0))
-                                .then(ClientCommandManager.argument(Constants.CMD_ARG_ITEM, StringArgumentType.greedyString())
+                        .then(ClientCommands.argument(Constants.CMD_ARG_MAGIC_FIND, IntegerArgumentType.integer(0))
+                                .then(ClientCommands.argument(Constants.CMD_ARG_ITEM, StringArgumentType.greedyString())
                                         .executes(context -> {
                                             String typeArg = StringArgumentType.getString(context, Constants.CMD_ARG_TYPE).toLowerCase();
                                             int mf = IntegerArgumentType.getInteger(context, Constants.CMD_ARG_MAGIC_FIND);
@@ -157,7 +157,7 @@ public class TestCommands {
                                                     + ChatFormatting.RESET + "" + ChatFormatting.AQUA + "✯ Magic Find"
                                                     + ChatFormatting.RESET + "" + ChatFormatting.AQUA + ")";
 
-                                            Minecraft.getInstance().gui.getChat().addMessage(Component.literal(fakeMessage));
+                                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(Component.literal(fakeMessage));
                                             RngTracker.onChatMessage(Component.literal(fakeMessage));
 
                                             NotificationManager.addNotification("RNG Drop Tested",
@@ -165,7 +165,7 @@ public class TestCommands {
                                             return 1;
                                         })))));
 
-        testNode.then(ClientCommandManager.literal("GiveTNT")
+        testNode.then(ClientCommands.literal("GiveTNT")
                 .executes(ctx -> {
                     Minecraft client = Minecraft.getInstance();
                     var player = client.player;
@@ -181,7 +181,7 @@ public class TestCommands {
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("allnames")
+        testNode.then(ClientCommands.literal("allnames")
                 .executes(ctx -> {
                     Minecraft client = Minecraft.getInstance();
                     if (client.level != null && client.getConnection() != null) {
@@ -210,53 +210,53 @@ public class TestCommands {
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("dungeonjoin")
-                .then(ClientCommandManager.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
+        testNode.then(ClientCommands.literal("dungeonjoin")
+                .then(ClientCommands.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
                         .executes(ctx -> {
                             String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                             String fakeMessage = "Party Finder > " + ign + " joined the dungeon group! (Berserk Level 1)";
                             Component component = Component.literal(fakeMessage);
-                            Minecraft.getInstance().gui.getChat().addMessage(component);
+                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
                             DungeonJoinHandler.onChatMessage(component);
                             ChatActionManager.getInstance().onChatMessage(component);
                             return 1;
                         })));
 
-        testNode.then(ClientCommandManager.literal("testinvite")
-                .then(ClientCommandManager.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
+        testNode.then(ClientCommands.literal("testinvite")
+                .then(ClientCommands.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
                         .executes(ctx -> {
                             String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                             String fakeMessage = "[VIP] " + ign
                                     + " has invited you to join their party!\nYou have 60 seconds to accept. Click here to join!";
                             Component component = Component.literal(fakeMessage);
-                            Minecraft.getInstance().gui.getChat().addMessage(component);
+                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
                             ChatActionManager.getInstance().onChatMessage(component);
                             return 1;
                         })));
 
-        testNode.then(ClientCommandManager.literal("testjoin")
-                .then(ClientCommandManager.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
+        testNode.then(ClientCommands.literal("testjoin")
+                .then(ClientCommands.argument(Constants.CMD_ARG_IGN, StringArgumentType.string())
                         .executes(ctx -> {
                             String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                             String fakeMessage = ign + " whispers to you: [BlackAddons] join party request - id:e1bc825d";
                             Component component = Component.literal(fakeMessage);
-                            Minecraft.getInstance().gui.getChat().addMessage(component);
+                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
                             PartyFinderManager.getInstance().onChatMessage(component);
                             return 1;
                         })
-                        .then(ClientCommandManager.argument("id", StringArgumentType.string())
+                        .then(ClientCommands.argument("id", StringArgumentType.string())
                                 .executes(ctx -> {
                                     String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                                     String id = StringArgumentType.getString(ctx, "id");
                                     String fakeMessage = ign + " whispers to you: [BlackAddons] join party request - id:" + id;
                                     Component component = Component.literal(fakeMessage);
-                                    Minecraft.getInstance().gui.getChat().addMessage(component);
+                                    Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
                                     PartyFinderManager.getInstance().onChatMessage(component);
                                     return 1;
                                 }))));
 
-        testNode.then(ClientCommandManager.literal("setid")
-                .then(ClientCommandManager.argument("id", StringArgumentType.string())
+        testNode.then(ClientCommands.literal("setid")
+                .then(ClientCommands.argument("id", StringArgumentType.string())
                         .executes(ctx -> {
                             String id = StringArgumentType.getString(ctx, "id");
                             try {
@@ -272,7 +272,7 @@ public class TestCommands {
                             return 1;
                         })));
 
-        testNode.then(ClientCommandManager.literal("lbsave")
+        testNode.then(ClientCommands.literal("lbsave")
                 .executes(ctx -> {
                     int n = SoloClearSampler.captureSample();
                     if (n > 0) {
@@ -285,10 +285,10 @@ public class TestCommands {
                     return 1;
                 }));
 
-        testNode.then(ClientCommandManager.literal("lbsend")
+        testNode.then(ClientCommands.literal("lbsend")
                 .executes(ctx -> runLbSend(ctx.getSource())));
 
-        testNode.then(ClientCommandManager.literal("authcheck")
+        testNode.then(ClientCommands.literal("authcheck")
                 .executes(ctx -> {
                     String serverId = MojangAuthService.generateServerId();
                     ctx.getSource().sendFeedback(Component.literal("§e[AuthCheck] Activating Mojang auth check..."));

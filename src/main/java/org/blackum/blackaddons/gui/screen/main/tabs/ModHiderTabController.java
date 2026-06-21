@@ -16,7 +16,7 @@ import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
 import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
 import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
 import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -247,7 +247,7 @@ public class ModHiderTabController extends SimpleTabController {
             }
 
             @Override
-            public void render(GuiGraphics g, int mx, int my, float p) {
+            public void render(GuiGraphicsExtractor g, int mx, int my, float p) {
             }
         });
     }
@@ -350,7 +350,7 @@ public class ModHiderTabController extends SimpleTabController {
             }
 
             @Override
-            public void render(GuiGraphics g, int mx, int my, float p) {
+            public void render(GuiGraphicsExtractor g, int mx, int my, float p) {
             }
         });
 
@@ -554,7 +554,7 @@ public class ModHiderTabController extends SimpleTabController {
 
         Widget wrapper = new Widget(0, 0, 0, 0) {
             @Override
-            public void render(GuiGraphics g, int mx, int my, float p) {
+            public void render(GuiGraphicsExtractor g, int mx, int my, float p) {
                 cb.setX(getX());
                 cb.setY(getY());
                 cb.setWidth(getWidth());

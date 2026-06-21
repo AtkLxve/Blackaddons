@@ -316,7 +316,7 @@ public class IrcClient implements WebSocket.Listener {
                         component.append(Component.literal("  ").withStyle(ChatFormatting.WHITE));
                     }
                     component.append(Component.literal(chunk).withStyle(ChatFormatting.WHITE));
-                    MinecraftInstance.mc.player.displayClientMessage(component, false);
+                    MinecraftInstance.mc.player.sendSystemMessage(component);
                 }
             }
         });

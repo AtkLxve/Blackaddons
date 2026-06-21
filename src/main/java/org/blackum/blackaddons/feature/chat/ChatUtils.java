@@ -191,6 +191,6 @@ public class ChatUtils {
     }
 
     public static void send_debug(String txt) {
-        mc.gui.getChat().addMessage(getMessage(txt));
+        mc.gui.getChat().addClientSystemMessage(getMessage(txt));
     }
 }

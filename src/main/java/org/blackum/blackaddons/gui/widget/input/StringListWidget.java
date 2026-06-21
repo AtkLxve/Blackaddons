@@ -1,6 +1,6 @@
 package org.blackum.blackaddons.gui.widget.input;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.widget.base.Button;
 import org.blackum.blackaddons.gui.widget.base.Widget;
 
@@ -129,7 +129,7 @@ public class StringListWidget extends Widget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         if (!visible) return;
         inputField.render(graphics, mouseX, mouseY, partialTick);
         addButton.render(graphics, mouseX, mouseY, partialTick);
@@ -140,7 +140,7 @@ public class StringListWidget extends Widget {
     }
 
     @Override
-    public void renderOverlay(GuiGraphics graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY, float partialTick) {
+    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY, float partialTick) {
         if (!visible) return;
         inputField.renderOverlay(graphics, mouseX, mouseY, rawMouseX, rawMouseY, partialTick);
         for (Row row : rows) {
