@@ -14,6 +14,7 @@ import com.google.gson.JsonObject;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
 import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
@@ -157,7 +158,7 @@ public class TestCommands {
                                                     + ChatFormatting.RESET + "" + ChatFormatting.AQUA + "✯ Magic Find"
                                                     + ChatFormatting.RESET + "" + ChatFormatting.AQUA + ")";
 
-                                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(Component.literal(fakeMessage));
+                                            McCompat.getChat(Minecraft.getInstance()).addClientSystemMessage(Component.literal(fakeMessage));
                                             RngTracker.onChatMessage(Component.literal(fakeMessage));
 
                                             NotificationManager.addNotification("RNG Drop Tested",
@@ -216,7 +217,7 @@ public class TestCommands {
                             String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                             String fakeMessage = "Party Finder > " + ign + " joined the dungeon group! (Berserk Level 1)";
                             Component component = Component.literal(fakeMessage);
-                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
+                            McCompat.getChat(Minecraft.getInstance()).addClientSystemMessage(component);
                             DungeonJoinHandler.onChatMessage(component);
                             ChatActionManager.getInstance().onChatMessage(component);
                             return 1;
@@ -229,7 +230,7 @@ public class TestCommands {
                             String fakeMessage = "[VIP] " + ign
                                     + " has invited you to join their party!\nYou have 60 seconds to accept. Click here to join!";
                             Component component = Component.literal(fakeMessage);
-                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
+                            McCompat.getChat(Minecraft.getInstance()).addClientSystemMessage(component);
                             ChatActionManager.getInstance().onChatMessage(component);
                             return 1;
                         })));
@@ -240,7 +241,7 @@ public class TestCommands {
                             String ign = StringArgumentType.getString(ctx, Constants.CMD_ARG_IGN);
                             String fakeMessage = ign + " whispers to you: [BlackAddons] join party request - id:e1bc825d";
                             Component component = Component.literal(fakeMessage);
-                            Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
+                            McCompat.getChat(Minecraft.getInstance()).addClientSystemMessage(component);
                             PartyFinderManager.getInstance().onChatMessage(component);
                             return 1;
                         })
@@ -250,7 +251,7 @@ public class TestCommands {
                                     String id = StringArgumentType.getString(ctx, "id");
                                     String fakeMessage = ign + " whispers to you: [BlackAddons] join party request - id:" + id;
                                     Component component = Component.literal(fakeMessage);
-                                    Minecraft.getInstance().gui.getChat().addClientSystemMessage(component);
+                                    McCompat.getChat(Minecraft.getInstance()).addClientSystemMessage(component);
                                     PartyFinderManager.getInstance().onChatMessage(component);
                                     return 1;
                                 }))));

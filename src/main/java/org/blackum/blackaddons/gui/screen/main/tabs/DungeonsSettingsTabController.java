@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -326,7 +327,7 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         list.addItem(new Button(0, 0, width, 20, "Reset Map Colors", () -> {
             ConfigManager.resetDungeonMapColors();
             ConfigManager.save();
-            Minecraft.getInstance().execute(() -> Minecraft.getInstance().setScreen(null));
+            Minecraft.getInstance().execute(() -> McCompat.setScreen(Minecraft.getInstance(), null));
         }));
 
         GridRow roomGrid1 = new GridRow(width, 130);

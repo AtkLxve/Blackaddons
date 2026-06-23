@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.feature;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -263,7 +264,7 @@ public class ProfileViewerScreen extends BaseScreen {
                         }
                     } else {
                         Minecraft.getInstance().execute(() -> {
-                            minecraft.setScreen(new ProfileViewerScreen(parent, player));
+                            McCompat.setScreen(minecraft, new ProfileViewerScreen(parent, player));
                         });
                     }
                 });

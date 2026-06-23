@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.util.Mth;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 
 import java.util.ArrayList;
@@ -146,7 +147,7 @@ public class AlignUtils {
             return;
         }
 
-        if (mc.screen != null || player.isPassenger() || player.isFallFlying() || player.onClimbable() || player.isInWater() || player.isInLava()) {
+        if (McCompat.getScreen(mc) != null || player.isPassenger() || player.isFallFlying() || player.onClimbable() || player.isInWater() || player.isInLava()) {
             cancel();
             return;
         }

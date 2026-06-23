@@ -3,7 +3,14 @@ package org.blackum.blackaddons.client.render;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.LightCoordsUtil;
+//? if >=26.2 {
+/*
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import com.mojang.blaze3d.vertex.PoseStack;
+*/
+//?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -23,6 +30,33 @@ public class WaypointRenderer {
 
     private static final int CIRCLE_SEGMENTS = 64;
 
+//? if >=26.2 {
+/*
+    public static void render(PoseStack poseStack, SubmitNodeCollector bufferSource, float partialTicks) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null) return;
+
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
+
+        int count = 0;
+        for (Waypoint waypoint : WaypointManager.getInstance().getWaypoints()) {
+            if (!waypoint.enabled) continue;
+            if (waypoint.groupId != null) {
+                WaypointGroup group = WaypointManager.getInstance().getGroup(waypoint.groupId);
+                if (group != null && !group.isActive()) continue;
+            }
+            if (waypoint.dimension != null) {
+                String dim = McCompat.dimensionId(mc.level.dimension());
+                if (!waypoint.dimension.equals(dim)) continue;
+            }
+            renderWaypoint(poseStack, bufferSource, waypoint, camPos);
+        }
+        if (count > 0 && System.currentTimeMillis() % 5000 < 50) {
+            Blackaddons.LOGGER.info("Rendering {} waypoints", count);
+        }
+    }
+*/
+//?} else {
     public static void render(Matrix4f matrix, MultiBufferSource bufferSource, float partialTicks) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
@@ -46,7 +80,23 @@ public class WaypointRenderer {
             Blackaddons.LOGGER.info("Rendering {} waypoints", count);
         }
     }
+//?}
 
+//? if >=26.2 {
+/*
+    private static void renderWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, Waypoint waypoint, Vec3 camPos) {
+        double x = waypoint.x - camPos.x;
+        double y = waypoint.y - camPos.y;
+        double z = waypoint.z - camPos.z;
+
+        float radius = (float) waypoint.radius;
+        Color color = new Color(waypoint.color, true);
+
+        WaypointAnimation anim = waypoint.animation != null ? waypoint.animation : WaypointAnimation.STATIC;
+        renderAnimatedWaypoint(poseStack, bufferSource, x, y, z, radius, color, waypoint.height, waypoint, anim);
+    }
+*/
+//?} else {
     private static void renderWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, Waypoint waypoint, Vec3 camPos) {
         double x = waypoint.x - camPos.x;
         double y = waypoint.y - camPos.y;
@@ -58,7 +108,82 @@ public class WaypointRenderer {
         WaypointAnimation anim = waypoint.animation != null ? waypoint.animation : WaypointAnimation.STATIC;
         renderAnimatedWaypoint(matrix, bufferSource, x, y, z, radius, color, waypoint.height, waypoint, anim);
     }
+//?}
 
+//? if >=26.2 {
+/*
+    private static void renderAnimatedWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
+        float r = color.getRed() / 255f;
+        float g = color.getGreen() / 255f;
+        float b = color.getBlue() / 255f;
+        float a = color.getAlpha() / 255f;
+
+        float ringHeight = 0.05f;
+
+        McCompat.drawGeometry(bufferSource, poseStack, McCompat.getWaypointRenderType(), (pose, buffer) -> {
+            Matrix4f poseMatrix = pose.pose();
+            switch (animation) {
+                case RADAR:
+                    drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.02f, ringHeight, r, g, b, a * 0.8f, true);
+                    if (waypoint.showFullShape) {
+                        drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.01f, height, r, g, b, a * 0.2f, false);
+                        drawShape(poseMatrix, buffer, waypoint, x, y + height, z, radius, 0.02f, ringHeight, r, g, b, a * 0.8f, true);
+                    }
+                    float radarTime = (System.currentTimeMillis() % 1500) / 1500f;
+                    float waveRadius = radius * radarTime;
+                    if (waveRadius > 0.05f) {
+                        drawShape(poseMatrix, buffer, waypoint, x, y, z, waveRadius, 0.03f, ringHeight * 0.5f, r, g, b, a * (1.0f - radarTime), true);
+                    }
+                    break;
+                case PULSE:
+                    float pulse = Mth.sin((System.currentTimeMillis() % 2000) / 2000f * (float) Math.PI * 2) * 0.1f + 0.9f;
+                    float currentRadius = radius * pulse;
+                    drawShape(poseMatrix, buffer, waypoint, x, y, z, currentRadius, 0.05f, ringHeight, r, g, b, a, true);
+                    if (waypoint.showFullShape) {
+                        drawShape(poseMatrix, buffer, waypoint, x, y, z, currentRadius, 0.02f, height, r, g, b, a * 0.3f, false);
+                        drawShape(poseMatrix, buffer, waypoint, x, y + height, z, currentRadius, 0.05f, ringHeight, r, g, b, a, true);
+                    }
+                    break;
+                case STATIC:
+                    drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.05f, ringHeight, r, g, b, a, true);
+                    if (waypoint.showFullShape) {
+                        drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.02f, height, r, g, b, a * 0.3f, false);
+                        drawShape(poseMatrix, buffer, waypoint, x, y + height, z, radius, 0.05f, ringHeight, r, g, b, a, true);
+                    }
+                    break;
+                case BOUNCE:
+                    float bounce = Mth.sin((System.currentTimeMillis() % 1000) / 1000f * (float) Math.PI * 2) * 0.2f;
+                    drawShape(poseMatrix, buffer, waypoint, x, y + bounce, z, radius, 0.05f, ringHeight, r, g, b, a, true);
+                    if (waypoint.showFullShape) {
+                        drawShape(poseMatrix, buffer, waypoint, x, y + bounce, z, radius, 0.02f, height, r, g, b, a * 0.3f, false);
+                        drawShape(poseMatrix, buffer, waypoint, x, y + bounce + height, z, radius, 0.05f, ringHeight, r, g, b, a, true);
+                    }
+                    break;
+                case BREATH:
+                    float breath = Mth.sin((System.currentTimeMillis() % 3000) / 3000f * (float) Math.PI * 2) * 0.4f + 0.6f;
+                    float breathAlpha = a * breath;
+                    drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.05f, ringHeight, r, g, b, breathAlpha, true);
+                    if (waypoint.showFullShape) {
+                        drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.02f, height, r, g, b, breathAlpha * 0.3f, false);
+                        drawShape(poseMatrix, buffer, waypoint, x, y + height, z, radius, 0.05f, ringHeight, r, g, b, breathAlpha, true);
+                    }
+                    break;
+                case DOUBLE_RADAR:
+                    drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.02f, ringHeight, r, g, b, a * 0.6f, true);
+                    if (waypoint.showFullShape) {
+                        drawShape(poseMatrix, buffer, waypoint, x, y, z, radius, 0.01f, height, r, g, b, a * 0.2f, false);
+                        drawShape(poseMatrix, buffer, waypoint, x, y + height, z, radius, 0.02f, ringHeight, r, g, b, a * 0.6f, true);
+                    }
+                    float time1 = (System.currentTimeMillis() % 2000) / 2000f;
+                    float time2 = ((System.currentTimeMillis() + 1000) % 2000) / 2000f;
+                    drawShape(poseMatrix, buffer, waypoint, x, y, z, radius * time1, 0.03f, ringHeight * 0.8f, r, g, b, a * (1.0f - time1), true);
+                    drawShape(poseMatrix, buffer, waypoint, x, y, z, radius * time2, 0.03f, ringHeight * 0.8f, r, g, b, a * (1.0f - time2), true);
+                    break;
+            }
+        });
+    }
+*/
+//?} else {
     private static void renderAnimatedWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
         VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(bufferSource);
         float r = color.getRed() / 255f;
@@ -127,6 +252,7 @@ public class WaypointRenderer {
                 break;
         }
     }
+//?}
 
     private static void drawShape(Matrix4f matrix, VertexConsumer buffer, Waypoint waypoint, double x, double y, double z, float radius, float thickness, double height, float r, float g, float b, float a, boolean drawCaps) {
         if (waypoint.shape == org.blackum.blackaddons.feature.waypoint.WaypointShape.BOX) {

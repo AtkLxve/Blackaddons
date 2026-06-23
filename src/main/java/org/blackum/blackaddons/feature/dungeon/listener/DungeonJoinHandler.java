@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.feature.dungeon.listener;
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.common.util.io.JsonUtils;
 import org.blackum.blackaddons.common.util.format.FormatUtils;
@@ -110,6 +111,6 @@ public class DungeonJoinHandler {
 
         response.append(openPv).append(kickBtn);
 
-        mc.gui.getChat().addClientSystemMessage(response);
+        McCompat.getChat(mc).addClientSystemMessage(response);
     }
 }

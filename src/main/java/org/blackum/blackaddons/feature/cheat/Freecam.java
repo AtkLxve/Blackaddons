@@ -12,6 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
@@ -91,7 +92,7 @@ public final class Freecam {
         lastPlayerId = mc.player.getId();
         lastDimension = mc.level.dimension();
 
-        Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
         pos.set(camPos.x, camPos.y, camPos.z);
         prevPos.set(camPos.x, camPos.y, camPos.z);
 
@@ -183,7 +184,7 @@ public final class Freecam {
 
     private void handleKeybind() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null) {
+        if (mc.player == null || McCompat.getScreen(mc) != null) {
             keybindPressedLastTick = false;
             holdKeyActive = false;
             return;

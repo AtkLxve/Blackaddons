@@ -1,8 +1,6 @@
 package org.blackum.blackaddons.gui.render.font;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
@@ -10,9 +8,12 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GlyphRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
+//? if <26.2 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -21,8 +22,6 @@ import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fc;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 import java.io.File;
@@ -246,7 +245,7 @@ public class CustomFontRenderer {
             }
         }
 
-        net.minecraft.server.packs.resources.ResourceManager rm = Minecraft.getInstance().getResourceManager();
+        ResourceManager rm = Minecraft.getInstance().getResourceManager();
         if (rm == null) {
             return null;
         }
@@ -629,6 +628,8 @@ public class CustomFontRenderer {
         return result[0];
     }
 
+//? if <26.2 {
+/*
     public void drawString(PoseStack poseStack, String text, float x, float y, int color, MultiBufferSource bufferSource) {
         drawString(poseStack.last().pose(), text, x, y, color, bufferSource);
     }
@@ -729,6 +730,9 @@ public class CustomFontRenderer {
         buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(color).setUv(u1, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
         buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(color).setUv(u1, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
     }
+*/
+//?}
+
 
     public DynamicTexture getTexture(int codepoint, CustomFontManager.GlyphData glyph) {
         SdfGlyph sdfGlyph = getSdfGlyph(codepoint);

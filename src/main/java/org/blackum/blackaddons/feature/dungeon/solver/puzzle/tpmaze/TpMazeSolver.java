@@ -15,6 +15,9 @@ import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.client.render.RenderContext;
 import org.blackum.blackaddons.client.render.Render3D;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
+import org.joml.Matrix4f;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public class TpMazeSolver {
 
@@ -422,7 +425,7 @@ public class TpMazeSolver {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
-        Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
         float ox = (float) (pos.getX() - camPos.x);
         float oy = (float) (pos.getY() - camPos.y);
         float oz = (float) (pos.getZ() - camPos.z);
@@ -433,26 +436,31 @@ public class TpMazeSolver {
         float a = ((color >> 24) & 0xFF) / 255f;
         if (a == 0) a = 1f;
 
-        com.mojang.blaze3d.vertex.VertexConsumer buf = org.blackum.blackaddons.client.render.BlackaddonsRenderTypes.getWaypointBuffer(ctx.getBufferSource());
         ctx.getPoseStack().pushPose();
         ctx.getPoseStack().translate(ox, oy, oz);
-        org.joml.Matrix4f m = ctx.getPoseStack().last().pose();
-        
-        float e = 0.005f;
-        float x1 = -e, y1 = -e, z1 = -e;
-        float x2 = 1.0f + e, y2 = PAD_BLOCK_HEIGHT + e, z2 = 1.0f + e;
-        
-        addFace(buf, m, x1,y1,z1, x2,y1,z1, x2,y1,z2, x1,y1,z2, r,g,b,a); // bottom
-        addFace(buf, m, x1,y2,z1, x1,y2,z2, x2,y2,z2, x2,y2,z1, r,g,b,a); // top
-        addFace(buf, m, x1,y1,z1, x1,y2,z1, x2,y2,z1, x2,y1,z1, r,g,b,a); // north
-        addFace(buf, m, x1,y1,z2, x2,y1,z2, x2,y2,z2, x1,y2,z2, r,g,b,a); // south
-        addFace(buf, m, x1,y1,z1, x1,y1,z2, x1,y2,z2, x1,y2,z1, r,g,b,a); // west
-        addFace(buf, m, x2,y1,z1, x2,y2,z1, x2,y2,z2, x2,y1,z2, r,g,b,a); // east
+
+        float finalR = r;
+        float finalG = g;
+        float finalB = b;
+        float finalA = a;
+        McCompat.drawGeometry(ctx.getBufferSource(), ctx.getPoseStack(), McCompat.getWaypointRenderType(), (pose, buf) -> {
+            Matrix4f m = pose.pose();
+            float e = 0.005f;
+            float x1 = -e, y1 = -e, z1 = -e;
+            float x2 = 1.0f + e, y2 = PAD_BLOCK_HEIGHT + e, z2 = 1.0f + e;
+            
+            addFace(buf, m, x1,y1,z1, x2,y1,z1, x2,y1,z2, x1,y1,z2, finalR, finalG, finalB, finalA); // bottom
+            addFace(buf, m, x1,y2,z1, x1,y2,z2, x2,y2,z2, x2,y2,z1, finalR, finalG, finalB, finalA); // top
+            addFace(buf, m, x1,y1,z1, x1,y2,z1, x2,y2,z1, x2,y1,z1, finalR, finalG, finalB, finalA); // north
+            addFace(buf, m, x1,y1,z2, x2,y1,z2, x2,y2,z2, x1,y2,z2, finalR, finalG, finalB, finalA); // south
+            addFace(buf, m, x1,y1,z1, x1,y1,z2, x1,y2,z2, x1,y2,z1, finalR, finalG, finalB, finalA); // west
+            addFace(buf, m, x2,y1,z1, x2,y2,z1, x2,y2,z2, x2,y1,z2, finalR, finalG, finalB, finalA); // east
+        });
         
         ctx.getPoseStack().popPose();
     }
 
-    private static void addFace(com.mojang.blaze3d.vertex.VertexConsumer buf, org.joml.Matrix4f m,
+    private static void addFace(VertexConsumer buf, Matrix4f m,
             float x1, float y1, float z1, float x2, float y2, float z2,
             float x3, float y3, float z3, float x4, float y4, float z4,
             float r, float g, float b, float a) {
@@ -466,7 +474,7 @@ public class TpMazeSolver {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
-        Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
         double ox = pos.getX() - camPos.x;
         double oy = pos.getY() - camPos.y;
         double oz = pos.getZ() - camPos.z;
@@ -477,27 +485,33 @@ public class TpMazeSolver {
         float a = ((color >> 24) & 0xFF) / 255f;
         if (a == 0) a = 1f;
 
-        com.mojang.blaze3d.vertex.VertexConsumer buf = org.blackum.blackaddons.client.render.BlackaddonsRenderTypes.getWaypointBuffer(ctx.getBufferSource());
         ctx.getPoseStack().pushPose();
         ctx.getPoseStack().translate(ox, oy, oz);
-        org.joml.Matrix4f m = ctx.getPoseStack().last().pose();
-        float s = 1.0f, h = PAD_BLOCK_HEIGHT;
-        drawLine(buf, m, 0, 0, 0, s, 0, 0, r, g, b, a);
-        drawLine(buf, m, s, 0, 0, s, 0, s, r, g, b, a);
-        drawLine(buf, m, s, 0, s, 0, 0, s, r, g, b, a);
-        drawLine(buf, m, 0, 0, s, 0, 0, 0, r, g, b, a);
-        drawLine(buf, m, 0, h, 0, s, h, 0, r, g, b, a);
-        drawLine(buf, m, s, h, 0, s, h, s, r, g, b, a);
-        drawLine(buf, m, s, h, s, 0, h, s, r, g, b, a);
-        drawLine(buf, m, 0, h, s, 0, h, 0, r, g, b, a);
-        drawLine(buf, m, 0, 0, 0, 0, h, 0, r, g, b, a);
-        drawLine(buf, m, s, 0, 0, s, h, 0, r, g, b, a);
-        drawLine(buf, m, s, 0, s, s, h, s, r, g, b, a);
-        drawLine(buf, m, 0, 0, s, 0, h, s, r, g, b, a);
+
+        float finalR = r;
+        float finalG = g;
+        float finalB = b;
+        float finalA = a;
+        McCompat.drawGeometry(ctx.getBufferSource(), ctx.getPoseStack(), McCompat.getWaypointRenderType(), (pose, buf) -> {
+            Matrix4f m = pose.pose();
+            float s = 1.0f, h = PAD_BLOCK_HEIGHT;
+            drawLine(buf, m, 0, 0, 0, s, 0, 0, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, s, 0, 0, s, 0, s, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, s, 0, s, 0, 0, s, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, 0, 0, s, 0, 0, 0, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, 0, h, 0, s, h, 0, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, s, h, 0, s, h, s, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, s, h, s, 0, h, s, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, 0, h, s, 0, h, 0, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, 0, 0, 0, 0, h, 0, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, s, 0, 0, s, h, 0, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, s, 0, s, s, h, s, finalR, finalG, finalB, finalA);
+            drawLine(buf, m, 0, 0, s, 0, h, s, finalR, finalG, finalB, finalA);
+        });
         ctx.getPoseStack().popPose();
     }
 
-    private static void drawLine(com.mojang.blaze3d.vertex.VertexConsumer buf, org.joml.Matrix4f m,
+    private static void drawLine(VertexConsumer buf, Matrix4f m,
             float x1, float y1, float z1, float x2, float y2, float z2,
             float r, float g, float b, float a) {
         buf.addVertex(m, x1, y1, z1).setColor(r, g, b, a).setUv(0, 0).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);

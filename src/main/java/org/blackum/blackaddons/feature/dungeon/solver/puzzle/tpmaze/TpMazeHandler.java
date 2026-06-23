@@ -2,7 +2,9 @@ package org.blackum.blackaddons.feature.dungeon.solver.puzzle.tpmaze;
 
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
+//? if <26.2 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import org.blackum.blackaddons.common.config.ConfigManager;
@@ -28,6 +30,11 @@ public class TpMazeHandler {
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
             if (!ConfigManager.data.teleportMazeSolverEnabled) return;
 
+//? if >=26.2 {
+/*
+            RenderContext ctx = new RenderContext(context.poseStack(), context.submitNodeCollector(), 0.0f);
+*/
+//?} else {
             MultiBufferSource.BufferSource bufSource;
             if (context.bufferSource() instanceof MultiBufferSource.BufferSource bs) {
                 bufSource = bs;
@@ -36,6 +43,7 @@ public class TpMazeHandler {
             }
 
             RenderContext ctx = new RenderContext(context.poseStack(), bufSource, 0.0f);
+//?}
             TpMazeSolver.onRenderWorld(ctx);
         });
 

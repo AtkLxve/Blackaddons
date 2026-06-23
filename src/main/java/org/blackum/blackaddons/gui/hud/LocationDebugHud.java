@@ -6,6 +6,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 
 @AutoModule(order = 400)
 public class LocationDebugHud implements HudElement {
@@ -31,7 +32,7 @@ public class LocationDebugHud implements HudElement {
 
     @Override
     public boolean enabled() {
-        return ConfigManager.data.showLocationDebug && !Minecraft.getInstance().options.hideGui;
+        return ConfigManager.data.showLocationDebug && !McCompat.isGuiHidden(Minecraft.getInstance());
     }
 
     @Override

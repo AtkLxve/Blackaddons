@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.feature;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -72,7 +73,7 @@ public class ChatActionEditScreen extends BaseScreen {
 
         Button backBtn = new Button(listX, containerY + containerHeight - 30, listWidth, 20, "Back", () -> {
             if (parent != null) {
-                minecraft.setScreen(parent);
+                McCompat.setScreen(minecraft, parent);
             } else {
                 onClose();
             }

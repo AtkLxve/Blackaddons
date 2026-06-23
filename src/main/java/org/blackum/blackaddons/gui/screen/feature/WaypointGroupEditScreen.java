@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.feature;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -139,10 +140,10 @@ public class WaypointGroupEditScreen extends BaseScreen {
         Button saveBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, Theme.BUTTON_HEIGHT, "Save", () -> {
             WaypointManager.getInstance().save();
             onSave.run();
-            minecraft.setScreen(parent);
+            McCompat.setScreen(minecraft, parent);
         });
         Button cancelBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, Theme.BUTTON_HEIGHT, "Cancel",
-                () -> minecraft.setScreen(parent));
+                () -> McCompat.setScreen(minecraft, parent));
         btnRow.addChild(saveBtn, 0);
         btnRow.addChild(cancelBtn, (itemWidth + Theme.PADDING) / 2);
         list.addItem(btnRow);

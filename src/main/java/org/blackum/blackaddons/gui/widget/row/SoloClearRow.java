@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.widget.row;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -166,7 +167,7 @@ public class SoloClearRow extends Widget {
             int mapX = x + width - mapSize - 10;
             int mapY = y + (height - mapSize) / 2;
             if (mouseX >= mapX && mouseX <= mapX + mapSize && mouseY >= mapY && mouseY <= mapY + mapSize) {
-                Minecraft.getInstance().setScreen(new SoloClearMapScreen(info.mapData, Minecraft.getInstance().screen));
+                McCompat.setScreen(Minecraft.getInstance(), new SoloClearMapScreen(info.mapData, McCompat.getScreen(Minecraft.getInstance())));
                 return true;
             }
         }

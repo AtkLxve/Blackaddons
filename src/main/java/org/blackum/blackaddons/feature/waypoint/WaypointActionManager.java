@@ -302,10 +302,10 @@ public class WaypointActionManager {
             }
 
             if (action.durationSeconds > 0 && action.title != null && !action.title.isEmpty() && client.gui != null) {
-                client.gui.setTimes(10, (int) (action.durationSeconds * 20), 20);
-                client.gui.setTitle(Component.literal(FormatUtils.formatColor(action.title)));
+                McCompat.setTimes(client, 10, (int) (action.durationSeconds * 20), 20);
+                McCompat.setTitle(client, Component.literal(FormatUtils.formatColor(action.title)));
                 if (action.subtitle != null && !action.subtitle.isEmpty()) {
-                    client.gui.setSubtitle(Component.literal(FormatUtils.formatColor(action.subtitle)));
+                    McCompat.setSubtitle(client, Component.literal(FormatUtils.formatColor(action.subtitle)));
                 }
             }
 

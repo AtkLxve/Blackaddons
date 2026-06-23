@@ -2,10 +2,17 @@ package org.blackum.blackaddons.client.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.util.LightCoordsUtil;
+//? if >=26.2 {
+/*
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import com.mojang.blaze3d.vertex.PoseStack;
+import org.blackum.blackaddons.common.util.mc.McCompat;
+*/
+//?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec3;
-import org.blackum.blackaddons.client.render.BlackaddonsRenderTypes;
 import org.joml.Matrix4f;
 
 import java.util.List;
@@ -16,6 +23,30 @@ public final class DebugBoxRenderer {
     private DebugBoxRenderer() {
     }
 
+//? if >=26.2 {
+/*
+    public static void render(PoseStack poseStack, SubmitNodeCollector bufferSource, Vec3 cameraPos, List<BoxSpec> boxes) {
+        if (boxes == null || boxes.isEmpty()) return;
+
+        McCompat.drawGeometry(bufferSource, poseStack, McCompat.getWaypointRenderType(), (pose, buffer) -> {
+            Matrix4f matrix = pose.pose();
+            for (BoxSpec box : boxes) {
+                double minX = Math.min(box.minX(), box.maxX()) - cameraPos.x;
+                double minY = Math.min(box.minY(), box.maxY()) - cameraPos.y;
+                double minZ = Math.min(box.minZ(), box.maxZ()) - cameraPos.z;
+                double maxX = Math.max(box.minX(), box.maxX()) - cameraPos.x;
+                double maxY = Math.max(box.minY(), box.maxY()) - cameraPos.y;
+                double maxZ = Math.max(box.minZ(), box.maxZ()) - cameraPos.z;
+
+                float r = ((box.color() >> 16) & 0xFF) / 255f;
+                float g = ((box.color() >> 8) & 0xFF) / 255f;
+                float b = (box.color() & 0xFF) / 255f;
+                drawBoxShell(matrix, buffer, minX, minY, minZ, maxX, maxY, maxZ, DEFAULT_THICKNESS, r, g, b, box.alpha());
+            }
+        });
+    }
+*/
+//?} else {
     public static void render(Matrix4f matrix, MultiBufferSource bufferSource, Vec3 cameraPos, List<BoxSpec> boxes) {
         if (boxes == null || boxes.isEmpty()) return;
 
@@ -34,6 +65,7 @@ public final class DebugBoxRenderer {
             drawBoxShell(matrix, buffer, minX, minY, minZ, maxX, maxY, maxZ, DEFAULT_THICKNESS, r, g, b, box.alpha());
         }
     }
+//?}
 
     private static void drawBoxShell(Matrix4f matrix, VertexConsumer buffer, double minX, double minY, double minZ,
                                      double maxX, double maxY, double maxZ, float thickness,

@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.resources.Identifier;
 
 import org.blackum.blackaddons.Blackaddons;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.ModuleManager;
 import org.blackum.blackaddons.feature.customname.CustomNameManager;
@@ -96,7 +97,8 @@ public class BlackaddonsClient implements ClientModInitializer {
         };
 
         Blackaddons.screenOpener = (screen) -> {
-            pendingScreen = screen;
+            Minecraft client = Minecraft.getInstance();
+            client.execute(() -> McCompat.setScreen(client, screen));
         };
 
         Blackaddons.mainGuiOpener = () -> {
@@ -114,13 +116,26 @@ public class BlackaddonsClient implements ClientModInitializer {
         HudElementRegistry.addLast(
                 Identifier.fromNamespaceAndPath("blackaddons", "notifications"),
                 (graphics, tracker) -> {
-                    if (!(Minecraft.getInstance().screen instanceof BaseScreen)) {
+                    if (!(McCompat.getScreen(Minecraft.getInstance()) instanceof BaseScreen)) {
                         NotificationManager.getInstance().render(graphics);
                     }
                 }
         );
 
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
+//? if >=26.2 {
+/*
+            WaypointRenderer.render(context.poseStack(), context.submitNodeCollector(), 0.0f);
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player == null || mc.level == null || mc.gameRenderer == null) return;
+            DebugBoxRenderer.render(
+                    context.poseStack(),
+                    context.submitNodeCollector(),
+                    McCompat.getCamera(mc.gameRenderer).position(),
+                    LocationUtils.getDebugBoxes()
+            );
+*/
+//?} else {
             WaypointRenderer.render(context.poseStack().last().pose(), context.bufferSource(), 0.0f);
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null || mc.level == null || mc.gameRenderer == null) return;
@@ -130,6 +145,7 @@ public class BlackaddonsClient implements ClientModInitializer {
                     mc.gameRenderer.getMainCamera().position(),
                     LocationUtils.getDebugBoxes()
             );
+//?}
         });
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> AlignUtils.tick());
@@ -138,7 +154,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             NotificationManager.getInstance().tick();
             SoloClearsTracker.tick();
             if (pendingScreen != null) {
-                client.setScreen(pendingScreen);
+                McCompat.setScreen(client, pendingScreen);
                 pendingScreen = null;
             }
         });

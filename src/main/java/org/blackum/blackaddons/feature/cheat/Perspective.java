@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
-import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
@@ -100,7 +100,7 @@ public final class Perspective {
 
     private void handleKeybind() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null) {
+        if (mc.player == null || McCompat.getScreen(mc) != null) {
             keybindPressedLastTick = false;
             holdKeyActive = false;
             return;

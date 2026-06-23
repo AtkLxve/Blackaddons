@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.blackum.blackaddons.feature.chat.IrcClient;
@@ -99,7 +100,7 @@ public class ChatCommands {
                         .executes(ctx -> {
                             String url = StringArgumentType.getString(ctx, "url");
                             if (Blackaddons.screenOpener != null) {
-                                Blackaddons.screenOpener.accept(new ImagePreviewScreen(url, Minecraft.getInstance().screen));
+                                Blackaddons.screenOpener.accept(new ImagePreviewScreen(url, McCompat.getScreen(Minecraft.getInstance())));
                             }
                             return 1;
                         }));

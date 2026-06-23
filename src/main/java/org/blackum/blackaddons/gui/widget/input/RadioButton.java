@@ -8,6 +8,7 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
 import org.blackum.blackaddons.gui.render.Theme;
@@ -137,7 +138,7 @@ public class RadioButton extends Widget {
     }
 
     private void deselectGroup(String groupName, RadioButton except) {
-        if (Minecraft.getInstance().screen instanceof BaseScreen base) {
+        if (McCompat.getScreen(Minecraft.getInstance()) instanceof BaseScreen base) {
             for (Widget w : base.getWidgets()) {
                 if (w instanceof RadioButton rb && rb.groupName.equals(groupName) && rb != except) {
                     rb.deselect();

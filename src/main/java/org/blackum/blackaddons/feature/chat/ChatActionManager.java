@@ -92,11 +92,11 @@ public class ChatActionManager {
                             }
                         }
 
-                        client.gui.setTimes(10, (int) (trigger.durationSeconds * 20), 20);
-                        client.gui.setTitle(Component.literal(org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(fTitle)));
+                        McCompat.setTimes(client, 10, (int) (trigger.durationSeconds * 20), 20);
+                        McCompat.setTitle(client, Component.literal(FormatUtils.formatColor(fTitle)));
                         if (!fSubtitle.isEmpty()) {
-                            client.gui.setSubtitle(
-                                    Component.literal(org.blackum.blackaddons.common.util.format.FormatUtils
+                            McCompat.setSubtitle(client,
+                                    Component.literal(FormatUtils
                                                     .formatColor(fSubtitle)));
                         }
                     }
@@ -114,8 +114,8 @@ public class ChatActionManager {
                             }
                         }
                         NotificationManager.addNotification(
-                                org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(nTitle),
-                                org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(nMessage),
+                                FormatUtils.formatColor(nTitle),
+                                FormatUtils.formatColor(nMessage),
                                 trigger.notificationType
                         );
                     }

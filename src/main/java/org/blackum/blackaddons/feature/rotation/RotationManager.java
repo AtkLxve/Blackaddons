@@ -14,6 +14,7 @@ import org.blackum.blackaddons.common.util.mc.McCompat;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +87,7 @@ public class RotationManager {
 
     public void rotateTo(float yaw, float pitch, float speedOverride, float lookAtTicks) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null) return;
+        if (mc.player == null || McCompat.getScreen(mc) != null) return;
 
         this.active = true;
         this.targetX = Double.NaN;
@@ -105,7 +106,7 @@ public class RotationManager {
 
     public void snapToAngle(float yaw, float pitch, float lookAtTicks) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null) return;
+        if (mc.player == null || McCompat.getScreen(mc) != null) return;
         float jitterYaw = (random.nextFloat() - 0.5f) * 0.01f;
         float jitterPitch = (random.nextFloat() - 0.5f) * 0.01f;
         applyPlayerRotation(mc, normalizeYaw(yaw) + jitterYaw, Mth.clamp(pitch, -90f, 90f) + jitterPitch);
@@ -127,7 +128,7 @@ public class RotationManager {
 
     public void snapToBlock(double x, double y, double z, float lookAtTicks) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null) return;
+        if (mc.player == null || McCompat.getScreen(mc) != null) return;
         double dx = x + 0.5 - mc.player.getX();
         double dy = y + 0.5 - (mc.player.getY() + mc.player.getEyeHeight());
         double dz = z + 0.5 - mc.player.getZ();
@@ -162,7 +163,7 @@ public class RotationManager {
 
     public void rotateToBlock(double x, double y, double z, float speedOverride, float lookAtTicks) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.screen != null) return;
+        if (mc.player == null || McCompat.getScreen(mc) != null) return;
         this.pendingSpeedOverride = speedOverride > 0 ? speedOverride : 0;
         this.holdTicksRemaining = Math.max(0, lookAtTicks);
         this.activeTrackingSpeed = speedOverride > 0 ? speedOverride : Math.max(0.1f, ConfigManager.data.rotationSpeed);
@@ -463,7 +464,7 @@ public class RotationManager {
         if (mc.player == null) return;
 
         if (active) {
-            if (mc.screen != null) {
+            if (McCompat.getScreen(mc) != null) {
                 active = false;
             } else {
                 float dt = tracker.getGameTimeDeltaTicks();
@@ -624,7 +625,7 @@ public class RotationManager {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.gameRenderer == null) return;
 
-        Vec3 cam = mc.gameRenderer.getMainCamera().position();
+        Vec3 cam = McCompat.getCamera(mc.gameRenderer).position();
         double relX = targetX - cam.x;
         double relY = targetY - cam.y;
         double relZ = targetZ - cam.z;
@@ -633,11 +634,11 @@ public class RotationManager {
         int screenH = mc.getWindow().getGuiScaledHeight();
         
         float partialTicks = tracker.getGameTimeDeltaTicks();
-        float fov = (float) Math.toRadians(McCompat.getFov(mc.gameRenderer, mc.gameRenderer.getMainCamera(), partialTicks, true));
+        float fov = (float) Math.toRadians(McCompat.getFov(mc.gameRenderer, McCompat.getCamera(mc.gameRenderer), partialTicks, true));
         float aspect = (float) mc.getWindow().getWidth() / (float) mc.getWindow().getHeight();
         Matrix4f proj = new Matrix4f().perspective(fov, aspect, 0.05f, mc.options.getEffectiveRenderDistance() * 16.0f * 4.0f);
 
-        org.joml.Quaternionf camRot = new org.joml.Quaternionf(mc.gameRenderer.getMainCamera().rotation());
+        Quaternionf camRot = new Quaternionf(McCompat.getCamera(mc.gameRenderer).rotation());
         camRot.conjugate();
         Matrix4f view = new Matrix4f().rotation(camRot);
         Vector4f pos = new Vector4f((float) relX, (float) relY, (float) relZ, 1.0f);

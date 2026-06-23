@@ -18,6 +18,7 @@ import java.util.Set;
 import com.google.gson.JsonObject;
 
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
@@ -62,7 +63,7 @@ public class PartyFinderManager {
         pendingRequests.put(leaderName, System.currentTimeMillis());
 
         MinecraftInstance.mc.execute(() -> {
-            MinecraftInstance.mc.gui.getChat().addClientSystemMessage(ChatUtils.getMessage("Sent join request to " + leaderName));
+            McCompat.getChat(MinecraftInstance.mc).addClientSystemMessage(ChatUtils.getMessage("Sent join request to " + leaderName));
         });
     }
 
@@ -80,7 +81,7 @@ public class PartyFinderManager {
             }
 
             MinecraftInstance.mc.execute(() -> {
-                MinecraftInstance.mc.gui.getChat()
+                McCompat.getChat(MinecraftInstance.mc)
                         .addClientSystemMessage(ChatUtils.getMessage("§aJoin request from " + sender));
             });
 
@@ -92,10 +93,10 @@ public class PartyFinderManager {
                 });
             } else {
                 MinecraftInstance.mc.execute(() -> {
-                    MinecraftInstance.mc.gui.getChat()
+                    McCompat.getChat(MinecraftInstance.mc)
                             .addClientSystemMessage(ChatUtils.getPrefix()
                                     .append(Component.literal(sender + " " + Constants.MSG_WANTS_TO_JOIN)));
-                    MinecraftInstance.mc.gui.getChat().addClientSystemMessage(Component.literal("§7  ")
+                    McCompat.getChat(MinecraftInstance.mc).addClientSystemMessage(Component.literal("§7  ")
                             .append(Component.literal(Constants.LABEL_INVITE)
                                     .withStyle(
                                             s -> s.withClickEvent(new ClickEvent.RunCommand("/party invite " + sender))
@@ -126,7 +127,7 @@ public class PartyFinderManager {
                 long time = pendingRequests.get(matchedRequest);
                 if (System.currentTimeMillis() - time < 60000) {
                     MinecraftInstance.mc.execute(() -> {
-                        MinecraftInstance.mc.gui.getChat()
+                        McCompat.getChat(MinecraftInstance.mc)
                                 .addClientSystemMessage(ChatUtils.getMessage(String.format(Constants.MSG_AUTO_ACCEPT, sender)));
                         LocalPlayer player = MinecraftInstance.mc.player;
                         if (player != null && player.connection != null) {
@@ -252,7 +253,7 @@ public class PartyFinderManager {
                         currentPartyId = response.get("id").getAsString();
                     }
                     if (MinecraftInstance.mc.player != null && MinecraftInstance.mc.player.connection != null) {
-                        MinecraftInstance.mc.gui.getChat()
+                        McCompat.getChat(MinecraftInstance.mc)
                                 .addClientSystemMessage(ChatUtils.getMessage(String.format(Constants.MSG_QUEUE_STARTED, floor)));
                     }
                 } else {
@@ -275,7 +276,7 @@ public class PartyFinderManager {
                 inQueue = false;
                 currentPartyId = null;
                 MinecraftInstance.mc.execute(() -> {
-                    MinecraftInstance.mc.gui.getChat()
+                    McCompat.getChat(MinecraftInstance.mc)
                             .addClientSystemMessage(ChatUtils.getMessage(Constants.MSG_REMOVED_QUEUE));
                 });
             } else {

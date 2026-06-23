@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.feature;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -126,7 +127,7 @@ public class PartyFinderScreen extends BaseScreen {
             if (response != null && response.has("parties")) {
                 JsonArray parties = response.getAsJsonArray("parties");
                 MinecraftInstance.mc.execute(() -> {
-                    if (MinecraftInstance.mc.screen == this) {
+                    if (McCompat.getScreen(MinecraftInstance.mc) == this) {
                         list.clearItems();
                         for (JsonElement el : parties) {
                             JsonObject p = el.getAsJsonObject();

@@ -267,12 +267,12 @@ public class WaypointEditScreen extends BaseScreen {
         GridRow btnRow = new GridRow(itemWidth, 20);
         Button saveBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, 20, "Save", () -> {
             if (performSave()) {
-                minecraft.setScreen(parent);
+                McCompat.setScreen(minecraft, parent);
             }
         });
         Button cancelBtn = new Button(0, 0, (itemWidth - Theme.PADDING) / 2, 20, "Cancel", () -> {
             cancelled = true;
-            minecraft.setScreen(parent);
+            McCompat.setScreen(minecraft, parent);
         });
         btnRow.addChild(saveBtn, 0);
         btnRow.addChild(cancelBtn, (itemWidth + Theme.PADDING) / 2);

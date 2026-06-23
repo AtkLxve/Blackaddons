@@ -8,6 +8,46 @@ public class LegacyItemResolver {
     private static final int ID_TABLE_SIZE = 426;
     private static final Item[] ID_TABLE = new Item[ID_TABLE_SIZE];
 
+//? if >=26.2 {
+/*
+    private static final Item[] WOOL = {
+            (Item) Items.WOOL.white(), (Item) Items.WOOL.orange(), (Item) Items.WOOL.magenta(), (Item) Items.WOOL.lightBlue(),
+            (Item) Items.WOOL.yellow(), (Item) Items.WOOL.lime(), (Item) Items.WOOL.pink(), (Item) Items.WOOL.gray(),
+            (Item) Items.WOOL.lightGray(), (Item) Items.WOOL.cyan(), (Item) Items.WOOL.purple(), (Item) Items.WOOL.blue(),
+            (Item) Items.WOOL.brown(), (Item) Items.WOOL.green(), (Item) Items.WOOL.red(), (Item) Items.WOOL.black()
+    };
+    private static final Item[] STAINED_GLASS = {
+            (Item) Items.STAINED_GLASS.white(), (Item) Items.STAINED_GLASS.orange(), (Item) Items.STAINED_GLASS.magenta(), (Item) Items.STAINED_GLASS.lightBlue(),
+            (Item) Items.STAINED_GLASS.yellow(), (Item) Items.STAINED_GLASS.lime(), (Item) Items.STAINED_GLASS.pink(), (Item) Items.STAINED_GLASS.gray(),
+            (Item) Items.STAINED_GLASS.lightGray(), (Item) Items.STAINED_GLASS.cyan(), (Item) Items.STAINED_GLASS.purple(), (Item) Items.STAINED_GLASS.blue(),
+            (Item) Items.STAINED_GLASS.brown(), (Item) Items.STAINED_GLASS.green(), (Item) Items.STAINED_GLASS.red(), (Item) Items.STAINED_GLASS.black()
+    };
+    private static final Item[] STAINED_GLASS_PANE = {
+            (Item) Items.STAINED_GLASS_PANE.white(), (Item) Items.STAINED_GLASS_PANE.orange(), (Item) Items.STAINED_GLASS_PANE.magenta(), (Item) Items.STAINED_GLASS_PANE.lightBlue(),
+            (Item) Items.STAINED_GLASS_PANE.yellow(), (Item) Items.STAINED_GLASS_PANE.lime(), (Item) Items.STAINED_GLASS_PANE.pink(), (Item) Items.STAINED_GLASS_PANE.gray(),
+            (Item) Items.STAINED_GLASS_PANE.lightGray(), (Item) Items.STAINED_GLASS_PANE.cyan(), (Item) Items.STAINED_GLASS_PANE.purple(), (Item) Items.STAINED_GLASS_PANE.blue(),
+            (Item) Items.STAINED_GLASS_PANE.brown(), (Item) Items.STAINED_GLASS_PANE.green(), (Item) Items.STAINED_GLASS_PANE.red(), (Item) Items.STAINED_GLASS_PANE.black()
+    };
+    private static final Item[] CARPET = {
+            (Item) Items.CARPET.white(), (Item) Items.CARPET.orange(), (Item) Items.CARPET.magenta(), (Item) Items.CARPET.lightBlue(),
+            (Item) Items.CARPET.yellow(), (Item) Items.CARPET.lime(), (Item) Items.CARPET.pink(), (Item) Items.CARPET.gray(),
+            (Item) Items.CARPET.lightGray(), (Item) Items.CARPET.cyan(), (Item) Items.CARPET.purple(), (Item) Items.CARPET.blue(),
+            (Item) Items.CARPET.brown(), (Item) Items.CARPET.green(), (Item) Items.CARPET.red(), (Item) Items.CARPET.black()
+    };
+    private static final Item[] BANNER = {
+            (Item) Items.BANNER.white(), (Item) Items.BANNER.orange(), (Item) Items.BANNER.magenta(), (Item) Items.BANNER.lightBlue(),
+            (Item) Items.BANNER.yellow(), (Item) Items.BANNER.lime(), (Item) Items.BANNER.pink(), (Item) Items.BANNER.gray(),
+            (Item) Items.BANNER.lightGray(), (Item) Items.BANNER.cyan(), (Item) Items.BANNER.purple(), (Item) Items.BANNER.blue(),
+            (Item) Items.BANNER.brown(), (Item) Items.BANNER.green(), (Item) Items.BANNER.red(), (Item) Items.BANNER.black()
+    };
+    private static final Item[] TERRACOTTA = {
+            (Item) Items.DYED_TERRACOTTA.white(), (Item) Items.DYED_TERRACOTTA.orange(), (Item) Items.DYED_TERRACOTTA.magenta(), (Item) Items.DYED_TERRACOTTA.lightBlue(),
+            (Item) Items.DYED_TERRACOTTA.yellow(), (Item) Items.DYED_TERRACOTTA.lime(), (Item) Items.DYED_TERRACOTTA.pink(), (Item) Items.DYED_TERRACOTTA.gray(),
+            (Item) Items.DYED_TERRACOTTA.lightGray(), (Item) Items.DYED_TERRACOTTA.cyan(), (Item) Items.DYED_TERRACOTTA.purple(), (Item) Items.DYED_TERRACOTTA.blue(),
+            (Item) Items.DYED_TERRACOTTA.brown(), (Item) Items.DYED_TERRACOTTA.green(), (Item) Items.DYED_TERRACOTTA.red(), (Item) Items.DYED_TERRACOTTA.black()
+    };
+*/
+//?} else {
     private static final Item[] WOOL = {
             Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL,
             Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL,
@@ -44,6 +84,55 @@ public class LegacyItemResolver {
             Items.LIGHT_GRAY_BANNER, Items.CYAN_BANNER, Items.PURPLE_BANNER, Items.BLUE_BANNER,
             Items.BROWN_BANNER, Items.GREEN_BANNER, Items.RED_BANNER, Items.BLACK_BANNER
     };
+//?}
+
+//? if >=26.2 {
+/*
+    private static final Item WHITE_BED = (Item) Items.BED.white();
+    private static Item getDye(int damage) {
+        return switch (damage) {
+            case 1 -> (Item) Items.DYE.red();
+            case 2 -> (Item) Items.DYE.green();
+            case 3 -> Items.COCOA_BEANS;
+            case 4 -> Items.LAPIS_LAZULI;
+            case 5 -> (Item) Items.DYE.purple();
+            case 6 -> (Item) Items.DYE.cyan();
+            case 7 -> (Item) Items.DYE.lightGray();
+            case 8 -> (Item) Items.DYE.gray();
+            case 9 -> (Item) Items.DYE.pink();
+            case 10 -> (Item) Items.DYE.lime();
+            case 11 -> (Item) Items.DYE.yellow();
+            case 12 -> (Item) Items.DYE.lightBlue();
+            case 13 -> (Item) Items.DYE.magenta();
+            case 14 -> (Item) Items.DYE.orange();
+            case 15 -> Items.BONE_MEAL;
+            default -> Items.INK_SAC;
+        };
+    }
+*/
+//?} else {
+    private static final Item WHITE_BED = Items.WHITE_BED;
+    private static Item getDye(int damage) {
+        return switch (damage) {
+            case 1 -> Items.RED_DYE;
+            case 2 -> Items.GREEN_DYE;
+            case 3 -> Items.COCOA_BEANS;
+            case 4 -> Items.LAPIS_LAZULI;
+            case 5 -> Items.PURPLE_DYE;
+            case 6 -> Items.CYAN_DYE;
+            case 7 -> Items.LIGHT_GRAY_DYE;
+            case 8 -> Items.GRAY_DYE;
+            case 9 -> Items.PINK_DYE;
+            case 10 -> Items.LIME_DYE;
+            case 11 -> Items.YELLOW_DYE;
+            case 12 -> Items.LIGHT_BLUE_DYE;
+            case 13 -> Items.MAGENTA_DYE;
+            case 14 -> Items.ORANGE_DYE;
+            case 15 -> Items.BONE_MEAL;
+            default -> Items.INK_SAC;
+        };
+    }
+//?}
 
     static {
         ID_TABLE[1] = Items.STONE;
@@ -71,7 +160,7 @@ public class LegacyItemResolver {
         ID_TABLE[23] = Items.DISPENSER;
         ID_TABLE[24] = Items.SANDSTONE;
         ID_TABLE[25] = Items.NOTE_BLOCK;
-        ID_TABLE[26] = Items.WHITE_BED;
+        ID_TABLE[26] = WHITE_BED;
         ID_TABLE[27] = Items.POWERED_RAIL;
         ID_TABLE[28] = Items.DETECTOR_RAIL;
         ID_TABLE[29] = Items.STICKY_PISTON;
@@ -79,7 +168,7 @@ public class LegacyItemResolver {
         ID_TABLE[31] = Items.SHORT_GRASS;
         ID_TABLE[32] = Items.DEAD_BUSH;
         ID_TABLE[33] = Items.PISTON;
-        ID_TABLE[35] = Items.WHITE_WOOL;
+        ID_TABLE[35] = WOOL[0];
         ID_TABLE[37] = Items.DANDELION;
         ID_TABLE[38] = Items.POPPY;
         ID_TABLE[39] = Items.BROWN_MUSHROOM;
@@ -130,7 +219,7 @@ public class LegacyItemResolver {
         ID_TABLE[88] = Items.SOUL_SAND;
         ID_TABLE[89] = Items.GLOWSTONE;
         ID_TABLE[91] = Items.CARVED_PUMPKIN;
-        ID_TABLE[95] = Items.WHITE_STAINED_GLASS;
+        ID_TABLE[95] = STAINED_GLASS[0];
         ID_TABLE[96] = Items.OAK_TRAPDOOR;
         ID_TABLE[98] = Items.STONE_BRICKS;
         ID_TABLE[101] = Items.IRON_BARS;
@@ -178,8 +267,8 @@ public class LegacyItemResolver {
         ID_TABLE[156] = Items.QUARTZ_STAIRS;
         ID_TABLE[157] = Items.ACTIVATOR_RAIL;
         ID_TABLE[158] = Items.DROPPER;
-        ID_TABLE[159] = Items.WHITE_TERRACOTTA;
-        ID_TABLE[160] = Items.WHITE_STAINED_GLASS_PANE;
+        ID_TABLE[159] = TERRACOTTA[0];
+        ID_TABLE[160] = STAINED_GLASS_PANE[0];
         ID_TABLE[161] = Items.ACACIA_LEAVES;
         ID_TABLE[162] = Items.ACACIA_LOG;
         ID_TABLE[163] = Items.ACACIA_STAIRS;
@@ -190,7 +279,7 @@ public class LegacyItemResolver {
         ID_TABLE[168] = Items.PRISMARINE;
         ID_TABLE[169] = Items.SEA_LANTERN;
         ID_TABLE[170] = Items.HAY_BLOCK;
-        ID_TABLE[171] = Items.WHITE_CARPET;
+        ID_TABLE[171] = CARPET[0];
         ID_TABLE[172] = Items.TERRACOTTA;
         ID_TABLE[173] = Items.COAL_BLOCK;
         ID_TABLE[174] = Items.PACKED_ICE;
@@ -295,7 +384,7 @@ public class LegacyItemResolver {
         ID_TABLE[352] = Items.BONE;
         ID_TABLE[353] = Items.SUGAR;
         ID_TABLE[354] = Items.CAKE;
-        ID_TABLE[355] = Items.WHITE_BED;
+        ID_TABLE[355] = WHITE_BED;
         ID_TABLE[356] = Items.REPEATER;
         ID_TABLE[357] = Items.COOKIE;
         ID_TABLE[358] = Items.FILLED_MAP;
@@ -362,7 +451,7 @@ public class LegacyItemResolver {
         ID_TABLE[419] = Items.DIAMOND_HORSE_ARMOR;
         ID_TABLE[420] = Items.LEAD;
         ID_TABLE[421] = Items.NAME_TAG;
-        ID_TABLE[425] = Items.WHITE_BANNER;
+        ID_TABLE[425] = BANNER[0];
     }
 
     public static Item resolve(int id, int damage) {
@@ -517,24 +606,7 @@ public class LegacyItemResolver {
             case 350:
                 return damage == 1 ? Items.COOKED_SALMON : Items.COOKED_COD;
             case 351:
-                return switch (damage) {
-                    case 1 -> Items.RED_DYE;
-                    case 2 -> Items.GREEN_DYE;
-                    case 3 -> Items.COCOA_BEANS;
-                    case 4 -> Items.LAPIS_LAZULI;
-                    case 5 -> Items.PURPLE_DYE;
-                    case 6 -> Items.CYAN_DYE;
-                    case 7 -> Items.LIGHT_GRAY_DYE;
-                    case 8 -> Items.GRAY_DYE;
-                    case 9 -> Items.PINK_DYE;
-                    case 10 -> Items.LIME_DYE;
-                    case 11 -> Items.YELLOW_DYE;
-                    case 12 -> Items.LIGHT_BLUE_DYE;
-                    case 13 -> Items.MAGENTA_DYE;
-                    case 14 -> Items.ORANGE_DYE;
-                    case 15 -> Items.BONE_MEAL;
-                    default -> Items.INK_SAC;
-                };
+                return getDye(damage);
             case 425:
                 return BANNER[damage & 15];
             case 2256:

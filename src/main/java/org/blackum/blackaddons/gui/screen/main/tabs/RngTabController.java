@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -521,7 +522,7 @@ public class RngTabController extends ProfileTabController {
 
         private void handleSet() {
             Minecraft mc = Minecraft.getInstance();
-            mc.setScreen(new Screen(Component.literal("Set RNG Count")) {
+            McCompat.setScreen(mc, new Screen(Component.literal("Set RNG Count")) {
 
                 private EditBox inputBox;
 
@@ -553,8 +554,7 @@ public class RngTabController extends ProfileTabController {
                                     final int oldCount = count;
                                     count = newCountVal;
                                     updateRngDropCountLocal(cat, itemName, count);
-                                    mc.setScreen(RngTabController.this.screen);
-
+                                    McCompat.setScreen(mc, RngTabController.this.screen);
                                     ProfileStateManager.getInstance()
                                             .updateRngCount(RngTabController.this.playerName, cat, itemName, "set",
                                                     newCountVal)
@@ -571,13 +571,13 @@ public class RngTabController extends ProfileTabController {
                                                 }
                                             });
                                 } catch (NumberFormatException e) {
-                                    mc.setScreen(RngTabController.this.screen);
+                                    McCompat.setScreen(mc, RngTabController.this.screen);
                                 }
                             }).bounds(width / 2 - 100, height / 2 + 20, 95, 20).build());
 
                     this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
                             Component.literal("Cancel"),
-                            btn -> mc.setScreen(RngTabController.this.screen))
+                            btn -> McCompat.setScreen(mc, RngTabController.this.screen))
                             .bounds(width / 2 + 5, height / 2 + 20, 95, 20).build());
 
                     setInitialFocus(inputBox);

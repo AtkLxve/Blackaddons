@@ -14,6 +14,7 @@ import org.blackum.blackaddons.feature.dungeon.map.DungeonScoreboard;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 import org.blackum.blackaddons.feature.dungeon.map.Vec2i;
 import org.blackum.blackaddons.gui.render.RoundedFillRenderState;
+import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.mixin.gui.GuiGraphicsExtractorAccessor;
 import org.joml.Matrix3x2f;
 
@@ -127,7 +128,7 @@ public class DungeonMapHud implements HudElement {
         int y = ConfigManager.data.dungeonMapY;
         int size = ConfigManager.data.dungeonMapSize;
 
-        g.fill(x, y, x + size, y + size, org.blackum.blackaddons.gui.render.Theme.withAlpha(ConfigManager.data.dungeonMapBackgroundColor, ConfigManager.data.dungeonMapBackgroundOpacity));
+        g.fill(x, y, x + size, y + size, Theme.withAlpha(ConfigManager.data.dungeonMapBackgroundColor, ConfigManager.data.dungeonMapBackgroundOpacity));
 
         Vec2i sc = DungeonMap.getStartCoords();
         Integer roomSizeI = DungeonMap.getRoomSize();

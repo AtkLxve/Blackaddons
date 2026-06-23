@@ -6,6 +6,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.cheat.AutoTNT;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
@@ -36,7 +37,7 @@ public class DebugHud implements HudElement {
 
     @Override
     public boolean enabled() {
-        return BaseScreen.showDebugOverlay && !Minecraft.getInstance().options.hideGui;
+        return BaseScreen.showDebugOverlay && !McCompat.isGuiHidden(Minecraft.getInstance());
     }
 
     @Override
@@ -116,7 +117,8 @@ public class DebugHud implements HudElement {
         int finalMouseX = (int) (mc.mouseHandler.xpos() * ((double) scaledWidth / windowWidth));
         int finalMouseY = (int) (mc.mouseHandler.ypos() * ((double) scaledHeight / windowHeight));
         debugInfo.add("Mouse: " + finalMouseX + ", " + finalMouseY);
-        debugInfo.add("Screen: " + (mc.screen != null ? mc.screen.getClass().getSimpleName() : "None"));
+        var currentScreen = McCompat.getScreen(mc);
+        debugInfo.add("Screen: " + (currentScreen != null ? currentScreen.getClass().getSimpleName() : "None"));
 
         debugInfo.add("");
         debugInfo.add(ChatFormatting.GOLD + "[Mod Hider Real Info]");

@@ -514,7 +514,7 @@ public class ConfigManager {
         public boolean chatVisualFiltersEnabled = false;
         public boolean actionTriggersEnabled = true;
 
-        // Custom Text
+        // Custom Font
         public boolean customTextEnabled = true;
         public float customTextScale = 12.5f;
         public boolean customTextGuiOnly = true;

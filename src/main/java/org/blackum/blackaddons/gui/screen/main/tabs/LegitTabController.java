@@ -136,7 +136,7 @@ public class LegitTabController extends SimpleTabController {
         int debugY = contentY + 180;
         addDebuggerWidgets(legitTab, contentX, debugY, contentWidth - 20);
 
-        legitTab.addWidget(new Label(contentX, debugY + 150, "Custom Text", Label.Style.TITLE));
+        legitTab.addWidget(new Label(contentX, debugY + 150, "Custom Font", Label.Style.TITLE));
         addCustomTextWidgets(legitTab, contentX, debugY + 180, contentWidth - 20);
     }
 
@@ -310,7 +310,7 @@ public class LegitTabController extends SimpleTabController {
     }
 
     private ResizableCard createCustomTextCard(int x, int y) {
-        customTextCard = screen.createResizableCard("legit_custom_text", x, y, 300, 360, "Custom Text");
+        customTextCard = screen.createResizableCard("legit_custom_font", x, y, 300, 360, "Custom Font");
         int cx = customTextCard.getContentX();
         int cy = customTextCard.getContentY();
         int W = 260;
@@ -319,16 +319,16 @@ public class LegitTabController extends SimpleTabController {
         ListView listView = new ListView(cx, cy, W, listHeight);
         listView.setItemSpacing(4);
 
-        listView.addItem(new ToggleSwitch(0, 0, W, "Custom Text",
-                "Enable resolution-independent GPU custom text rendering.",
+        listView.addItem(new ToggleSwitch(0, 0, W, "Custom Font",
+                "Enable resolution-independent GPU custom font rendering.",
                 ConfigManager.data.customTextEnabled,
                 val -> {
                     ConfigManager.data.customTextEnabled = val;
                     ConfigManager.save();
                 }));
 
-        listView.addItem(new ToggleSwitch(0, 0, W, "Custom Text: GUI Only",
-                "Restrict custom text rendering to BlackAddons GUI screens only.",
+        listView.addItem(new ToggleSwitch(0, 0, W, "Custom Font: GUI Only",
+                "Restrict custom font rendering to BlackAddons GUI screens only.",
                 ConfigManager.data.customTextGuiOnly,
                 val -> {
                     ConfigManager.data.customTextGuiOnly = val;
@@ -638,16 +638,16 @@ public class LegitTabController extends SimpleTabController {
     private void addCustomTextWidgets(TabPanel.Tab legitTab, int x, int startY, int width) {
         int y = startY;
 
-        legitTab.addWidget(new ToggleSwitch(x, y, width, "Custom Text",
-                "Enable resolution-independent GPU custom text rendering.", ConfigManager.data.customTextEnabled,
+        legitTab.addWidget(new ToggleSwitch(x, y, width, "Custom Font",
+                "Enable resolution-independent GPU custom font rendering.", ConfigManager.data.customTextEnabled,
                 val -> {
                     ConfigManager.data.customTextEnabled = val;
                     ConfigManager.save();
                 }));
         y += 30;
 
-        legitTab.addWidget(new ToggleSwitch(x, y, width, "Custom Text: GUI Only",
-                "Restrict custom text rendering to BlackAddons GUI screens only.", ConfigManager.data.customTextGuiOnly,
+        legitTab.addWidget(new ToggleSwitch(x, y, width, "Custom Font: GUI Only",
+                "Restrict custom font rendering to BlackAddons GUI screens only.", ConfigManager.data.customTextGuiOnly,
                 val -> {
                     ConfigManager.data.customTextGuiOnly = val;
                     ConfigManager.save();

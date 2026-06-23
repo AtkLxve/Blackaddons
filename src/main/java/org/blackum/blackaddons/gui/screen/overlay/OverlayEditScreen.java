@@ -22,6 +22,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.hud.HudElement;
 import org.blackum.blackaddons.gui.hud.HudRegistry;
 
@@ -214,6 +215,6 @@ public class OverlayEditScreen extends Screen {
     @Override
     public void onClose() {
         ConfigManager.save();
-        Minecraft.getInstance().setScreen(parent);
+        McCompat.setScreen(Minecraft.getInstance(), parent);
     }
 }

@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.util.io.HttpUtils;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.blackum.blackaddons.gui.render.Theme;
 
@@ -42,7 +43,7 @@ public class UpdateManager {
                                                     .withBold(true)
                                                     .withClickEvent(new ClickEvent.OpenUrl(URI.create(Constants.GITHUB_RELEASES_URL)))
                                                     .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to open GitHub releases")))));
-                            mc.gui.getChat().addClientSystemMessage(message);
+                            McCompat.getChat(mc).addClientSystemMessage(message);
                         }
                     });
                 }

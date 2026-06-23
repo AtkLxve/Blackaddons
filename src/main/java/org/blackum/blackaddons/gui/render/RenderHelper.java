@@ -1,8 +1,8 @@
 package org.blackum.blackaddons.gui.render;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.gui.render.Theme;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 public class RenderHelper {
@@ -59,11 +59,11 @@ public class RenderHelper {
         return (newAlpha << 24) | rgb;
     }
 
-    public static void drawCenteredString(GuiGraphicsExtractor graphics, net.minecraft.client.gui.Font font, String text, int x, int y, int color) {
+    public static void drawCenteredString(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color) {
         graphics.text(font, text, x - font.width(text) / 2, y, color);
     }
 
-    public static void centeredText(GuiGraphicsExtractor graphics, net.minecraft.client.gui.Font font, String text, int x, int y, int color) {
+    public static void centeredText(GuiGraphicsExtractor graphics, Font font, String text, int x, int y, int color) {
         drawCenteredString(graphics, font, text, x, y, color);
     }
 }

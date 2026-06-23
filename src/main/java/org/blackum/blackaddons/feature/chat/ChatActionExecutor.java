@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.widget.base.MovementKeybindSelector;
 import org.blackum.blackaddons.feature.rotation.RotationManager;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
@@ -41,7 +42,7 @@ public class ChatActionExecutor {
             return;
         }
 
-        if (client.screen != null) {
+        if (McCompat.getScreen(client) != null) {
             activeKeybinds.keySet().forEach(k -> setKeyState(k, false));
             activeKeybinds.clear();
             if (queue.isEmpty()) return;
@@ -113,7 +114,7 @@ public class ChatActionExecutor {
 
         switch (action.type) {
             case SWITCH_SLOT:
-                if (client.screen != null) break;
+                if (McCompat.getScreen(client) != null) break;
                 if (action.slotIndex >= 0 && action.slotIndex < 9) {
                     KeyMapping[] hotbarKeys = client.options.keyHotbarSlots;
                     if (hotbarKeys != null && action.slotIndex < hotbarKeys.length) {
@@ -122,11 +123,11 @@ public class ChatActionExecutor {
                 }
                 break;
             case USE_ITEM:
-                if (client.screen != null) break;
+                if (McCompat.getScreen(client) != null) break;
                 holdOrClickKey(client.options.keyUse, action.getDurationTicks());
                 break;
             case ATTACK:
-                if (client.screen != null) break;
+                if (McCompat.getScreen(client) != null) break;
                 holdOrClickKey(client.options.keyAttack, action.getDurationTicks());
                 break;
             case SEND_MESSAGE:
@@ -145,7 +146,7 @@ public class ChatActionExecutor {
                 }
                 break;
             case PRESS_KEYBIND:
-                if (client.screen != null) break;
+                if (McCompat.getScreen(client) != null) break;
                 for (KeyMapping key : client.options.keyMappings) {
                     if (key.getName().equalsIgnoreCase(action.message)) {
                         holdOrClickKey(key, action.getDurationTicks());
@@ -154,7 +155,7 @@ public class ChatActionExecutor {
                 }
                 break;
             case MOVE_KEYBINDS:
-                if (client.screen != null) break;
+                if (McCompat.getScreen(client) != null) break;
                 for (String movementKeybind : MovementKeybindSelector.sanitizeSelection(action.movementKeybinds)) {
                     KeyMapping key = MovementKeybindSelector.getKeyMapping(client, movementKeybind);
                     if (key != null) {
@@ -163,7 +164,7 @@ public class ChatActionExecutor {
                 }
                 break;
             case ROTATE:
-                if (Minecraft.getInstance().screen != null) break;
+                if (McCompat.getScreen(Minecraft.getInstance()) != null) break;
                 float lookAtTicks = Math.max(0.0f, action.lookAtSeconds) * 20.0f;
                 if (action.instaSnap) {
                     if (action.useCoordinates) {
@@ -178,7 +179,7 @@ public class ChatActionExecutor {
                 }
                 break;
             case ALIGN:
-                if (client.screen != null) break;
+                if (McCompat.getScreen(client) != null) break;
                 double alignX = action.targetX;
                 double alignZ = action.targetZ;
                 if (!action.useCoordinates) {

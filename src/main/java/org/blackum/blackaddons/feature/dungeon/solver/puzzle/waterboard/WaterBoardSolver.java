@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -22,6 +23,7 @@ import org.blackum.blackaddons.common.util.io.DataDownloader;
 import org.blackum.blackaddons.common.util.MathUtils;
 import org.blackum.blackaddons.common.util.format.NumbersUtils;
 import org.blackum.blackaddons.common.util.ThreadUtils;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.common.util.mc.WorldUtils;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonListener;
 import org.blackum.blackaddons.feature.dungeon.util.ScanUtils;
@@ -238,7 +240,7 @@ public class WaterBoardSolver {
                 }
 
                 if (!found) {
-                    mc.gui.getChat().addClientSystemMessage(net.minecraft.network.chat.Component.literal(
+                    McCompat.getChat(mc).addClientSystemMessage(Component.literal(
                             "§c[BlackAddons Debug] §7Unknown lever clicked at: " + event.pos.getX() + ", "
                                     + event.pos.getY() + ", " + event.pos.getZ()));
                 }
@@ -276,9 +278,9 @@ public class WaterBoardSolver {
                         if (l != null) solution.put(l, v);
                     });
                 } else {
-                    Minecraft.getInstance().gui.getChat()
-                            .addClientSystemMessage(net.minecraft.network.chat.Component
-                                    .literal("§c[BlackAddons Debug] §7Solution mapping not found for gates: " + gates));
+                    McCompat.getChat(Minecraft.getInstance())
+                            .addClientSystemMessage(Component
+                            .literal("§c[BlackAddons Debug] §7Solution mapping not found for gates: " + gates));
                 }
             }
         }

@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 
 public class DataDownloader {
     private static final Gson GSON = new Gson();
@@ -14,8 +16,8 @@ public class DataDownloader {
         try {
             InputStream stream = DataDownloader.class.getResourceAsStream("/assets/blackaddons/puzzles/" + fileName);
             if (stream == null) {
-                Minecraft.getInstance().gui.getChat().addClientSystemMessage(
-                        net.minecraft.network.chat.Component.literal("§d[BlackAddons Debug] §cResource Missing: §f/assets/blackaddons/puzzles/" + fileName)
+                McCompat.getChat(Minecraft.getInstance()).addClientSystemMessage(
+                        Component.literal("§d[BlackAddons Debug] §cResource Missing: §f/assets/blackaddons/puzzles/" + fileName)
                 );
                 return null;
             }
@@ -23,8 +25,8 @@ public class DataDownloader {
                 return GSON.fromJson(reader, type);
             }
         } catch (Exception e) {
-            Minecraft.getInstance().gui.getChat().addClientSystemMessage(
-                    net.minecraft.network.chat.Component.literal("§d[BlackAddons Debug] §cError Loading JSON: §f" + fileName + " (" + e.getMessage() + ")")
+            McCompat.getChat(Minecraft.getInstance()).addClientSystemMessage(
+                    Component.literal("§d[BlackAddons Debug] §cError Loading JSON: §f" + fileName + " (" + e.getMessage() + ")")
             );
             e.printStackTrace();
             return null;

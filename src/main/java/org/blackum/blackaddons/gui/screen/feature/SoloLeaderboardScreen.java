@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.feature;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -112,7 +113,7 @@ public class SoloLeaderboardScreen extends BaseScreen {
 
         BotIntegration.getSoloLeaderboard(selectedFloor).thenAccept(response -> {
             MinecraftInstance.mc.execute(() -> {
-                if (MinecraftInstance.mc.screen != this)
+                if (McCompat.getScreen(MinecraftInstance.mc) != this)
                     return;
                 list.clearItems();
 
@@ -220,7 +221,7 @@ public class SoloLeaderboardScreen extends BaseScreen {
                 int mapY = y + (height - mapSize) / 2;
                 if (mouseX >= mapX && mouseX <= mapX + mapSize && mouseY >= mapY && mouseY <= mapY + mapSize) {
                     if (Blackaddons.screenOpener != null) {
-                        Blackaddons.screenOpener.accept(new SoloClearMapScreen(mapData, MinecraftInstance.mc.screen));
+                        Blackaddons.screenOpener.accept(new SoloClearMapScreen(mapData, McCompat.getScreen(MinecraftInstance.mc)));
                     }
                     return true;
                 }

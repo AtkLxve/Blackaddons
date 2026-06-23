@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 
@@ -186,8 +187,8 @@ public class SettingsTabController extends SimpleTabController {
                     ConfigManager.save();
 
                     Minecraft mc = Minecraft.getInstance();
-                    if (mc.screen instanceof BaseScreen) {
-                        mc.setScreen(mc.screen);
+                    if (McCompat.getScreen(mc) instanceof BaseScreen) {
+                        McCompat.setScreen(mc, McCompat.getScreen(mc));
                     }
                 });
         listView.addItem(guiScaleSlider);

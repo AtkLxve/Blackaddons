@@ -9,6 +9,22 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//? if >=26.2 {
+/*
+import net.minecraft.client.gui.Hud;
+
+@Mixin(Hud.class)
+public class GuiMixin {
+
+    @Inject(method = "extractEffects", at = @At("HEAD"), cancellable = true)
+    private void onRenderEffects(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (ConfigManager.data.hideStatusEffects) {
+            ci.cancel();
+        }
+    }
+}
+*/
+//?} else {
 @Mixin(Gui.class)
 public class GuiMixin {
 
@@ -19,3 +35,4 @@ public class GuiMixin {
         }
     }
 }
+//?}

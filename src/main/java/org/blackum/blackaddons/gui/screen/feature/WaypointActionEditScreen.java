@@ -1,6 +1,7 @@
 package org.blackum.blackaddons.gui.screen.feature;
 
 
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
@@ -224,7 +225,7 @@ public class WaypointActionEditScreen extends BaseScreen {
         widgets.add(addStepButton);
 
         backButton = new Button(fieldX + fieldWidth / 2 + 2, currentY + listHeight + 5, fieldWidth / 2 - 2, 20, "Back", () -> {
-            minecraft.setScreen(parent);
+            McCompat.setScreen(minecraft, parent);
         });
         widgets.add(backButton);
 

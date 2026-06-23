@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.common.util.mc;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -7,8 +8,22 @@ import java.util.Objects;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.network.chat.Component;
+import org.joml.Matrix4f;
 import net.minecraft.client.renderer.GameRenderer;
+//? if >=26.2 {
+/*
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
+*/
+//?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.packs.resources.Resource;
@@ -298,11 +313,103 @@ public final class McCompat {
                 textureWidth, textureHeight, imageWidth, imageHeight);
     }
 
+    public interface GeometryRenderer {
+        void render(PoseStack.Pose pose, VertexConsumer consumer);
+    }
+
+//? if >=26.2 {
+/*
+    public static void drawGeometry(SubmitNodeCollector bufferSource, PoseStack poseStack, Object renderType, GeometryRenderer renderer) {
+        bufferSource.submitCustomGeometry(poseStack, (RenderType) renderType, renderer::render);
+    }
+
+    public static void drawString(SubmitNodeCollector collector, PoseStack poseStack, String text, float x, float y, int color, boolean dropShadow, Object font, boolean seeThrough) {
+        Font.DisplayMode displayMode = seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL;
+        collector.submitText(poseStack, x, y, FormattedCharSequence.forward(text, Style.EMPTY), dropShadow, displayMode, color, 0, 15728880, 0);
+    }
+
+    public static Screen getScreen(Minecraft client) {
+        return client.gui.screen();
+    }
+
+    public static void setScreen(Minecraft client, Screen screen) {
+        client.gui.setScreen(screen);
+    }
+
+    public static ChatComponent getChat(Minecraft client) {
+        return client.gui.hud.getChat();
+    }
+
+    public static void setTimes(Minecraft client, int fadeIn, int stay, int fadeOut) {
+        client.gui.hud.setTimes(fadeIn, stay, fadeOut);
+    }
+
+    public static void setTitle(Minecraft client, Component title) {
+        client.gui.hud.setTitle(title);
+    }
+
+    public static void setSubtitle(Minecraft client, Component subtitle) {
+        client.gui.hud.setSubtitle(subtitle);
+    }
+
+    public static Camera getCamera(GameRenderer renderer) {
+        return renderer.mainCamera();
+    }
+
+    public static boolean isGuiHidden(Minecraft client) {
+        return client.gui.hud.isHidden();
+    }
+*/
+//?} else {
+    public static void drawGeometry(MultiBufferSource bufferSource, PoseStack poseStack, Object renderType, GeometryRenderer renderer) {
+        VertexConsumer consumer = (VertexConsumer) invokeBest(bufferSource, new String[] { "getBuffer", "method_73477" }, renderType);
+        renderer.render(poseStack.last(), consumer);
+    }
+
+    public static void drawString(MultiBufferSource bufferSource, PoseStack poseStack, String text, float x, float y, int color, boolean dropShadow, Object font, boolean seeThrough) {
+        Font.DisplayMode displayMode = seeThrough ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL;
+        Matrix4f matrix = poseStack.last().pose();
+        ((Font) font).drawInBatch(text, x, y, color, dropShadow, matrix, bufferSource, displayMode, 0, 15728880);
+    }
+
+    public static Screen getScreen(Minecraft client) {
+        return client.screen;
+    }
+
+    public static void setScreen(Minecraft client, Screen screen) {
+        client.setScreen(screen);
+    }
+
+    public static ChatComponent getChat(Minecraft client) {
+        return client.gui.getChat();
+    }
+
+    public static void setTimes(Minecraft client, int fadeIn, int stay, int fadeOut) {
+        client.gui.setTimes(fadeIn, stay, fadeOut);
+    }
+
+    public static void setTitle(Minecraft client, Component title) {
+        client.gui.setTitle(title);
+    }
+
+    public static void setSubtitle(Minecraft client, Component subtitle) {
+        client.gui.setSubtitle(subtitle);
+    }
+
+    public static Camera getCamera(GameRenderer renderer) {
+        return renderer.getMainCamera();
+    }
+
+    public static boolean isGuiHidden(Minecraft client) {
+        return client.options.hideGui;
+    }
+
     public static VertexConsumer getWaypointBuffer(MultiBufferSource bufferSource) {
         Object renderType = getWaypointRenderType();
         Object buffer = invokeBest(bufferSource, new String[] { "getBuffer", "method_73477" }, renderType);
         return (VertexConsumer) buffer;
     }
+//?}
 
     public static float getFov(GameRenderer renderer, Camera camera, float partialTicks, boolean useFovSetting) {
         Object fov = invokeDeclaredBest(renderer, new String[] { "getFov", "method_3196", "a" },
@@ -310,7 +417,7 @@ public final class McCompat {
         return ((Number) fov).floatValue();
     }
 
-    private static Object getWaypointRenderType() {
+    public static Object getWaypointRenderType() {
         Object whiteTexture = Objects.requireNonNullElseGet(
                 tryParseResource("minecraft:textures/block/white_concrete.png"),
                 () -> resource("minecraft", "textures/block/white_concrete.png"));

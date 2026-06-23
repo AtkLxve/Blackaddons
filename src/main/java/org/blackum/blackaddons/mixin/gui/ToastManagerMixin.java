@@ -8,6 +8,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import java.util.List;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.network.chat.Component;
 
 @Mixin(ToastManager.class)
 public class ToastManagerMixin {
@@ -20,7 +23,27 @@ public class ToastManagerMixin {
                 return;
             }
 
-            net.minecraft.network.chat.Component title = ((SystemToastAccessor) systemToast).getTitle();
+//? if >=26.2 {
+/*
+            List<FormattedCharSequence> titleLines = ((SystemToastAccessor) systemToast).getTitleLines();
+            if (titleLines != null) {
+                for (FormattedCharSequence line : titleLines) {
+                    StringBuilder sb = new StringBuilder();
+                    line.accept((idx, style, cp) -> {
+                        sb.appendCodePoint(cp);
+                        return true;
+                    });
+                    String text = sb.toString();
+                    if (text.contains("Chat messages can't be verified")
+                            || text.contains("multiplayer.unsecureserver.toast.title")) {
+                        ci.cancel();
+                        break;
+                    }
+                }
+            }
+*/
+//?} else {
+            Component title = ((SystemToastAccessor) systemToast).getTitle();
             if (title != null) {
                 String text = title.getString();
                 if (text.contains("Chat messages can't be verified")
@@ -28,6 +51,7 @@ public class ToastManagerMixin {
                     ci.cancel();
                 }
             }
+//?}
         }
     }
 }

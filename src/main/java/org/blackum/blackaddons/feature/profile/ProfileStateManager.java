@@ -1,7 +1,9 @@
 package org.blackum.blackaddons.feature.profile;
 
 import org.blackum.blackaddons.common.model.BotResult;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
+import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
 import org.blackum.blackaddons.service.BotIntegration;
 import org.blackum.blackaddons.service.ProfileService;
 import com.google.gson.JsonArray;
@@ -298,14 +300,14 @@ public class ProfileStateManager {
     public void loadProfileAndOpen(String player, String profileName, boolean force, boolean quiet) {
         Minecraft mc = Minecraft.getInstance();
         if (!quiet) {
-            mc.gui.getChat()
+            McCompat.getChat(mc)
                     .addClientSystemMessage(
                             ChatUtils.getMessage("Loading stats for " + player + (force ? " (Forced)" : "") + "..."));
         }
 
         getProfile(player, profileName, force).thenAccept(result -> {
             if (result == null) {
-                mc.gui.getChat().addClientSystemMessage(ChatUtils.error("Failed to fetch data."));
+                McCompat.getChat(mc).addClientSystemMessage(ChatUtils.error("Failed to fetch data."));
                 NotificationManager.addNotification("Profile Error", "Failed to fetch data from API.",
                         NotificationType.ERROR);
                 return;
@@ -313,14 +315,14 @@ public class ProfileStateManager {
 
             if (result.hasError()) {
                 String err = result.getError();
-                mc.gui.getChat().addClientSystemMessage(ChatUtils.error(err));
+                McCompat.getChat(mc).addClientSystemMessage(ChatUtils.error(err));
                 NotificationManager.addNotification("Profile Error", err, NotificationType.ERROR);
                 return;
             }
 
             JsonObject data = result.getData();
             if (data == null) {
-                mc.gui.getChat().addClientSystemMessage(ChatUtils.error("Invalid response format."));
+                McCompat.getChat(mc).addClientSystemMessage(ChatUtils.error("Invalid response format."));
                 NotificationManager.addNotification("Profile Error", "Invalid response format.",
                         NotificationType.ERROR);
                 return;
@@ -328,13 +330,13 @@ public class ProfileStateManager {
 
             final JsonObject finalData = data;
             if (Blackaddons.screenOpener != null) {
-                Blackaddons.screenOpener.accept(new org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen(null, player,
+                Blackaddons.screenOpener.accept(new ProfileViewerScreen(null, player,
                         profileName, force,
                         finalData));
             }
 
         }).exceptionally(e -> {
-            mc.gui.getChat().addClientSystemMessage(ChatUtils.error("Exception: " + e.getMessage()));
+            McCompat.getChat(mc).addClientSystemMessage(ChatUtils.error("Exception: " + e.getMessage()));
             NotificationManager.addNotification("Profile Exception", e.getMessage(), NotificationType.ERROR);
             return null;
         });

@@ -623,16 +623,16 @@ public class AutoSS {
         Minecraft mc = Minecraft.getInstance();
         if (!ConfigManager.data.AutoSSDebug || mc.player == null || mc.gameRenderer == null || solution.isEmpty()) return;
 
-        Vec3 cam = mc.gameRenderer.getMainCamera().position();
+        Vec3 cam = McCompat.getCamera(mc.gameRenderer).position();
         int screenW = mc.getWindow().getGuiScaledWidth();
         int screenH = mc.getWindow().getGuiScaledHeight();
 
         float partialTicks = tracker.getGameTimeDeltaTicks();
-        float fov = (float) Math.toRadians(McCompat.getFov(mc.gameRenderer, mc.gameRenderer.getMainCamera(), partialTicks, true));
+        float fov = (float) Math.toRadians(McCompat.getFov(mc.gameRenderer, McCompat.getCamera(mc.gameRenderer), partialTicks, true));
         float aspect = (float) mc.getWindow().getWidth() / (float) mc.getWindow().getHeight();
         Matrix4f proj = new Matrix4f().perspective(fov, aspect, 0.05f, mc.options.getEffectiveRenderDistance() * 16.0f * 4.0f);
 
-        Quaternionf camRot = new Quaternionf(mc.gameRenderer.getMainCamera().rotation());
+        Quaternionf camRot = new Quaternionf(McCompat.getCamera(mc.gameRenderer).rotation());
         camRot.conjugate();
         Matrix4f view = new Matrix4f().rotation(camRot);
 

@@ -10,7 +10,9 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GlyphRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
+//? if <26.2 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.FormattedCharSequence;
 import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
@@ -157,6 +159,8 @@ public class VectorFontRenderer {
         return result[0];
     }
 
+//? if <26.2 {
+/*
     public void drawString(PoseStack poseStack, String text, float x, float y, int color, MultiBufferSource bufferSource) {
         drawString(poseStack.last().pose(), text, x, y, color, bufferSource);
     }
@@ -220,6 +224,8 @@ public class VectorFontRenderer {
         buffer.addVertex(v3.x(), v3.y(), v3.z()).setUv(1, 1).setColor(color);
         buffer.addVertex(v4.x(), v4.y(), v4.z()).setUv(1, 0).setColor(color);
     }
+*/
+//?}
 
     public DynamicTexture getTexture(int codepoint, VectorFontManager.GlyphData glyph) {
         return textureCache.computeIfAbsent(codepoint, cp -> createCurveTexture(glyph));

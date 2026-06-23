@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.hud;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 
@@ -27,7 +28,7 @@ public class AlignDebugHud implements HudElement {
 
     @Override
     public boolean enabled() {
-        return ConfigManager.data.showAlignDebug && !Minecraft.getInstance().options.hideGui;
+        return ConfigManager.data.showAlignDebug && !McCompat.isGuiHidden(Minecraft.getInstance());
     }
 
     @Override

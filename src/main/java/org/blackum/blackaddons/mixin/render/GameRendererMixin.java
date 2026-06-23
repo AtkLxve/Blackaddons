@@ -13,12 +13,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
 
+//? if >=26.2 {
+/*
+    @Inject(method = "nightVisionScale", at = @At("RETURN"), cancellable = true)
+    private static void onGetNightVisionScale(LivingEntity entity, float tickDelta, CallbackInfoReturnable<Float> cir) {
+        if (ConfigManager.data.legitFullbrightEnabled) {
+            cir.setReturnValue(0.0F);
+        }
+    }
+*/
+//?} else {
     @Inject(method = "getNightVisionScale", at = @At("RETURN"), cancellable = true)
     private static void onGetNightVisionScale(LivingEntity entity, float tickDelta, CallbackInfoReturnable<Float> cir) {
         if (ConfigManager.data.legitFullbrightEnabled) {
             cir.setReturnValue(0.0F);
         }
     }
+//?}
 
     @Inject(method = "renderItemInHand", at = @At("HEAD"), cancellable = true)
     private void onRenderItemInHand(CallbackInfo ci) {

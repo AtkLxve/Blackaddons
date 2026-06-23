@@ -3,7 +3,9 @@ package org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.Minecraft;
+//? if <26.2 {
 import net.minecraft.client.renderer.MultiBufferSource;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Blocks;
@@ -28,6 +30,11 @@ public class WaterBoardHandler {
             if (!ConfigManager.data.waterBoardSolverEnabled)
                 return;
 
+//? if >=26.2 {
+/*
+            RenderContext ctx = new RenderContext(context.poseStack(), context.submitNodeCollector(), 0.0f);
+*/
+//?} else {
             MultiBufferSource.BufferSource bufSource;
             if (context.bufferSource() instanceof MultiBufferSource.BufferSource bs) {
                 bufSource = bs;
@@ -39,6 +46,7 @@ public class WaterBoardHandler {
                     context.poseStack(),
                     bufSource,
                     0.0f);
+//?}
             WaterBoardSolver.onRenderWorld(ctx);
         });
 

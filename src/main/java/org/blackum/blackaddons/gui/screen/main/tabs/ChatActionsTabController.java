@@ -137,10 +137,10 @@ public class ChatActionsTabController extends SimpleTabController {
 
                             Minecraft client = Minecraft.getInstance();
                             if (trigger.durationSeconds > 0 && trigger.title != null && !trigger.title.isEmpty() && client.gui != null) {
-                                client.gui.setTimes(10, (int) (trigger.durationSeconds * 20), 20);
-                                client.gui.setTitle(Component.literal(FormatUtils.formatColor(trigger.title)));
+                                McCompat.setTimes(client, 10, (int) (trigger.durationSeconds * 20), 20);
+                                McCompat.setTitle(client, Component.literal(FormatUtils.formatColor(trigger.title)));
                                 if (trigger.subtitle != null && !trigger.subtitle.isEmpty()) {
-                                    client.gui.setSubtitle(Component.literal(FormatUtils.formatColor(trigger.subtitle)));
+                                    McCompat.setSubtitle(client, Component.literal(FormatUtils.formatColor(trigger.subtitle)));
                                 }
                             }
                         } catch (Exception e) {

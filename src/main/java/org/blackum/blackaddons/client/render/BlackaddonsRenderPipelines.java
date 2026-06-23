@@ -18,6 +18,12 @@ import org.apache.commons.io.IOUtils;
 import com.mojang.blaze3d.shaders.ShaderType;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import net.minecraft.resources.Identifier;
+//? if >=26.2 {
+/*
+import com.mojang.blaze3d.pipeline.BindGroupLayout;
+import com.mojang.blaze3d.PrimitiveTopology;
+*/
+//?}
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +34,72 @@ public class BlackaddonsRenderPipelines {
 
     private static final List<RenderPipeline> PIPELINES = new ArrayList<>();
 
+//? if >=26.2 {
+/*
+    public static final RenderPipeline CUSTOM_TEXT = add(RenderPipeline.builder()
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            .withBindGroupLayout(BindGroupLayout.builder()
+                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+                    .withSampler("Sampler0")
+                    .build())
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withCull(false)
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .build());
+
+    public static final RenderPipeline CUSTOM_TEXT_DEPTH = add(RenderPipeline.builder()
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text_depth"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
+            .withBindGroupLayout(BindGroupLayout.builder()
+                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+                    .withSampler("Sampler0")
+                    .build())
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withCull(false)
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, true, -1.0F, -10.0F))
+            .build());
+
+    public static final RenderPipeline VECTOR_TEXT = add(RenderPipeline.builder()
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "vector_text"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/vector_text"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/vector_text"))
+            .withBindGroupLayout(BindGroupLayout.builder()
+                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+                    .withSampler("Sampler0")
+                    .build())
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withCull(false)
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .build());
+
+    public static final RenderPipeline ROUNDED_FILL = add(RenderPipeline.builder()
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "rounded_fill"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/rounded_fill"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/rounded_fill"))
+            .withBindGroupLayout(BindGroupLayout.builder()
+                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+                    .build())
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withCull(false)
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .build());
+*/
+//?} else {
     public static final RenderPipeline CUSTOM_TEXT = add(RenderPipeline.builder()
             .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text"))
             .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
@@ -78,6 +150,7 @@ public class BlackaddonsRenderPipelines {
             .withCull(false)
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .build());
+//?}
 
     private static RenderPipeline add(RenderPipeline pipeline) {
         PIPELINES.add(pipeline);

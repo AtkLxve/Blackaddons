@@ -6,14 +6,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-import org.blackum.blackaddons.client.render.BlackaddonsRenderTypes;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Matrix4f;
 
 public class Render3D {
     public static void renderTracer(RenderContext ctx, Vec3 pos, int color, float thickness) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
-        Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
         Vec3 look = mc.player.getViewVector(ctx.getPartialTicks());
         Vec3 start = camPos.add(look.scale(1.5));
         renderLine(ctx, start, pos, color, thickness);
@@ -23,7 +23,7 @@ public class Render3D {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
 
-        Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
         float x1 = (float) (start.x - camPos.x);
         float y1 = (float) (start.y - camPos.y);
         float z1 = (float) (start.z - camPos.z);
@@ -41,24 +41,25 @@ public class Render3D {
         float a = ((color >> 24) & 0xFF) / 255f;
         if (a == 0) a = 1f;
 
-        VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(ctx.getBufferSource());
-        Matrix4f matrix = ctx.getMatrix();
-
         float cx = (float) cross.x;
         float cy = (float) cross.y;
         float cz = (float) cross.z;
 
-        buffer.addVertex(matrix, x1 - cx, y1 - cy, z1 - cz).setColor(r, g, b, a).setUv(0, 0).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
-        buffer.addVertex(matrix, x2 - cx, y2 - cy, z2 - cz).setColor(r, g, b, a).setUv(1, 1).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
-        buffer.addVertex(matrix, x2 + cx, y2 + cy, z2 + cz).setColor(r, g, b, a).setUv(1, 0).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
-        buffer.addVertex(matrix, x1 + cx, y1 + cy, z1 + cz).setColor(r, g, b, a).setUv(0, 1).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
+        float finalA = a;
+        McCompat.drawGeometry(ctx.getBufferSource(), ctx.getPoseStack(), McCompat.getWaypointRenderType(), (pose, buffer) -> {
+            Matrix4f matrix = pose.pose();
+            buffer.addVertex(matrix, x1 - cx, y1 - cy, z1 - cz).setColor(r, g, b, finalA).setUv(0, 0).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
+            buffer.addVertex(matrix, x2 - cx, y2 - cy, z2 - cz).setColor(r, g, b, finalA).setUv(1, 1).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
+            buffer.addVertex(matrix, x2 + cx, y2 + cy, z2 + cz).setColor(r, g, b, finalA).setUv(1, 0).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
+            buffer.addVertex(matrix, x1 + cx, y1 + cy, z1 + cz).setColor(r, g, b, finalA).setUv(0, 1).setOverlay(15).setLight(15728880).setNormal(0, 1, 0);
+        });
     }
 
     public static void renderString(RenderContext ctx, String text, Vec3 pos, float scale, boolean phase) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
-        Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
         double x = pos.x - camPos.x;
         double y = pos.y - camPos.y;
         double z = pos.z - camPos.z;
@@ -66,20 +67,19 @@ public class Render3D {
         PoseStack poseStack = ctx.getPoseStack();
         poseStack.pushPose();
         poseStack.translate(x, y, z);
-        poseStack.mulPose(mc.gameRenderer.getMainCamera().rotation());
+        poseStack.mulPose(McCompat.getCamera(mc.gameRenderer).rotation());
         poseStack.scale(-0.025f * scale, -0.025f * scale, 1.0f);
 
-        Matrix4f matrix = poseStack.last().pose();
         Font font = mc.font;
         float width = -font.width(text) / 2f;
 
-        font.drawInBatch(text, width, 0, 0xFFFFFFFF, true, matrix, ctx.getBufferSource(), 
-            phase ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.NORMAL, 
-            0, 15728880);
+        McCompat.drawString(ctx.getBufferSource(), poseStack, text, width, 0, 0xFFFFFFFF, true, font, phase);
 
+        //? if <26.2 {
         if (ctx.getBufferSource() != null) {
             ctx.getBufferSource().endBatch();
         }
+        //?}
 
         poseStack.popPose();
     }
@@ -88,7 +88,7 @@ public class Render3D {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null) return;
         
-        Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
         double x = pos.getX() - camPos.x;
         double y = pos.getY() - camPos.y;
         double z = pos.getZ() - camPos.z;
@@ -99,25 +99,28 @@ public class Render3D {
         float a = ((color >> 24) & 0xFF) / 255f;
         if (a == 0) a = 1f;
 
-        VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(ctx.getBufferSource());
+        float finalA = a;
         PoseStack poseStack = ctx.getPoseStack();
         poseStack.pushPose();
         poseStack.translate(x, y, z);
-        Matrix4f matrix = poseStack.last().pose();
 
-        float s = 1.0f;
-        drawLine(buffer, matrix, 0, 0, 0, s, 0, 0, r, g, b, a);
-        drawLine(buffer, matrix, s, 0, 0, s, 0, s, r, g, b, a);
-        drawLine(buffer, matrix, s, 0, s, 0, 0, s, r, g, b, a);
-        drawLine(buffer, matrix, 0, 0, s, 0, 0, 0, r, g, b, a);
-        drawLine(buffer, matrix, 0, s, 0, s, s, 0, r, g, b, a);
-        drawLine(buffer, matrix, s, s, 0, s, s, s, r, g, b, a);
-        drawLine(buffer, matrix, s, s, s, 0, s, s, r, g, b, a);
-        drawLine(buffer, matrix, 0, s, s, 0, s, 0, r, g, b, a);
-        drawLine(buffer, matrix, 0, 0, 0, 0, s, 0, r, g, b, a);
-        drawLine(buffer, matrix, s, 0, 0, s, s, 0, r, g, b, a);
-        drawLine(buffer, matrix, s, 0, s, s, s, s, r, g, b, a);
-        drawLine(buffer, matrix, 0, 0, s, 0, s, s, r, g, b, a);
+        McCompat.drawGeometry(ctx.getBufferSource(), poseStack, McCompat.getWaypointRenderType(), (pose, buffer) -> {
+            Matrix4f matrix = pose.pose();
+            float s = 1.0f;
+            drawLine(buffer, matrix, 0, 0, 0, s, 0, 0, r, g, b, finalA);
+            drawLine(buffer, matrix, s, 0, 0, s, 0, s, r, g, b, finalA);
+            drawLine(buffer, matrix, s, 0, s, 0, 0, s, r, g, b, finalA);
+            drawLine(buffer, matrix, 0, 0, s, 0, 0, 0, r, g, b, finalA);
+            drawLine(buffer, matrix, 0, s, 0, s, s, 0, r, g, b, finalA);
+            drawLine(buffer, matrix, s, s, 0, s, s, s, r, g, b, finalA);
+            drawLine(buffer, matrix, s, s, s, 0, s, s, r, g, b, finalA);
+            drawLine(buffer, matrix, 0, s, s, 0, s, 0, r, g, b, finalA);
+            drawLine(buffer, matrix, 0, 0, 0, 0, s, 0, r, g, b, finalA);
+            drawLine(buffer, matrix, s, 0, 0, s, s, 0, r, g, b, finalA);
+            drawLine(buffer, matrix, s, 0, s, s, s, s, r, g, b, finalA);
+            drawLine(buffer, matrix, 0, 0, s, 0, s, s, r, g, b, finalA);
+        });
+
         poseStack.popPose();
     }
 

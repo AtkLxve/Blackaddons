@@ -12,6 +12,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.lwjgl.glfw.GLFW;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
@@ -42,7 +43,7 @@ public class AutoClicker {
     private static void onClientTick(Minecraft mc) {
         FeatureConfig config = ConfigManager.data.autoClickerConfig;
 
-        if (!config.enabled || mc.player == null || mc.screen != null) {
+        if (!config.enabled || mc.player == null || McCompat.getScreen(mc) != null) {
             deactivate(mc);
             return;
         }

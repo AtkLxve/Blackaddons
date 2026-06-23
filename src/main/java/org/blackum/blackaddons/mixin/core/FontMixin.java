@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.customname.CustomNameManager;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.render.font.CustomBakedGlyph;
@@ -49,7 +50,7 @@ public class FontMixin {
     private static boolean isCustomTextActive() {
         if (!ConfigManager.data.customTextEnabled) return false;
         if (!ConfigManager.data.customTextGuiOnly) return true;
-        return Minecraft.getInstance().screen instanceof BaseScreen;
+        return McCompat.getScreen(Minecraft.getInstance()) instanceof BaseScreen;
     }
 
     private static boolean blackaddons$ensureCustomRendererReady(CustomFontRenderer renderer) {
@@ -147,6 +148,19 @@ public class FontMixin {
         }
     }
 
+//? if >=26.2 {
+/*
+    @Inject(method = "prepare8xTextOutline", at = @At("HEAD"))
+    private void onOutlineStart(CallbackInfoReturnable<Font.PreparedText> cir) {
+        CustomFontRenderer.inOutlinePass = true;
+    }
+
+    @Inject(method = "prepare8xTextOutline", at = @At("RETURN"))
+    private void onOutlineEnd(CallbackInfoReturnable<Font.PreparedText> cir) {
+        CustomFontRenderer.inOutlinePass = false;
+    }
+*/
+//?} else {
     @Inject(method = "drawInBatch8xOutline", at = @At("HEAD"))
     private void onOutlineStart(CallbackInfo ci) {
         CustomFontRenderer.inOutlinePass = true;
@@ -156,6 +170,7 @@ public class FontMixin {
     private void onOutlineEnd(CallbackInfo ci) {
         CustomFontRenderer.inOutlinePass = false;
     }
+//?}
 
     @Inject(method = "getGlyph", at = @At("HEAD"), cancellable = true)
     private void onGetGlyph(int codepoint, Style style, CallbackInfoReturnable<BakedGlyph> cir) {
