@@ -18,15 +18,23 @@ public class HttpUtils {
             .build();
 
     public static CompletableFuture<HttpResponse<String>> sendGetRequest(String url) {
-        HttpRequest request = HttpRequest.newBuilder()
+        return sendGetRequest(url, new String[0]);
+    }
+
+    public static CompletableFuture<HttpResponse<String>> sendGetRequest(String url, String... headers) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .timeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
                 .header("User-Agent", Constants.BROWSER_USER_AGENT)
                 .header("Accept",
                         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-                .header("Accept-Language", "en-US,en;q=0.5")
-                .GET()
-                .build();
+                .header("Accept-Language", "en-US,en;q=0.5");
+
+        for (int i = 0; i < headers.length; i += 2) {
+            builder.header(headers[i], headers[i + 1]);
+        }
+
+        HttpRequest request = builder.GET().build();
 
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
                 .thenApply(res -> {

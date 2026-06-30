@@ -93,7 +93,8 @@ public class ProfileService {
             String profileName) {
         return switch (priority) {
             case PLAIN_DAWN -> fetchStandardProfile(Constants.PLAIN_DAWN_PROFILE_API + uuid, "PlainDawn");
-            case ADJECTILS -> fetchStandardProfile(Constants.ADJECTILS_PROFILE_API + uuid, "Adjectils");
+            case ADJECTILS -> fetchStandardProfile(Constants.ADJECTILS_PROFILE_API + uuid, "Adjectils",
+                    "X-Timestamp", String.valueOf(System.currentTimeMillis()));
             case SOOPY -> fetchSoopyProfile(uuid);
             case SKYCRYPT -> fetchSkyCryptShiiyuProfile(uuid, profileName);
         };
@@ -127,8 +128,8 @@ public class ProfileService {
         };
     }
 
-    private static CompletableFuture<JsonObject> fetchStandardProfile(String url, String sourceName) {
-        return HttpUtils.sendGetRequest(url).thenApply(res -> {
+    private static CompletableFuture<JsonObject> fetchStandardProfile(String url, String sourceName, String... headers) {
+        return HttpUtils.sendGetRequest(url, headers).thenApply(res -> {
             if (res == null || res.statusCode() != 200)
                 return null;
             try {

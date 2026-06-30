@@ -268,14 +268,18 @@ public class ItemDeserializer {
         int level;
         if (pet.has("level") && !pet.get("level").isJsonNull()) {
             JsonElement lvlEl = pet.get("level");
-            if (lvlEl.isJsonPrimitive() && lvlEl.getAsJsonPrimitive().isNumber()) {
-                level = lvlEl.getAsInt();
-            } else {
-                try {
-                    level = Integer.parseInt(lvlEl.getAsString());
-                } catch (NumberFormatException e) {
-                    level = PetUtils.getLevel(type, rarity, exp);
+            if (lvlEl.isJsonPrimitive()) {
+                if (lvlEl.getAsJsonPrimitive().isNumber()) {
+                    level = lvlEl.getAsInt();
+                } else {
+                    try {
+                        level = Integer.parseInt(lvlEl.getAsString());
+                    } catch (NumberFormatException e) {
+                        level = PetUtils.getLevel(type, rarity, exp);
+                    }
                 }
+            } else {
+                level = PetUtils.getLevel(type, rarity, exp);
             }
         } else {
             level = PetUtils.getLevel(type, rarity, exp);
