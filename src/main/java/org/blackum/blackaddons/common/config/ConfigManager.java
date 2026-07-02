@@ -426,6 +426,7 @@ public class ConfigManager {
         public int rotationOverlayY = 5;
         public float rotationOverlayScale = 1.0f;
         public boolean showAlignDebug = false;
+        public boolean alignSilent = true;
         public int alignOverlayX = -1;
         public int alignOverlayY = 125;
         public float alignOverlayScale = 1.0f;

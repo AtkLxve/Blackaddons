@@ -5,6 +5,9 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.world.entity.Entity;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.blackum.blackaddons.feature.cheat.Perspective;
+import net.minecraft.client.player.LocalPlayer;
+import org.blackum.blackaddons.feature.waypoint.AlignUtils;
+import org.blackum.blackaddons.common.config.ConfigManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,6 +30,16 @@ public abstract class CameraMixin {
         Entity entity = this.entity;
         if (entity == null) {
             return;
+        }
+
+        if (AlignUtils.isActive() && ConfigManager.data.alignSilent && AlignUtils.getSilentYaw() != null) {
+            if (entity instanceof LocalPlayer player) {
+                float silentYaw = AlignUtils.getSilentYaw();
+                player.setYHeadRot(silentYaw);
+                player.yHeadRotO = silentYaw;
+                player.setYBodyRot(silentYaw);
+                player.yBodyRotO = silentYaw;
+            }
         }
 
         float tickDelta = getCameraEntityPartialTicks(deltaTracker);

@@ -493,6 +493,15 @@ public class CheatsTabController extends SimpleTabController {
 
         ListView listView = new ListView(contentX, contentY, 260, 260);
 
+        ToggleSwitch alignSilentToggle = new ToggleSwitch(0, 0, 260,
+                "Silent Align",
+                "Player turns without visual camera movement during alignment",
+                ConfigManager.data.alignSilent, value -> {
+                    ConfigManager.data.alignSilent = value;
+                    ConfigManager.save();
+                });
+        listView.addItem(alignSilentToggle);
+
         ToggleSwitch rotationDebugToggle = new ToggleSwitch(0, 0, 260,
                 "Rotation Debugger",
                 "Shows target rotation info and world visuals",

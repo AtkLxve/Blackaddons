@@ -54,6 +54,7 @@ public class AlignUtils {
     private static int alignState = 0;
     private static float yaw1 = 0;
     private static float yaw2 = 0;
+    private static Float silentYaw = null;
     private static double tick1PlannedA = 0;
     private static double tick1PlannedF = 0;
     private static int movementLockTicks = 0;
@@ -99,7 +100,8 @@ public class AlignUtils {
         alignLookAtY = lookAtY;
         alignLookAtZ = lookAtZ;
         if (!active) {
-            releaseMovementKeys(Minecraft.getInstance());
+            Minecraft mc = Minecraft.getInstance();
+            releaseMovementKeys(mc);
             active = true;
             alignState = 0;
             startTimeMs = System.currentTimeMillis();
@@ -145,6 +147,13 @@ public class AlignUtils {
         if (!(mc.player instanceof LocalPlayer player) || mc.level == null) {
             cancel();
             return;
+        }
+
+        if (ConfigManager.data.alignSilent && silentYaw != null) {
+            player.setYHeadRot(silentYaw);
+            player.yHeadRotO = silentYaw;
+            player.setYBodyRot(silentYaw);
+            player.yBodyRotO = silentYaw;
         }
 
         if (McCompat.getScreen(mc) != null || player.isPassenger() || player.isFallFlying() || player.onClimbable() || player.isInWater() || player.isInLava()) {
@@ -249,7 +258,11 @@ public class AlignUtils {
     }
 
     private static void applyMovement(Minecraft mc, LocalPlayer player, float targetYaw, boolean sneak) {
-        applyExactYaw(player, targetYaw);
+        if (ConfigManager.data.alignSilent) {
+            silentYaw = targetYaw;
+        } else {
+            applyExactYaw(player, targetYaw);
+        }
         forcedForward = true;
         forcedSneak = sneak;
         setKeyState(mc.options.keyUp, true);
@@ -263,12 +276,17 @@ public class AlignUtils {
     public static void cancel() {
         if (!active) return;
         active = false;
+        silentYaw = null;
         movementLockTicks = 0;
         releasePressedKeys(Minecraft.getInstance());
     }
 
     public static boolean isActive() {
         return active;
+    }
+
+    public static Float getSilentYaw() {
+        return silentYaw;
     }
 
     public static boolean shouldBlockMovementInput() {
@@ -382,6 +400,7 @@ public class AlignUtils {
 
     private static void finish(Minecraft mc) {
         active = false;
+        silentYaw = null;
         debugFinishedAtMs = System.currentTimeMillis();
         debugSampleAtMs = debugFinishedAtMs + DEBUG_SAMPLE_DELAY_MS;
         debugAwaitingSample = true;
