@@ -27,14 +27,17 @@ public class TpMazeHandler {
             }
         });
         
-        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
-            if (!ConfigManager.data.teleportMazeSolverEnabled) return;
-
 //? if >=26.2 {
 /*
+        LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
+            if (!ConfigManager.data.teleportMazeSolverEnabled) return;
             RenderContext ctx = new RenderContext(context.poseStack(), context.submitNodeCollector(), 0.0f);
+            TpMazeSolver.onRenderWorld(ctx);
+        });
 */
 //?} else {
+        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
+            if (!ConfigManager.data.teleportMazeSolverEnabled) return;
             MultiBufferSource.BufferSource bufSource;
             if (context.bufferSource() instanceof MultiBufferSource.BufferSource bs) {
                 bufSource = bs;
@@ -43,9 +46,9 @@ public class TpMazeHandler {
             }
 
             RenderContext ctx = new RenderContext(context.poseStack(), bufSource, 0.0f);
-//?}
             TpMazeSolver.onRenderWorld(ctx);
         });
+//?}
 
         ThreadUtils.loop(200, () -> false, () -> {
             if (!ConfigManager.data.teleportMazeSolverEnabled) {

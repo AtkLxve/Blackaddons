@@ -13,6 +13,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.util.mc.McCompat;
@@ -122,9 +123,9 @@ public class BlackaddonsClient implements ClientModInitializer {
                 }
         );
 
-        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
 //? if >=26.2 {
 /*
+        LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
             WaypointRenderer.render(context.poseStack(), context.submitNodeCollector(), 0.0f);
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null || mc.level == null || mc.gameRenderer == null) return;
@@ -134,8 +135,10 @@ public class BlackaddonsClient implements ClientModInitializer {
                     McCompat.getCamera(mc.gameRenderer).position(),
                     LocationUtils.getDebugBoxes()
             );
+        });
 */
 //?} else {
+        LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
             WaypointRenderer.render(context.poseStack().last().pose(), context.bufferSource(), 0.0f);
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null || mc.level == null || mc.gameRenderer == null) return;
@@ -145,8 +148,8 @@ public class BlackaddonsClient implements ClientModInitializer {
                     mc.gameRenderer.getMainCamera().position(),
                     LocationUtils.getDebugBoxes()
             );
-//?}
         });
+//?}
 
         ClientTickEvents.START_CLIENT_TICK.register(client -> AlignUtils.tick());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

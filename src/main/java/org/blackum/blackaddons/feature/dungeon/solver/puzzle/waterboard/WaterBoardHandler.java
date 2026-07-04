@@ -26,15 +26,19 @@ import org.blackum.blackaddons.client.render.RenderContext;
 public class WaterBoardHandler {
 
     public static void register() {
+//? if >=26.2 {
+/*
+        LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
+            if (!ConfigManager.data.waterBoardSolverEnabled)
+                return;
+            RenderContext ctx = new RenderContext(context.poseStack(), context.submitNodeCollector(), 0.0f);
+            WaterBoardSolver.onRenderWorld(ctx);
+        });
+*/
+//?} else {
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
             if (!ConfigManager.data.waterBoardSolverEnabled)
                 return;
-
-//? if >=26.2 {
-/*
-            RenderContext ctx = new RenderContext(context.poseStack(), context.submitNodeCollector(), 0.0f);
-*/
-//?} else {
             MultiBufferSource.BufferSource bufSource;
             if (context.bufferSource() instanceof MultiBufferSource.BufferSource bs) {
                 bufSource = bs;
@@ -46,9 +50,9 @@ public class WaterBoardHandler {
                     context.poseStack(),
                     bufSource,
                     0.0f);
-//?}
             WaterBoardSolver.onRenderWorld(ctx);
         });
+//?}
 
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
             if (!ConfigManager.data.waterBoardSolverEnabled)
