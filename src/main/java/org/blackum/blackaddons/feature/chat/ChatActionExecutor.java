@@ -190,7 +190,7 @@ public class ChatActionExecutor {
                         break;
                     }
                 }
-                long timeoutMs = action.durationSeconds > 0 ? (long)(action.durationSeconds * 1000) : 1000L;
+                long timeoutMs = action.durationSeconds > 0 ? (long)(action.durationSeconds * 1000) : 5000L;
                 AlignUtils.alignToBlock(alignX, alignZ, timeoutMs, action.lookAfterAlign, action.useLookAfterCoords, action.alignPostYaw, action.alignPostPitch, action.alignLookAtX, action.alignLookAtY, action.alignLookAtZ);
                 break;
         }

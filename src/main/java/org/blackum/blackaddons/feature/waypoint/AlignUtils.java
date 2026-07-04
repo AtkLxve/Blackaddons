@@ -42,7 +42,7 @@ public class AlignUtils {
     private static double targetX;
     private static double targetZ;
     private static long startTimeMs;
-    private static long currentTimeoutMs = 1000L;
+    private static long currentTimeoutMs = 5000L;
     private static boolean doLookAfter;
     private static float alignPostYaw;
     private static float alignPostPitch;

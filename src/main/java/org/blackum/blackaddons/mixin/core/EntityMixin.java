@@ -45,7 +45,7 @@ public abstract class EntityMixin {
             } else if (Perspective.getInstance().isActive()) {
                 Perspective.getInstance().changeLookDirection(yRot, xRot);
                 ci.cancel();
-            } else if (AlignUtils.shouldBlockMovementInput()) {
+            } else if (AlignUtils.shouldBlockMovementInput() && !ConfigManager.data.alignSilent) {
                 ci.cancel();
             }
         }
