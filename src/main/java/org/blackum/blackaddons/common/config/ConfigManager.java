@@ -513,6 +513,7 @@ public class ConfigManager {
         public int cacheDurationMinutes = 5;
         public boolean disableCommandConfirmation = true;
         public boolean disableUnsecureChatToast = true;
+        public boolean toggleTabList = false;
         public boolean chatVisualFiltersEnabled = false;
         public boolean actionTriggersEnabled = true;
 
@@ -641,6 +642,7 @@ public class ConfigManager {
         GROUP_MAP.put("chat", List.of(
                 "notificationDuration", "cacheDurationMinutes",
                 "disableCommandConfirmation", "disableUnsecureChatToast",
+                "toggleTabList",
                 "chatVisualFiltersEnabled", "actionTriggersEnabled",
                 "chatVisualFilters", "chatActions", "knownAliases"));
         GROUP_MAP.put("customText", List.of(

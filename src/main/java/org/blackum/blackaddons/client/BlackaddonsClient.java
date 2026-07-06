@@ -29,6 +29,7 @@ import org.blackum.blackaddons.feature.chat.ChatActionManager;
 import org.blackum.blackaddons.feature.chat.IrcClient;
 import org.blackum.blackaddons.feature.chat.IrcPrefixManager;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import org.blackum.blackaddons.feature.TabListToggleHandler;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonListener;
@@ -156,6 +157,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             ++DungeonListener.currentTime;
             NotificationManager.getInstance().tick();
             SoloClearsTracker.tick();
+            TabListToggleHandler.tick();
             if (pendingScreen != null) {
                 McCompat.setScreen(client, pendingScreen);
                 pendingScreen = null;

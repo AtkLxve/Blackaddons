@@ -55,6 +55,15 @@ public class SettingsTabController extends SimpleTabController {
                 });
         listView.addItem(disableUnsecureChatToastToggle);
 
+        ToggleSwitch toggleTabListToggle = new ToggleSwitch(0, 0, width,
+                "Toggle Tab List",
+                "Toggles the player tab list visibility when pressing the tab key instead of holding it",
+                ConfigManager.data.toggleTabList, (val) -> {
+                    ConfigManager.data.toggleTabList = val;
+                    ConfigManager.save();
+                });
+        listView.addItem(toggleTabListToggle);
+
         listView.addItem(new Label(0, 0, "Party Finder", Label.Style.TITLE));
 
         ToggleSwitch pfAutoInviteToggle = new ToggleSwitch(0, 0, width,
