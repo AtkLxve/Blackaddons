@@ -22,7 +22,6 @@ import org.blackum.blackaddons.feature.waypoint.WaypointAnimation;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.joml.Matrix4f;
-import org.lwjgl.system.linux.CMsghdr;
 
 import java.awt.Color;
 

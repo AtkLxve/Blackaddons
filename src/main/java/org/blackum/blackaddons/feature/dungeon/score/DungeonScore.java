@@ -1,10 +1,7 @@
 package org.blackum.blackaddons.feature.dungeon.score;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

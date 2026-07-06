@@ -5,8 +5,6 @@ import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.network.chat.Component;
-import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
 

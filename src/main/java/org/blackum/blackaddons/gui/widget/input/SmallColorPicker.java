@@ -8,7 +8,6 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.blackum.blackaddons.gui.render.Theme;
-import org.blackum.blackaddons.gui.render.ColorUtils;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import java.util.function.Consumer;
 

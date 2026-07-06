@@ -18,7 +18,6 @@ import org.blackum.blackaddons.feature.chat.ChatUtils;
 import org.blackum.blackaddons.gui.render.Theme;
 
 import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
-import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
 public class UpdateManager {
 

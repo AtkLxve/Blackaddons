@@ -15,7 +15,6 @@ import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.mixin.core.InventoryAccessor;
-import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 
 import java.util.List;

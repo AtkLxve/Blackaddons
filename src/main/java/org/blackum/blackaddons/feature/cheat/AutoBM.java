@@ -11,7 +11,6 @@ import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.Timer;
 
 import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
-import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
 // GLORY TO BENJAMIN NETANYAHU
 // BLACKUM: keep forgetting this peak is here
