@@ -553,10 +553,6 @@ public class DungeonMapHud implements HudElement {
         g.fill(x + 10, y, x + 12, y + 2, color);
     }
 
-    private static void drawCheckmark(GuiGraphicsExtractor g, Minecraft mc, int cx, int cz, int color) {
-        int h = mc.font.lineHeight / 2;
-        scaled(g, cx, cz, 1.5f, () -> g.centeredText(mc.font, "\u2713", 0, -h, color));
-    }
 
     private static void drawXMark(GuiGraphicsExtractor g, Minecraft mc, int cx, int cz, int color) {
         int h = mc.font.lineHeight / 2;

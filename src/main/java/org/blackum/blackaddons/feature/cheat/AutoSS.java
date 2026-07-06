@@ -70,7 +70,6 @@ public class AutoSS {
     private static final int COLOR_MARKER_BG = 0xAA000000;
     private static final int COLOR_TEXT_WHITE = 0xFFFFFFFF;
 
-    private static final int MAX_RANDOM_DELAY_TICKS = 2;
     private static final Random RANDOM = new Random();
 
     private static final List<BlockPos> solution = new ArrayList<>();

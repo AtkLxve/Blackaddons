@@ -24,38 +24,8 @@ public class Blackaddons implements ModInitializer {
         LOGGER.info("Initialization completed");
     }
 
-    private int executeStatus(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSystemMessage(
-                Component.literal("§0Black§7Addons is §arunning!"));
-        return 1;
-    }
 
-    private int executeOpenMainGui(CommandContext<CommandSourceStack> context) {
-        if (mainGuiOpener != null) {
-            mainGuiOpener.run();
-        }
-        return 1;
-    }
 
-    private int executeOpenGui(CommandContext<CommandSourceStack> context) {
-        if (guiOpener != null) {
-            guiOpener.run();
-        }
-        return 1;
-    }
 
-    private int executeOpenTestMenu(CommandContext<CommandSourceStack> context) {
-        if (testMenuOpener != null) {
-            testMenuOpener.run();
-        }
-        return 1;
-    }
 
-    private int executeNotify(CommandContext<CommandSourceStack> context) {
-        if (notificationTrigger != null) {
-            String message = StringArgumentType.getString(context, "message");
-            notificationTrigger.accept(message);
-        }
-        return 1;
-    }
 }

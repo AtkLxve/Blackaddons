@@ -16,6 +16,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import static net.minecraft.client.gui.components.Button.builder;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
@@ -527,7 +528,7 @@ public class RngTabController extends ProfileTabController {
                     inputBox.setValue(String.valueOf(count));
                     this.addRenderableWidget(inputBox);
 
-                    this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
+                    this.addRenderableWidget(builder(
                             Component.literal("Confirm"),
                             btn -> {
                                 try {
@@ -561,7 +562,7 @@ public class RngTabController extends ProfileTabController {
                                 }
                             }).bounds(width / 2 - 100, height / 2 + 20, 95, 20).build());
 
-                    this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
+                    this.addRenderableWidget(builder(
                             Component.literal("Cancel"),
                             btn -> McCompat.setScreen(mc, RngTabController.this.screen))
                             .bounds(width / 2 + 5, height / 2 + 20, 95, 20).build());

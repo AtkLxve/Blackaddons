@@ -32,8 +32,6 @@ import com.google.gson.JsonElement;
 public class PlayerProfileManager {
 
     private static final String PLAYER_PROFILES_FILE = "player_profiles.json";
-    private static final String PLAYER_DB_ID_PATH = "data.player.id";
-    private static final String PLAYER_DB_NAME_PATH = "data.player.username";
 
     private static PlayerProfileManager instance;
 

@@ -380,18 +380,6 @@ public class AlignUtils {
         BlockPos groundPos = BlockPos.containing(player.getX(), player.getY() - GROUND_CHECK_OFFSET, player.getZ());
         return mc.level.getBlockState(groundPos).getBlock().getFriction();
     }
-
-    private static float chooseNearestYaw(float currentYaw, float yawA, float yawB) {
-        return Math.abs(yawDiff(currentYaw, yawA)) <= Math.abs(yawDiff(currentYaw, yawB)) ? yawA : yawB;
-    }
-
-    private static float yawDiff(float from, float to) {
-        float diff = (to - from) % 360.0F;
-        if (diff > 180.0F) diff -= 360.0F;
-        if (diff < -180.0F) diff += 360.0F;
-        return diff;
-    }
-
     private static void applyExactYaw(LocalPlayer player, float targetYaw) {
         float yaw = (float) Mth.wrapDegrees((double) targetYaw);
         player.setYRot(yaw);
@@ -465,9 +453,6 @@ public class AlignUtils {
         return InputConstants.isKeyDown(mc.getWindow(), key.getValue());
     }
 
-    private static float normalizeYaw(float yaw) {
-        return (float) Mth.wrapDegrees((double) yaw);
-    }
 
     private static void storeExpectedAlignment(double startX, double startZ, double vx, double vz, double a, double f, float firstYaw, float secondYaw) {
         if (vx * vx + vz * vz < MIN_MOVEMENT_DISTANCE_SQR) { vx = 0; vz = 0; }

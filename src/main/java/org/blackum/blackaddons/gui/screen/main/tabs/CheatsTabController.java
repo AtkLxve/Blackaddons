@@ -29,9 +29,6 @@ public class CheatsTabController extends SimpleTabController {
     private ResizableCard freecamCard;
     private ResizableCard perspectiveCard;
     private ResizableCard autoClickerCard;
-    private Dropdown s2Dropdown;
-    private Dropdown s3Dropdown;
-    private Dropdown s4Dropdown;
     private Label startDelayLabel;
     private Slider startDelaySlider;
 
@@ -386,14 +383,6 @@ public class CheatsTabController extends SimpleTabController {
         return autoSSCard;
     }
 
-    private void collapseOtherDropdowns(Dropdown active) {
-        if (s2Dropdown != null && s2Dropdown != active)
-            s2Dropdown.collapse();
-        if (s3Dropdown != null && s3Dropdown != active)
-            s3Dropdown.collapse();
-        if (s4Dropdown != null && s4Dropdown != active)
-            s4Dropdown.collapse();
-    }
 
     private ResizableCard createAutoBM(int x, int y) {
         autoBMCard = screen.createResizableCard("autoBM", x, y, 300, 310, "Auto Ballista Mechanic");

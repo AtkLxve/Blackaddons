@@ -19,8 +19,6 @@ import java.util.Map;
 public class DungeonScore {
     private static final Logger LOGGER = LoggerFactory.getLogger("BlackAddons-DungeonScore");
 
-    private static final Pattern SECRETS_PATTERN = Pattern
-            .compile("(?i)Secrets (?:Found|):?\\s*(\\d+(?:\\.\\d+)?)(?:%|)");
     private static final Pattern PUZZLES_PATTERN = Pattern.compile("(?i).+?:\\s*\\[(.)\\]");
     private static final Pattern PUZZLE_COUNT_PATTERN = Pattern.compile("(?i)Puzzles:\\s*\\((\\d+)\\)");
     private static final Pattern CRYPTS_PATTERN = Pattern.compile("(?i)Crypts:\\s*(\\d+)");

@@ -156,7 +156,7 @@ public class PriceService {
             futures.add(itemFuture);
         }
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0]))
                 .thenApply(v -> new HashMap<>(results));
     }
 

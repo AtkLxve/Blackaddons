@@ -10,7 +10,7 @@ public class ThreadUtils {
 
     public static void loop(long intervalMs, Supplier<Boolean> stopCondition, Runnable task) {
         executor.scheduleAtFixedRate(() -> {
-            if (!(Boolean) stopCondition.get()) {
+            if (!stopCondition.get()) {
                 task.run();
             }
         }, 0L, intervalMs, TimeUnit.MILLISECONDS);

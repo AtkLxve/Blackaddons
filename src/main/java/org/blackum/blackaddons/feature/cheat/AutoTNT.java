@@ -229,7 +229,7 @@ public class AutoTNT {
         return info;
     }
 
-    public static class FeatureConfig {
+    public static final class FeatureConfig {
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 4;
         public int UnequipDelay = 5;

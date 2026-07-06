@@ -487,7 +487,7 @@ public class ConfigManager {
         public float dungeonMapCornerRadius = 2.0f;
 
         // Water Board Solver
-        public boolean waterBoardSolverEnabled = true;
+        public boolean waterBoardSolverEnabled = false;
         public boolean waterBoardHudEnabled = true;
         public int waterBoardHudX = -1;
         public int waterBoardHudY = -1;

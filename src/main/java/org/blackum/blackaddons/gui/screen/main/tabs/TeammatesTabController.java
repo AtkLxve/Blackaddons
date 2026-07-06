@@ -37,10 +37,6 @@ public class TeammatesTabController extends ProfileTabController {
     private ListView teammatesList;
     private String lastSearchText = "";
 
-    private static final int COL_IGN = 90;
-    private static final int COL_RUNS = 40;
-    private static final int COL_CLASS = 80;
-    private static final int COL_FLOOR = 60;
 
     private enum SortColumn {
         IGN, RUNS, CLASS, FLOOR, LAST_SEEN
@@ -108,14 +104,14 @@ public class TeammatesTabController extends ProfileTabController {
             @Override
             public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
                 int x = this.x + 2;
-                drawHeader(graphics, "IGN", x, COL_IGN, SortColumn.IGN);
-                x += COL_IGN;
-                drawHeader(graphics, "Runs", x, COL_RUNS, SortColumn.RUNS);
-                x += COL_RUNS;
-                drawHeader(graphics, "Class", x, COL_CLASS, SortColumn.CLASS);
-                x += COL_CLASS;
-                drawHeader(graphics, "Floor", x, COL_FLOOR, SortColumn.FLOOR);
-                x += COL_FLOOR;
+                drawHeader(graphics, "IGN", x, TeammateRow.COL_IGN, SortColumn.IGN);
+                x += TeammateRow.COL_IGN;
+                drawHeader(graphics, "Runs", x, TeammateRow.COL_RUNS, SortColumn.RUNS);
+                x += TeammateRow.COL_RUNS;
+                drawHeader(graphics, "Class", x, TeammateRow.COL_CLASS, SortColumn.CLASS);
+                x += TeammateRow.COL_CLASS;
+                drawHeader(graphics, "Floor", x, TeammateRow.COL_FLOOR, SortColumn.FLOOR);
+                x += TeammateRow.COL_FLOOR;
                 drawHeader(graphics, "Last Seen", x, 100, SortColumn.LAST_SEEN);
 
                 graphics.fill(this.x, this.y + 14, this.x + width, this.y + 15, 0x40FFFFFF);
@@ -138,18 +134,18 @@ public class TeammatesTabController extends ProfileTabController {
                     SortColumn clicked = null;
 
                     int currentX = 0;
-                    if (relX >= currentX && relX < currentX + COL_IGN)
+                    if (relX >= currentX && relX < currentX + TeammateRow.COL_IGN)
                         clicked = SortColumn.IGN;
-                    currentX += COL_IGN;
-                    if (relX >= currentX && relX < currentX + COL_RUNS)
+                    currentX += TeammateRow.COL_IGN;
+                    if (relX >= currentX && relX < currentX + TeammateRow.COL_RUNS)
                         clicked = SortColumn.RUNS;
-                    currentX += COL_RUNS;
-                    if (relX >= currentX && relX < currentX + COL_CLASS)
+                    currentX += TeammateRow.COL_RUNS;
+                    if (relX >= currentX && relX < currentX + TeammateRow.COL_CLASS)
                         clicked = SortColumn.CLASS;
-                    currentX += COL_CLASS;
-                    if (relX >= currentX && relX < currentX + COL_FLOOR)
+                    currentX += TeammateRow.COL_CLASS;
+                    if (relX >= currentX && relX < currentX + TeammateRow.COL_FLOOR)
                         clicked = SortColumn.FLOOR;
-                    currentX += COL_FLOOR;
+                    currentX += TeammateRow.COL_FLOOR;
                     if (relX >= currentX)
                         clicked = SortColumn.LAST_SEEN;
 

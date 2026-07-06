@@ -13,11 +13,12 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.blackum.blackaddons.common.constants.Constants;
 
 @AutoModule(order = 106)
 public final class Perspective {
     private static final Perspective INSTANCE = new Perspective();
-    private static final int MOUSE_BIND_OFFSET = 1000;
+
 
     private final Set<Integer> pressedMouseButtons = new HashSet<>();
 
@@ -131,8 +132,8 @@ public final class Perspective {
     }
 
     private boolean isBindPressed(Minecraft mc, int keyCode) {
-        if (keyCode >= MOUSE_BIND_OFFSET) {
-            return pressedMouseButtons.contains(keyCode - MOUSE_BIND_OFFSET);
+        if (keyCode >= Constants.MOUSE_BIND_OFFSET) {
+            return pressedMouseButtons.contains(keyCode - Constants.MOUSE_BIND_OFFSET);
         }
         return InputConstants.isKeyDown(mc.getWindow(), keyCode);
     }
