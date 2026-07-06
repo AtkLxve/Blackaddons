@@ -22,11 +22,12 @@ import java.util.*;
 import org.blackum.blackaddons.Blackaddons;
 
 public class ConfigManager {
-    private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
+    private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir()
+            .resolve(Constants.CONFIG_DIR_NAME);
     private static final File OLD_CONFIG_FILE = OLD_CONFIG_DIR.resolve("config.json").toFile();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     public static final int API_PRIORITY_SLOTS = 3;
-    
+
     private static File getConfigFile() {
         return ProfileManager.getActiveProfileFile(ProfileManager.Category.CONFIG);
     }
@@ -334,7 +335,8 @@ public class ConfigManager {
         public SoloClearInfo() {
         }
 
-        public SoloClearInfo(String type, String time, int secrets, List<String> puzzles, boolean princeKilled, boolean mimicKilled, JsonObject mapData) {
+        public SoloClearInfo(String type, String time, int secrets, List<String> puzzles, boolean princeKilled,
+                boolean mimicKilled, JsonObject mapData) {
             this.type = type;
             this.time = time;
             this.secrets = secrets;
@@ -403,7 +405,7 @@ public class ConfigManager {
         public int AutoSSDelay = 2;
         public float AutoSSDistanceLimit = 4.5f;
         public boolean AutoSSAlerts = true;
-        
+
         public float AutoSSRotationSpeed = 12.0f;
         public float AutoSSRotationCurve = 0.08f;
         public boolean AutoSSInstantSnap = false;
@@ -489,6 +491,12 @@ public class ConfigManager {
         public float waterBoardHudScale = 1.0f;
         public float waterBoardTimerScale = 1.0f;
 
+        // Key Timer HUD
+        public boolean keyTimerEnabled = false;
+        public int keyTimerX = 10;
+        public int keyTimerY = 150;
+        public float keyTimerScale = 1.0f;
+
         // TP Maze Solver
         public boolean teleportMazeSolverEnabled = false;
         public boolean teleportMazePrioritizeDiagonal = true;
@@ -522,18 +530,18 @@ public class ConfigManager {
         public float customTextScale = 12.5f;
         public boolean customTextGuiOnly = true;
         public boolean customFontAntiAliasing = true;
-        public float  customFontAntiAliasingWidth = 0.5f;
+        public float customFontAntiAliasingWidth = 0.5f;
         public boolean customFontShadow = false;
-        public int    customFontShadowColor = 0xAA000000;
-        public float  customFontShadowOffsetX = 0.5f;
-        public float  customFontShadowOffsetY = 0.5f;
+        public int customFontShadowColor = 0xAA000000;
+        public float customFontShadowOffsetX = 0.5f;
+        public float customFontShadowOffsetY = 0.5f;
         public boolean customFontOutline = false;
-        public int    customFontOutlineColor = 0xFF000000;
-        public float  customFontOutlineWidth = 0.5f;
+        public int customFontOutlineColor = 0xFF000000;
+        public float customFontOutlineWidth = 0.5f;
         public boolean customFontBold = false;
-        public float  customFontBoldStrength = 0.5f;
+        public float customFontBoldStrength = 0.5f;
         public boolean customFontItalic = false;
-        public float  customFontItalicSlant = 0.25f;
+        public float customFontItalicSlant = 0.25f;
         public String customFontGoogleName = "";
 
         // Vector Text
@@ -553,7 +561,8 @@ public class ConfigManager {
         public List<SoloClearInfo> f7SoloClears = new ArrayList<>();
         public List<SoloClearInfo> m7SoloClears = new ArrayList<>();
 
-        // Chat actions (migration) TODO: Delete migration when enough versions have passed
+        // Chat actions (migration) TODO: Delete migration when enough versions have
+        // passed
         public List<ChatAction> chatActions = new ArrayList<>(List.of(
                 new ChatAction(
                         "(?s).*?(?:\\[.*?\\] )?([A-Za-z0-9_]+) has invited you to join their party!.*You have 60 seconds to accept.*",
@@ -632,8 +641,10 @@ public class ConfigManager {
                 "waterBoardHudX", "waterBoardHudY", "waterBoardHudScale",
                 "waterBoardTimerScale"));
         GROUP_MAP.put("tpMaze", List.of(
-                "teleportMazeSolverEnabled", "teleportMazePrioritizeDiagonal", "teleportMazeAutoRotate", "teleportMazeSmoothSnap",
-                "teleportMazeAutoRotateSpeed", "teleportMazeVisitedColor", "teleportMazeCorrectColor", "teleportMazeMultipleColor",
+                "teleportMazeSolverEnabled", "teleportMazePrioritizeDiagonal", "teleportMazeAutoRotate",
+                "teleportMazeSmoothSnap",
+                "teleportMazeAutoRotateSpeed", "teleportMazeVisitedColor", "teleportMazeCorrectColor",
+                "teleportMazeMultipleColor",
                 "teleportMazeTracerColor", "teleportMazeTracerWidth"));
         GROUP_MAP.put("visuals", List.of(
                 "legitFullbrightEnabled", "removeFireOverlay",
@@ -695,7 +706,9 @@ public class ConfigManager {
         }
     }
 
-    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
+    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors
+            .newSingleThreadExecutor();
+
     public static void resetDungeonMapColors() {
         ConfigData defaults = new ConfigData();
         data.dungeonMapColorNormal = defaults.dungeonMapColorNormal;
@@ -722,7 +735,7 @@ public class ConfigManager {
         data.overlayX = BaseScreen.overlayX;
         data.overlayY = BaseScreen.overlayY;
         data.overlayScale = BaseScreen.overlayScale;
-        
+
         SAVE_EXECUTOR.submit(() -> {
             try {
                 File configFile = getConfigFile();

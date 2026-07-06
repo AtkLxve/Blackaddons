@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >=26.2 {
-/*
-import net.minecraft.client.gui.Hud;
+
+/*import net.minecraft.client.gui.Hud;
 
 @Mixin(Hud.class)
 public class GuiMixin {
@@ -31,8 +31,8 @@ public class GuiMixin {
         return TabListToggleHandler.shouldShowTabList(keyMapping);
     }
 }
-*/
-//?} else {
+
+*///?} else {
 @Mixin(Gui.class)
 public class GuiMixin {
 

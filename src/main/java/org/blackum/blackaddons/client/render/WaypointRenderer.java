@@ -4,11 +4,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.LightCoordsUtil;
 //? if >=26.2 {
-/*
-import net.minecraft.client.renderer.SubmitNodeCollector;
+
+/*import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
-*/
-//?} else {
+
+*///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
 //?}
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -31,8 +31,8 @@ public class WaypointRenderer {
     private static final int CIRCLE_SEGMENTS = 64;
 
 //? if >=26.2 {
-/*
-    public static void render(PoseStack poseStack, SubmitNodeCollector bufferSource, float partialTicks) {
+
+    /*public static void render(PoseStack poseStack, SubmitNodeCollector bufferSource, float partialTicks) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
@@ -55,8 +55,8 @@ public class WaypointRenderer {
             Blackaddons.LOGGER.info("Rendering {} waypoints", count);
         }
     }
-*/
-//?} else {
+
+*///?} else {
     public static void render(Matrix4f matrix, MultiBufferSource bufferSource, float partialTicks) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
@@ -83,8 +83,8 @@ public class WaypointRenderer {
 //?}
 
 //? if >=26.2 {
-/*
-    private static void renderWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, Waypoint waypoint, Vec3 camPos) {
+
+    /*private static void renderWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, Waypoint waypoint, Vec3 camPos) {
         double x = waypoint.x - camPos.x;
         double y = waypoint.y - camPos.y;
         double z = waypoint.z - camPos.z;
@@ -95,8 +95,8 @@ public class WaypointRenderer {
         WaypointAnimation anim = waypoint.animation != null ? waypoint.animation : WaypointAnimation.STATIC;
         renderAnimatedWaypoint(poseStack, bufferSource, x, y, z, radius, color, waypoint.height, waypoint, anim);
     }
-*/
-//?} else {
+
+*///?} else {
     private static void renderWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, Waypoint waypoint, Vec3 camPos) {
         double x = waypoint.x - camPos.x;
         double y = waypoint.y - camPos.y;
@@ -111,8 +111,8 @@ public class WaypointRenderer {
 //?}
 
 //? if >=26.2 {
-/*
-    private static void renderAnimatedWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
+
+    /*private static void renderAnimatedWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
         float r = color.getRed() / 255f;
         float g = color.getGreen() / 255f;
         float b = color.getBlue() / 255f;
@@ -182,8 +182,8 @@ public class WaypointRenderer {
             }
         });
     }
-*/
-//?} else {
+
+*///?} else {
     private static void renderAnimatedWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
         VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(bufferSource);
         float r = color.getRed() / 255f;

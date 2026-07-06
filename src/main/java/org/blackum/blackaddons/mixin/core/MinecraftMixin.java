@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if >=26.2 {
-/*
-@Mixin(Gui.class)
+
+/*@Mixin(Gui.class)
 public abstract class MinecraftMixin {
 
     @Shadow
@@ -42,8 +42,8 @@ public abstract class MinecraftMixin {
         }
     }
 }
-*/
-//?} else {
+
+*///?} else {
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin {
 

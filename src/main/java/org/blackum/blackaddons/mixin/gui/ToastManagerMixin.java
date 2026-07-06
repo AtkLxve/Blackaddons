@@ -24,8 +24,8 @@ public class ToastManagerMixin {
             }
 
 //? if >=26.2 {
-/*
-            List<FormattedCharSequence> titleLines = ((SystemToastAccessor) systemToast).getTitleLines();
+
+            /*List<FormattedCharSequence> titleLines = ((SystemToastAccessor) systemToast).getTitleLines();
             if (titleLines != null) {
                 for (FormattedCharSequence line : titleLines) {
                     StringBuilder sb = new StringBuilder();
@@ -41,8 +41,8 @@ public class ToastManagerMixin {
                     }
                 }
             }
-*/
-//?} else {
+
+*///?} else {
             Component title = ((SystemToastAccessor) systemToast).getTitle();
             if (title != null) {
                 String text = title.getString();

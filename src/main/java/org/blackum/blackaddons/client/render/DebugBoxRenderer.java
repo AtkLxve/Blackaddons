@@ -3,12 +3,12 @@ package org.blackum.blackaddons.client.render;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.util.LightCoordsUtil;
 //? if >=26.2 {
-/*
-import net.minecraft.client.renderer.SubmitNodeCollector;
+
+/*import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.blackum.blackaddons.common.util.mc.McCompat;
-*/
-//?} else {
+
+*///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
 //?}
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -24,8 +24,8 @@ public final class DebugBoxRenderer {
     }
 
 //? if >=26.2 {
-/*
-    public static void render(PoseStack poseStack, SubmitNodeCollector bufferSource, Vec3 cameraPos, List<BoxSpec> boxes) {
+
+    /*public static void render(PoseStack poseStack, SubmitNodeCollector bufferSource, Vec3 cameraPos, List<BoxSpec> boxes) {
         if (boxes == null || boxes.isEmpty()) return;
 
         McCompat.drawGeometry(bufferSource, poseStack, McCompat.getWaypointRenderType(), (pose, buffer) -> {
@@ -45,8 +45,8 @@ public final class DebugBoxRenderer {
             }
         });
     }
-*/
-//?} else {
+
+*///?} else {
     public static void render(Matrix4f matrix, MultiBufferSource bufferSource, Vec3 cameraPos, List<BoxSpec> boxes) {
         if (boxes == null || boxes.isEmpty()) return;
 

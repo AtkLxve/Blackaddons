@@ -79,6 +79,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonScoreboard.reset();
             WaterBoardSolver.reset();
             TpMazeSolver.reset();
+            DungeonListener.resetKeyTimer();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -88,6 +89,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonScoreboard.reset();
             WaterBoardSolver.reset();
             TpMazeSolver.reset();
+            DungeonListener.resetKeyTimer();
         });
 
         Blackaddons.guiOpener = () -> {
@@ -125,8 +127,8 @@ public class BlackaddonsClient implements ClientModInitializer {
         );
 
 //? if >=26.2 {
-/*
-        LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
+
+        /*LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
             WaypointRenderer.render(context.poseStack(), context.submitNodeCollector(), 0.0f);
             Minecraft mc = Minecraft.getInstance();
             if (mc.player == null || mc.level == null || mc.gameRenderer == null) return;
@@ -137,8 +139,8 @@ public class BlackaddonsClient implements ClientModInitializer {
                     LocationUtils.getDebugBoxes()
             );
         });
-*/
-//?} else {
+
+*///?} else {
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
             WaypointRenderer.render(context.poseStack().last().pose(), context.bufferSource(), 0.0f);
             Minecraft mc = Minecraft.getInstance();
@@ -155,6 +157,7 @@ public class BlackaddonsClient implements ClientModInitializer {
         ClientTickEvents.START_CLIENT_TICK.register(client -> AlignUtils.tick());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             ++DungeonListener.currentTime;
+            DungeonListener.tick();
             NotificationManager.getInstance().tick();
             SoloClearsTracker.tick();
             TabListToggleHandler.tick();
@@ -201,6 +204,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
             SoloClearsTracker.onChatMessage(handled);
+            DungeonListener.onChatMessage(handled);
         });
 
         ClientReceiveMessageEvents.CHAT.register((message, signedMessage, sender, params, receptionTimestamp) -> {
@@ -212,6 +216,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
             SoloClearsTracker.onChatMessage(handled);
+            DungeonListener.onChatMessage(handled);
         });
 
         Blackaddons.LOGGER.info("Client initialization completed");

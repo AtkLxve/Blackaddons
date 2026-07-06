@@ -9,8 +9,8 @@ public class LegacyItemResolver {
     private static final Item[] ID_TABLE = new Item[ID_TABLE_SIZE];
 
 //? if >=26.2 {
-/*
-    private static final Item[] WOOL = {
+
+    /*private static final Item[] WOOL = {
             (Item) Items.WOOL.white(), (Item) Items.WOOL.orange(), (Item) Items.WOOL.magenta(), (Item) Items.WOOL.lightBlue(),
             (Item) Items.WOOL.yellow(), (Item) Items.WOOL.lime(), (Item) Items.WOOL.pink(), (Item) Items.WOOL.gray(),
             (Item) Items.WOOL.lightGray(), (Item) Items.WOOL.cyan(), (Item) Items.WOOL.purple(), (Item) Items.WOOL.blue(),
@@ -46,8 +46,8 @@ public class LegacyItemResolver {
             (Item) Items.DYED_TERRACOTTA.lightGray(), (Item) Items.DYED_TERRACOTTA.cyan(), (Item) Items.DYED_TERRACOTTA.purple(), (Item) Items.DYED_TERRACOTTA.blue(),
             (Item) Items.DYED_TERRACOTTA.brown(), (Item) Items.DYED_TERRACOTTA.green(), (Item) Items.DYED_TERRACOTTA.red(), (Item) Items.DYED_TERRACOTTA.black()
     };
-*/
-//?} else {
+
+*///?} else {
     private static final Item[] WOOL = {
             Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL,
             Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL,
@@ -87,8 +87,8 @@ public class LegacyItemResolver {
 //?}
 
 //? if >=26.2 {
-/*
-    private static final Item WHITE_BED = (Item) Items.BED.white();
+
+    /*private static final Item WHITE_BED = (Item) Items.BED.white();
     private static Item getDye(int damage) {
         return switch (damage) {
             case 1 -> (Item) Items.DYE.red();
@@ -109,8 +109,8 @@ public class LegacyItemResolver {
             default -> Items.INK_SAC;
         };
     }
-*/
-//?} else {
+
+*///?} else {
     private static final Item WHITE_BED = Items.WHITE_BED;
     private static Item getDye(int damage) {
         return switch (damage) {

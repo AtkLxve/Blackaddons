@@ -15,13 +15,13 @@ import net.minecraft.network.chat.Component;
 import org.joml.Matrix4f;
 import net.minecraft.client.renderer.GameRenderer;
 //? if >=26.2 {
-/*
-import net.minecraft.client.renderer.SubmitNodeCollector;
+
+/*import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
-*/
-//?} else {
+
+*///?} else {
 import net.minecraft.client.renderer.MultiBufferSource;
 //?}
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -318,8 +318,8 @@ public final class McCompat {
     }
 
 //? if >=26.2 {
-/*
-    public static void drawGeometry(SubmitNodeCollector bufferSource, PoseStack poseStack, Object renderType, GeometryRenderer renderer) {
+
+    /*public static void drawGeometry(SubmitNodeCollector bufferSource, PoseStack poseStack, Object renderType, GeometryRenderer renderer) {
         bufferSource.submitCustomGeometry(poseStack, (RenderType) renderType, renderer::render);
     }
 
@@ -359,8 +359,8 @@ public final class McCompat {
     public static boolean isGuiHidden(Minecraft client) {
         return client.gui.hud.isHidden();
     }
-*/
-//?} else {
+
+*///?} else {
     public static void drawGeometry(MultiBufferSource bufferSource, PoseStack poseStack, Object renderType, GeometryRenderer renderer) {
         VertexConsumer consumer = (VertexConsumer) invokeBest(bufferSource, new String[] { "getBuffer", "method_73477" }, renderType);
         renderer.render(poseStack.last(), consumer);

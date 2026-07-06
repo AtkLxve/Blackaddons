@@ -10,6 +10,10 @@ import net.minecraft.client.renderer.state.gui.GlyphRenderState;
 import net.minecraft.client.renderer.state.gui.GuiRenderState;
 //? if <26.2 {
 import net.minecraft.client.renderer.MultiBufferSource;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 //?}
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.server.packs.resources.Resource;
@@ -629,7 +633,7 @@ public class CustomFontRenderer {
     }
 
 //? if <26.2 {
-/*
+
     public void drawString(PoseStack poseStack, String text, float x, float y, int color, MultiBufferSource bufferSource) {
         drawString(poseStack.last().pose(), text, x, y, color, bufferSource);
     }
@@ -730,7 +734,7 @@ public class CustomFontRenderer {
         buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(color).setUv(u1, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
         buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(color).setUv(u1, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
     }
-*/
+
 //?}
 
 

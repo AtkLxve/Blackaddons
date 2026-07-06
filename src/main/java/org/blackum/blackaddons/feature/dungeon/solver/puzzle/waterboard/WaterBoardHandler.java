@@ -27,15 +27,15 @@ public class WaterBoardHandler {
 
     public static void register() {
 //? if >=26.2 {
-/*
-        LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
+
+        /*LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
             if (!ConfigManager.data.waterBoardSolverEnabled)
                 return;
             RenderContext ctx = new RenderContext(context.poseStack(), context.submitNodeCollector(), 0.0f);
             WaterBoardSolver.onRenderWorld(ctx);
         });
-*/
-//?} else {
+
+*///?} else {
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
             if (!ConfigManager.data.waterBoardSolverEnabled)
                 return;

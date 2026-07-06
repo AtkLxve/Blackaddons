@@ -19,11 +19,11 @@ import com.mojang.blaze3d.shaders.ShaderType;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import net.minecraft.resources.Identifier;
 //? if >=26.2 {
-/*
-import com.mojang.blaze3d.pipeline.BindGroupLayout;
+
+/*import com.mojang.blaze3d.pipeline.BindGroupLayout;
 import com.mojang.blaze3d.PrimitiveTopology;
-*/
-//?}
+
+*///?}
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -35,8 +35,8 @@ public class BlackaddonsRenderPipelines {
     private static final List<RenderPipeline> PIPELINES = new ArrayList<>();
 
 //? if >=26.2 {
-/*
-    public static final RenderPipeline CUSTOM_TEXT = add(RenderPipeline.builder()
+
+    /*public static final RenderPipeline CUSTOM_TEXT = add(RenderPipeline.builder()
             .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text"))
             .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
             .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))
@@ -98,8 +98,8 @@ public class BlackaddonsRenderPipelines {
             .withCull(false)
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .build());
-*/
-//?} else {
+
+*///?} else {
     public static final RenderPipeline CUSTOM_TEXT = add(RenderPipeline.builder()
             .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text"))
             .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/custom_text"))

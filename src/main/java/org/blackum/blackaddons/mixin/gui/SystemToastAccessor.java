@@ -13,11 +13,11 @@ public interface SystemToastAccessor {
     SystemToast.SystemToastId getId();
 
 //? if >=26.2 {
-/*
-    @Accessor("titleLines")
+
+    /*@Accessor("titleLines")
     List<FormattedCharSequence> getTitleLines();
-*/
-//?} else {
+
+*///?} else {
     @Accessor("title")
     Component getTitle();
 //?}

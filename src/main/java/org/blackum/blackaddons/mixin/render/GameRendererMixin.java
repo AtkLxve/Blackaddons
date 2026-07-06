@@ -14,15 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class GameRendererMixin {
 
 //? if >=26.2 {
-/*
-    @Inject(method = "nightVisionScale", at = @At("RETURN"), cancellable = true)
+
+    /*@Inject(method = "nightVisionScale", at = @At("RETURN"), cancellable = true)
     private static void onGetNightVisionScale(LivingEntity entity, float tickDelta, CallbackInfoReturnable<Float> cir) {
         if (ConfigManager.data.legitFullbrightEnabled) {
             cir.setReturnValue(0.0F);
         }
     }
-*/
-//?} else {
+
+*///?} else {
     @Inject(method = "getNightVisionScale", at = @At("RETURN"), cancellable = true)
     private static void onGetNightVisionScale(LivingEntity entity, float tickDelta, CallbackInfoReturnable<Float> cir) {
         if (ConfigManager.data.legitFullbrightEnabled) {

@@ -19,6 +19,8 @@ import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.gui.screen.overlay.OverlayEditScreen;
@@ -33,6 +35,7 @@ public class DungeonsSettingsTabController extends SimpleTabController {
 
     private ResizableCard solverCard;
     private ResizableCard mapCard;
+    private ResizableCard keyTimerCard;
 
     public DungeonsSettingsTabController(BlackAddonsGUI screen) {
         super(screen);
@@ -119,24 +122,50 @@ public class DungeonsSettingsTabController extends SimpleTabController {
 
             ListView list = new ListView(contentX, contentY + 265, contentWidth - 20, 330);
             addMapSettings(list, contentWidth - 40);
+            addKeyTimerSettings(list, contentWidth - 40, true);
             tab.addWidget(list);
 
             return;
         }
 
         Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("puzzleSolvers", "dungeonMap");
+            screen.resetCardStates("puzzleSolvers", "dungeonMap", "keyTimer");
         });
         tab.addWidget(resetLayout);
 
         CardContainer cardContainer = new CardContainer(contentX, contentY + 50, contentWidth, 540);
         tab.addWidget(cardContainer);
 
-        solverCard = createSolverCard(contentX + 20, contentY + 60);
-        cardContainer.addCard(solverCard);
+        int containerY = contentY + 60;
+        int numCols = contentWidth < 680 ? 1 : (contentWidth < 1000 ? 2 : 3);
+        int colWidth = 300;
+        int spacing = 20;
+        int[] colY = new int[numCols];
+        for (int i = 0; i < numCols; i++) {
+            colY[i] = containerY;
+        }
 
-        mapCard = createMapCard(contentX + 340, contentY + 60);
+        solverCard = createSolverCard(0, 0);
+        mapCard = createMapCard(0, 0);
+        keyTimerCard = createKeyTimerCard(0, 0);
+
+        List<ResizableCard> cards = List.of(solverCard, mapCard, keyTimerCard);
+        for (ResizableCard card : cards) {
+            int shortestCol = 0;
+            for (int i = 1; i < numCols; i++) {
+                if (colY[i] < colY[shortestCol]) {
+                    shortestCol = i;
+                }
+            }
+
+            card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
+            card.setY(colY[shortestCol]);
+            colY[shortestCol] += card.getHeight() + spacing;
+        }
+
+        cardContainer.addCard(solverCard);
         cardContainer.addCard(mapCard);
+        cardContainer.addCard(keyTimerCard);
     }
 
     private ResizableCard createSolverCard(int x, int y) {
@@ -364,6 +393,36 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             darknessLabel.setText("Darkness: " + (int) (v * 100) + "%");
             ConfigManager.save();
         }));
+
+    }
+
+    private void addKeyTimerSettings(ListView list, int width, boolean showTitle) {
+        if (showTitle) {
+            list.addItem(new Label(0, 0, "Auto Pickup Key Timer", Label.Style.TITLE));
+        }
+        list.addItem(new ToggleSwitch(0, 0, width, "Enable Auto Pickup Key Timer", "Shows a 10s timer when Wither/Blood keys drop",
+                ConfigManager.data.keyTimerEnabled, v -> {
+                    ConfigManager.data.keyTimerEnabled = v;
+                    ConfigManager.save();
+                }));
+        list.addItem(new Button(0, 0, width, 20, "Set Position", () -> {
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new OverlayEditScreen(screen, "key_timer"));
+            }
+        }));
+    }
+
+    private ResizableCard createKeyTimerCard(int x, int y) {
+        keyTimerCard = screen.createResizableCard("keyTimer", x, y, 300, 120, "Auto Pickup Key Timer");
+        int contentX = keyTimerCard.getContentX();
+        int contentY = keyTimerCard.getContentY();
+
+        ListView listView = new ListView(contentX, contentY, 260, 80);
+        addKeyTimerSettings(listView, 260, false);
+
+        keyTimerCard.addChild(listView);
+        keyTimerCard.updateLayout();
+        return keyTimerCard;
     }
 
     private Widget createLabeledPicker(String label, int color, Consumer<Integer> onChange, int width) {

@@ -149,8 +149,8 @@ public class FontMixin {
     }
 
 //? if >=26.2 {
-/*
-    @Inject(method = "prepare8xTextOutline", at = @At("HEAD"))
+
+    /*@Inject(method = "prepare8xTextOutline", at = @At("HEAD"))
     private void onOutlineStart(CallbackInfoReturnable<Font.PreparedText> cir) {
         CustomFontRenderer.inOutlinePass = true;
     }
@@ -159,8 +159,8 @@ public class FontMixin {
     private void onOutlineEnd(CallbackInfoReturnable<Font.PreparedText> cir) {
         CustomFontRenderer.inOutlinePass = false;
     }
-*/
-//?} else {
+
+*///?} else {
     @Inject(method = "drawInBatch8xOutline", at = @At("HEAD"))
     private void onOutlineStart(CallbackInfo ci) {
         CustomFontRenderer.inOutlinePass = true;
