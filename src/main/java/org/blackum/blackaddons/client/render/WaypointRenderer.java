@@ -24,6 +24,7 @@ import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.joml.Matrix4f;
 
 import java.awt.Color;
+import org.blackum.blackaddons.feature.waypoint.WaypointShape;
 
 public class WaypointRenderer {
 
@@ -254,7 +255,7 @@ public class WaypointRenderer {
 //?}
 
     private static void drawShape(Matrix4f matrix, VertexConsumer buffer, Waypoint waypoint, double x, double y, double z, float radius, float thickness, double height, float r, float g, float b, float a, boolean drawCaps) {
-        if (waypoint.shape == org.blackum.blackaddons.feature.waypoint.WaypointShape.BOX) {
+        if (waypoint.shape == WaypointShape.BOX) {
             drawBoxShell(matrix, buffer, x, y, z, radius, thickness, height, r, g, b, a, drawCaps);
         } else {
             drawCylindricalShell(matrix, buffer, x, y, z, radius, thickness, height, r, g, b, a, drawCaps);

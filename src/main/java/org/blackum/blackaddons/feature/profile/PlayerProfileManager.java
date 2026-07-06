@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.gson.JsonElement;
 
 public class PlayerProfileManager {
 
@@ -174,7 +175,7 @@ public class PlayerProfileManager {
         }
         try (FileReader reader = new FileReader(cacheFile)) {
             JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-            for (Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
+            for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
                 uuidToNameCache.put(entry.getKey(), entry.getValue().getAsString());
             }
             Blackaddons.LOGGER.info("Loaded " + uuidToNameCache.size() + " player profiles from cache.");

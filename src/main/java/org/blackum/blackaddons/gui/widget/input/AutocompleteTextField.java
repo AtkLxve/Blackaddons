@@ -14,6 +14,7 @@ import org.blackum.blackaddons.gui.render.RenderHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 public class AutocompleteTextField extends TextField {
     private final Supplier<List<String>> suggestionProvider;
@@ -24,7 +25,7 @@ public class AutocompleteTextField extends TextField {
     private final int MAX_VISIBLE_SUGGESTIONS = 7;
     private int lastMouseX = -1;
     private int lastMouseY = -1;
-    private java.util.function.Consumer<String> onSelect;
+    private Consumer<String> onSelect;
 
     public AutocompleteTextField(int x, int y, int width, int height, String placeholder,
             Supplier<List<String>> suggestionProvider) {
@@ -32,7 +33,7 @@ public class AutocompleteTextField extends TextField {
         this.suggestionProvider = suggestionProvider;
     }
 
-    public void setOnSelect(java.util.function.Consumer<String> onSelect) {
+    public void setOnSelect(Consumer<String> onSelect) {
         this.onSelect = onSelect;
     }
 

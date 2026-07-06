@@ -348,10 +348,10 @@ public class LegitTabController extends SimpleTabController {
         String savedFont = ConfigManager.data.customFontGoogleName != null ? ConfigManager.data.customFontGoogleName
                 : "";
         final AutocompleteTextField[] fontFieldRef = new AutocompleteTextField[1];
-        org.blackum.blackaddons.gui.render.font.GoogleFontsList.startLazyLoad(() -> {
+        GoogleFontsList.startLazyLoad(() -> {
             if (fontFieldRef[0] != null) {
                 fontFieldRef[0].setPlaceholder("Type to search " +
-                        org.blackum.blackaddons.gui.render.font.GoogleFontsList.get().size() + " fonts...");
+                        GoogleFontsList.get().size() + " fonts...");
                 fontFieldRef[0].refreshSuggestions();
             }
         });
@@ -370,7 +370,7 @@ public class LegitTabController extends SimpleTabController {
                     () -> updateFontStatus(fontStatusLabel),
                     progress -> {
                         String msg = formatDownloadProgress(progress);
-                        net.minecraft.client.Minecraft.getInstance().execute(() -> fontStatusLabel.setText(msg));
+                        Minecraft.getInstance().execute(() -> fontStatusLabel.setText(msg));
                     });
         });
         listView.addItem(fontField);
@@ -686,7 +686,7 @@ public class LegitTabController extends SimpleTabController {
                     () -> updateFontStatus(flatFontStatus),
                     progress -> {
                         String msg = formatDownloadProgress(progress);
-                        net.minecraft.client.Minecraft.getInstance().execute(() -> flatFontStatus.setText(msg));
+                        Minecraft.getInstance().execute(() -> flatFontStatus.setText(msg));
                     });
         });
         legitTab.addWidget(flatFontField);

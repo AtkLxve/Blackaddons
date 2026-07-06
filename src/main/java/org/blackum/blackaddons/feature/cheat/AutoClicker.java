@@ -21,6 +21,7 @@ import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Optional;
 
 @AutoModule(order = 104)
 public class AutoClicker {
@@ -98,7 +99,7 @@ public class AutoClicker {
     private static boolean isPhysicalKeyDown(Minecraft mc, InputConstants.Key key) {
         if (mc == null || mc.getWindow() == null || key == null) return false;
         if (key.getType() == InputConstants.Type.MOUSE) {
-            return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), key.getValue()) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+            return GLFW.glfwGetMouseButton(mc.getWindow().handle(), key.getValue()) == GLFW.GLFW_PRESS;
         } else if (key.getType() == InputConstants.Type.KEYSYM) {
             return InputConstants.isKeyDown(mc.getWindow(), key.getValue());
         }
@@ -210,7 +211,7 @@ public class AutoClicker {
         
         for (Entity entity : mc.level.getEntities(mc.player, searchBox, e -> e != null && !e.isSpectator() && e.isPickable())) {
             AABB aabb = entity.getBoundingBox().inflate(entity.getPickRadius());
-            java.util.Optional<Vec3> clipResult = aabb.clip(eyePos, endPos);
+            Optional<Vec3> clipResult = aabb.clip(eyePos, endPos);
             if (aabb.contains(eyePos)) {
                 if (closestDistSq >= 0.0D) {
                     closestEntity = entity;

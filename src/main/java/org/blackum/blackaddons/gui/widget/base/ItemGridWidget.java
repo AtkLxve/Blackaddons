@@ -19,14 +19,16 @@ import org.blackum.blackaddons.gui.render.RenderHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.world.item.Item;
+import org.blackum.blackaddons.gui.render.Theme;
 
 public class ItemGridWidget extends Widget {
     private final List<SkyblockItem> items;
     private final int columns;
-    private final float itemScale = org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SCALE;
-    private final int slotSize = (int) (org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SLOT_SIZE
+    private final float itemScale = Theme.ITEM_GRID_SCALE;
+    private final int slotSize = (int) (Theme.ITEM_GRID_SLOT_SIZE
             * org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SCALE);
-    private final int padding = (int) (org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_PADDING
+    private final int padding = (int) (Theme.ITEM_GRID_PADDING
             * org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SCALE);
 
     public enum Alignment {
@@ -39,14 +41,14 @@ public class ItemGridWidget extends Widget {
 
     public ItemGridWidget(int x, int y, int columns, List<SkyblockItem> items) {
         super(x, y,
-                columns * (int) (org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SLOT_SIZE
+                columns * (int) (Theme.ITEM_GRID_SLOT_SIZE
                         * org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SCALE)
-                        + (int) (org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_PADDING
+                        + (int) (Theme.ITEM_GRID_PADDING
                                 * org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SCALE) * 2,
                 ((items.size() + columns - 1) / columns)
                         * (int) (org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SLOT_SIZE
                                 * org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SCALE)
-                        + (int) (org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_PADDING
+                        + (int) (Theme.ITEM_GRID_PADDING
                                 * org.blackum.blackaddons.gui.render.Theme.ITEM_GRID_SCALE) * 2);
         this.items = items;
         this.columns = columns;
@@ -119,7 +121,7 @@ public class ItemGridWidget extends Widget {
                 if (item != null && !item.itemStack().isEmpty()) {
                     ItemStack stack = item.itemStack();
                     List<ClientTooltipComponent> tooltip = new ArrayList<>();
-                    for (Component line : stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.EMPTY,
+                    for (Component line : stack.getTooltipLines(Item.TooltipContext.EMPTY,
                             Minecraft.getInstance().player, TooltipFlag.Default.NORMAL)) {
                         tooltip.add(ClientTooltipComponent.create(line.getVisualOrderText()));
                     }

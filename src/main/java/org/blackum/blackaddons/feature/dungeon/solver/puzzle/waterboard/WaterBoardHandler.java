@@ -21,6 +21,7 @@ import org.blackum.blackaddons.feature.dungeon.util.ScanUtils;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 import org.blackum.blackaddons.client.render.RenderContext;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 @AutoModule(order = 200)
 public class WaterBoardHandler {
@@ -132,7 +133,7 @@ public class WaterBoardHandler {
                             BlockPos gateOffset = new BlockPos(0, -4, 10 + i);
                             BlockPos gatePos = ScanUtils.getRealCoord(gateOffset, pos, rot);
                             BlockState state = mc.level.getBlockState(gatePos);
-                            String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                            String path = BuiltInRegistries.BLOCK
                                     .getKey(state.getBlock()).getPath();
                             if (path.contains("wool") || path.contains("clay") || path.contains("terracotta")) {
                                 woolCount++;

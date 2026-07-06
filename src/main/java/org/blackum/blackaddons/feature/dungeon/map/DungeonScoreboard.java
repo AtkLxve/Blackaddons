@@ -40,9 +40,9 @@ public class DungeonScoreboard {
         }
     }
 
-    private static final java.util.concurrent.ExecutorService playerHeadScope = java.util.concurrent.Executors
+    private static final ExecutorService playerHeadScope = Executors
             .newCachedThreadPool();
-    private static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.Future<?>> playerJobs = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Future<?>> playerJobs = new ConcurrentHashMap<>();
 
     private static void smoothUpdatePlayer(DungeonPlayer player, float targetX, float targetZ, float targetYaw) {
         if (player.mapX == 0f && player.mapZ == 0f && player.yaw == 0f) {
@@ -53,18 +53,18 @@ public class DungeonScoreboard {
         }
 
         if (player.mapX == targetX && player.mapZ == targetZ && player.yaw == targetYaw) {
-            java.util.concurrent.Future<?> oldJob = playerJobs.remove(player.name);
+            Future<?> oldJob = playerJobs.remove(player.name);
             if (oldJob != null)
                 oldJob.cancel(true);
             return;
         }
 
-        java.util.concurrent.Future<?> existingJob = playerJobs.get(player.name);
+        Future<?> existingJob = playerJobs.get(player.name);
         if (existingJob != null) {
             existingJob.cancel(true);
         }
 
-        java.util.concurrent.Future<?> newJob = playerHeadScope.submit(() -> {
+        Future<?> newJob = playerHeadScope.submit(() -> {
             float startX = player.mapX;
             float startZ = player.mapZ;
             float startYaw = player.yaw;
@@ -209,7 +209,7 @@ public class DungeonScoreboard {
     public static void reset() {
         teammates.clear();
         selfPlayer = null;
-        for (java.util.concurrent.Future<?> job : playerJobs.values())
+        for (Future<?> job : playerJobs.values())
             job.cancel(true);
         playerJobs.clear();
         stats.elapsedTime = "0s";

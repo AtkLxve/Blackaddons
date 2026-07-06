@@ -29,6 +29,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.blackum.blackaddons.Blackaddons;
+import net.minecraft.server.packs.resources.Resource;
 
 public class VectorFontRenderer {
     private static VectorFontRenderer instance;
@@ -40,7 +42,7 @@ public class VectorFontRenderer {
 
     private float getScale() {
         return VectorFontManager.getInstance().getScaleForPixelHeight(
-                org.blackum.blackaddons.common.config.ConfigManager.data.vectorTextScale);
+                ConfigManager.data.vectorTextScale);
     }
 
     private float getBaseline() {
@@ -50,10 +52,10 @@ public class VectorFontRenderer {
     public void init() {
         if (initialized) return;
         try {
-            Optional<net.minecraft.server.packs.resources.Resource> resource =
+            Optional<Resource> resource =
                     McCompat.findResource(Minecraft.getInstance().getResourceManager(), "blackaddons", "font/vector_font.ttf");
             if (resource.isEmpty()) {
-                org.blackum.blackaddons.Blackaddons.LOGGER.error("[VectorFont] Font not found at blackaddons:font/vector_font.ttf");
+                Blackaddons.LOGGER.error("[VectorFont] Font not found at blackaddons:font/vector_font.ttf");
                 return;
             }
             try (InputStream is = resource.get().open()) {
@@ -63,9 +65,9 @@ public class VectorFontRenderer {
                 VectorFontManager.init(buffer);
             }
             initialized = true;
-            org.blackum.blackaddons.Blackaddons.LOGGER.info("[VectorFont] Initialized.");
+            Blackaddons.LOGGER.info("[VectorFont] Initialized.");
         } catch (Exception e) {
-            org.blackum.blackaddons.Blackaddons.LOGGER.error("[VectorFont] Init failed", e);
+            Blackaddons.LOGGER.error("[VectorFont] Init failed", e);
         }
     }
 

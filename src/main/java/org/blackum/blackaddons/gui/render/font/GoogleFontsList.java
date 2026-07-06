@@ -14,6 +14,10 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import com.google.gson.JsonElement;
+import java.io.InputStreamReader;
 
 public class GoogleFontsList {
 
@@ -210,11 +214,11 @@ public class GoogleFontsList {
 
     private static List<String[]> loadFromResources() {
         List<String[]> result = new ArrayList<>();
-        try (java.io.InputStream in = GoogleFontsList.class.getResourceAsStream("/assets/blackaddons/fontnames.json")) {
+        try (InputStream in = GoogleFontsList.class.getResourceAsStream("/assets/blackaddons/fontnames.json")) {
             if (in != null) {
-                try (java.io.InputStreamReader isr = new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)) {
+                try (InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8)) {
                     JsonObject json = JsonParser.parseReader(isr).getAsJsonObject();
-                    for (Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
+                    for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
                         String name = entry.getKey();
                         String sha = entry.getValue().getAsString();
                         result.add(new String[]{dirToDisplayName(name), name, sha});

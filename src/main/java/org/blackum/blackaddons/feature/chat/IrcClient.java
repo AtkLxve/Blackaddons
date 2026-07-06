@@ -349,7 +349,7 @@ public class IrcClient implements WebSocket.Listener {
         if (ConfigManager.data.ircEnabled) {
             long delay = Math.min(60, 5L * (1L << reconnectAttempts));
             this.reconnectAttempts = Math.min(this.reconnectAttempts + 1, 10);
-            CompletableFuture.delayedExecutor(delay, java.util.concurrent.TimeUnit.SECONDS)
+            CompletableFuture.delayedExecutor(delay, TimeUnit.SECONDS)
                     .execute(this::connect);
         }
     }

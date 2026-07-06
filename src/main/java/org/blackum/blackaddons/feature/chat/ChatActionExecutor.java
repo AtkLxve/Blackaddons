@@ -13,11 +13,13 @@ import org.blackum.blackaddons.feature.waypoint.Waypoint;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class ChatActionExecutor {
     private static ChatActionExecutor instance;
     private final List<QueuedAction> queue = new ArrayList<>();
-    private final java.util.Map<KeyMapping, Integer> activeKeybinds = new java.util.HashMap<>();
+    private final Map<KeyMapping, Integer> activeKeybinds = new HashMap<>();
 
     private ChatActionExecutor() {
         ClientTickEvents.END_CLIENT_TICK.register(this::onTick);

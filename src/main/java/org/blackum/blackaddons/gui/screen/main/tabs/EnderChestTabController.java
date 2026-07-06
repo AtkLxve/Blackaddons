@@ -15,6 +15,8 @@ import org.blackum.blackaddons.common.model.SkyblockItem;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.world.item.ItemStack;
 
 public class EnderChestTabController extends ProfileTabController {
     private ListView listView;
@@ -85,7 +87,7 @@ public class EnderChestTabController extends ProfileTabController {
             int end = Math.min(start + Constants.ENDER_CHEST_PAGE_SLOTS, allItems.size());
             List<SkyblockItem> pageItems = new ArrayList<>(allItems.subList(start, end));
             while (pageItems.size() < Constants.ENDER_CHEST_PAGE_SLOTS) {
-                pageItems.add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY", "COMMON"));
+                pageItems.add(new SkyblockItem(ItemStack.EMPTY, "EMPTY", "COMMON"));
             }
 
             pageOffsets.add(currentOffset);
@@ -100,7 +102,7 @@ public class EnderChestTabController extends ProfileTabController {
 
             listView.addItem(new Widget(0, 0, 0, 20) {
                 @Override
-                public void render(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+                public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
                         float partialTick) {
                 }
             });

@@ -17,6 +17,8 @@ import org.blackum.blackaddons.common.util.io.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class DungeonsTabController extends ProfileTabController {
 
@@ -38,7 +40,7 @@ public class DungeonsTabController extends ProfileTabController {
 
         int totalRuns = 0;
 
-        java.util.Map<String, Double> runDistribution = new java.util.LinkedHashMap<>();
+        Map<String, Double> runDistribution = new LinkedHashMap<>();
 
         JsonObject floors = profileData.has("floors") ? profileData.getAsJsonObject("floors") : new JsonObject();
         List<String> normalFloors = new ArrayList<>();
@@ -107,7 +109,7 @@ public class DungeonsTabController extends ProfileTabController {
 
         if (profileData.has("classes")) {
             JsonObject classes = JsonUtils.getObject(profileData, "classes");
-            java.util.Map<String, Double> classData = new java.util.HashMap<>();
+            Map<String, Double> classData = new HashMap<>();
             List<Map.Entry<String, JsonElement>> sorted = new ArrayList<>(classes.entrySet());
             sorted.sort((e1, e2) -> Double.compare(e2.getValue().getAsDouble(), e1.getValue().getAsDouble()));
 
@@ -129,7 +131,7 @@ public class DungeonsTabController extends ProfileTabController {
                     0, 0, effectiveW, String.format("Class Levels (Avg: %.2f)", classAvg));
             graph.setData(classData, "Lvl");
 
-            java.util.Map<String, Integer> classColors = new java.util.HashMap<>();
+            Map<String, Integer> classColors = new HashMap<>();
             classColors.put("Archer", 0xFFFFAA00);
             classColors.put("Berserk", 0xFFFF5555);
             classColors.put("Healer", 0xFFFF55FF);
@@ -174,7 +176,7 @@ public class DungeonsTabController extends ProfileTabController {
         }
 
         if (!runDistribution.isEmpty()) {
-            java.util.Map<String, Double> formattedRunDist = new java.util.LinkedHashMap<>();
+            Map<String, Double> formattedRunDist = new LinkedHashMap<>();
             for (Map.Entry<String, Double> entry : runDistribution.entrySet()) {
                 String k = entry.getKey();
                 String label = k.equals("Entrance") ? "Entrance" : k;
@@ -185,7 +187,7 @@ public class DungeonsTabController extends ProfileTabController {
                     0, 0, effectiveW, "Floor Completions");
             runGraph.setData(formattedRunDist, "Runs");
 
-            java.util.Map<String, Integer> floorColors = new java.util.HashMap<>();
+            Map<String, Integer> floorColors = new HashMap<>();
             int normalColor = 0xFF9B59B6; // Purple
             int masterColor = 0xFFD35400; // Orange
 

@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.joml.Quaternionf;
 
 @AutoModule(order = 402)
 public class DungeonMapHud implements HudElement {
@@ -105,7 +106,7 @@ public class DungeonMapHud implements HudElement {
                 rlClass = Class.forName("net.minecraft.resources.ResourceLocation");
             }
             try {
-                java.lang.reflect.Method m = rlClass.getMethod("fromNamespaceAndPath", String.class, String.class);
+                Method m = rlClass.getMethod("fromNamespaceAndPath", String.class, String.class);
                 return m.invoke(null, namespace, path);
             } catch (Exception e) {
             }
@@ -572,7 +573,7 @@ public class DungeonMapHud implements HudElement {
         float scale = ConfigManager.data.dungeonMapRoomNameScale;
         
         String[] words = name.split(" ");
-        java.util.List<String> lines = new java.util.ArrayList<>();
+        List<String> lines = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         int maxWidth = (int)(24 / scale);
         
@@ -808,7 +809,7 @@ public class DungeonMapHud implements HudElement {
                             m.invoke(g.pose(), (float) Math.toRadians(yaw + 180));
                             break;
                         } else if (pType.getName().endsWith("Quaternionf")) {
-                            m.invoke(g.pose(), new org.joml.Quaternionf().rotationZ((float) Math.toRadians(yaw + 180)));
+                            m.invoke(g.pose(), new Quaternionf().rotationZ((float) Math.toRadians(yaw + 180)));
                             break;
                         }
                     } catch (Exception ignored) {

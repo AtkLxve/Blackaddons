@@ -20,6 +20,9 @@ import java.nio.file.Path;
 import java.util.*;
 
 import org.blackum.blackaddons.Blackaddons;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ConfigManager {
     private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir()
@@ -706,7 +709,7 @@ public class ConfigManager {
         }
     }
 
-    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors
+    private static final ExecutorService SAVE_EXECUTOR = Executors
             .newSingleThreadExecutor();
 
     public static void resetDungeonMapColors() {
@@ -779,7 +782,7 @@ public class ConfigManager {
                     loadedData.chatVisualFilters = new ArrayList<>();
                 }
                 if (loadedData.apiPriorityList != null) {
-                    loadedData.apiPriorityList.removeIf(java.util.Objects::isNull);
+                    loadedData.apiPriorityList.removeIf(Objects::isNull);
                 }
                 if (loadedData.apiPriorityList == null) {
                     loadedData.apiPriorityList = new ArrayList<>(List.of(

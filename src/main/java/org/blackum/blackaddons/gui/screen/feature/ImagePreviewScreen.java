@@ -13,6 +13,7 @@ import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.chat.ImageHelper;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.gui.screens.Screen;
 
 public class ImagePreviewScreen extends BaseScreen {
     private final String imageUrl;
@@ -25,7 +26,7 @@ public class ImagePreviewScreen extends BaseScreen {
         this(imageUrl, null);
     }
 
-    public ImagePreviewScreen(String imageUrl, net.minecraft.client.gui.screens.Screen parent) {
+    public ImagePreviewScreen(String imageUrl, Screen parent) {
         super(Component.literal("Image Preview"), parent);
         this.imageUrl = imageUrl;
     }

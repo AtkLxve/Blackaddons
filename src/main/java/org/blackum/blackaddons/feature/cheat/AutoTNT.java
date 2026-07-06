@@ -195,7 +195,7 @@ public class AutoTNT {
     }
 
     public static List<String> getDebugInfo() {
-        java.util.List<String> info = new ArrayList<>();
+        List<String> info = new ArrayList<>();
         if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled)
             return info;
 

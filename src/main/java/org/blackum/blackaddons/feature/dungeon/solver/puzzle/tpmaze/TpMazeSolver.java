@@ -18,6 +18,9 @@ import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Matrix4f;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
+import org.blackum.blackaddons.feature.rotation.RotationManager;
+import net.minecraft.world.level.block.Block;
 
 public class TpMazeSolver {
 
@@ -270,7 +273,7 @@ public class TpMazeSolver {
                 finalPhase = FinalPhase.LOOK_AT_CHEST;
                 targetChest = findChest();
                 if (targetChest != null) {
-                    org.blackum.blackaddons.feature.rotation.RotationManager.getInstance()
+                    RotationManager.getInstance()
                             .snapToBlock(targetChest.getX(), targetChest.getY(), targetChest.getZ());
                 } else {
                     Blackaddons.LOGGER.info("[TpMaze] Chest not found, skipping interaction");
@@ -286,7 +289,7 @@ public class TpMazeSolver {
                 finalPhase = FinalPhase.SNAP_TO_EXIT;
                 BlockPos exitPad = findExitPad();
                 if (exitPad != null) {
-                    org.blackum.blackaddons.feature.rotation.RotationManager.getInstance()
+                    RotationManager.getInstance()
                             .snapToBlock(exitPad.getX(), exitPad.getY(), exitPad.getZ());
                 } else {
                     // Fallback to relative movement direction if pad not found
@@ -323,8 +326,8 @@ public class TpMazeSolver {
             for (int dy = -2; dy <= 2; dy++) {
                 for (int dz = -5; dz <= 5; dz++) {
                     BlockPos p = playerPos.offset(dx, dy, dz);
-                    net.minecraft.world.level.block.Block b = mc.level.getBlockState(p).getBlock();
-                    if (b == net.minecraft.world.level.block.Blocks.CHEST || b == net.minecraft.world.level.block.Blocks.TRAPPED_CHEST) {
+                    Block b = mc.level.getBlockState(p).getBlock();
+                    if (b == Blocks.CHEST || b == Blocks.TRAPPED_CHEST) {
                         return p;
                     }
                 }
@@ -334,10 +337,10 @@ public class TpMazeSolver {
     }
 
     private static void performRightClick() {
-        List<org.blackum.blackaddons.common.config.ConfigManager.ActionStep> actions = new ArrayList<>();
-        actions.add(new org.blackum.blackaddons.common.config.ConfigManager.ActionStep(
-                org.blackum.blackaddons.common.config.ConfigManager.ActionStepType.USE_ITEM, 0, "", 0, 0));
-        org.blackum.blackaddons.feature.chat.ChatActionExecutor.getInstance().execute(actions, null);
+        List<ConfigManager.ActionStep> actions = new ArrayList<>();
+        actions.add(new ConfigManager.ActionStep(
+                ConfigManager.ActionStepType.USE_ITEM, 0, "", 0, 0));
+        ChatActionExecutor.getInstance().execute(actions, null);
     }
 
     private static BlockPos findExitPad() {
@@ -353,7 +356,7 @@ public class TpMazeSolver {
             for (int dy = -2; dy <= 2; dy++) {
                 for (int dz = -8; dz <= 8; dz++) {
                     BlockPos p = playerPos.offset(dx, dy, dz);
-                    if (mc.level.getBlockState(p).is(net.minecraft.world.level.block.Blocks.END_PORTAL_FRAME)) {
+                    if (mc.level.getBlockState(p).is(Blocks.END_PORTAL_FRAME)) {
                         // Avoid the pad we are currently on/near if possible
                         double d = p.distSqr(playerPos);
                         if (d > 2 && d < minDist) {
@@ -381,10 +384,10 @@ public class TpMazeSolver {
         float targetYaw = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90f;
 
         if (ConfigManager.data.teleportMazeSmoothSnap) {
-            org.blackum.blackaddons.feature.rotation.RotationManager.getInstance()
+            RotationManager.getInstance()
                     .rotateTo(targetYaw, mc.player.getXRot(), ConfigManager.data.teleportMazeAutoRotateSpeed);
         } else {
-            org.blackum.blackaddons.feature.rotation.RotationManager.getInstance()
+            RotationManager.getInstance()
                     .snapToAngle(targetYaw, mc.player.getXRot());
         }
 

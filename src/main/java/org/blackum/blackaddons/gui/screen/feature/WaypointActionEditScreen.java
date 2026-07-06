@@ -25,6 +25,12 @@ import java.util.List;
 import java.util.function.Consumer;
 import org.blackum.blackaddons.gui.notification.Notification;
 import org.blackum.blackaddons.common.util.format.FormatUtils;
+import net.minecraft.world.phys.HitResult;
+import java.util.stream.Stream;
+import net.minecraft.world.phys.BlockHitResult;
+import java.util.Locale;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.core.BlockPos;
 
 public class WaypointActionEditScreen extends BaseScreen {
     private static final int CUSTOM_INPUT_WIDTH = 90;
@@ -161,7 +167,7 @@ public class WaypointActionEditScreen extends BaseScreen {
             widgets.add(notificationMessageField);
             currentY += 35;
 
-            List<String> typeOptions = java.util.stream.Stream.of(NotificationType.values()).map(Enum::name).toList();
+            List<String> typeOptions = Stream.of(NotificationType.values()).map(Enum::name).toList();
             notificationTypeDropdown = new Dropdown(fieldX, currentY, fieldWidth - 54, Theme.TEXTFIELD_HEIGHT, "Notification Type", typeOptions, selected -> {
                 action.notificationType = NotificationType.valueOf(selected);
                 WaypointManager.getInstance().save();
@@ -178,8 +184,8 @@ public class WaypointActionEditScreen extends BaseScreen {
 
             testNotificationButton = new Button(fieldX + fieldWidth - 50, currentY, 50, Theme.TEXTFIELD_HEIGHT, "Test", () -> {
                 NotificationManager.addNotification(
-                        org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(action.notificationTitle != null && !action.notificationTitle.isEmpty() ? action.notificationTitle : "Test Title"),
-                        org.blackum.blackaddons.common.util.format.FormatUtils.formatColor(action.notificationMessage != null && !action.notificationMessage.isEmpty() ? action.notificationMessage : "Test Message"),
+                        FormatUtils.formatColor(action.notificationTitle != null && !action.notificationTitle.isEmpty() ? action.notificationTitle : "Test Title"),
+                        FormatUtils.formatColor(action.notificationMessage != null && !action.notificationMessage.isEmpty() ? action.notificationMessage : "Test Message"),
                         action.notificationType
                 );
             });
@@ -332,7 +338,7 @@ public class WaypointActionEditScreen extends BaseScreen {
                 WaypointManager.getInstance().save();
             });
 
-            java.util.List<String> typeOptions = java.util.stream.Stream.of(ConfigManager.ActionStepType.values())
+            List<String> typeOptions = Stream.of(ConfigManager.ActionStepType.values())
                     .map(ConfigManager.ActionStepType::getDisplayName)
                     .toList();
             Dropdown typeDropdown = new Dropdown(0, 0, itemWidth, "Step Type", typeOptions, selected -> {
@@ -430,7 +436,7 @@ public class WaypointActionEditScreen extends BaseScreen {
             } else if (step.type == ConfigManager.ActionStepType.PRESS_KEYBIND) {
                 AutocompleteTextField keyField = new AutocompleteTextField(0, 0, itemWidth, Theme.TEXTFIELD_HEIGHT, "key.keyboard.f5", () -> {
                     ArrayList<String> keys = new ArrayList<>();
-                    for (net.minecraft.client.KeyMapping km : minecraft.options.keyMappings) {
+                    for (KeyMapping km : minecraft.options.keyMappings) {
                         keys.add(km.getName());
                     }
                     return keys;
@@ -471,11 +477,11 @@ public class WaypointActionEditScreen extends BaseScreen {
                     SettingWrapper speedWrap = new SettingWrapper(0, 0, itemWidth, "Rotation Speed", "Override speed (0 = use global)", null);
                     Slider speedSlider = new Slider(0, 0, itemWidth, 0, 100, step.rotationSpeed, val -> {
                         step.rotationSpeed = val;
-                        speedWrap.setRightLabel(val == 0 ? "Global" : String.format(java.util.Locale.ROOT, "%.1f", val));
+                        speedWrap.setRightLabel(val == 0 ? "Global" : String.format(Locale.ROOT, "%.1f", val));
                         WaypointManager.getInstance().save();
                     });
                     speedWrap.setControl(speedSlider);
-                    speedWrap.setRightLabel(step.rotationSpeed == 0 ? "Global" : String.format(java.util.Locale.ROOT, "%.1f", step.rotationSpeed));
+                    speedWrap.setRightLabel(step.rotationSpeed == 0 ? "Global" : String.format(Locale.ROOT, "%.1f", step.rotationSpeed));
                     group.addChild(speedWrap);
                 }
 
@@ -582,9 +588,9 @@ public class WaypointActionEditScreen extends BaseScreen {
                     group.addChild(coordRow);
 
                     Button captureBtn = new Button(0, 0, itemWidth, Theme.BUTTON_HEIGHT, "Capture Looking At", () -> {
-                        net.minecraft.world.phys.HitResult hr = minecraft.hitResult;
-                        if (hr instanceof net.minecraft.world.phys.BlockHitResult bhr) {
-                            net.minecraft.core.BlockPos pos = bhr.getBlockPos();
+                        HitResult hr = minecraft.hitResult;
+                        if (hr instanceof BlockHitResult bhr) {
+                            BlockPos pos = bhr.getBlockPos();
                             step.targetX = pos.getX();
                             step.targetY = pos.getY();
                             step.targetZ = pos.getZ();
@@ -623,9 +629,9 @@ public class WaypointActionEditScreen extends BaseScreen {
 
                     GridRow captureRow = new GridRow(itemWidth, Theme.BUTTON_HEIGHT);
                     Button captureBtn = new Button(0, 0, (itemWidth / 2) - 2, Theme.BUTTON_HEIGHT, "Capture Looking At", () -> {
-                        net.minecraft.world.phys.HitResult hr = minecraft.hitResult;
-                        if (hr instanceof net.minecraft.world.phys.BlockHitResult bhr) {
-                            net.minecraft.core.BlockPos pos = bhr.getBlockPos();
+                        HitResult hr = minecraft.hitResult;
+                        if (hr instanceof BlockHitResult bhr) {
+                            BlockPos pos = bhr.getBlockPos();
                             step.targetX = pos.getX() + 0.5D;
                             step.targetZ = pos.getZ() + 0.5D;
                             WaypointManager.getInstance().save();
@@ -674,9 +680,9 @@ public class WaypointActionEditScreen extends BaseScreen {
 
                         GridRow lookCaptureRow = new GridRow(itemWidth, Theme.BUTTON_HEIGHT);
                         Button captureLookBtn = new Button(0, 0, (itemWidth / 2) - 2, Theme.BUTTON_HEIGHT, "Capture Looking At", () -> {
-                            net.minecraft.world.phys.HitResult hr = minecraft.hitResult;
-                            if (hr instanceof net.minecraft.world.phys.BlockHitResult bhr) {
-                                net.minecraft.core.BlockPos pos = bhr.getBlockPos();
+                            HitResult hr = minecraft.hitResult;
+                            if (hr instanceof BlockHitResult bhr) {
+                                BlockPos pos = bhr.getBlockPos();
                                 step.alignLookAtX = pos.getX() + 0.5D;
                                 step.alignLookAtY = pos.getY() + 0.5D;
                                 step.alignLookAtZ = pos.getZ() + 0.5D;
@@ -806,18 +812,18 @@ public class WaypointActionEditScreen extends BaseScreen {
             double dist = Math.sqrt(Math.pow(waypoint.x - minecraft.player.getX(), 2) +
                     Math.pow(waypoint.y - minecraft.player.getY(), 2) +
                     Math.pow(waypoint.z - minecraft.player.getZ(), 2));
-            title += String.format(java.util.Locale.ROOT, " (%.1fm)", dist);
+            title += String.format(Locale.ROOT, " (%.1fm)", dist);
         }
         RenderHelper.centeredText(graphics, font, title, containerX + containerWidth / 2, containerY + 20, Theme.TEXT_PRIMARY);
     }
 
     private String formatOptionalCoord(double value) {
         if (value == 0.0) return "";
-        return String.format(java.util.Locale.ROOT, "%.2f", value);
+        return String.format(Locale.ROOT, "%.2f", value);
     }
 
     private static String formatSeconds(float seconds) {
-        return String.format(java.util.Locale.ROOT, "%.3fs", seconds);
+        return String.format(Locale.ROOT, "%.3fs", seconds);
     }
 
     private static float roundToMillis(float value) {
@@ -844,18 +850,18 @@ public class WaypointActionEditScreen extends BaseScreen {
     }
 
     private static String formatAngle(float angle) {
-        return String.format(java.util.Locale.ROOT, "%.1f°", angle);
+        return String.format(Locale.ROOT, "%.1f°", angle);
     }
 
     private void updateTextField(TextField field, float value) {
-        String formatted = String.format(java.util.Locale.ROOT, "%.3f", roundToMillis(value));
+        String formatted = String.format(Locale.ROOT, "%.3f", roundToMillis(value));
         if (!formatted.equals(field.getText())) {
             field.setText(formatted);
         }
     }
 
     private void updateAngleField(TextField field, float value) {
-        String formatted = String.format(java.util.Locale.ROOT, "%.1f", roundAngle(value));
+        String formatted = String.format(Locale.ROOT, "%.1f", roundAngle(value));
         if (!formatted.equals(field.getText())) {
             field.setText(formatted);
         }

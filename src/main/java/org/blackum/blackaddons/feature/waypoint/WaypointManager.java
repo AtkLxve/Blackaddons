@@ -17,12 +17,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonElement;
+import java.util.concurrent.Executors;
 
 public class WaypointManager {
     private static WaypointManager instance;
     private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File OLD_WAYPOINTS_FILE = OLD_CONFIG_DIR.resolve(Constants.WAYPOINTS_FILE_NAME).toFile();
-    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
+    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor();
 
     public static class WaypointData {
         public List<Waypoint> waypoints = new ArrayList<>();
@@ -156,7 +160,7 @@ public class WaypointManager {
         if (!waypointsFile.exists()) return;
 
         try (FileReader reader = new FileReader(waypointsFile)) {
-            com.google.gson.JsonElement element = com.google.gson.JsonParser.parseReader(reader);
+            JsonElement element = JsonParser.parseReader(reader);
             if (element.isJsonArray()) {
                 List<Waypoint> loaded = Constants.GSON.fromJson(element, new TypeToken<List<Waypoint>>() {}.getType());
                 if (loaded != null) {

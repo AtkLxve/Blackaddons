@@ -22,6 +22,11 @@ import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.gui.screen.main.tabs.*;
+import com.google.gson.JsonArray;
+import java.util.List;
+import java.util.ArrayList;
+import org.blackum.blackaddons.gui.widget.input.Dropdown;
+import com.google.gson.JsonElement;
 
 public class ProfileViewerScreen extends BaseScreen {
     private final String player;
@@ -114,14 +119,14 @@ public class ProfileViewerScreen extends BaseScreen {
         rtcaController.init(tabPanel.addTab("RTCA"));
 
         if (profileData.has("profiles")) {
-            com.google.gson.JsonArray profiles = profileData.getAsJsonArray("profiles");
+            JsonArray profiles = profileData.getAsJsonArray("profiles");
             if (profiles.size() > 1) {
-                java.util.List<String> profileNames = new java.util.ArrayList<>();
+                List<String> profileNames = new ArrayList<>();
                 String currentSelected = profileName;
 
                 String apiSelected = null;
 
-                for (com.google.gson.JsonElement p : profiles) {
+                for (JsonElement p : profiles) {
                     JsonObject prof = p.getAsJsonObject();
                     String name = prof.get("name").getAsString();
 
@@ -145,7 +150,7 @@ public class ProfileViewerScreen extends BaseScreen {
                     currentSelected = apiSelected;
                 }
 
-                org.blackum.blackaddons.gui.widget.input.Dropdown profileDropdown = new org.blackum.blackaddons.gui.widget.input.Dropdown(
+                Dropdown profileDropdown = new Dropdown(
                         containerX + containerWidth - 160, containerY + 10, 150, 20,
                         (currentSelected != null ? currentSelected : "Profile"),
                         profileNames,

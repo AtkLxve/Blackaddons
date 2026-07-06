@@ -296,7 +296,7 @@ public class SoloLeaderboardScreen extends BaseScreen {
                 case "TRAP": return ConfigManager.data.dungeonMapColorTrap;
                 case "CHAMPION": return ConfigManager.data.dungeonMapColorChampion;
                 case "MIMIC": return ConfigManager.data.dungeonMapColorMimic;
-                default: return org.blackum.blackaddons.common.config.ConfigManager.data.dungeonMapColorNormal;
+                default: return ConfigManager.data.dungeonMapColorNormal;
             }
         }
     }

@@ -5,6 +5,7 @@ import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.Blackaddons;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class IrcPrefixManager {
     private static String cachedPrefix = null;
@@ -60,7 +61,7 @@ public class IrcPrefixManager {
                     }
 
                     try {
-                        for (java.lang.reflect.Method m : handler.getClass().getDeclaredMethods()) {
+                        for (Method m : handler.getClass().getDeclaredMethods()) {
                             if (m.getParameterCount() == 1 && m.getParameterTypes()[0] == String.class && m.getReturnType() == boolean.class) {
                                 m.setAccessible(true);
                                 if (!(Boolean) m.invoke(handler, probeMessage)) {
@@ -73,7 +74,7 @@ public class IrcPrefixManager {
                 }
             }
         } catch (Exception e) {
-            org.blackum.blackaddons.Blackaddons.LOGGER.error("Failed to detect IRC prefix conflict: " + e.getMessage());
+            Blackaddons.LOGGER.error("Failed to detect IRC prefix conflict: " + e.getMessage());
         }
         return false;
     }

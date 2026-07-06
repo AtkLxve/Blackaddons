@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
 import org.blackum.blackaddons.common.util.mc.TabListUtils;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class DungeonScore {
     private static final Logger LOGGER = LoggerFactory.getLogger("BlackAddons-DungeonScore");
@@ -352,8 +354,8 @@ public class DungeonScore {
         return score;
     }
 
-    public static java.util.Map<String, Integer> getScoreComponents() {
-        java.util.Map<String, Integer> out = new java.util.LinkedHashMap<>();
+    public static Map<String, Integer> getScoreComponents() {
+        Map<String, Integer> out = new LinkedHashMap<>();
         if (!dungeonStarted) {
             return out;
         }

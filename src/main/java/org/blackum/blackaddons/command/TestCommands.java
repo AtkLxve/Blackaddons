@@ -43,6 +43,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.DisplaySlot;
+import java.lang.reflect.Field;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.client.multiplayer.PlayerInfo;
 
 public class TestCommands {
 
@@ -187,19 +195,19 @@ public class TestCommands {
                     Minecraft client = Minecraft.getInstance();
                     if (client.level != null && client.getConnection() != null) {
                         client.execute(() -> {
-                            net.minecraft.world.scores.Scoreboard scoreboard = client.level.getScoreboard();
-                            net.minecraft.world.scores.Objective obj = scoreboard.getObjective("allNamesObj");
+                            Scoreboard scoreboard = client.level.getScoreboard();
+                            Objective obj = scoreboard.getObjective("allNamesObj");
                             if (obj == null) {
                                 obj = scoreboard.addObjective("allNamesObj",
-                                        net.minecraft.world.scores.criteria.ObjectiveCriteria.DUMMY,
+                                        ObjectiveCriteria.DUMMY,
                                         Component.literal("Test"),
-                                        net.minecraft.world.scores.criteria.ObjectiveCriteria.RenderType.INTEGER,
+                                        ObjectiveCriteria.RenderType.INTEGER,
                                         true, null);
                             }
-                            scoreboard.setDisplayObjective(net.minecraft.world.scores.DisplaySlot.SIDEBAR, obj);
+                            scoreboard.setDisplayObjective(DisplaySlot.SIDEBAR, obj);
 
                             int score = 0;
-                            for (net.minecraft.client.multiplayer.PlayerInfo info : client.getConnection().getOnlinePlayers()) {
+                            for (PlayerInfo info : client.getConnection().getOnlinePlayers()) {
                                 String name = info.getProfile().name();
                                 scoreboard.getOrCreatePlayerScore(() -> name, obj).set(score++);
                             }
@@ -261,7 +269,7 @@ public class TestCommands {
                         .executes(ctx -> {
                             String id = StringArgumentType.getString(ctx, "id");
                             try {
-                                java.lang.reflect.Field field = PartyFinderManager.getInstance().getClass()
+                                Field field = PartyFinderManager.getInstance().getClass()
                                         .getDeclaredField("currentPartyId");
                                 field.setAccessible(true);
                                 field.set(PartyFinderManager.getInstance(), id);
@@ -401,11 +409,11 @@ public class TestCommands {
     }
 
     private static String parseScoreboardTime(List<String> rawLines) {
-        java.util.regex.Pattern strip = java.util.regex.Pattern.compile("§.");
-        java.util.regex.Pattern time = java.util.regex.Pattern.compile("(?i)Time Elapsed:\\s*([0-9][0-9msh:\\s]*s?)");
+        Pattern strip = Pattern.compile("§.");
+        Pattern time = Pattern.compile("(?i)Time Elapsed:\\s*([0-9][0-9msh:\\s]*s?)");
         for (String raw : rawLines) {
             String clean = raw == null ? "" : strip.matcher(raw).replaceAll("");
-            java.util.regex.Matcher m = time.matcher(clean);
+            Matcher m = time.matcher(clean);
             if (m.find()) return m.group(1).trim();
         }
         return null;
@@ -414,7 +422,7 @@ public class TestCommands {
     private static String normalizeTime(String raw) {
         if (raw == null) return "00:00";
         if (raw.matches("\\d+:\\d+.*")) return raw;
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
+        Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
         if (m.find()) {
             int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
             int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;

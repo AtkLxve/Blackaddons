@@ -18,6 +18,7 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
 import java.util.Set;
+import net.minecraft.client.KeyMapping;
 
 @AutoModule(order = 105)
 public final class Freecam {
@@ -178,7 +179,7 @@ public final class Freecam {
         pos.add(velX, velY, velZ);
     }
 
-    private boolean isKeyDown(net.minecraft.client.KeyMapping key) {
+    private boolean isKeyDown(KeyMapping key) {
         return key.isDown() && !((KeyBindingAccessor) key).blackaddons$isForced();
     }
 

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
 
 public class SoloClearsTracker {
     private static boolean runRecorded = false;
@@ -91,7 +92,7 @@ public class SoloClearsTracker {
             if (line.trim().contains("Solo")) isSolo = true;
         }
 
-        org.blackum.blackaddons.feature.dungeon.util.DungeonUtils.DungeonStats stats = org.blackum.blackaddons.feature.dungeon.util.DungeonUtils.parseDungeonStats(tabListLines);
+        DungeonUtils.DungeonStats stats = DungeonUtils.parseDungeonStats(tabListLines);
         
         int finalScore = DungeonScore.getScore();
 
@@ -116,7 +117,7 @@ public class SoloClearsTracker {
                 }
             }
 
-            final com.google.gson.JsonObject mapData = DungeonMapSerializer.serialize();
+            final JsonObject mapData = DungeonMapSerializer.serialize();
             ConfigManager.SoloClearInfo info = new ConfigManager.SoloClearInfo(floorName, time, stats.secretsFound, stats.completedPuzzles, princeDefeated, mimicKilled, mapData);
             if (floorName.equals("M7")) {
                 ConfigManager.data.m7SoloClears.add(info);
@@ -189,7 +190,7 @@ public class SoloClearsTracker {
     private static String normalizeTimeForBot(String raw) {
         if (raw == null) return "00:00";
         if (raw.matches("\\d+:\\d+.*")) return raw;
-        java.util.regex.Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
+        Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
         if (m.find()) {
             int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
             int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;

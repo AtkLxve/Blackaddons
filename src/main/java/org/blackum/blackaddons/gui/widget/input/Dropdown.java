@@ -16,6 +16,7 @@ import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.gui.render.RenderHelper;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Dropdown extends Widget {
 
@@ -25,7 +26,7 @@ public class Dropdown extends Widget {
     private boolean expanded = false;
     private Consumer<String> onSelect;
     private Runnable onExpand;
-    private java.util.function.Function<String, Integer> colorProvider;
+    private Function<String, Integer> colorProvider;
 
 
     private Animation hoverAnimation;
@@ -63,7 +64,7 @@ public class Dropdown extends Widget {
         setExpanded(false);
     }
 
-    public void setColorProvider(java.util.function.Function<String, Integer> colorProvider) {
+    public void setColorProvider(Function<String, Integer> colorProvider) {
         this.colorProvider = colorProvider;
     }
 
@@ -340,7 +341,7 @@ public class Dropdown extends Widget {
             return;
         }
         this.expanded = expanded;
-        java.util.function.Function<Float, Float> easing = expanded ? Easing::easeOutCubic : Easing::easeOut;
+        Function<Float, Float> easing = expanded ? Easing::easeOutCubic : Easing::easeOut;
         expandAnimation = new Animation(expandAnimation.getValue(), expanded ? 1 : 0, Theme.ANIM_NORMAL, easing);
         expandAnimation.start();
     }

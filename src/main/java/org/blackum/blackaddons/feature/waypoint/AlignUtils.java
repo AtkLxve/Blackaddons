@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
+import org.blackum.blackaddons.gui.hud.AlignDebugHud;
 
 @AutoModule(order = 108)
 public class AlignUtils {
@@ -85,7 +86,7 @@ public class AlignUtils {
     private static int sessionAlignCount = 0;
 
     public static void register() {
-        org.blackum.blackaddons.gui.hud.AlignDebugHud.register();
+        AlignDebugHud.register();
     }
 
     public static void alignToBlock(double x, double z, long timeoutMs, boolean lookAfter, boolean useLookAfterCoords, float postYaw, float postPitch, double lookAtX, double lookAtY, double lookAtZ) {

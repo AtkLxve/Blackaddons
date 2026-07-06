@@ -200,7 +200,7 @@ public class IrcScreen extends BaseScreen implements IrcClient.IrcAuthListener {
         if (event == null)
             return false;
 
-        if (event instanceof ClickEvent.OpenUrl(java.net.URI uri)) {
+        if (event instanceof ClickEvent.OpenUrl(URI uri)) {
             @SuppressWarnings("null")
             String url = uri.toString();
             if (url != null) {
