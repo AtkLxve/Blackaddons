@@ -131,9 +131,18 @@ public class LegitTabController extends SimpleTabController {
                 });
         legitTab.addWidget(disableNearbyParticlesToggle);
 
-        legitTab.addWidget(new Label(contentX, contentY + 150, "Debuggers", Label.Style.TITLE));
+        ToggleSwitch customNicknamesToggle = new ToggleSwitch(contentX, contentY + 150, contentWidth - 20,
+                "Custom Nicknames",
+                "Displays custom nicknames for players",
+                ConfigManager.data.customNicknames, value -> {
+                    ConfigManager.data.customNicknames = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(customNicknamesToggle);
 
-        int debugY = contentY + 180;
+        legitTab.addWidget(new Label(contentX, contentY + 180, "Debuggers", Label.Style.TITLE));
+
+        int debugY = contentY + 210;
         addDebuggerWidgets(legitTab, contentX, debugY, contentWidth - 20);
 
         legitTab.addWidget(new Label(contentX, debugY + 150, "Custom Font", Label.Style.TITLE));
@@ -180,6 +189,15 @@ public class LegitTabController extends SimpleTabController {
                     ConfigManager.save();
                 });
         visualsCard.addChild(disableNearbyParticlesToggle);
+
+        ToggleSwitch customNicknamesToggle = new ToggleSwitch(contentX, contentY + 120, 260,
+                "Custom Nicknames",
+                "Displays custom nicknames for players",
+                ConfigManager.data.customNicknames, value -> {
+                    ConfigManager.data.customNicknames = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(customNicknamesToggle);
 
         visualsCard.updateLayout();
         return visualsCard;

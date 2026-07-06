@@ -221,14 +221,14 @@ public class CustomNameManager {
     }
 
     public Component replaceNames(Component component) {
-        if (customNames.isEmpty()) {
+        if (!ConfigManager.data.customNicknames || customNames.isEmpty()) {
             return component;
         }
         return processComponent(component);
     }
 
     public String replaceInString(String text) {
-        if (customNames.isEmpty() || text == null || text.isEmpty()) return text;
+        if (!ConfigManager.data.customNicknames || customNames.isEmpty() || text == null || text.isEmpty()) return text;
         String lower = text.toLowerCase();
         if (!containsAnyIgn(lower)) return text;
 
@@ -243,7 +243,7 @@ public class CustomNameManager {
     }
 
     public FormattedCharSequence replaceInSequence(FormattedCharSequence sequence) {
-        if (customNames.isEmpty() || sequence == null) return sequence;
+        if (!ConfigManager.data.customNicknames || customNames.isEmpty() || sequence == null) return sequence;
 
         StringBuilder sb = new StringBuilder();
         sequence.accept((index, style, codePoint) -> {
@@ -392,6 +392,7 @@ public class CustomNameManager {
     }
 
     public CustomName getCustomName(String username) {
+        if (!ConfigManager.data.customNicknames) return null;
         return customNames.get(username.toLowerCase());
     }
 

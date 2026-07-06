@@ -506,6 +506,7 @@ public class ConfigManager {
         public boolean removeFireOverlay = false;
         public boolean hideStatusEffects = false;
         public boolean disableNearbyParticles = false;
+        public boolean customNicknames = true;
 
         // Settings
         public int notificationDuration = 4000;
@@ -635,7 +636,8 @@ public class ConfigManager {
                 "teleportMazeTracerColor", "teleportMazeTracerWidth"));
         GROUP_MAP.put("visuals", List.of(
                 "legitFullbrightEnabled", "removeFireOverlay",
-                "hideStatusEffects", "disableNearbyParticles"));
+                "hideStatusEffects", "disableNearbyParticles",
+                "customNicknames"));
         GROUP_MAP.put("chat", List.of(
                 "notificationDuration", "cacheDurationMinutes",
                 "disableCommandConfirmation", "disableUnsecureChatToast",
