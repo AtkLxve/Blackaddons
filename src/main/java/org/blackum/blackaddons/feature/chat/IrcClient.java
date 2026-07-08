@@ -34,6 +34,7 @@ public class IrcClient implements WebSocket.Listener {
     private boolean connecting = false;
     private boolean isAdmin = false;
     private int reconnectAttempts = 0;
+    private boolean intentionalDisconnect = false;
 
     private ScheduledExecutorService keepAliveExecutor;
     private long lastMessageTime = System.currentTimeMillis();
@@ -59,6 +60,7 @@ public class IrcClient implements WebSocket.Listener {
         if (webSocket != null || connecting || !ConfigManager.data.ircEnabled) {
             return;
         }
+        this.intentionalDisconnect = false;
 
         String botUrl = ConfigManager.data.botUrl;
         if (botUrl.isEmpty()) {
@@ -86,8 +88,17 @@ public class IrcClient implements WebSocket.Listener {
                     connecting = false;
                     if (ex != null) {
                         Blackaddons.LOGGER.error("Failed to connect to IRC: " + ex.getMessage());
-                        scheduleReconnect();
+                        if (!intentionalDisconnect) {
+                            scheduleReconnect();
+                        }
                     } else {
+                        if (intentionalDisconnect) {
+                            try {
+                                ws.sendClose(WebSocket.NORMAL_CLOSURE, "Disconnecting");
+                            } catch (Exception ignored) {
+                            }
+                            return;
+                        }
                         this.webSocket = ws;
                         Blackaddons.LOGGER.info("Connected to IRC");
                         startKeepAlive();
@@ -105,6 +116,7 @@ public class IrcClient implements WebSocket.Listener {
     }
 
     private void disconnect(boolean resetAttempts) {
+        this.intentionalDisconnect = true;
         stopKeepAlive();
         if (webSocket != null) {
             try {
@@ -120,7 +132,11 @@ public class IrcClient implements WebSocket.Listener {
 
     private void startKeepAlive() {
         stopKeepAlive();
-        keepAliveExecutor = Executors.newSingleThreadScheduledExecutor();
+        keepAliveExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread thread = new Thread(r, "Blackaddons-IRC-KeepAlive");
+            thread.setDaemon(true);
+            return thread;
+        });
         keepAliveExecutor.scheduleAtFixedRate(() -> {
             if (webSocket != null) {
                 if (System.currentTimeMillis() - lastMessageTime > 30000) {
@@ -327,7 +343,9 @@ public class IrcClient implements WebSocket.Listener {
         stopKeepAlive();
         this.webSocket = null;
         Blackaddons.LOGGER.info("IRC connection closed: " + reason);
-        scheduleReconnect();
+        if (!intentionalDisconnect) {
+            scheduleReconnect();
+        }
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
 
@@ -336,7 +354,9 @@ public class IrcClient implements WebSocket.Listener {
         stopKeepAlive();
         this.webSocket = null;
         Blackaddons.LOGGER.error("IRC WebSocket error: " + error.getMessage());
-        scheduleReconnect();
+        if (!intentionalDisconnect) {
+            scheduleReconnect();
+        }
     }
 
     @Override
@@ -346,11 +366,15 @@ public class IrcClient implements WebSocket.Listener {
     }
 
     private void scheduleReconnect() {
-        if (ConfigManager.data.ircEnabled) {
+        if (ConfigManager.data.ircEnabled && !intentionalDisconnect) {
             long delay = Math.min(60, 5L * (1L << reconnectAttempts));
             this.reconnectAttempts = Math.min(this.reconnectAttempts + 1, 10);
             CompletableFuture.delayedExecutor(delay, TimeUnit.SECONDS)
-                    .execute(this::connect);
+                    .execute(() -> {
+                        if (!intentionalDisconnect) {
+                            connect();
+                        }
+                    });
         }
     }
 

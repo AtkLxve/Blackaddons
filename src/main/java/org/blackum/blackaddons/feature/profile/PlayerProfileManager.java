@@ -41,7 +41,11 @@ public class PlayerProfileManager {
     private final Map<UUID, CompletableFuture<String>> activeLookups = new ConcurrentHashMap<>();
     private final AtomicBoolean workerRunning = new AtomicBoolean(false);
     private final HttpClient httpClient;
-    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "Blackaddons-ProfileSave");
+        thread.setDaemon(true);
+        return thread;
+    });
     private File cacheFile;
 
     private PlayerProfileManager() {

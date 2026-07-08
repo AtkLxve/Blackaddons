@@ -166,7 +166,10 @@ public class BlackaddonsClient implements ClientModInitializer {
             }
         });
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+            ConfigManager.save();
+            IrcClient.getInstance().disconnect();
+        });
 
         ClientSendMessageEvents.ALLOW_CHAT.register(message -> {
             if (internalChatMsg) {

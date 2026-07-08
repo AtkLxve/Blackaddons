@@ -40,8 +40,11 @@ public class DungeonScoreboard {
         }
     }
 
-    private static final ExecutorService playerHeadScope = Executors
-            .newCachedThreadPool();
+    private static final ExecutorService playerHeadScope = Executors.newCachedThreadPool(r -> {
+        Thread thread = new Thread(r, "Blackaddons-PlayerHeadScope");
+        thread.setDaemon(true);
+        return thread;
+    });
     private static final ConcurrentHashMap<String, Future<?>> playerJobs = new ConcurrentHashMap<>();
 
     private static void smoothUpdatePlayer(DungeonPlayer player, float targetX, float targetZ, float targetYaw) {

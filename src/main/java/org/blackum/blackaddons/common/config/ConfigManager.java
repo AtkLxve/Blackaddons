@@ -709,8 +709,11 @@ public class ConfigManager {
         }
     }
 
-    private static final ExecutorService SAVE_EXECUTOR = Executors
-            .newSingleThreadExecutor();
+    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "Blackaddons-ConfigSave");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public static void resetDungeonMapColors() {
         ConfigData defaults = new ConfigData();

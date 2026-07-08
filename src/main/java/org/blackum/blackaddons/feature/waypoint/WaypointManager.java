@@ -26,7 +26,11 @@ public class WaypointManager {
     private static WaypointManager instance;
     private static final Path OLD_CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(Constants.CONFIG_DIR_NAME);
     private static final File OLD_WAYPOINTS_FILE = OLD_CONFIG_DIR.resolve(Constants.WAYPOINTS_FILE_NAME).toFile();
-    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "Blackaddons-WaypointSave");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public static class WaypointData {
         public List<Waypoint> waypoints = new ArrayList<>();

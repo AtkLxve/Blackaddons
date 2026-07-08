@@ -63,7 +63,11 @@ public class ActionManager {
         return chatActions;
     }
 
-    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "Blackaddons-ActionSave");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public void save() {
         final List<ConfigManager.ChatAction> toSave = new ArrayList<>(chatActions);
