@@ -68,7 +68,7 @@ public final class Constants {
         public static final String BOT_API_SOLO_CLEAR = "/v1/solo_clear";
         public static final String BOT_API_SOLO_LEADERBOARD = "/v1/solo_leaderboard";
         public static final String BOT_API_AUTH_VERIFY = "/v1/auth/verify";
-        
+
         // GitHub
         public static final String GITHUB_RELEASES_URL = "https://github.com/BlackAddons/mod/releases";
         public static final String GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/BlackAddons/mod/releases/latest";
@@ -152,4 +152,11 @@ public final class Constants {
         // Inventory Layout
         public static final int ENDER_CHEST_PAGE_SLOTS = 45;
         public static final int BACKPACK_PAGE_SLOTS = 54;
+
+        // Locations
+        public static final String FILTER_ANY = "Any";
+        public static final String DUNGEON_YES = "In Dungeon";
+        public static final String DUNGEON_NO = "Not in Dungeon";
+        public static final String BOSS_YES = "In Boss";
+        public static final String BOSS_NO = "Not in Boss";
 }

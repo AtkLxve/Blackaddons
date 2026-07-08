@@ -22,13 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 
-public class WaypointGroupEditScreen extends BaseScreen {
+import static org.blackum.blackaddons.common.constants.Constants.FILTER_ANY;
+import static org.blackum.blackaddons.common.constants.Constants.DUNGEON_YES;
+import static org.blackum.blackaddons.common.constants.Constants.DUNGEON_NO;
+import static org.blackum.blackaddons.common.constants.Constants.BOSS_YES;
+import static org.blackum.blackaddons.common.constants.Constants.BOSS_NO;
 
-    private static final String FILTER_ANY = "Any";
-    private static final String DUNGEON_YES = "In Dungeon";
-    private static final String DUNGEON_NO = "Not in Dungeon";
-    private static final String BOSS_YES = "In Boss";
-    private static final String BOSS_NO = "Not in Boss";
+public class WaypointGroupEditScreen extends BaseScreen {
 
     private final WaypointGroup group;
     private final Runnable onSave;

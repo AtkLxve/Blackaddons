@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.screen.main.tabs;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.screen.overlay.OverlayEditScreen;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.feature.cheat.Freecam;
@@ -21,7 +22,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import org.blackum.blackaddons.feature.cheat.AutoBM;
 import org.blackum.blackaddons.feature.cheat.AutoSS;
 
+import static org.blackum.blackaddons.common.constants.Constants.FILTER_ANY;
+import static org.blackum.blackaddons.common.constants.Constants.DUNGEON_YES;
+import static org.blackum.blackaddons.common.constants.Constants.DUNGEON_NO;
+import static org.blackum.blackaddons.common.constants.Constants.BOSS_YES;
+import static org.blackum.blackaddons.common.constants.Constants.BOSS_NO;
+
 public class CheatsTabController extends SimpleTabController {
+
     private ResizableCard autoTntCard;
     private ResizableCard autoSSCard;
     private ResizableCard rotationCard;
@@ -382,7 +390,6 @@ public class CheatsTabController extends SimpleTabController {
         autoSSCard.updateLayout();
         return autoSSCard;
     }
-
 
     private ResizableCard createAutoBM(int x, int y) {
         autoBMCard = screen.createResizableCard("autoBM", x, y, 300, 310, "Auto Ballista Mechanic");
@@ -852,7 +859,7 @@ public class CheatsTabController extends SimpleTabController {
                 "Item name (example: terminator, hyperion)",
                 null,
                 () -> ConfigManager.save());
-                
+
         ToggleSwitch itemFilterToggle = new ToggleSwitch(0, 0, 260,
                 "Item Filter",
                 "Only click when holding a specific item",
@@ -861,10 +868,10 @@ public class CheatsTabController extends SimpleTabController {
                     itemFilterField.setVisible(value);
                     ConfigManager.save();
                 });
-                
+
         listView.addItem(itemFilterToggle);
         listView.addItem(itemFilterField);
-        
+
         itemFilterField.setVisible(ConfigManager.data.autoClickerConfig.itemFilterEnabled);
 
         List<String> mobSuggestions = BuiltInRegistries.ENTITY_TYPE
@@ -894,7 +901,8 @@ public class CheatsTabController extends SimpleTabController {
                 List.of("Mob", "Block"),
                 mode -> {
                     ConfigManager.data.autoClickerConfig.lookAtMode = mode.equals("Block") ? "block" : "mob";
-                    lookAtTargetField.setPlaceholder(mode.equals("Block") ? "example: minecraft:stone" : "example: minecraft:zombie");
+                    lookAtTargetField.setPlaceholder(
+                            mode.equals("Block") ? "example: minecraft:stone" : "example: minecraft:zombie");
                     lookAtTargetField.refreshItems();
                     ConfigManager.save();
                 });
@@ -936,6 +944,111 @@ public class CheatsTabController extends SimpleTabController {
 
         lookAtDistanceSlider.setVisible(ConfigManager.data.autoClickerConfig.lookAtFilterEnabled);
         listView.addItem(lookAtDistanceSlider);
+
+        boolean locationEnabled = ConfigManager.data.autoClickerConfig.locationConditionsEnabled;
+        boolean isF7orM7 = "F7".equals(ConfigManager.data.autoClickerConfig.floorFilter)
+                || "M7".equals(ConfigManager.data.autoClickerConfig.floorFilter);
+
+        SettingWrapper phaseWrapper = new SettingWrapper(0, 0, 260, "F7/M7 Phase",
+                "Only click during a specific F7 or M7 boss phase", null);
+        List<String> phaseOptions = new ArrayList<>();
+        phaseOptions.add(FILTER_ANY);
+        for (int i = 1; i <= 5; i++)
+            phaseOptions.add("Phase " + i);
+        Dropdown phaseDropdown = new Dropdown(0, 0, 260, "Phase", phaseOptions, selected -> {
+            if (FILTER_ANY.equals(selected))
+                ConfigManager.data.autoClickerConfig.phaseFilter = null;
+            else {
+                try {
+                    ConfigManager.data.autoClickerConfig.phaseFilter = Integer.parseInt(selected.replace("Phase ", ""));
+                } catch (NumberFormatException ignored) {
+                    ConfigManager.data.autoClickerConfig.phaseFilter = null;
+                }
+            }
+            ConfigManager.save();
+        });
+        String currentPhase = (ConfigManager.data.autoClickerConfig.phaseFilter != null
+                && ConfigManager.data.autoClickerConfig.phaseFilter > 0)
+                        ? "Phase " + ConfigManager.data.autoClickerConfig.phaseFilter
+                        : FILTER_ANY;
+        phaseDropdown.setSelectedOption(currentPhase);
+        phaseWrapper.setControl(phaseDropdown);
+        phaseWrapper.setVisible(locationEnabled && isF7orM7);
+
+        List<String> dungeonOptions = List.of(FILTER_ANY, DUNGEON_YES, DUNGEON_NO);
+        Dropdown dungeonDropdown = new Dropdown(0, 0, 260, "In Dungeon", dungeonOptions, selected -> {
+            if (DUNGEON_YES.equals(selected))
+                ConfigManager.data.autoClickerConfig.inDungeonFilter = true;
+            else if (DUNGEON_NO.equals(selected))
+                ConfigManager.data.autoClickerConfig.inDungeonFilter = false;
+            else
+                ConfigManager.data.autoClickerConfig.inDungeonFilter = null;
+            ConfigManager.save();
+        });
+        String currentDungeon = ConfigManager.data.autoClickerConfig.inDungeonFilter == null ? FILTER_ANY
+                : (ConfigManager.data.autoClickerConfig.inDungeonFilter ? DUNGEON_YES : DUNGEON_NO);
+        dungeonDropdown.setSelectedOption(currentDungeon);
+        SettingWrapper dungeonWrapper = new SettingWrapper(0, 0, 260, "In Dungeon",
+                "Only click when in / not in a dungeon", dungeonDropdown);
+        dungeonWrapper.setVisible(locationEnabled);
+
+        List<String> floorOptions = new ArrayList<>();
+        floorOptions.add(FILTER_ANY);
+        for (DungeonFloor floor : DungeonFloor.values()) {
+            floorOptions.add(floor.getDisplayName());
+        }
+        Dropdown floorDropdown = new Dropdown(0, 0, 260, "Dungeon Floor", floorOptions, selected -> {
+            ConfigManager.data.autoClickerConfig.floorFilter = FILTER_ANY.equals(selected) ? null : selected;
+            boolean f7m7 = "F7".equals(ConfigManager.data.autoClickerConfig.floorFilter)
+                    || "M7".equals(ConfigManager.data.autoClickerConfig.floorFilter);
+            phaseWrapper.setVisible(ConfigManager.data.autoClickerConfig.locationConditionsEnabled && f7m7);
+            if (!f7m7)
+                ConfigManager.data.autoClickerConfig.phaseFilter = null;
+            ConfigManager.save();
+        });
+        floorDropdown.setSelectedOption(ConfigManager.data.autoClickerConfig.floorFilter != null
+                ? ConfigManager.data.autoClickerConfig.floorFilter
+                : FILTER_ANY);
+        SettingWrapper floorWrapper = new SettingWrapper(0, 0, 260, "Dungeon Floor", "Only click on this floor",
+                floorDropdown);
+        floorWrapper.setVisible(locationEnabled);
+
+        List<String> bossOptions = List.of(FILTER_ANY, BOSS_YES, BOSS_NO);
+        Dropdown bossDropdown = new Dropdown(0, 0, 260, "Boss Room", bossOptions, selected -> {
+            if (BOSS_YES.equals(selected))
+                ConfigManager.data.autoClickerConfig.inBossFilter = true;
+            else if (BOSS_NO.equals(selected))
+                ConfigManager.data.autoClickerConfig.inBossFilter = false;
+            else
+                ConfigManager.data.autoClickerConfig.inBossFilter = null;
+            ConfigManager.save();
+        });
+        String currentBoss = ConfigManager.data.autoClickerConfig.inBossFilter == null ? FILTER_ANY
+                : (ConfigManager.data.autoClickerConfig.inBossFilter ? BOSS_YES : BOSS_NO);
+        bossDropdown.setSelectedOption(currentBoss);
+        SettingWrapper bossWrapper = new SettingWrapper(0, 0, 260, "Boss Room", "Only click in / not in boss room",
+                bossDropdown);
+        bossWrapper.setVisible(locationEnabled);
+
+        ToggleSwitch locationConditionsToggle = new ToggleSwitch(0, 0, 260,
+                "Location Conditions",
+                "Only click in specific locations",
+                ConfigManager.data.autoClickerConfig.locationConditionsEnabled, value -> {
+                    ConfigManager.data.autoClickerConfig.locationConditionsEnabled = value;
+                    dungeonWrapper.setVisible(value);
+                    floorWrapper.setVisible(value);
+                    bossWrapper.setVisible(value);
+                    boolean f7m7 = "F7".equals(ConfigManager.data.autoClickerConfig.floorFilter)
+                            || "M7".equals(ConfigManager.data.autoClickerConfig.floorFilter);
+                    phaseWrapper.setVisible(value && f7m7);
+                    ConfigManager.save();
+                });
+
+        listView.addItem(locationConditionsToggle);
+        listView.addItem(dungeonWrapper);
+        listView.addItem(floorWrapper);
+        listView.addItem(bossWrapper);
+        listView.addItem(phaseWrapper);
 
         autoClickerCard.addChild(listView);
         autoClickerCard.updateLayout();
