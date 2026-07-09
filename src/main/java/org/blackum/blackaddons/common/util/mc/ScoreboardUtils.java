@@ -55,7 +55,7 @@ public class ScoreboardUtils {
                     PlayerTeam team = scoreboard.getPlayersTeam(score.owner());
                     Component prefix = team != null ? team.getPlayerPrefix() : Component.empty();
                     Component suffix = team != null ? team.getPlayerSuffix() : Component.empty();
-                    return prefix.getString() + score.owner() + suffix.getString();
+                    return prefix.getString() + suffix.getString();
                 })
                 .collect(Collectors.toList());
     }
@@ -69,7 +69,7 @@ public class ScoreboardUtils {
     private static String cleanScoreboard(String text) {
         if (text == null)
             return "";
-        String clean = text.replaceAll("(?i)§[0-9a-fk-or]", "");
+        String clean = text.replaceAll("§.", "");
         return clean.trim();
     }
 }

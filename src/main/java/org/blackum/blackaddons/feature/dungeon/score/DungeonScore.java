@@ -1,21 +1,25 @@
 package org.blackum.blackaddons.feature.dungeon.score;
 
+import net.minecraft.client.Minecraft;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.minecraft.client.Minecraft;
-import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.feature.profile.ProfileStateManager;
-import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.util.mc.ScoreboardUtils;
 import org.blackum.blackaddons.common.util.mc.TabListUtils;
+import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 
 public class DungeonScore {
     private static final Logger LOGGER = LoggerFactory.getLogger("BlackAddons-DungeonScore");
@@ -26,6 +30,8 @@ public class DungeonScore {
     private static final Pattern PUZZLE_COUNT_PATTERN = Pattern.compile("(?i)Puzzles:\\s*\\((\\d+)\\)");
     private static final Pattern CRYPTS_PATTERN = Pattern.compile("(?i)Crypts:\\s*(\\d+)");
     private static final Pattern COMPLETED_ROOMS_PATTERN = Pattern.compile("(?i)Completed Rooms:\\s*(\\d+)");
+    private static final Pattern FOOTER_SCORE_PATTERN = Pattern.compile("(?i)Score:\\s*(\\d+)");
+    private static final Pattern SCOREBOARD_CLEARED_PATTERN = Pattern.compile("(?i)Cleared:\\s*\\d+%\\s*\\((\\d+)\\)");
 
     private static FloorRequirement floorRequirement = FloorRequirement.NONE;
     private static String currentFloor = "";
@@ -54,7 +60,27 @@ public class DungeonScore {
             puzzleCount = getPuzzleCountFromTab();
         }
 
-        score = calculateScore();
+        int extractedScore = getExtractedScore();
+        if (extractedScore >= 0) {
+            score = extractedScore;
+        } else {
+            score = calculateScore();
+        }
+    }
+
+    private static int getExtractedScore() {
+        List<String> footer = TabListUtils.getFooterLines();
+        for (String line : footer) {
+            Matcher m = FOOTER_SCORE_PATTERN.matcher(line);
+            if (m.find()) {
+                try {
+                    return Integer.parseInt(m.group(1));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+
+        return -1;
     }
 
     private static void sendMessage(String msg) {
@@ -230,11 +256,15 @@ public class DungeonScore {
         List<String> tab = TabListUtils.getTabListLines();
         for (String line : tab) {
             String cleanLine = line.trim().replaceAll("(?i)§[0-9a-fk-or]", "");
-            if ((cleanLine.toLowerCase().contains("secrets found") || cleanLine.toLowerCase().contains("secrets:")) && cleanLine.contains("%")) {
+            if ((cleanLine.toLowerCase().contains("secrets found") || cleanLine.toLowerCase().contains("secrets:"))
+                    && cleanLine.contains("%")) {
                 Pattern percentPattern = Pattern.compile("(\\d+(?:\\.\\d+)?)%");
                 Matcher pm = percentPattern.matcher(cleanLine);
                 if (pm.find()) {
-                    try { return Double.parseDouble(pm.group(1)); } catch (Exception ignored) {}
+                    try {
+                        return Double.parseDouble(pm.group(1));
+                    } catch (Exception ignored) {
+                    }
                 }
             }
         }
@@ -256,9 +286,7 @@ public class DungeonScore {
         for (String line : tab) {
             String cleanLine = line.trim();
             if (cleanLine.contains("Quiz")) {
-                return cleanLine.contains("\u2714") || cleanLine.contains("\u2713") ||
-                        cleanLine.contains("\u2705") || cleanLine.contains("✔") ||
-                        cleanLine.contains("\u2726") || cleanLine.contains("✦");
+                return true;
             }
         }
         return false;
@@ -279,7 +307,7 @@ public class DungeonScore {
                     cleanLine.contains("Puzzles: ("))
                 continue;
 
-            if (cleanLine.contains("Quiz") && (cleanLine.contains("\u2726") || cleanLine.contains("✦"))) {
+            if (cleanLine.contains("Quiz")) {
                 completed++;
                 continue;
             }
@@ -355,8 +383,8 @@ public class DungeonScore {
         return score;
     }
 
-    public static java.util.Map<String, Integer> getScoreComponents() {
-        java.util.Map<String, Integer> out = new java.util.LinkedHashMap<>();
+    public static Map<String, Integer> getScoreComponents() {
+        Map<String, Integer> out = new LinkedHashMap<>();
         if (!dungeonStarted) {
             return out;
         }
