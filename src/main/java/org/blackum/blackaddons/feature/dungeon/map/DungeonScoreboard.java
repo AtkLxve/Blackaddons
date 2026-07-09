@@ -231,6 +231,8 @@ public class DungeonScoreboard {
         secretsRoom = null;
         secretsCounterInitialized = false;
         lastSecretsFound = 0;
+        DungeonMap.reset();
+        DungeonWorldScanner.reset();
     }
 
     public static void onChatMessage(Component message) {
