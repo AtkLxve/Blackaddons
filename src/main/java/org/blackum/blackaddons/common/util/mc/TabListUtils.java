@@ -71,7 +71,7 @@ public class TabListUtils {
         PlayerTabOverlay tabList = mc.gui.getTabList();
         if (tabList == null) return Collections.emptyList();
 
-        Component footer = ((PlayerTabOverlayAccessor) tabList).getBlackaddonsFooter();
+        Component footer = ((PlayerTabOverlayAccessor) tabList).getFooter();
         if (footer == null) return Collections.emptyList();
 
         String footerString = footer.getString();

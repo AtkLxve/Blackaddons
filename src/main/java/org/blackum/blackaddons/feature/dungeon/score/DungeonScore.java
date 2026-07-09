@@ -11,9 +11,6 @@ import java.util.regex.Pattern;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.model.DungeonFloor;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
@@ -22,8 +19,6 @@ import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 
 public class DungeonScore {
-    private static final Logger LOGGER = LoggerFactory.getLogger("BlackAddons-DungeonScore");
-
     private static final Pattern SECRETS_PATTERN = Pattern
             .compile("(?i)Secrets (?:Found|):?\\s*(\\d+(?:\\.\\d+)?)(?:%|)");
     private static final Pattern PUZZLES_PATTERN = Pattern.compile("(?i).+?:\\s*\\[(.)\\]");

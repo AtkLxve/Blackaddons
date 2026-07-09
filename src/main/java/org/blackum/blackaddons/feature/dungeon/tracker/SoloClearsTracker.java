@@ -68,10 +68,6 @@ public class SoloClearsTracker {
         if (dungeonEnterTick < 0) {
             dungeonEnterTick = ticks;
             dungeonEnterClock = System.currentTimeMillis();
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.player.sendSystemMessage(Component.literal("§d[SoloClears Debug] Dungeon start detected"));
-            }
         }
 
         if (!lastLocation.equals(currentLocation)) {
@@ -141,17 +137,6 @@ public class SoloClearsTracker {
             finalTime = chatTime;
         }
 
-        if (ticks % 100 == 0) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.player.sendSystemMessage(Component.literal(
-                        "§d[SoloClears Debug] Floor: " + floorName +
-                                " | isSolo: " + isSolo + " (Stored: " + isSoloThisRun + ")" +
-                                " | Time: " + finalTime +
-                                " | Score: " + finalScore +
-                                " | runRecorded: " + runRecorded));
-            }
-        }
 
         boolean mimicKilled = DungeonScore.isMimicKilled() || stats.mimicKilled;
         boolean princeDefeated = DungeonScore.isPrinceKilled() || stats.princeKilled || princeKilledThisRun;
@@ -314,10 +299,6 @@ public class SoloClearsTracker {
         if (scoreMatcher.find()) {
             try {
                 chatScore = Integer.parseInt(scoreMatcher.group(1));
-                Minecraft mc = Minecraft.getInstance();
-                if (mc.player != null) {
-                    mc.player.sendSystemMessage(Component.literal("§d[SoloClears Debug] Chat score: " + chatScore));
-                }
             } catch (Exception ignored) {
             }
         }
@@ -325,10 +306,6 @@ public class SoloClearsTracker {
         Matcher timeMatcher = CHAT_TIME_PATTERN.matcher(cleanText);
         if (timeMatcher.find()) {
             chatTime = timeMatcher.group(1).trim();
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                mc.player.sendSystemMessage(Component.literal("§d[SoloClears Debug] Chat time: " + chatTime));
-            }
         }
     }
 

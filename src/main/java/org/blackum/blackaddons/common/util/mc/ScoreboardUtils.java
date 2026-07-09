@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ScoreboardUtils {
 
@@ -57,13 +56,13 @@ public class ScoreboardUtils {
                     Component suffix = team != null ? team.getPlayerSuffix() : Component.empty();
                     return prefix.getString() + suffix.getString();
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<String> getCleanSidebarLines() {
         return getSidebarLines().stream()
                 .map(ScoreboardUtils::cleanScoreboard)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static String cleanScoreboard(String text) {

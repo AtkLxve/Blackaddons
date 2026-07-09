@@ -26,6 +26,8 @@ public class CommandRegistry {
                 cmd.then(TestCommands.node());
                 if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
                     cmd.then(ProfileCommands.dailyNode());
+                    cmd.then(DungeonCommands.scdebugNode());
+                    cmd.then(DungeonCommands.tabdebugNode());
                 }
                 cmd.then(ProfileCommands.pvNode());
                 cmd.then(ChatCommands.ircNode());
@@ -37,8 +39,6 @@ public class CommandRegistry {
                 cmd.then(DungeonCommands.leaderboardNode());
                 cmd.then(MiscCommands.hudNode());
                 cmd.then(MiscCommands.pingNode());
-                cmd.then(DungeonCommands.scdebugNode());
-                cmd.then(DungeonCommands.tabdebugNode());
 
                 dispatcher.register(cmd);
             }
