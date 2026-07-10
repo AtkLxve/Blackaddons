@@ -4,18 +4,17 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.blackum.blackaddons.mixin.core.PlayerTabOverlayAccessor;
 
 public class TabListUtils {
-    private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
 
     public static List<String> getTabListLines() {
         return collectLines(true);
@@ -48,7 +47,8 @@ public class TabListUtils {
             Component name = player.getTabListDisplayName();
             String label = name != null ? name.getString() : player.getProfile().name();
             if (stripColor) {
-                lines.add(STRIP_COLOR_PATTERN.matcher(label).replaceAll("").trim());
+                String clean = ChatFormatting.stripFormatting(label);
+                lines.add(clean != null ? clean.trim() : "");
             } else {
                 lines.add(label);
             }
@@ -68,7 +68,11 @@ public class TabListUtils {
         Minecraft mc = Minecraft.getInstance();
         if (mc.gui == null) return Collections.emptyList();
 
+        //? if >=26.2 {
+        /*PlayerTabOverlay tabList = mc.gui.hud.getTabList();
+        *///?} else {
         PlayerTabOverlay tabList = mc.gui.getTabList();
+        //?}
         if (tabList == null) return Collections.emptyList();
 
         Component footer = ((PlayerTabOverlayAccessor) tabList).getFooter();
@@ -81,7 +85,8 @@ public class TabListUtils {
         List<String> lines = new ArrayList<>();
         for (String s : split) {
             if (stripColor) {
-                lines.add(STRIP_COLOR_PATTERN.matcher(s).replaceAll("").trim());
+                String clean = ChatFormatting.stripFormatting(s);
+                lines.add(clean != null ? clean.trim() : "");
             } else {
                 lines.add(s);
             }

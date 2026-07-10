@@ -2,6 +2,7 @@ package org.blackum.blackaddons.feature.dungeon.tracker;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,7 +11,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
 
 import com.google.gson.JsonObject;
 
@@ -46,6 +46,7 @@ public class SoloClearsTracker {
     private static final Pattern TABLIST_TIME_PATTERN = Pattern.compile("(?i)\\bTime:\\s*([0-9][0-9msh:\\s]*s?)");
     private static final Pattern CHAT_SCORE_PATTERN = Pattern.compile("(?i)Team Score:\\s*(\\d+)");
     private static final Pattern CHAT_TIME_PATTERN = Pattern.compile("(?i)Clear Time:\\s*([0-9][0-9msh:\\s]*s?)");
+    private static final Pattern MIN_SEC_PATTERN = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?");
 
     public static void tick() {
         ticks++;
@@ -81,7 +82,9 @@ public class SoloClearsTracker {
             DungeonScore.reset();
         }
 
-        DungeonScore.update();
+        List<String> tabLinesOnly = TabListUtils.getTabListLines();
+        List<String> footerLines = TabListUtils.getFooterLines();
+        DungeonScore.update(tabLinesOnly, footerLines);
         if (runRecorded)
             return;
 
@@ -94,8 +97,8 @@ public class SoloClearsTracker {
             return;
 
         List<String> scoreboardLines = ScoreboardUtils.getCleanSidebarLines();
-        List<String> tabListLines = new ArrayList<>(TabListUtils.getTabListLines());
-        tabListLines.addAll(TabListUtils.getFooterLines());
+        List<String> tabListLines = new ArrayList<>(tabLinesOnly);
+        tabListLines.addAll(footerLines);
 
         boolean isSolo = false;
         String time = "Unknown";
@@ -161,7 +164,7 @@ public class SoloClearsTracker {
                 }
             }
 
-            final com.google.gson.JsonObject mapData = DungeonMapSerializer.serialize();
+            final JsonObject mapData = DungeonMapSerializer.serialize();
             ConfigManager.SoloClearInfo info = new ConfigManager.SoloClearInfo(floorName, finalTime, stats.secretsFound,
                     stats.completedPuzzles, princeDefeated, mimicKilled, mapData);
             if (floorName.equals("M7")) {
@@ -241,21 +244,21 @@ public class SoloClearsTracker {
             return "00:00";
         if (raw.matches("\\d+:\\d+.*"))
             return raw;
-        Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(raw);
-        if (m.find()) {
-            int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
-            int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
-            return String.format("%02d:%02d", mins, secs);
+            Matcher m = MIN_SEC_PATTERN.matcher(raw);
+            if (m.find()) {
+                int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
+                int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
+                return String.format("%02d:%02d", mins, secs);
+            }
+            return raw;
         }
-        return raw;
-    }
-
-    private static int parseTimeToSeconds(String timeStr) {
-        if (timeStr == null || timeStr.trim().isEmpty() || timeStr.equals("Unknown"))
-            return Integer.MAX_VALUE;
-        try {
-            if (timeStr.contains("m") || timeStr.contains("s")) {
-                Matcher m = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?").matcher(timeStr);
+    
+        private static int parseTimeToSeconds(String timeStr) {
+            if (timeStr == null || timeStr.trim().isEmpty() || timeStr.equals("Unknown"))
+                return Integer.MAX_VALUE;
+            try {
+                if (timeStr.contains("m") || timeStr.contains("s")) {
+                    Matcher m = MIN_SEC_PATTERN.matcher(timeStr);
                 if (m.find()) {
                     int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
                     int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
@@ -287,7 +290,9 @@ public class SoloClearsTracker {
     }
 
     public static void onChatMessage(Component message) {
-        String cleanText = message.getString().replaceAll("§.", "").trim();
+        String cleanText = ChatFormatting.stripFormatting(message.getString());
+        if (cleanText == null) return;
+        cleanText = cleanText.trim();
         if (cleanText.contains("A Prince falls. +1 Bonus Score")) {
             princeKilledThisRun = true;
             DungeonScore.onPrinceKill();

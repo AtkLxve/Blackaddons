@@ -18,7 +18,6 @@ import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 
 public class DungeonScore {
-    private static final Logger LOGGER = LoggerFactory.getLogger("BlackAddons-DungeonScore");
     private static final Pattern SECRETS_PATTERN = Pattern
             .compile("(?i)Secrets (?:Found|):?\\s*(\\d+(?:\\.\\d+)?)(?:%|)");
     private static final Pattern PUZZLES_PATTERN = Pattern.compile("(?i).+?:\\s*\\[(.)\\]");
@@ -27,6 +26,10 @@ public class DungeonScore {
     private static final Pattern COMPLETED_ROOMS_PATTERN = Pattern.compile("(?i)Completed Rooms:\\s*(\\d+)");
     private static final Pattern FOOTER_SCORE_PATTERN = Pattern.compile("(?i)Score:\\s*(\\d+)");
     private static final Pattern SCOREBOARD_CLEARED_PATTERN = Pattern.compile("(?i)Cleared:\\s*\\d+%\\s*\\((\\d+)\\)");
+    private static final Pattern PERCENT_PATTERN = Pattern.compile("(\\d+(?:\\.\\d+)?)%");
+
+    private static List<String> cachedTabLines = new ArrayList<>();
+    private static List<String> cachedFooterLines = new ArrayList<>();
 
     private static FloorRequirement floorRequirement = FloorRequirement.NONE;
     private static String currentFloor = "";
@@ -41,11 +44,14 @@ public class DungeonScore {
     private static int puzzleCount;
     private static int score;
 
-    public static void update() {
+    public static void update(List<String> tabListLines, List<String> footerLines) {
         if (!LocationUtils.inDungeons()) {
             reset();
             return;
         }
+
+        cachedTabLines = tabListLines;
+        cachedFooterLines = footerLines;
 
         if (!dungeonStarted) {
             onDungeonStart();
@@ -64,8 +70,7 @@ public class DungeonScore {
     }
 
     private static int getExtractedScore() {
-        List<String> footer = TabListUtils.getFooterLines();
-        for (String line : footer) {
+        for (String line : cachedFooterLines) {
             Matcher m = FOOTER_SCORE_PATTERN.matcher(line);
             if (m.find()) {
                 try {
@@ -97,6 +102,8 @@ public class DungeonScore {
         startingTime = 0L;
         puzzleCount = 0;
         score = 0;
+        cachedTabLines = new ArrayList<>();
+        cachedFooterLines = new ArrayList<>();
     }
 
     private static void onDungeonStart() {
@@ -206,8 +213,7 @@ public class DungeonScore {
     }
 
     private static int getCompletedRooms() {
-        List<String> tab = TabListUtils.getTabListLines();
-        for (String line : tab) {
+        for (String line : cachedTabLines) {
             Matcher m = COMPLETED_ROOMS_PATTERN.matcher(line);
             if (m.find())
                 return Integer.parseInt(m.group(1));
@@ -238,8 +244,7 @@ public class DungeonScore {
     }
 
     private static int getCrypts() {
-        List<String> tab = TabListUtils.getTabListLines();
-        for (String line : tab) {
+        for (String line : cachedTabLines) {
             Matcher m = CRYPTS_PATTERN.matcher(line);
             if (m.find())
                 return Integer.parseInt(m.group(1));
@@ -248,13 +253,11 @@ public class DungeonScore {
     }
 
     private static double getSecretsPercentage() {
-        List<String> tab = TabListUtils.getTabListLines();
-        for (String line : tab) {
-            String cleanLine = line.trim().replaceAll("(?i)§[0-9a-fk-or]", "");
+        for (String line : cachedTabLines) {
+            String cleanLine = line.trim();
             if ((cleanLine.toLowerCase().contains("secrets found") || cleanLine.toLowerCase().contains("secrets:"))
                     && cleanLine.contains("%")) {
-                Pattern percentPattern = Pattern.compile("(\\d+(?:\\.\\d+)?)%");
-                Matcher pm = percentPattern.matcher(cleanLine);
+                Matcher pm = PERCENT_PATTERN.matcher(cleanLine);
                 if (pm.find()) {
                     try {
                         return Double.parseDouble(pm.group(1));
@@ -267,8 +270,7 @@ public class DungeonScore {
     }
 
     private static int getPuzzleCountFromTab() {
-        List<String> tab = TabListUtils.getTabListLines();
-        for (String line : tab) {
+        for (String line : cachedTabLines) {
             Matcher m = PUZZLE_COUNT_PATTERN.matcher(line);
             if (m.find())
                 return Integer.parseInt(m.group(1));
@@ -277,8 +279,7 @@ public class DungeonScore {
     }
 
     private static boolean isQuizCompleted() {
-        List<String> tab = TabListUtils.getTabListLines();
-        for (String line : tab) {
+        for (String line : cachedTabLines) {
             String cleanLine = line.trim();
             if (cleanLine.contains("Quiz")) {
                 return true;
@@ -289,9 +290,7 @@ public class DungeonScore {
 
     private static int getPuzzlePenalty() {
         int completed = 0;
-        List<String> tab = TabListUtils.getTabListLines();
-
-        for (String line : tab) {
+        for (String line : cachedTabLines) {
             String cleanLine = line.trim();
             if (cleanLine.isEmpty())
                 continue;

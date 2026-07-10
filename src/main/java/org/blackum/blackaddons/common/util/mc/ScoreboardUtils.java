@@ -2,6 +2,7 @@ package org.blackum.blackaddons.common.util.mc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.DisplaySlot;
@@ -68,7 +69,7 @@ public class ScoreboardUtils {
     private static String cleanScoreboard(String text) {
         if (text == null)
             return "";
-        String clean = text.replaceAll("§.", "");
-        return clean.trim();
+        String clean = ChatFormatting.stripFormatting(text);
+        return clean != null ? clean.trim() : "";
     }
 }
