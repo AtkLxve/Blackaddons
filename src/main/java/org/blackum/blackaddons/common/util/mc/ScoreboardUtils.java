@@ -2,6 +2,7 @@ package org.blackum.blackaddons.common.util.mc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.DisplaySlot;
@@ -15,7 +16,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ScoreboardUtils {
 
@@ -57,19 +57,19 @@ public class ScoreboardUtils {
                     Component name = PlayerTeam.formatNameForTeam(team, ownerName);
                     return name.getString();
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<String> getCleanSidebarLines() {
         return getSidebarLines().stream()
                 .map(ScoreboardUtils::cleanScoreboard)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private static String cleanScoreboard(String text) {
         if (text == null)
             return "";
-        String clean = text.replaceAll("(?i)§[0-9a-fk-or]", "");
-        return clean.trim();
+        String clean = ChatFormatting.stripFormatting(text);
+        return clean != null ? clean.trim() : "";
     }
 }

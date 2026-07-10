@@ -14,6 +14,7 @@
     "gui.AnvilScreenMixin",
     "gui.AbstractSignEditScreenMixin",
     "core.LanguageManagerAccessor",
+    "core.PlayerTabOverlayAccessor",
     "core.KeyMappingMixin",
     "core.InventoryAccessor",
     "core.ClientPacketListenerAccessor",

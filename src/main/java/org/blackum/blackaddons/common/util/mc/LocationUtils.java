@@ -33,6 +33,12 @@ public class LocationUtils {
             if (line.contains("⏣")) {
                 return line.replace("⏣", "").trim();
             }
+            if (line.contains("\ue067")) {
+                return line.replace("\ue067", "").trim();
+            }
+            if (line.contains("(F") || line.contains("(M") || line.contains("(E)") || line.contains("Catacombs")) {
+                return line.replace("\ue067", "").replace("⏣", "").trim();
+            }
         }
         return "Unknown";
     }
