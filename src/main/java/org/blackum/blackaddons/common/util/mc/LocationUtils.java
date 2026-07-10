@@ -13,8 +13,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class LocationUtils {
-    private static final int COLOR_WHITE = 0xFFFFFFFF;
-    private static final int LINE_HEIGHT = 10;
     private static final int COLOR_BOSS = 0xFFFFFFFF;
     private static final int[] F7_PHASE_COLORS = {0xFF5555, 0xFFAA33, 0xFFEE55, 0x55CC55, 0x33AADD};
     public static boolean debugDungeonMode = false;

@@ -190,7 +190,7 @@ public class PartyFinderManager {
             }));
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0]))
                 .thenAccept(v -> {
                     String memberStats = String.join(", ", futures.stream().map(f -> f.join()).toList());
                     String note = "Members: " + memberStats;

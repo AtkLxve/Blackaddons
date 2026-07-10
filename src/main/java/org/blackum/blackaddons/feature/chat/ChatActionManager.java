@@ -11,6 +11,7 @@ import org.blackum.blackaddons.gui.notification.NotificationManager;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.blackum.blackaddons.common.util.format.FormatUtils;
+import java.util.regex.Matcher;
 
 public class ChatActionManager {
     private static ChatActionManager instance;
@@ -50,7 +51,7 @@ public class ChatActionManager {
             if (trigger.isRegex) {
                 try {
                     Pattern pattern = Pattern.compile(trigger.pattern);
-                    java.util.regex.Matcher matcher = pattern.matcher(rawText);
+                    Matcher matcher = pattern.matcher(rawText);
                     if (matcher.find()) {
                         matched = true;
                         groups = new String[matcher.groupCount() + 1];

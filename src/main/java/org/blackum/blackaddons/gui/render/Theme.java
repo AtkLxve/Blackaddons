@@ -3,10 +3,7 @@ package org.blackum.blackaddons.gui.render;
 public class Theme {
 
     // Colors
-    public static int BACKGROUND = 0xAA000000;
-    public static int SURFACE = 0xCC1A1A1A;
     public static int SURFACE_LIGHT = 0xCC2D2D2D;
-    public static int SURFACE_PRESSED = 0xCC151515;
     public static final int DEFAULT_ACCENT = 0xFF00A8FF;
     public static int ACCENT = DEFAULT_ACCENT;
     public static int ACCENT_HOVER = 0xFF0090D9;
@@ -37,7 +34,6 @@ public class Theme {
     public static int GLASS_FILL = 0x801A1A1A;
     public static int GLASS_BORDER = 0x40FFFFFF;
     public static int GLASS_HIGHLIGHT = 0x22FFFFFF;
-    public static int SHADOW = 0x44000000;
     public static int SCROLLBAR_BG = 0x80000000;
     public static int SCROLLBAR_THUMB = 0xFFFFFFFF;
     public static int TOOLTIP_BG = 0xE0000000;
@@ -51,8 +47,6 @@ public class Theme {
     public static final int ANIM_HOVER = 200;
     public static final int ANIM_CLICK = 100;
     public static final int ANIM_FOCUS = 150;
-    public static final int ANIM_DIALOG = 300;
-    public static final int ANIM_SCROLL = 250;
     public static final int ANIM_NORMAL = 200;
 
     public static final int BUTTON_HEIGHT = 36;
@@ -61,9 +55,6 @@ public class Theme {
     public static final int RADIO_SIZE = 18;
     public static final int SLIDER_HEIGHT = 6;
     public static final int SLIDER_THUMB_SIZE = 16;
-    public static final int SCROLLBAR_WIDTH = 8;
-    public static final int DROPDOWN_WIDTH = 200;
-    public static final int COLOR_PICKER_HEIGHT = 210;
     public static final int TOGGLE_HEIGHT = 20;
 
     public static final float ITEM_GRID_SCALE = 2.0f;
@@ -75,7 +66,6 @@ public class Theme {
     public static final int PADDING_MEDIUM = 12;
     public static final int PADDING_LARGE = 16;
     public static final int PADDING = PADDING_MEDIUM; // TODO: replace all paddings with this
-    public static final int MARGIN = 8;
 
     public static final int GRID_GAP = 20;
     public static final int GRID_COLUMNS = 2;
@@ -83,7 +73,6 @@ public class Theme {
 
     public static final int CARD_HEIGHT_SMALL = 100;
     public static final int CARD_HEIGHT_MEDIUM = 150;
-    public static final int CARD_HEIGHT_LARGE = 200;
 
     public static final int SPACING_SMALL = 8;
     public static final int SPACING_NORMAL = 20;

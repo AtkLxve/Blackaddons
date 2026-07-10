@@ -14,9 +14,10 @@ import org.blackum.blackaddons.gui.render.Theme;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.IntConsumer;
+import org.blackum.blackaddons.common.constants.Constants;
 
 public class KeybindButton extends Widget {
-    private static final int MOUSE_BIND_OFFSET = 1000;
+
     private final String label;
     private final IntConsumer onChange;
     private int keyCode;
@@ -120,14 +121,14 @@ public class KeybindButton extends Widget {
     }
 
     private static int encodeMouseButton(int button) {
-        return MOUSE_BIND_OFFSET + button;
+        return Constants.MOUSE_BIND_OFFSET + button;
     }
 
     private static boolean isMouseButton(int keyCode) {
-        return keyCode >= MOUSE_BIND_OFFSET;
+        return keyCode >= Constants.MOUSE_BIND_OFFSET;
     }
 
     private static int decodeMouseButton(int keyCode) {
-        return keyCode - MOUSE_BIND_OFFSET;
+        return keyCode - Constants.MOUSE_BIND_OFFSET;
     }
 }

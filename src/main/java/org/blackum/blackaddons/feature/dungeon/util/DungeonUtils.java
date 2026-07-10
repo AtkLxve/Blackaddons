@@ -1,5 +1,10 @@
 package org.blackum.blackaddons.feature.dungeon.util;
 
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.List;
+import java.util.regex.Pattern;
+
 public class DungeonUtils {
     private static final double[] CATA_XP = {
             50, 125, 235, 395, 625, 955, 1425, 2095, 3045, 4385,
@@ -30,7 +35,7 @@ public class DungeonUtils {
         public int expectedPuzzles = 0;
         public boolean mimicKilled = false;
         public boolean princeKilled = false;
-        public java.util.List<String> completedPuzzles = new java.util.ArrayList<>();
+        public List<String> completedPuzzles = new ArrayList<>();
 
         public int calculateScore() {
             double roomCompletion = (double) completedRooms / Math.max(1, totalRooms);
@@ -46,18 +51,18 @@ public class DungeonUtils {
         }
     }
 
-    private static final java.util.regex.Pattern COMPLETED_ROOMS_PATTERN = java.util.regex.Pattern.compile("(?i)Completed Rooms:\\s*(\\d+)(?:/|\\s*out\\s*of\\s*)(\\d+)");
-    private static final java.util.regex.Pattern DEATHS_PATTERN = java.util.regex.Pattern.compile("(?i)Deaths:\\s*.*?(\\d+)");
-    private static final java.util.regex.Pattern CRYPTS_PATTERN = java.util.regex.Pattern.compile("(?i)Crypts:\\s*(\\d+)");
-    private static final java.util.regex.Pattern PUZZLES_HEADER_PATTERN = java.util.regex.Pattern.compile("(?i)Puzzles:\\s*\\((\\d+)\\)");
+    private static final Pattern COMPLETED_ROOMS_PATTERN = Pattern.compile("(?i)Completed Rooms:\\s*(\\d+)(?:/|\\s*out\\s*of\\s*)(\\d+)");
+    private static final Pattern DEATHS_PATTERN = Pattern.compile("(?i)Deaths:\\s*.*?(\\d+)");
+    private static final Pattern CRYPTS_PATTERN = Pattern.compile("(?i)Crypts:\\s*(\\d+)");
+    private static final Pattern PUZZLES_HEADER_PATTERN = Pattern.compile("(?i)Puzzles:\\s*\\((\\d+)\\)");
 
-    public static DungeonStats parseDungeonStats(java.util.List<String> tabListLines) {
+    public static DungeonStats parseDungeonStats(List<String> tabListLines) {
         DungeonStats stats = new DungeonStats();
 
         for (String line : tabListLines) {
             String cleanLine = line.trim();
             
-            java.util.regex.Matcher roomsMatcher = COMPLETED_ROOMS_PATTERN.matcher(cleanLine);
+            Matcher roomsMatcher = COMPLETED_ROOMS_PATTERN.matcher(cleanLine);
             if (roomsMatcher.find()) {
                 stats.completedRooms = Integer.parseInt(roomsMatcher.group(1));
                 stats.totalRooms = Integer.parseInt(roomsMatcher.group(2));
@@ -65,14 +70,14 @@ public class DungeonUtils {
 
             if (cleanLine.toLowerCase().contains("secrets found")) {
                 String secretsPart = cleanLine.substring(cleanLine.toLowerCase().indexOf("found") + 5).trim();
-                java.util.regex.Pattern numPattern = java.util.regex.Pattern.compile("(\\d+)");
-                java.util.regex.Matcher m = numPattern.matcher(secretsPart);
-                java.util.List<Integer> nums = new java.util.ArrayList<>();
+                Pattern numPattern = Pattern.compile("(\\d+)");
+                Matcher m = numPattern.matcher(secretsPart);
+                List<Integer> nums = new ArrayList<>();
                 while (m.find()) nums.add(Integer.parseInt(m.group(1)));
 
                 if (!nums.isEmpty()) {
                     if (secretsPart.contains("%")) {
-                        java.util.regex.Matcher pm = java.util.regex.Pattern.compile("(\\d+(?:\\.\\d+)?)%").matcher(secretsPart);
+                        Matcher pm = Pattern.compile("(\\d+(?:\\.\\d+)?)%").matcher(secretsPart);
                         if (pm.find()) {
                             stats.secretPercent = (int) Double.parseDouble(pm.group(pm.groupCount() > 0 ? 1 : 0));
                         } else {
@@ -84,17 +89,17 @@ public class DungeonUtils {
                 }
             }
 
-            java.util.regex.Matcher deathsMatcher = DEATHS_PATTERN.matcher(cleanLine);
+            Matcher deathsMatcher = DEATHS_PATTERN.matcher(cleanLine);
             if (deathsMatcher.find()) {
                 stats.deaths = Integer.parseInt(deathsMatcher.group(1));
             }
 
-            java.util.regex.Matcher cryptsMatcher = CRYPTS_PATTERN.matcher(cleanLine);
+            Matcher cryptsMatcher = CRYPTS_PATTERN.matcher(cleanLine);
             if (cryptsMatcher.find()) {
                 stats.crypts = Integer.parseInt(cryptsMatcher.group(1));
             }
 
-            java.util.regex.Matcher puzzleHeaderMatcher = PUZZLES_HEADER_PATTERN.matcher(cleanLine);
+            Matcher puzzleHeaderMatcher = PUZZLES_HEADER_PATTERN.matcher(cleanLine);
             if (puzzleHeaderMatcher.find()) {
                 stats.expectedPuzzles = Integer.parseInt(puzzleHeaderMatcher.group(1));
             }

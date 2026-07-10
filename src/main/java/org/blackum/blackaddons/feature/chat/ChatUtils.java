@@ -9,6 +9,7 @@ import org.blackum.blackaddons.common.util.accessor.AnimatedTextColorAccessor;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.mixin.core.TextColorAccessor;
 import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
+import java.util.List;
 
 public class ChatUtils {
 
@@ -49,7 +50,7 @@ public class ChatUtils {
     public record ColorStop(int rgb, float fraction) {
     }
 
-    public static MutableComponent BuildAnimatedMultiGradient(String text, java.util.List<ColorStop> stops,
+    public static MutableComponent BuildAnimatedMultiGradient(String text, List<ColorStop> stops,
             float speed) {
         if (stops == null || stops.isEmpty()) {
             return Component.literal(text);
@@ -101,7 +102,7 @@ public class ChatUtils {
         return result;
     }
 
-    public static MutableComponent BuildMultiGradient(String text, java.util.List<ColorStop> stops) {
+    public static MutableComponent BuildMultiGradient(String text, List<ColorStop> stops) {
         if (stops == null || stops.isEmpty()) {
             return Component.literal(text);
         }
@@ -163,7 +164,7 @@ public class ChatUtils {
 
     private static final MutableComponent PREFIX = Component.empty()
             .append(ChatFormatting.BLACK + "[")
-            .append(BuildAnimatedMultiGradient("BlackAddons", java.util.List.of(
+            .append(BuildAnimatedMultiGradient("BlackAddons", List.of(
                     new ColorStop(0x332640, 0.0f),
                     new ColorStop(0x623d94, 1.0f)), 0.8f))
             .append(ChatFormatting.BLACK + "] ");

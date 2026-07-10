@@ -101,7 +101,6 @@ public class Room {
     public Rotation rotation = Rotation.NONE;
 
     public Vec2i entryTile;
-    public boolean isKnown1x1;
     public boolean specialTile;
     public boolean rushRoom;
     public boolean mimic;

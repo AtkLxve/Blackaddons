@@ -14,6 +14,7 @@ import org.blackum.blackaddons.gui.render.RenderHelper;
 import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.common.util.format.FormatUtils;
 import com.google.gson.JsonObject;
+import org.blackum.blackaddons.feature.item.PetUtils;
 
 public class PetDetailWidget extends Widget {
     private SkyblockItem pet;
@@ -65,11 +66,11 @@ public class PetDetailWidget extends Widget {
                     : "UNKNOWN";
             long exp = data.has("exp") ? data.get("exp").getAsLong() : 0;
 
-            float progress = org.blackum.blackaddons.feature.item.PetUtils.getProgress(type, rarity, exp);
+            float progress = PetUtils.getProgress(type, rarity, exp);
             boolean isMax = progress >= 1.0f;
 
             if (isMax) {
-                org.blackum.blackaddons.gui.render.RenderHelper.renderChromaRect(graphics, x + padding, currentY,
+                RenderHelper.renderChromaRect(graphics, x + padding, currentY,
                         barWidth, barHeight);
             } else {
                 RenderHelper.renderRoundedRect(graphics, x + padding, currentY, (int) (barWidth * progress), barHeight,

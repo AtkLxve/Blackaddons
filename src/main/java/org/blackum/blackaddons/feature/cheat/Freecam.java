@@ -18,12 +18,14 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.HashSet;
 import java.util.Set;
+import net.minecraft.client.KeyMapping;
+import org.blackum.blackaddons.common.constants.Constants;
 
 @AutoModule(order = 105)
 public final class Freecam {
     private static final Freecam INSTANCE = new Freecam();
     private static final double MOVEMENT_MULTIPLIER = 0.5;
-    private static final int MOUSE_BIND_OFFSET = 1000;
+
 
     private final Vector3d pos = new Vector3d();
     private final Vector3d prevPos = new Vector3d();
@@ -37,12 +39,6 @@ public final class Freecam {
     private ResourceKey<Level> lastDimension;
     private int lastPlayerId = -1;
     private boolean active;
-    private boolean forward;
-    private boolean backward;
-    private boolean right;
-    private boolean left;
-    private boolean up;
-    private boolean down;
     private boolean keybindPressedLastTick;
     private boolean holdKeyActive;
 
@@ -178,7 +174,7 @@ public final class Freecam {
         pos.add(velX, velY, velZ);
     }
 
-    private boolean isKeyDown(net.minecraft.client.KeyMapping key) {
+    private boolean isKeyDown(KeyMapping key) {
         return key.isDown() && !((KeyBindingAccessor) key).blackaddons$isForced();
     }
 
@@ -215,8 +211,8 @@ public final class Freecam {
     }
 
     private boolean isBindPressed(Minecraft mc, int keyCode) {
-        if (keyCode >= MOUSE_BIND_OFFSET) {
-            return pressedMouseButtons.contains(keyCode - MOUSE_BIND_OFFSET);
+        if (keyCode >= Constants.MOUSE_BIND_OFFSET) {
+            return pressedMouseButtons.contains(keyCode - Constants.MOUSE_BIND_OFFSET);
         }
         return InputConstants.isKeyDown(mc.getWindow(), keyCode);
     }

@@ -30,6 +30,10 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.Level;
+import java.util.ArrayList;
+import java.util.List;
+import java.lang.reflect.Constructor;
+import java.util.Optional;
 
 public final class McCompat {
     private static final String[] RESOURCE_CLASSES = {
@@ -75,7 +79,7 @@ public final class McCompat {
             } catch (IllegalStateException ignored) {
             }
             try {
-                java.lang.reflect.Constructor<?> constr = type.getConstructor(String.class, String.class);
+                Constructor<?> constr = type.getConstructor(String.class, String.class);
                 return constr.newInstance(namespace, path);
             } catch (Exception ignored) {
             }
@@ -85,7 +89,7 @@ public final class McCompat {
 
     public static Object createRenderType(String name, Object renderSetup) {
         Class<?> concreteClass = renderSetup.getClass();
-        java.util.List<Class<?>> paramTypes = new java.util.ArrayList<>();
+        List<Class<?>> paramTypes = new ArrayList<>();
         paramTypes.add(concreteClass);
         Class<?> superClass = concreteClass.getSuperclass();
         while (superClass != null && superClass != Object.class) {
@@ -166,8 +170,8 @@ public final class McCompat {
         try {
             Object compositeBuilder = invokeDeclaredStaticBest(compositeStateClass,
                     new String[] { "builder", "method_23598" });
-            java.lang.reflect.Constructor<?> textureStateCtor = null;
-            for (java.lang.reflect.Constructor<?> ctor : textureStateClass.getDeclaredConstructors()) {
+            Constructor<?> textureStateCtor = null;
+            for (Constructor<?> ctor : textureStateClass.getDeclaredConstructors()) {
                 Class<?>[] params = ctor.getParameterTypes();
                 if (params.length == 2 && params[1] == boolean.class) {
                     textureStateCtor = ctor;
@@ -298,11 +302,11 @@ public final class McCompat {
         invokeBest(Minecraft.getInstance().getTextureManager(), new String[] { "release", "method_4615" }, location);
     }
 
-    public static java.util.Optional<Resource> findResource(ResourceManager manager, String namespace, String path) {
+    public static Optional<Resource> findResource(ResourceManager manager, String namespace, String path) {
         Object location = resource(namespace, path);
         Object result = invokeBest(manager, new String[] { "getResource", "method_14486" }, location);
         @SuppressWarnings("unchecked")
-        java.util.Optional<Resource> resource = (java.util.Optional<Resource>) result;
+        Optional<Resource> resource = (Optional<Resource>) result;
         return resource;
     }
 

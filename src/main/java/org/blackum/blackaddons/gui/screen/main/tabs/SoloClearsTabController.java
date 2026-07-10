@@ -8,16 +8,16 @@ import java.util.List;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.config.ConfigManager.SoloClearInfo;
 import org.blackum.blackaddons.gui.render.Theme;
-import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
-import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import org.blackum.blackaddons.gui.screen.feature.*;
-import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.gui.widget.base.*;
 import org.blackum.blackaddons.gui.widget.editor.*;
 import org.blackum.blackaddons.gui.widget.input.*;
 import org.blackum.blackaddons.gui.widget.layout.*;
 import org.blackum.blackaddons.gui.widget.row.*;
+import java.util.regex.Pattern;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import java.util.regex.Matcher;
 
 public class SoloClearsTabController extends SimpleTabController {
     private String selectedFloor = "F7";
@@ -72,8 +72,8 @@ public class SoloClearsTabController extends SimpleTabController {
         if (timeStr == null || timeStr.trim().isEmpty() || timeStr.equals("Unknown")) return Integer.MAX_VALUE;
         try {
             if (timeStr.contains("m") || timeStr.contains("s")) {
-                java.util.regex.Pattern p = java.util.regex.Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?");
-                java.util.regex.Matcher m = p.matcher(timeStr);
+                Pattern p = Pattern.compile("(?:(\\d+)m)?\\s*(?:(\\d+)s)?");
+                Matcher m = p.matcher(timeStr);
                 if (m.find()) {
                     int mins = m.group(1) != null ? Integer.parseInt(m.group(1)) : 0;
                     int secs = m.group(2) != null ? Integer.parseInt(m.group(2)) : 0;
@@ -137,7 +137,7 @@ public class SoloClearsTabController extends SimpleTabController {
             clearsList.addItem(new SoloClearRow(clearsList.getWidth(), i, clears.get(i), selectedFloor));
             clearsList.addItem(new Widget(0, 0, 0, 5) {
                 @Override
-                public void render(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {}
+                public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {}
             });
         }
     }

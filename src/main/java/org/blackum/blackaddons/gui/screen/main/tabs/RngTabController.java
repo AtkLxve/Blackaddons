@@ -2,21 +2,7 @@ package org.blackum.blackaddons.gui.screen.main.tabs;
 
 
 import org.blackum.blackaddons.common.util.mc.McCompat;
-import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
-import org.blackum.blackaddons.gui.screen.feature.WaypointEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointGroupEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.ChatActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.IrcScreen;
-import org.blackum.blackaddons.gui.screen.feature.ImagePreviewScreen;
 import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyFinderScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
-import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
-import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
-import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 import org.blackum.blackaddons.common.util.io.JsonUtils;
 import org.blackum.blackaddons.service.PriceService;
@@ -30,6 +16,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import static net.minecraft.client.gui.components.Button.builder;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.gui.animation.Animation;
 import org.blackum.blackaddons.gui.animation.Easing;
@@ -541,7 +528,7 @@ public class RngTabController extends ProfileTabController {
                     inputBox.setValue(String.valueOf(count));
                     this.addRenderableWidget(inputBox);
 
-                    this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
+                    this.addRenderableWidget(builder(
                             Component.literal("Confirm"),
                             btn -> {
                                 try {
@@ -575,7 +562,7 @@ public class RngTabController extends ProfileTabController {
                                 }
                             }).bounds(width / 2 - 100, height / 2 + 20, 95, 20).build());
 
-                    this.addRenderableWidget(net.minecraft.client.gui.components.Button.builder(
+                    this.addRenderableWidget(builder(
                             Component.literal("Cancel"),
                             btn -> McCompat.setScreen(mc, RngTabController.this.screen))
                             .bounds(width / 2 + 5, height / 2 + 20, 95, 20).build());

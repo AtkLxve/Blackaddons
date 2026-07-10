@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import org.blackum.blackaddons.feature.waypoint.WaypointShape;
+import java.util.UUID;
 
 public class WaypointActionManager {
     private enum TriggerType {
@@ -29,7 +32,7 @@ public class WaypointActionManager {
 
     private static WaypointActionManager instance;
     private final Map<Waypoint, Boolean> playerInsideWaypoint = new HashMap<>();
-    private final Map<java.util.UUID, Long> lastTriggerTimes = new HashMap<>();
+    private final Map<UUID, Long> lastTriggerTimes = new HashMap<>();
     private boolean hasLastPosition;
     private double lastPlayerX;
     private double lastPlayerY;
@@ -83,11 +86,11 @@ public class WaypointActionManager {
         }
     }
 
-    public void tick(java.util.List<Waypoint> waypoints) {
+    public void tick(List<Waypoint> waypoints) {
         checkWaypoints(waypoints);
     }
 
-    private void checkWaypoints(java.util.List<Waypoint> waypoints) {
+    private void checkWaypoints(List<Waypoint> waypoints) {
         if (!ConfigManager.data.actionTriggersEnabled) {
             playerInsideWaypoint.clear();
             lastTriggerTimes.clear();
@@ -161,7 +164,7 @@ public class WaypointActionManager {
         if (y < waypoint.y || y > waypoint.y + waypoint.height) {
             return false;
         }
-        if (waypoint.shape == org.blackum.blackaddons.feature.waypoint.WaypointShape.BOX) {
+        if (waypoint.shape == WaypointShape.BOX) {
             return Math.abs(dx) <= waypoint.radius && Math.abs(dz) <= waypoint.radius;
         }
 
@@ -174,7 +177,7 @@ public class WaypointActionManager {
             return true;
         }
 
-        if (waypoint.shape == org.blackum.blackaddons.feature.waypoint.WaypointShape.BOX) {
+        if (waypoint.shape == WaypointShape.BOX) {
             return intersectsBox(waypoint, x1, y1, z1, x2, y2, z2);
         }
 
@@ -283,7 +286,7 @@ public class WaypointActionManager {
         }
 
         Minecraft client = Minecraft.getInstance();
-        java.util.List<WaypointAction> actions = waypoint.actions;
+        List<WaypointAction> actions = waypoint.actions;
         boolean triggered = false;
         for (WaypointAction action : actions) {
             if (!action.enabled) continue;

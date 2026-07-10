@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.phys.Vec3;
 
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.util.mc.McCompat;
@@ -167,7 +166,10 @@ public class BlackaddonsClient implements ClientModInitializer {
             }
         });
 
-        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> ConfigManager.save());
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+            ConfigManager.save();
+            IrcClient.getInstance().disconnect();
+        });
 
         ClientSendMessageEvents.ALLOW_CHAT.register(message -> {
             if (internalChatMsg) {

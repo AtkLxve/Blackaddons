@@ -6,11 +6,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class ThreadUtils {
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, r -> {
+        Thread thread = new Thread(r, "Blackaddons-ThreadUtils");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public static void loop(long intervalMs, Supplier<Boolean> stopCondition, Runnable task) {
         executor.scheduleAtFixedRate(() -> {
-            if (!(Boolean) stopCondition.get()) {
+            if (!stopCondition.get()) {
                 task.run();
             }
         }, 0L, intervalMs, TimeUnit.MILLISECONDS);

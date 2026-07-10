@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.blackum.blackaddons.feature.dungeon.util.DungeonUtils;
 
 import com.google.gson.JsonObject;
 
@@ -126,7 +127,6 @@ public class SoloClearsTracker {
         }
 
         DungeonUtils.DungeonStats stats = DungeonUtils.parseDungeonStats(tabListLines);
-
         int finalScore = DungeonScore.getScore();
         if (chatScore >= 300 && chatScore > finalScore) {
             finalScore = chatScore;

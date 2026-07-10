@@ -64,7 +64,6 @@ public class RoomData {
     public int crypts = 0;
     public int secrets = 0;
     public Map<String, List<String>> secretDetails = new HashMap<>();
-    public List<String> trappedChests = new ArrayList<>();
     public Room.Shape shape = Room.Shape.UNKNOWN;
     public boolean prince = false;
 

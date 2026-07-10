@@ -27,12 +27,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.gson.JsonElement;
 
 public class PlayerProfileManager {
 
     private static final String PLAYER_PROFILES_FILE = "player_profiles.json";
-    private static final String PLAYER_DB_ID_PATH = "data.player.id";
-    private static final String PLAYER_DB_NAME_PATH = "data.player.username";
 
     private static PlayerProfileManager instance;
 
@@ -42,7 +41,11 @@ public class PlayerProfileManager {
     private final Map<UUID, CompletableFuture<String>> activeLookups = new ConcurrentHashMap<>();
     private final AtomicBoolean workerRunning = new AtomicBoolean(false);
     private final HttpClient httpClient;
-    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "Blackaddons-ProfileSave");
+        thread.setDaemon(true);
+        return thread;
+    });
     private File cacheFile;
 
     private PlayerProfileManager() {
@@ -174,7 +177,7 @@ public class PlayerProfileManager {
         }
         try (FileReader reader = new FileReader(cacheFile)) {
             JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-            for (Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
+            for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
                 uuidToNameCache.put(entry.getKey(), entry.getValue().getAsString());
             }
             Blackaddons.LOGGER.info("Loaded " + uuidToNameCache.size() + " player profiles from cache.");

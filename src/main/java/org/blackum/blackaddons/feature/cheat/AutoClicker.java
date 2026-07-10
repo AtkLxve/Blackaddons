@@ -14,6 +14,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.lwjgl.glfw.GLFW;
+import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
@@ -21,6 +23,7 @@ import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Optional;
 
 @AutoModule(order = 104)
 public class AutoClicker {
@@ -50,7 +53,7 @@ public class AutoClicker {
 
         updateActiveState(config, mc);
 
-        if (!active || !passesGroundCheck(config, mc) || !passesItemFilter(config, mc) || !passesLookAtFilter(config, mc)) {
+        if (!active || !passesGroundCheck(config, mc) || !passesItemFilter(config, mc) || !passesLookAtFilter(config, mc) || !passesLocationFilter(config, mc)) {
             if (wasHolding) {
                 releaseAllButtons(mc);
                 wasHolding = false;
@@ -98,7 +101,7 @@ public class AutoClicker {
     private static boolean isPhysicalKeyDown(Minecraft mc, InputConstants.Key key) {
         if (mc == null || mc.getWindow() == null || key == null) return false;
         if (key.getType() == InputConstants.Type.MOUSE) {
-            return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().handle(), key.getValue()) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+            return GLFW.glfwGetMouseButton(mc.getWindow().handle(), key.getValue()) == GLFW.GLFW_PRESS;
         } else if (key.getType() == InputConstants.Type.KEYSYM) {
             return InputConstants.isKeyDown(mc.getWindow(), key.getValue());
         }
@@ -187,6 +190,32 @@ public class AutoClicker {
         return false;
     }
 
+    private static boolean passesLocationFilter(FeatureConfig config, Minecraft mc) {
+        if (!config.locationConditionsEnabled) return true;
+        if (config.inDungeonFilter != null) {
+            if (LocationUtils.inDungeons() != config.inDungeonFilter) {
+                return false;
+            }
+        }
+        if (config.floorFilter != null && !config.floorFilter.isEmpty()) {
+            DungeonFloor floor = LocationUtils.getCurrentFloor();
+            if (floor == null || !floor.getDisplayName().equals(config.floorFilter)) {
+                return false;
+            }
+        }
+        if (config.inBossFilter != null) {
+            if (LocationUtils.inBoss() != config.inBossFilter) {
+                return false;
+            }
+        }
+        if (config.phaseFilter != null && config.phaseFilter > 0) {
+            if (LocationUtils.getF7Phase() != config.phaseFilter) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static HitResult getLookAtHitResult(FeatureConfig config, Minecraft mc) {
         double dist = config.lookAtFilterDistance;
         
@@ -210,7 +239,7 @@ public class AutoClicker {
         
         for (Entity entity : mc.level.getEntities(mc.player, searchBox, e -> e != null && !e.isSpectator() && e.isPickable())) {
             AABB aabb = entity.getBoundingBox().inflate(entity.getPickRadius());
-            java.util.Optional<Vec3> clipResult = aabb.clip(eyePos, endPos);
+            Optional<Vec3> clipResult = aabb.clip(eyePos, endPos);
             if (aabb.contains(eyePos)) {
                 if (closestDistSq >= 0.0D) {
                     closestEntity = entity;
@@ -280,5 +309,10 @@ public class AutoClicker {
         public boolean itemFilterEnabled = false;
         public List<String> itemFilters = new ArrayList<>();
         public int keybindKeyCode = -1;
+        public String floorFilter = null;
+        public Boolean inBossFilter = null;
+        public Integer phaseFilter = null;
+        public Boolean inDungeonFilter = null;
+        public boolean locationConditionsEnabled = false;
     }
 }

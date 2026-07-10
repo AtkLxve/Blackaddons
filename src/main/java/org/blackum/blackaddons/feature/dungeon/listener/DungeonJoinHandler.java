@@ -19,7 +19,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
-import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
 public class DungeonJoinHandler {
     private static final Pattern JOIN_PATTERN = Pattern

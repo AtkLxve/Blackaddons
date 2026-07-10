@@ -1,7 +1,6 @@
 package org.blackum.blackaddons.feature.dungeon.score;
 
 import net.minecraft.client.Minecraft;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,6 +18,7 @@ import org.blackum.blackaddons.common.util.mc.TabListUtils;
 import org.blackum.blackaddons.feature.profile.ProfileStateManager;
 
 public class DungeonScore {
+    private static final Logger LOGGER = LoggerFactory.getLogger("BlackAddons-DungeonScore");
     private static final Pattern SECRETS_PATTERN = Pattern
             .compile("(?i)Secrets (?:Found|):?\\s*(\\d+(?:\\.\\d+)?)(?:%|)");
     private static final Pattern PUZZLES_PATTERN = Pattern.compile("(?i).+?:\\s*\\[(.)\\]");

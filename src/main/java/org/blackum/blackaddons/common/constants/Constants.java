@@ -38,10 +38,10 @@ public final class Constants {
         public static final String CHAT_ACTIONS_FILE_NAME = "chat_actions.json";
         public static final String BLOCKED_PACKETS_LOG_NAME = "blocked_packets.log";
         public static final long BLOCKED_PACKETS_LOG_MAX_BYTES = 5L * 1024 * 1024;
+        public static final int MOUSE_BIND_OFFSET = 1000;
 
         // APIs
         public static final String DEFAULT_BOT_URL = "http://ba.neutrality.cc:8080";
-        public static final String BOT_IRC_WS_URL = "ws://ba.neutrality.cc:8080/v1/irc";
         public static final String HYPIXEL_BAZAAR_API = "https://api.hypixel.net/skyblock/bazaar";
         public static final String MOULBERRY_AH_API = "https://moulberry.codes/auction_averages_lbin/3day.json";
         public static final String PLAYER_DB_API = "https://playerdb.co/api/player/minecraft/";
@@ -60,7 +60,6 @@ public final class Constants {
         public static final String BOT_API_PROFILE = "/v1/profile";
         public static final String BOT_API_RTCA = "/v1/rtca";
         public static final String BOT_API_LEADERBOARD = "/v1/leaderboard";
-        public static final String BOT_API_KEY = "/v1/key";
         public static final String BOT_API_PARTY_CREATE = "/v1/party/create";
         public static final String BOT_API_PARTY_UNQUEUE = "/v1/party/unqueue";
         public static final String BOT_API_PARTY_UPDATE = "/v1/party/update";
@@ -69,7 +68,7 @@ public final class Constants {
         public static final String BOT_API_SOLO_CLEAR = "/v1/solo_clear";
         public static final String BOT_API_SOLO_LEADERBOARD = "/v1/solo_leaderboard";
         public static final String BOT_API_AUTH_VERIFY = "/v1/auth/verify";
-        
+
         // GitHub
         public static final String GITHUB_RELEASES_URL = "https://github.com/BlackAddons/mod/releases";
         public static final String GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/BlackAddons/mod/releases/latest";
@@ -78,16 +77,11 @@ public final class Constants {
         public static final String GITHUB_NAMES_URL = "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/main/data/custom_names.json";
 
         // Mojang session API
-        public static final String MOJANG_SESSION_JOIN = "https://sessionserver.mojang.com/session/minecraft/join";
 
         // API Headers
-        public static final String HEADER_PLAYER_KEY = "X-Player-Key";
-        public static final String HEADER_PLAYER_NAME = "X-Player-Name";
-        public static final String HEADER_PLAYER_UUID = "X-Player-UUID";
         public static final String HEADER_DEVELOPER_KEY = "X-Developer-Key";
 
         // Catacombs Data
-        public static final double CATA_50_XP = 569809640.0;
         public static final List<Double> DUNGEON_XP = List.of(
                         0.0, 50.0, 75.0, 110.0, 160.0, 230.0, 330.0, 470.0, 670.0, 950.0, 1340.0,
                         1890.0, 2665.0, 3760.0, 5260.0, 7380.0, 10300.0, 14400.0, 20000.0, 27600.0,
@@ -139,9 +133,7 @@ public final class Constants {
         public static final String MSG_ALREADY_IN_QUEUE = "You are already in queue!";
         public static final String MSG_WANTS_TO_JOIN = "§ewants to join your party.";
         public static final String LABEL_INVITE = "§7[§aInvite§7]";
-        public static final String LABEL_PROFILE = "§7[§eProfile§7]";
         public static final String HOVER_INVITE = "Click to invite";
-        public static final String HOVER_PROFILE = "Check player profile";
         public static final String MSG_AUTO_ACCEPT = "Auto-accepting invite from %s";
         public static final String MSG_QUEUE_STARTED = "Party finder queue started for %s";
         public static final String MSG_REMOVED_QUEUE = "Removed from party finder queue.";
@@ -160,4 +152,11 @@ public final class Constants {
         // Inventory Layout
         public static final int ENDER_CHEST_PAGE_SLOTS = 45;
         public static final int BACKPACK_PAGE_SLOTS = 54;
+
+        // Locations
+        public static final String FILTER_ANY = "Any";
+        public static final String DUNGEON_YES = "In Dungeon";
+        public static final String DUNGEON_NO = "Not in Dungeon";
+        public static final String BOSS_YES = "In Boss";
+        public static final String BOSS_NO = "Not in Boss";
 }

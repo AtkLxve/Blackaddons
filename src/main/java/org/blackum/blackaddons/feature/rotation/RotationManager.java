@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Random;
 
 public class RotationManager {
-    private static final float STOP_THRESHOLD = 0.05f;
     private static final int OVERLAY_BAR_WIDTH = 100;
     private static final int COLOR_BAR_BG = 0xFF333333;
     private static final int COLOR_BAR_FILL = 0xFF00AAFF;

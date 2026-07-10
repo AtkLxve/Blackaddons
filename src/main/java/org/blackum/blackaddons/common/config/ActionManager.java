@@ -15,6 +15,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ActionManager {
     private static ActionManager instance;
@@ -61,7 +63,11 @@ public class ActionManager {
         return chatActions;
     }
 
-    private static final java.util.concurrent.ExecutorService SAVE_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor();
+    private static final ExecutorService SAVE_EXECUTOR = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "Blackaddons-ActionSave");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public void save() {
         final List<ConfigManager.ChatAction> toSave = new ArrayList<>(chatActions);

@@ -1,21 +1,7 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
 
-import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
-import org.blackum.blackaddons.gui.screen.feature.WaypointEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointGroupEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.ChatActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.IrcScreen;
-import org.blackum.blackaddons.gui.screen.feature.ImagePreviewScreen;
 import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyFinderScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
-import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
-import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
-import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonElement;
 import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
@@ -35,6 +21,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import com.google.gson.JsonArray;
+import java.util.Collections;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.world.item.ItemStack;
 
 public class InventoryTabController extends ProfileTabController {
     private PetDetailWidget petDetailWidget;
@@ -134,15 +124,15 @@ public class InventoryTabController extends ProfileTabController {
                 }
                 while (equipmentItems.size() < 4)
                     equipmentItems
-                            .add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY_EQUIP", "COMMON"));
+                            .add(new SkyblockItem(ItemStack.EMPTY, "EMPTY_EQUIP", "COMMON"));
 
                 if (inventory.has("inv_armor")) {
                     List<SkyblockItem> armor = extractItems(inventory.getAsJsonObject("inv_armor"));
-                    java.util.Collections.reverse(armor);
+                    Collections.reverse(armor);
                     armorItems.addAll(armor);
                 }
                 while (armorItems.size() < 4)
-                    armorItems.add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY_ARMOR", "COMMON"));
+                    armorItems.add(new SkyblockItem(ItemStack.EMPTY, "EMPTY_ARMOR", "COMMON"));
 
                 if (inventory.has("inv_contents")) {
                     List<SkyblockItem> inv = extractItems(inventory.getAsJsonObject("inv_contents"));
@@ -156,7 +146,7 @@ public class InventoryTabController extends ProfileTabController {
                     }
                 }
                 while (inventoryItems.size() < 36)
-                    inventoryItems.add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY", "COMMON"));
+                    inventoryItems.add(new SkyblockItem(ItemStack.EMPTY, "EMPTY", "COMMON"));
 
                 int totalGridWidth = (1 * 36 + 12) + 20 + (1 * 36 + 12) + 20 + (9 * 36 + 12);
                 int scrollbarSpace = 16;
@@ -254,7 +244,7 @@ public class InventoryTabController extends ProfileTabController {
                                     : Constants.BACKPACK_PAGE_SLOTS;
                         while (pageItems.size() < paddedSize) {
                             pageItems
-                                    .add(new SkyblockItem(net.minecraft.world.item.ItemStack.EMPTY, "EMPTY", "COMMON"));
+                                    .add(new SkyblockItem(ItemStack.EMPTY, "EMPTY", "COMMON"));
                         }
 
                         ItemGridWidget grid = new ItemGridWidget(0, 0, 9, pageItems);
@@ -264,7 +254,7 @@ public class InventoryTabController extends ProfileTabController {
 
                         Widget spacer = new Widget(0, 0, 0, 20) {
                             @Override
-                            public void render(net.minecraft.client.gui.GuiGraphicsExtractor g, int mx, int my, float pt) {
+                            public void render(GuiGraphicsExtractor g, int mx, int my, float pt) {
                             }
                         };
                         pagedListView.addItem(spacer);
@@ -295,8 +285,8 @@ public class InventoryTabController extends ProfileTabController {
             if (profileData.has("pets")) {
                 JsonElement petsEl = profileData.get("pets");
                 if (petsEl.isJsonArray()) {
-                    com.google.gson.JsonArray pets = petsEl.getAsJsonArray();
-                    for (com.google.gson.JsonElement p : pets) {
+                    JsonArray pets = petsEl.getAsJsonArray();
+                    for (JsonElement p : pets) {
                         if (p.isJsonObject()) {
                             petItems.add(ItemDeserializer.deserializePet(p.getAsJsonObject()));
                         }

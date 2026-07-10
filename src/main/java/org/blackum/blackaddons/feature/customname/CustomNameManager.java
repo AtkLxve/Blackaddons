@@ -5,7 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
@@ -22,7 +21,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.blackum.blackaddons.feature.profile.PlayerProfileManager;
+import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.locale.Language;
 
 public class CustomNameManager {
 
@@ -269,7 +269,7 @@ public class CustomNameManager {
             rebuilt.append(Component.literal(node.content.toString()).withStyle(node.style));
         }
 
-        return net.minecraft.locale.Language.getInstance().getVisualOrder(replaceNames(rebuilt));
+        return Language.getInstance().getVisualOrder(replaceNames(rebuilt));
     }
 
     private record TextNode(StringBuilder content, Style style) {}
@@ -302,7 +302,7 @@ public class CustomNameManager {
                 rebuilt.append(processComponent(sibling));
             }
             return rebuilt;
-        } else if (component.getContents() instanceof net.minecraft.network.chat.contents.PlainTextContents literal) {
+        } else if (component.getContents() instanceof PlainTextContents literal) {
             String text = literal.text();
             String lowerText = text.toLowerCase();
             boolean found = false;

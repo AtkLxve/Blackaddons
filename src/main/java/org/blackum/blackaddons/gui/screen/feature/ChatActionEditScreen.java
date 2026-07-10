@@ -3,20 +3,7 @@ package org.blackum.blackaddons.gui.screen.feature;
 
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
-import org.blackum.blackaddons.gui.screen.feature.WaypointEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointGroupEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointActionEditScreen;
 import org.blackum.blackaddons.gui.screen.feature.ChatActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.IrcScreen;
-import org.blackum.blackaddons.gui.screen.feature.ImagePreviewScreen;
-import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyFinderScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
-import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
-import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
-import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -33,6 +20,12 @@ import org.blackum.blackaddons.gui.widget.editor.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.world.phys.HitResult;
+import java.util.stream.Stream;
+import net.minecraft.world.phys.BlockHitResult;
+import java.util.Locale;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.core.BlockPos;
 
 public class ChatActionEditScreen extends BaseScreen {
     private static final int CUSTOM_INPUT_WIDTH = 90;
@@ -98,7 +91,7 @@ public class ChatActionEditScreen extends BaseScreen {
                 group.setExpanded(!action.collapsed);
                 ActionManager.getInstance().save();
             });
-            List<String> typeOptions = java.util.stream.Stream.of(ConfigManager.ActionStepType.values())
+            List<String> typeOptions = Stream.of(ConfigManager.ActionStepType.values())
                     .map(ConfigManager.ActionStepType::getDisplayName)
                     .toList();
             Dropdown typeDropdown = new Dropdown(0, 0, itemWidth, "Step Type", typeOptions, selected -> {
@@ -196,7 +189,7 @@ public class ChatActionEditScreen extends BaseScreen {
             } else if (action.type == ConfigManager.ActionStepType.PRESS_KEYBIND) {
                 AutocompleteTextField keyField = new AutocompleteTextField(0, 0, itemWidth, Theme.TEXTFIELD_HEIGHT, "key.keyboard.f5", () -> {
                     List<String> keys = new ArrayList<>();
-                    for (net.minecraft.client.KeyMapping km : minecraft.options.keyMappings) {
+                    for (KeyMapping km : minecraft.options.keyMappings) {
                         keys.add(km.getName());
                     }
                     return keys;
@@ -237,11 +230,11 @@ public class ChatActionEditScreen extends BaseScreen {
                     SettingWrapper speedWrap = new SettingWrapper(0, 0, itemWidth, "Rotation Speed", "Override speed (0 = use global)", null);
                     Slider speedSlider = new Slider(0, 0, itemWidth, 0, 100, action.rotationSpeed, val -> {
                         action.rotationSpeed = val;
-                        speedWrap.setRightLabel(val == 0 ? "Global" : String.format(java.util.Locale.ROOT, "%.1f", val));
+                        speedWrap.setRightLabel(val == 0 ? "Global" : String.format(Locale.ROOT, "%.1f", val));
                         ActionManager.getInstance().save();
                     });
                     speedWrap.setControl(speedSlider);
-                    speedWrap.setRightLabel(action.rotationSpeed == 0 ? "Global" : String.format(java.util.Locale.ROOT, "%.1f", action.rotationSpeed));
+                    speedWrap.setRightLabel(action.rotationSpeed == 0 ? "Global" : String.format(Locale.ROOT, "%.1f", action.rotationSpeed));
                     group.addChild(speedWrap);
                 }
 
@@ -348,9 +341,9 @@ public class ChatActionEditScreen extends BaseScreen {
                     group.addChild(coordRow);
 
                     Button captureBtn = new Button(0, 0, itemWidth, Theme.BUTTON_HEIGHT, "Capture Looking At", () -> {
-                        net.minecraft.world.phys.HitResult hr = minecraft.hitResult;
-                        if (hr instanceof net.minecraft.world.phys.BlockHitResult bhr) {
-                            net.minecraft.core.BlockPos pos = bhr.getBlockPos();
+                        HitResult hr = minecraft.hitResult;
+                        if (hr instanceof BlockHitResult bhr) {
+                            BlockPos pos = bhr.getBlockPos();
                             action.targetX = pos.getX();
                             action.targetY = pos.getY();
                             action.targetZ = pos.getZ();
@@ -389,9 +382,9 @@ public class ChatActionEditScreen extends BaseScreen {
 
                     GridRow captureRow = new GridRow(itemWidth, Theme.BUTTON_HEIGHT);
                     Button captureBtn = new Button(0, 0, (itemWidth / 2) - 2, Theme.BUTTON_HEIGHT, "Capture Looking At", () -> {
-                        net.minecraft.world.phys.HitResult hr = minecraft.hitResult;
-                        if (hr instanceof net.minecraft.world.phys.BlockHitResult bhr) {
-                            net.minecraft.core.BlockPos pos = bhr.getBlockPos();
+                        HitResult hr = minecraft.hitResult;
+                        if (hr instanceof BlockHitResult bhr) {
+                            BlockPos pos = bhr.getBlockPos();
                             action.targetX = pos.getX() + 0.5D;
                             action.targetZ = pos.getZ() + 0.5D;
                             ActionManager.getInstance().save();
@@ -440,9 +433,9 @@ public class ChatActionEditScreen extends BaseScreen {
 
                         GridRow lookCaptureRow = new GridRow(itemWidth, Theme.BUTTON_HEIGHT);
                         Button captureLookBtn = new Button(0, 0, (itemWidth / 2) - 2, Theme.BUTTON_HEIGHT, "Capture Looking At", () -> {
-                            net.minecraft.world.phys.HitResult hr = minecraft.hitResult;
-                            if (hr instanceof net.minecraft.world.phys.BlockHitResult bhr) {
-                                net.minecraft.core.BlockPos pos = bhr.getBlockPos();
+                            HitResult hr = minecraft.hitResult;
+                            if (hr instanceof BlockHitResult bhr) {
+                                BlockPos pos = bhr.getBlockPos();
                                 action.alignLookAtX = pos.getX() + 0.5D;
                                 action.alignLookAtY = pos.getY() + 0.5D;
                                 action.alignLookAtZ = pos.getZ() + 0.5D;
@@ -572,11 +565,11 @@ public class ChatActionEditScreen extends BaseScreen {
 
     private String formatOptionalCoord(double value) {
         if (value == 0.0) return "";
-        return String.format(java.util.Locale.ROOT, "%.2f", value);
+        return String.format(Locale.ROOT, "%.2f", value);
     }
 
     private static String formatSeconds(float seconds) {
-        return String.format(java.util.Locale.ROOT, "%.3fs", seconds);
+        return String.format(Locale.ROOT, "%.3fs", seconds);
     }
 
     private static float roundToMillis(float value) {
@@ -603,18 +596,18 @@ public class ChatActionEditScreen extends BaseScreen {
     }
 
     private static String formatAngle(float angle) {
-        return String.format(java.util.Locale.ROOT, "%.1f°", angle);
+        return String.format(Locale.ROOT, "%.1f°", angle);
     }
 
     private void updateTextField(TextField field, float value) {
-        String formatted = String.format(java.util.Locale.ROOT, "%.3f", roundToMillis(value));
+        String formatted = String.format(Locale.ROOT, "%.3f", roundToMillis(value));
         if (!formatted.equals(field.getText())) {
             field.setText(formatted);
         }
     }
 
     private void updateAngleField(TextField field, float value) {
-        String formatted = String.format(java.util.Locale.ROOT, "%.1f", roundAngle(value));
+        String formatted = String.format(Locale.ROOT, "%.1f", roundAngle(value));
         if (!formatted.equals(field.getText())) {
             field.setText(formatted);
         }

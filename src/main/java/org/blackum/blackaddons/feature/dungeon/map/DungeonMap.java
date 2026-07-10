@@ -22,6 +22,7 @@ public class DungeonMap {
     private static Vec2i  mapSize     = null;
     private static Integer roomSize   = null;
     private static int specialColumn  = 5;
+    private static boolean sizesInitializedFromFloor = false;
 
     private static final Set<Room> rooms    = new HashSet<>();
     private static final List<Door> doors   = new ArrayList<>();
@@ -39,6 +40,11 @@ public class DungeonMap {
         
         Integer invMapId = findDungeonMapId();
         if (invMapId != null) {
+            if (mapId != null && !invMapId.equals(mapId)) {
+                reset();
+                DungeonWorldScanner.reset();
+                DungeonScoreboard.reset();
+            }
             mapId = invMapId;
         }
 
@@ -55,9 +61,11 @@ public class DungeonMap {
         for (byte c : colors) if (c != 0) nonZero++;
         if (nonZero == 0) return;
 
-        if (startCoords == null) {
-            DungeonFloor floor = LocationUtils.getCurrentFloor();
-            if (!initializeSizes(colors, getFloorNumber(floor))) {
+        DungeonFloor floor = LocationUtils.getCurrentFloor();
+        if (startCoords == null || (floor != null && !sizesInitializedFromFloor)) {
+            if (initializeSizes(colors, getFloorNumber(floor))) {
+                sizesInitializedFromFloor = (floor != null);
+            } else {
                 if (LocationUtils.debugDungeonMode) {
                     roomSize = 16;
                     startCoords = new Vec2i(11, 11);
@@ -390,6 +398,7 @@ public class DungeonMap {
         localRoom = null;
         rooms.clear(); doors.clear();
         Arrays.fill(tileGrid, null);
+        sizesInitializedFromFloor = false;
         Blackaddons.LOGGER.info("[DungeonMap] Reset.");
     }
 
@@ -421,7 +430,8 @@ public class DungeonMap {
     }
 
     private static int getFloorNumber(DungeonFloor floor) {
-        if (floor == null || floor == DungeonFloor.ENTRANCE) return 0;
+        if (floor == null) return -1;
+        if (floor == DungeonFloor.ENTRANCE) return 0;
         try { return Integer.parseInt(floor.getDisplayName().substring(1)); }
         catch (NumberFormatException e) { return -1; }
     }

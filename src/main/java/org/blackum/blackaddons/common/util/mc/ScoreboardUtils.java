@@ -52,9 +52,9 @@ public class ScoreboardUtils {
                 .limit(15)
                 .map(score -> {
                     PlayerTeam team = scoreboard.getPlayersTeam(score.owner());
-                    Component prefix = team != null ? team.getPlayerPrefix() : Component.empty();
-                    Component suffix = team != null ? team.getPlayerSuffix() : Component.empty();
-                    return prefix.getString() + suffix.getString();
+                    Component ownerName = score.ownerName();
+                    Component name = PlayerTeam.formatNameForTeam(team, ownerName);
+                    return name.getString();
                 })
                 .toList();
     }

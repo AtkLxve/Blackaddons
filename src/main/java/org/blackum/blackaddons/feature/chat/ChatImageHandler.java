@@ -5,7 +5,6 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
-import org.blackum.blackaddons.feature.customname.CustomNameManager;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

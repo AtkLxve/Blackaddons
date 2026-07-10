@@ -27,7 +27,7 @@ def versionProps = [
         fabric: "0.152.2+26.2",
         cloth_config: "26.2.155",
         modmenu: "20.0.0-beta.3",
-        //ias: null,
+        ias: "fyfT98zh"
         //autoreauth: null
         //zzz
     ]

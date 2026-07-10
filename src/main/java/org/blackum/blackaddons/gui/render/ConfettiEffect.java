@@ -4,6 +4,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.awt.Color;
 
 public class ConfettiEffect {
     private final List<Confetti> particles = new ArrayList<>();
@@ -102,7 +103,7 @@ public class ConfettiEffect {
             this.y = y;
             this.speedX = (Math.random() - 0.5) * 5;
             this.speedY = -(Math.random() * 3 + 2);
-            java.awt.Color c = java.awt.Color.getHSBColor((float) Math.random(), 1f, 1f);
+            Color c = Color.getHSBColor((float) Math.random(), 1f, 1f);
             this.color = c.getRGB();
             this.maxLife = 100 + (int) (Math.random() * 100);
             this.life = this.maxLife;

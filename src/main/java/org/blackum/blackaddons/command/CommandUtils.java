@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
-import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
 public class CommandUtils {
 

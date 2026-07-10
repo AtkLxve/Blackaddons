@@ -15,7 +15,6 @@ import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.mixin.core.InventoryAccessor;
-import net.minecraft.network.chat.Component;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
 
 import java.util.List;
@@ -196,7 +195,7 @@ public class AutoTNT {
     }
 
     public static List<String> getDebugInfo() {
-        java.util.List<String> info = new ArrayList<>();
+        List<String> info = new ArrayList<>();
         if (!ConfigManager.data.autoTntConfig.AutoTNTEnabled)
             return info;
 
@@ -230,7 +229,7 @@ public class AutoTNT {
         return info;
     }
 
-    public static class FeatureConfig {
+    public static final class FeatureConfig {
         public boolean AutoTNTEnabled = false;
         public int AutoTNTDelay = 4;
         public int UnequipDelay = 5;

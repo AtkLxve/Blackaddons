@@ -15,6 +15,7 @@ import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.common.model.Teammate;
 import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.util.format.FormatUtils;
+import java.awt.Color;
 
 public class TeammateRow extends Widget {
     private final Teammate tm;
@@ -82,7 +83,7 @@ public class TeammateRow extends Widget {
             if (tm.lastClassLevel == 50) {
                 long time = System.currentTimeMillis() / 10;
                 float hue = (time % 1000) / 1000f;
-                lvlColor = java.awt.Color.HSBtoRGB(hue, 0.7f, 1f);
+                lvlColor = Color.HSBtoRGB(hue, 0.7f, 1f);
             } else if (tm.lastClassLevel >= 40) {
                 lvlColor = 0xFFFF55FF;
             } else if (tm.lastClassLevel >= 30) {

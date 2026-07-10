@@ -383,7 +383,7 @@ public abstract class BaseScreen extends Screen {
                 scrollBarHeight = 30;
 
             double trackHeight = containerHeight - scrollBarHeight;
-            double movement = (dragY / scale) * ((double) maxScroll / trackHeight);
+            double movement = (dragY / scale) * (maxScroll / trackHeight);
 
             scrollOffset += movement;
             if (scrollOffset < 0)

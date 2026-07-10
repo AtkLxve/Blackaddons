@@ -39,6 +39,14 @@ public class FontMixin {
 
         for (int i = 0; i < text.length(); ) {
             int cp = text.codePointAt(i);
+            if (cp == 167) { // '§'
+                i += Character.charCount(cp);
+                if (i < text.length()) {
+                    int nextCp = text.codePointAt(i);
+                    i += Character.charCount(nextCp);
+                }
+                continue;
+            }
             CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
             cursor += data != null ? data.advance * scale : 5.0f;
             i += Character.charCount(cp);
@@ -112,6 +120,14 @@ public class FontMixin {
                 text.visit((style, string) -> {
                     for (int i = 0; i < string.length(); ) {
                         int cp = string.codePointAt(i);
+                        if (cp == 167) { // '§'
+                            i += Character.charCount(cp);
+                            if (i < string.length()) {
+                                int nextCp = string.codePointAt(i);
+                                i += Character.charCount(nextCp);
+                            }
+                            continue;
+                        }
                         CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
                         cursor[0] += data != null ? data.advance * scale : 5.0f;
                         i += Character.charCount(cp);

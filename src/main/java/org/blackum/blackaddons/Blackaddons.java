@@ -1,8 +1,6 @@
 package org.blackum.blackaddons;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,38 +24,8 @@ public class Blackaddons implements ModInitializer {
         LOGGER.info("Initialization completed");
     }
 
-    private int executeStatus(CommandContext<CommandSourceStack> context) {
-        context.getSource().sendSystemMessage(
-                Component.literal("§0Black§7Addons is §arunning!"));
-        return 1;
-    }
 
-    private int executeOpenMainGui(CommandContext<CommandSourceStack> context) {
-        if (mainGuiOpener != null) {
-            mainGuiOpener.run();
-        }
-        return 1;
-    }
 
-    private int executeOpenGui(CommandContext<CommandSourceStack> context) {
-        if (guiOpener != null) {
-            guiOpener.run();
-        }
-        return 1;
-    }
 
-    private int executeOpenTestMenu(CommandContext<CommandSourceStack> context) {
-        if (testMenuOpener != null) {
-            testMenuOpener.run();
-        }
-        return 1;
-    }
 
-    private int executeNotify(CommandContext<CommandSourceStack> context) {
-        if (notificationTrigger != null) {
-            String message = StringArgumentType.getString(context, "message");
-            notificationTrigger.accept(message);
-        }
-        return 1;
-    }
 }

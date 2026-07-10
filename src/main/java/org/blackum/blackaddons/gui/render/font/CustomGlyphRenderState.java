@@ -6,7 +6,6 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix3x2f;
-import org.joml.Matrix3x2fc;
 
 public class CustomGlyphRenderState implements GuiElementRenderState {
 

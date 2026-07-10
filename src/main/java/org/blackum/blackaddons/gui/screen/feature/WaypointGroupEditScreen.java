@@ -3,20 +3,7 @@ package org.blackum.blackaddons.gui.screen.feature;
 
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
-import org.blackum.blackaddons.gui.screen.feature.ModOrganizer;
-import org.blackum.blackaddons.gui.screen.feature.WaypointEditScreen;
 import org.blackum.blackaddons.gui.screen.feature.WaypointGroupEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.WaypointActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.ChatActionEditScreen;
-import org.blackum.blackaddons.gui.screen.feature.IrcScreen;
-import org.blackum.blackaddons.gui.screen.feature.ImagePreviewScreen;
-import org.blackum.blackaddons.gui.screen.feature.ProfileViewerScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyFinderScreen;
-import org.blackum.blackaddons.gui.screen.feature.PartyCreationScreen;
-import org.blackum.blackaddons.gui.screen.feature.SoloLeaderboardScreen;
-import org.blackum.blackaddons.gui.screen.debug.DemoScreen;
-import org.blackum.blackaddons.gui.screen.debug.TestMenuScreen;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -35,13 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.blackum.blackaddons.feature.dungeon.map.Room;
 
-public class WaypointGroupEditScreen extends BaseScreen {
+import static org.blackum.blackaddons.common.constants.Constants.FILTER_ANY;
+import static org.blackum.blackaddons.common.constants.Constants.DUNGEON_YES;
+import static org.blackum.blackaddons.common.constants.Constants.DUNGEON_NO;
+import static org.blackum.blackaddons.common.constants.Constants.BOSS_YES;
+import static org.blackum.blackaddons.common.constants.Constants.BOSS_NO;
 
-    private static final String FILTER_ANY = "Any";
-    private static final String DUNGEON_YES = "In Dungeon";
-    private static final String DUNGEON_NO = "Not in Dungeon";
-    private static final String BOSS_YES = "In Boss";
-    private static final String BOSS_NO = "Not in Boss";
+public class WaypointGroupEditScreen extends BaseScreen {
 
     private final WaypointGroup group;
     private final Runnable onSave;

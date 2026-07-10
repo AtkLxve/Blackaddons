@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
@@ -24,7 +23,6 @@ import org.blackum.blackaddons.common.util.mc.LocationUtils;
 import org.blackum.blackaddons.common.scheduler.Scheduler;
 import org.blackum.blackaddons.feature.chat.ChatActionExecutor;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
-import org.blackum.blackaddons.gui.render.Theme;
 import org.blackum.blackaddons.common.util.accessor.KeyBindingAccessor;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Matrix4f;
@@ -39,6 +37,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 
 @AutoModule(order = 102)
 public class AutoSS {
@@ -66,7 +70,6 @@ public class AutoSS {
     private static final int COLOR_MARKER_BG = 0xAA000000;
     private static final int COLOR_TEXT_WHITE = 0xFFFFFFFF;
 
-    private static final int MAX_RANDOM_DELAY_TICKS = 2;
     private static final Random RANDOM = new Random();
 
     private static final List<BlockPos> solution = new ArrayList<>();
@@ -175,7 +178,7 @@ public class AutoSS {
         if (!LocationUtils.inDungeons()) return;
 
         boolean deviceActive = false;
-        for (net.minecraft.world.entity.Entity entity : client.level.getEntities(null, new net.minecraft.world.phys.AABB(START_BUTTON).inflate(DEVICE_SEARCH_RADIUS))) {
+        for (Entity entity : client.level.getEntities(null, new AABB(START_BUTTON).inflate(DEVICE_SEARCH_RADIUS))) {
             if (entity.hasCustomName()) {
                 String name = entity.getCustomName().getString();
                 if (name.contains("Device Active")) {
@@ -268,7 +271,7 @@ public class AutoSS {
                         }
                         if (ConfigManager.data.AutoSSAlerts) {
                             ChatUtils.send_debug("§cSS broke");
-                            client.player.playSound(net.minecraft.sounds.SoundEvents.ANVIL_LAND, 5f, 0f);
+                            client.player.playSound(SoundEvents.ANVIL_LAND, 5f, 0f);
                         }
                         ssStartTime = 0;
                     }
@@ -319,7 +322,7 @@ public class AutoSS {
         if (isSolving) {
             boolean playerInFront = false;
             if (client.hitResult != null && client.hitResult.getType() == HitResult.Type.ENTITY) {
-                if (((EntityHitResult) client.hitResult).getEntity() instanceof net.minecraft.world.entity.player.Player) {
+                if (((EntityHitResult) client.hitResult).getEntity() instanceof Player) {
                     playerInFront = true;
                 }
             }
@@ -559,7 +562,7 @@ public class AutoSS {
         });
     }
 
-    public static void renderHud(GuiGraphicsExtractor graphics, net.minecraft.client.DeltaTracker tracker) {
+    public static void renderHud(GuiGraphicsExtractor graphics, DeltaTracker tracker) {
         if (!ConfigManager.data.AutoSSDebug || !ConfigManager.data.AutoSSEnabled) return;
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) return;
@@ -619,7 +622,7 @@ public class AutoSS {
         renderVisualNodes(graphics, tracker);
     }
 
-    private static void renderVisualNodes(GuiGraphicsExtractor g, net.minecraft.client.DeltaTracker tracker) {
+    private static void renderVisualNodes(GuiGraphicsExtractor g, DeltaTracker tracker) {
         Minecraft mc = Minecraft.getInstance();
         if (!ConfigManager.data.AutoSSDebug || mc.player == null || mc.gameRenderer == null || solution.isEmpty()) return;
 
@@ -786,7 +789,7 @@ public class AutoSS {
         if (mc.player == null) return -1;
 
         for (int i = 0; i < 9; i++) {
-            net.minecraft.world.item.ItemStack stack = mc.player.getInventory().getItem(i);
+            ItemStack stack = mc.player.getInventory().getItem(i);
             if (!stack.isEmpty()) {
                 String name = ChatFormatting.stripFormatting(stack.getHoverName().getString());
                 if (name != null && name.contains("InfiniLeap")) {

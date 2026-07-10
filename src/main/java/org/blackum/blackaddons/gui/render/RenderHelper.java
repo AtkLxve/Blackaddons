@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import java.awt.Color;
 
 public class RenderHelper {
 
@@ -45,7 +46,7 @@ public class RenderHelper {
         long time = System.currentTimeMillis() / 10;
         for (int i = 0; i < width; i++) {
             float hue = ((time + i * 4) % 1000) / 1000f;
-            int color = java.awt.Color.HSBtoRGB(hue, 0.7f, 1f);
+            int color = Color.HSBtoRGB(hue, 0.7f, 1f);
             graphics.fill(x + i, y, x + i + 1, y + height, color);
         }
     }

@@ -51,7 +51,7 @@ public class PacketLogger {
     }
 
     public static void logPacket(String source, String action, CustomPacketPayload payload) {
-        new Thread(() -> {
+        Thread t = new Thread(() -> {
             try {
                 trimLogIfNeeded();
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_FILE, true))) {
@@ -71,7 +71,9 @@ public class PacketLogger {
             } catch (IOException e) {
                 Blackaddons.LOGGER.error("Failed to log packet", e);
             }
-        }).start();
+        }, "Blackaddons-PacketLogger");
+        t.setDaemon(true);
+        t.start();
     }
 
     private static void trimLogIfNeeded() throws IOException {

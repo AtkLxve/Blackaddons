@@ -15,6 +15,7 @@ import org.blackum.blackaddons.gui.render.RenderHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 public class BarGraphWidget extends Widget {
     private final String title;
@@ -42,9 +43,9 @@ public class BarGraphWidget extends Widget {
         this.height = 30 + (entries.size() * 20);
     }
 
-    private java.util.Map<String, Integer> colorMap = new java.util.HashMap<>();
+    private Map<String, Integer> colorMap = new HashMap<>();
 
-    public void setColorMap(java.util.Map<String, Integer> colorMap) {
+    public void setColorMap(Map<String, Integer> colorMap) {
         this.colorMap = colorMap;
     }
 

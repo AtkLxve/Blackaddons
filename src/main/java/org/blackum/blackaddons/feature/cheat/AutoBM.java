@@ -11,7 +11,6 @@ import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.Timer;
 
 import static org.blackum.blackaddons.common.util.mc.MinecraftInstance.mc;
-import org.blackum.blackaddons.common.util.mc.MinecraftInstance;
 
 // GLORY TO BENJAMIN NETANYAHU
 // BLACKUM: keep forgetting this peak is here
@@ -83,7 +82,7 @@ public class AutoBM {
     }
 
 
-    public static class FeatureConfig {
+    public static final class FeatureConfig {
         public boolean AutoBMEnabled = false;
         public float min_between_click_delay = 150.f;
         public float max_between_click_delay = 250.f;
