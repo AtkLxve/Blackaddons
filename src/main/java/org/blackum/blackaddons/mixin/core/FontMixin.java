@@ -10,10 +10,15 @@ import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.customname.CustomNameManager;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.render.font.CustomBakedGlyph;
-import org.blackum.blackaddons.gui.render.font.CustomEmojiBakedGlyph;
+import org.blackum.blackaddons.gui.render.font.CustomTexturedBakedGlyph;
 import org.blackum.blackaddons.gui.render.font.EmojiManager;
 import org.blackum.blackaddons.gui.render.font.CustomFontManager;
 import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
+import org.blackum.blackaddons.gui.render.font.VectorFontRenderer;
+import org.blackum.blackaddons.gui.render.font.EmojiSequenceCharSequence;
+import org.blackum.blackaddons.client.render.BlackaddonsRenderPipelines;
+import org.blackum.blackaddons.common.util.mc.McCompat;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Shadow;
@@ -53,6 +58,12 @@ public class FontMixin {
                 i += Character.charCount(cp);
                 continue;
             }
+            int arrowDir = EmojiManager.getArrowDirection(cp);
+            if (arrowDir != -1) {
+                cursor += EmojiManager.getArrowAdvance();
+                i += Character.charCount(cp);
+                continue;
+            }
             if (EmojiManager.isEmoji(cp)) {
                 float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
                 cursor += emojiSize + 1.0f;
@@ -84,7 +95,7 @@ public class FontMixin {
     @ModifyVariable(method = "prepareText(Ljava/lang/String;FFIZI)Lnet/minecraft/client/gui/Font$PreparedText;",
             at = @At("HEAD"), argsOnly = true, index = 1)
     private String onDrawString(String text) {
-        return CustomNameManager.getInstance().replaceInString(text);
+        return EmojiManager.preprocessString(CustomNameManager.getInstance().replaceInString(text));
     }
 
     @ModifyVariable(
@@ -95,7 +106,7 @@ public class FontMixin {
             require = 0
     )
     private FormattedCharSequence onDrawSequence(FormattedCharSequence text) {
-        return CustomNameManager.getInstance().replaceInSequence(text);
+        return new EmojiSequenceCharSequence(CustomNameManager.getInstance().replaceInSequence(text));
     }
 
     @Inject(method = "width(Ljava/lang/String;)I", at = @At("HEAD"), cancellable = true)
@@ -112,7 +123,7 @@ public class FontMixin {
 
     @ModifyVariable(method = "width(Ljava/lang/String;)I", at = @At("HEAD"), argsOnly = true, index = 1)
     private String onWidthString(String text) {
-        return CustomNameManager.getInstance().replaceInString(text);
+        return EmojiManager.preprocessString(CustomNameManager.getInstance().replaceInString(text));
     }
 
     @ModifyVariable(method = "width(Lnet/minecraft/network/chat/FormattedText;)I", at = @At("HEAD"), argsOnly = true, index = 1)
@@ -130,8 +141,9 @@ public class FontMixin {
                 float scale = renderer.getCachedScale();
                 float[] cursor = {0};
                 text.visit((style, string) -> {
-                    for (int i = 0; i < string.length(); ) {
-                        int cp = string.codePointAt(i);
+                    String preprocessed = EmojiManager.preprocessString(string);
+                    for (int i = 0; i < preprocessed.length(); ) {
+                        int cp = preprocessed.codePointAt(i);
                         if (cp == 167) { // '§'
                             i += Character.charCount(cp);
                             if (i < string.length()) {
@@ -141,6 +153,12 @@ public class FontMixin {
                             continue;
                         }
                         if (CustomFontRenderer.isVariationSelector(cp)) {
+                            i += Character.charCount(cp);
+                            continue;
+                        }
+                        int arrowDir = EmojiManager.getArrowDirection(cp);
+                        if (arrowDir != -1) {
+                            cursor[0] += EmojiManager.getArrowAdvance();
                             i += Character.charCount(cp);
                             continue;
                         }
@@ -164,7 +182,7 @@ public class FontMixin {
 
     @ModifyVariable(method = "width(Lnet/minecraft/util/FormattedCharSequence;)I", at = @At("HEAD"), argsOnly = true, index = 1)
     private FormattedCharSequence onWidthSequence(FormattedCharSequence text) {
-        return CustomNameManager.getInstance().replaceInSequence(text);
+        return new EmojiSequenceCharSequence(CustomNameManager.getInstance().replaceInSequence(text));
     }
 
     @Inject(method = "width(Lnet/minecraft/util/FormattedCharSequence;)I", at = @At("HEAD"), cancellable = true)
@@ -177,6 +195,11 @@ public class FontMixin {
                 float[] cursor = {0};
                 text.accept((idx, style, cp) -> {
                     if (CustomFontRenderer.isVariationSelector(cp)) {
+                        return true;
+                    }
+                    int arrowDir = EmojiManager.getArrowDirection(cp);
+                    if (arrowDir != -1) {
+                        cursor[0] += EmojiManager.getArrowAdvance();
                         return true;
                     }
                     if (EmojiManager.isEmoji(cp)) {
@@ -193,6 +216,8 @@ public class FontMixin {
             }
         }
     }
+
+
 
 //? if >=26.2 {
 
@@ -223,8 +248,62 @@ public class FontMixin {
         if (isCustomTextActive() && !CustomFontRenderer.inOutlinePass) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
+                int arrowDir = EmojiManager.getArrowDirection(codepoint);
+                if (arrowDir != -1) {
+                    final int dir = arrowDir;
+                    cir.setReturnValue(new CustomTexturedBakedGlyph(
+                            EmojiManager::getArrowAdvance,
+                            (x, y) -> {
+                                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                float arrowSize = EmojiManager.getArrowSize();
+                                float advance = EmojiManager.getArrowAdvance();
+                                float baseline = ConfigManager.data.customTextEnabled ? renderer.getCachedBaseline() : 7.0f;
+                                float yCenter = y + baseline - emojiSize / 2.0f;
+                                float ey0 = yCenter - arrowSize / 2.0f;
+                                float ey1 = yCenter + arrowSize / 2.0f;
+                                float ex0 = x + (advance - arrowSize) / 2.0f;
+                                float ex1 = ex0 + arrowSize;
+                                return new float[] { ex0, ey0, ex1, ey1 };
+                            },
+                            () -> EmojiManager.getArrowUvs(dir),
+                            () -> (RenderType) McCompat.createTextRenderType("arrow_3d",
+                                    BlackaddonsRenderPipelines.PLAIN_TEXTURED, EmojiManager.ARROW_LOCATION),
+                            EmojiManager::getArrowTextureView,
+                            BlackaddonsRenderPipelines.PLAIN_TEXTURED
+                    ));
+                    return;
+                }
                 if (CustomFontRenderer.isVariationSelector(codepoint) || EmojiManager.isEmoji(codepoint)) {
-                    cir.setReturnValue(new CustomEmojiBakedGlyph(codepoint));
+                    final int cp = codepoint;
+                    cir.setReturnValue(new CustomTexturedBakedGlyph(
+                            () -> {
+                                if (CustomFontRenderer.isVariationSelector(cp)) return 0.0f;
+                                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                return emojiSize + 1.0f;
+                            },
+                            (x, y) -> {
+                                if (CustomFontRenderer.isVariationSelector(cp)) return new float[] { x, y, x, y };
+                                EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(cp);
+                                if (tex == null) return new float[] { x, y, x, y };
+                                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                float baseline = ConfigManager.data.customTextEnabled ? renderer.getCachedBaseline() : 7.0f;
+                                float ey1 = y + baseline + emojiSize * 0.1f;
+                                float ey0 = ey1 - emojiSize;
+                                return new float[] { x, ey0, x + emojiSize, ey1 };
+                            },
+                            () -> new float[] { 0f, 0f, 0f, 1f, 1f, 1f, 1f, 0f },
+                            () -> {
+                                EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(cp);
+                                if (tex == null) return null;
+                                return (RenderType) McCompat.createTextRenderType("emoji_3d",
+                                        BlackaddonsRenderPipelines.PLAIN_TEXTURED, tex.location);
+                            },
+                            () -> {
+                                EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(cp);
+                                return tex != null ? tex.textureView : null;
+                            },
+                            BlackaddonsRenderPipelines.PLAIN_TEXTURED
+                    ));
                     return;
                 }
                 CustomBakedGlyph baked = style.isObfuscated()

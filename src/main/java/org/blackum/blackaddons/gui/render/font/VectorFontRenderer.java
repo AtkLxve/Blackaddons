@@ -81,6 +81,7 @@ public class VectorFontRenderer {
     public void drawStringGui(Matrix3x2fc pose, FormattedCharSequence text, float x, float y,
                               int baseColor, ScreenRectangle scissor, GuiRenderState renderState,
                               Font font) {
+        text = new EmojiSequenceCharSequence(text);
         if (!initialized) init();
         if (!initialized) return;
         float[] curX = {x};
@@ -95,6 +96,26 @@ public class VectorFontRenderer {
                 color = alpha | (styleRgb & 0x00FFFFFF);
             }
             int argb = (color & 0xFF000000) == 0 ? (color | 0xFF000000) : color;
+
+            int arrowDir = EmojiManager.getArrowDirection(cp);
+            if (arrowDir != -1) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float arrowSize = EmojiManager.getArrowSize();
+                float advance = EmojiManager.getArrowAdvance();
+                float baseline = getBaseline();
+                float yCenter = y + baseline - emojiSize / 2.0f;
+                float ey0 = yCenter - arrowSize / 2.0f;
+                float ey1 = yCenter + arrowSize / 2.0f;
+                float ex0 = curX[0] + (advance - arrowSize) / 2.0f;
+                float ex1 = ex0 + arrowSize;
+
+                TextureSetup setup = EmojiManager.getArrowSetup();
+                if (setup != null) {
+                    renderArrowGui(pose, setup, arrowDir, ex0, ey0, ex1, ey1, scissor, renderState);
+                }
+                curX[0] += advance;
+                return true;
+            }
 
             if (EmojiManager.isEmoji(cp)) {
                 float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
@@ -137,6 +158,7 @@ public class VectorFontRenderer {
 
     public void drawStringGui(Matrix3x2fc pose, String text, float x, float y,
                               int color, ScreenRectangle scissor, GuiRenderState renderState) {
+        text = EmojiManager.preprocessString(text);
         if (!initialized) init();
         if (!initialized) return;
         float curX = x;
@@ -146,6 +168,27 @@ public class VectorFontRenderer {
                 i += Character.charCount(cp);
                 continue;
             }
+            int arrowDir = EmojiManager.getArrowDirection(cp);
+            if (arrowDir != -1) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float arrowSize = EmojiManager.getArrowSize();
+                float advance = EmojiManager.getArrowAdvance();
+                float baseline = getBaseline();
+                float yCenter = y + baseline - emojiSize / 2.0f;
+                float ey0 = yCenter - arrowSize / 2.0f;
+                float ey1 = yCenter + arrowSize / 2.0f;
+                float ex0 = curX + (advance - arrowSize) / 2.0f;
+                float ex1 = ex0 + arrowSize;
+
+                TextureSetup setup = EmojiManager.getArrowSetup();
+                if (setup != null) {
+                    renderArrowGui(pose, setup, arrowDir, ex0, ey0, ex1, ey1, scissor, renderState);
+                }
+                curX += advance;
+                i += Character.charCount(cp);
+                continue;
+            }
+
             if (EmojiManager.isEmoji(cp)) {
                 float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
                 float baseline = getBaseline();
@@ -200,6 +243,17 @@ public class VectorFontRenderer {
                 0f, 0f, 0xFFFFFFFF, scissor));
     }
 
+    private void renderArrowGui(Matrix3x2fc pose, TextureSetup textureSetup, int direction,
+                                float x0, float y0, float x1, float y1,
+                                ScreenRectangle scissor, GuiRenderState renderState) {
+        float[] uvs = EmojiManager.getArrowUvs(direction);
+        renderState.addGlyphToCurrentLayer(new CustomTexturedRenderState(
+                BlackaddonsRenderPipelines.PLAIN_TEXTURED, textureSetup, new Matrix3x2f(pose),
+                x0, y0, x1, y1,
+                uvs[0], uvs[1], uvs[2], uvs[3], uvs[4], uvs[5], uvs[6], uvs[7],
+                0xFFFFFFFF, scissor));
+    }
+
     public boolean supportsAllGlyphs(FormattedCharSequence text) {
         VectorFontManager mgr = VectorFontManager.getInstance();
         if (mgr == null) return false;
@@ -221,6 +275,7 @@ public class VectorFontRenderer {
     }
 
     public void drawString(Matrix4f matrix, FormattedCharSequence text, float x, float y, int baseColor, MultiBufferSource bufferSource) {
+        text = new EmojiSequenceCharSequence(text);
         if (!ConfigManager.data.vectorTextEnabled) return;
         if (!initialized) init();
         if (!initialized) return;
@@ -235,6 +290,23 @@ public class VectorFontRenderer {
                 int alpha = (baseColor & 0xFF000000);
                 color = alpha | (styleRgb & 0x00FFFFFF);
             }
+            int arrowDir = EmojiManager.getArrowDirection(cp);
+            if (arrowDir != -1) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float arrowSize = EmojiManager.getArrowSize();
+                float advance = EmojiManager.getArrowAdvance();
+                float baseline = getBaseline();
+                float yCenter = y + baseline - emojiSize / 2.0f;
+                float ey0 = yCenter - arrowSize / 2.0f;
+                float ey1 = yCenter + arrowSize / 2.0f;
+                float ex0 = curX[0] + (advance - arrowSize) / 2.0f;
+                float ex1 = ex0 + arrowSize;
+
+                renderArrow3d(matrix, arrowDir, ex0, ey0, ex1, ey1, bufferSource);
+                curX[0] += advance;
+                return true;
+            }
+
             if (EmojiManager.isEmoji(cp)) {
                 float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
                 float baseline = getBaseline();
@@ -258,6 +330,7 @@ public class VectorFontRenderer {
     }
 
     public void drawString(Matrix4f matrix, String text, float x, float y, int color, MultiBufferSource bufferSource) {
+        text = EmojiManager.preprocessString(text);
         if (!ConfigManager.data.vectorTextEnabled) return;
         if (!initialized) init();
         if (!initialized) return;
@@ -268,6 +341,24 @@ public class VectorFontRenderer {
                 i += Character.charCount(cp);
                 continue;
             }
+            int arrowDir = EmojiManager.getArrowDirection(cp);
+            if (arrowDir != -1) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float arrowSize = EmojiManager.getArrowSize();
+                float advance = EmojiManager.getArrowAdvance();
+                float baseline = getBaseline();
+                float yCenter = y + baseline - emojiSize / 2.0f;
+                float ey0 = yCenter - arrowSize / 2.0f;
+                float ey1 = yCenter + arrowSize / 2.0f;
+                float ex0 = curX + (advance - arrowSize) / 2.0f;
+                float ex1 = ex0 + arrowSize;
+
+                renderArrow3d(matrix, arrowDir, ex0, ey0, ex1, ey1, bufferSource);
+                curX += advance;
+                i += Character.charCount(cp);
+                continue;
+            }
+
             if (EmojiManager.isEmoji(cp)) {
                 float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
                 float baseline = getBaseline();
@@ -308,6 +399,25 @@ public class VectorFontRenderer {
         buffer.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(0xFFFFFFFF).setUv(0, 1).setUv2(0, 240);
         buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(0xFFFFFFFF).setUv(1, 1).setUv2(0, 240);
         buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(0xFFFFFFFF).setUv(1, 0).setUv2(0, 240);
+    }
+
+    private void renderArrow3d(Matrix4f matrix, int direction,
+                               float x0, float y0, float x1, float y1,
+                               MultiBufferSource bufferSource) {
+        RenderType layer = (RenderType) McCompat.createTextRenderType("arrow_3d",
+                BlackaddonsRenderPipelines.PLAIN_TEXTURED, EmojiManager.ARROW_LOCATION);
+        VertexConsumer buffer = bufferSource.getBuffer(layer);
+
+        Vector4f[] tmps = TMP_VECTORS.get();
+        Vector4f v1p = tmps[0].set(x0, y0, 0, 1).mul(matrix);
+        Vector4f v2p = tmps[1].set(x0, y1, 0, 1).mul(matrix);
+        Vector4f v3p = tmps[2].set(x1, y1, 0, 1).mul(matrix);
+        Vector4f v4p = tmps[3].set(x1, y0, 0, 1).mul(matrix);
+
+        buffer.addVertex(v1p.x(), v1p.y(), v1p.z()).setColor(0xFFFFFFFF).setUv(EmojiManager.ARROW_U_TABLE[direction][0], EmojiManager.ARROW_V_TABLE[direction][0]).setUv2(0, 240);
+        buffer.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(0xFFFFFFFF).setUv(EmojiManager.ARROW_U_TABLE[direction][1], EmojiManager.ARROW_V_TABLE[direction][1]).setUv2(0, 240);
+        buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(0xFFFFFFFF).setUv(EmojiManager.ARROW_U_TABLE[direction][2], EmojiManager.ARROW_V_TABLE[direction][2]).setUv2(0, 240);
+        buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(0xFFFFFFFF).setUv(EmojiManager.ARROW_U_TABLE[direction][3], EmojiManager.ARROW_V_TABLE[direction][3]).setUv2(0, 240);
     }
 
     private void renderGlyph3d(Matrix4f matrix, int codepoint, float x, float y, int color, MultiBufferSource bufferSource) {
