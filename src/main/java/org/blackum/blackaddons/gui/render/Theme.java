@@ -36,6 +36,7 @@ public class Theme {
     public static int GLASS_HIGHLIGHT = 0x22FFFFFF;
     public static int SCROLLBAR_BG = 0x80000000;
     public static int SCROLLBAR_THUMB = 0xFFFFFFFF;
+    public static final int SCROLLBAR_WIDTH = 6;
     public static int TOOLTIP_BG = 0xE0000000;
 
     public static int CONTROL_BG_HOVER = 0x22FFFFFF;

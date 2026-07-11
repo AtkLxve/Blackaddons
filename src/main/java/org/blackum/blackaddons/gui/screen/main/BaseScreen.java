@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.HashMap;
 import org.blackum.blackaddons.gui.widget.layout.ResizableCard;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.gui.animation.Animation;
+import org.blackum.blackaddons.gui.animation.Easing;
 
 @SuppressWarnings("all")
 public abstract class BaseScreen extends Screen {
@@ -53,6 +55,8 @@ public abstract class BaseScreen extends Screen {
     protected int baseContentHeight = 0;
     protected double maxScroll = 0;
     protected boolean canScroll = false;
+    private Animation scrollbarAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
+    private boolean scrollbarActiveTarget = false;
 
     protected Screen parent;
 
@@ -252,19 +256,31 @@ public abstract class BaseScreen extends Screen {
         }
 
         if (canScroll) {
+            boolean active = isDraggingScrollbar || isMouseOverScrollbar(scaledMouseX, scaledMouseY) || isMouseOverContainer(scaledMouseX, scaledMouseY);
+            float current = scrollbarAnimation.getValue();
+            if (scrollbarActiveTarget != active) {
+                scrollbarActiveTarget = active;
+                float target = active ? 1.0f : 0.0f;
+                scrollbarAnimation = new Animation(current, target, Theme.ANIM_HOVER, Easing::easeOut);
+                scrollbarAnimation.start();
+                current = scrollbarAnimation.getValue();
+            }
+
             int scrollBarHeight = (int) ((containerHeight / (double) contentHeight) * containerHeight);
             if (scrollBarHeight < 30)
                 scrollBarHeight = 30;
 
             double progress = scrollOffset / maxScroll;
             int scrollBarY = (int) (containerY + (progress * (containerHeight - scrollBarHeight)));
-            int scrollBarX = containerX + containerWidth - 6;
+            int scrollBarX = containerX + containerWidth - Theme.SCROLLBAR_WIDTH - 2;
 
-            // Track
-            graphics.fill(scrollBarX, containerY, scrollBarX + 4, containerY + containerHeight, Theme.SCROLLBAR_BG);
+            float trackAlpha = active ? 0.08f : 0.03f;
+            int trackColor = Theme.withAlpha(Theme.TEXT_SECONDARY, trackAlpha);
+            graphics.fill(scrollBarX, containerY, scrollBarX + Theme.SCROLLBAR_WIDTH, containerY + containerHeight, trackColor);
 
-            // Thumb
-            graphics.fill(scrollBarX, scrollBarY, scrollBarX + 4, scrollBarY + scrollBarHeight, Theme.SCROLLBAR_THUMB);
+            float thumbAlpha = isDraggingScrollbar ? 0.85f : 0.25f + current * 0.35f;
+            int thumbColor = Theme.withAlpha(Theme.TEXT_SECONDARY, thumbAlpha);
+            graphics.fill(scrollBarX, scrollBarY, scrollBarX + Theme.SCROLLBAR_WIDTH, scrollBarY + scrollBarHeight, thumbColor);
         }
 
         renderTooltips(graphics, scaledMouseX, scaledMouseY);
@@ -280,9 +296,21 @@ public abstract class BaseScreen extends Screen {
     protected void renderTooltips(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
     }
 
+    private boolean isMouseOverScrollbar(double mouseX, double mouseY) {
+        int scrollBarX = containerX + containerWidth - Theme.SCROLLBAR_WIDTH - 2;
+        return mouseX >= scrollBarX && mouseX <= scrollBarX + Theme.SCROLLBAR_WIDTH &&
+                mouseY >= containerY && mouseY <= containerY + containerHeight;
+    }
+
+    private boolean isMouseOverContainer(double mouseX, double mouseY) {
+        return mouseX >= containerX && mouseX <= containerX + containerWidth &&
+                mouseY >= containerY && mouseY <= containerY + containerHeight;
+    }
+
     @Override
     public void tick() {
         super.tick();
+        scrollbarAnimation.getValue();
         for (Widget widget : widgets) {
             if (widget.isVisible()) {
                 widget.tick();
@@ -315,8 +343,8 @@ public abstract class BaseScreen extends Screen {
         }
 
         if (canScroll) {
-            int scrollBarX = containerX + containerWidth - 6;
-            if (mouseX >= scrollBarX && mouseX <= scrollBarX + 4 &&
+            int scrollBarX = containerX + containerWidth - Theme.SCROLLBAR_WIDTH - 2;
+            if (mouseX >= scrollBarX && mouseX <= scrollBarX + Theme.SCROLLBAR_WIDTH &&
                     rawMouseY >= containerY && rawMouseY <= containerY + containerHeight) {
                 isDraggingScrollbar = true;
                 return true;

@@ -39,7 +39,7 @@ public class LegitTabController extends SimpleTabController {
 
         if (ConfigManager.data.useCardLayout) {
             Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-                screen.resetCardStates("legit_visuals", "legit_debuggers", "legit_custom_text");
+                screen.resetCardStates("legit_visuals", "legit_debuggers", "legit_custom_font");
             });
             legitTab.addWidget(resetLayout);
 

@@ -21,7 +21,7 @@ public class ListView extends Widget {
     private int itemSpacing = 8;
     private int maxScroll = 0;
     private boolean draggingScrollbar = false;
-    private int scrollbarWidth = 4;
+    private int scrollbarWidth = Theme.SCROLLBAR_WIDTH;
     private Animation scrollbarAnimation = new Animation(0, 0, Theme.ANIM_HOVER, Easing::easeOut);
     private boolean scrollbarActiveTarget = false;
 
@@ -159,6 +159,10 @@ public class ListView extends Widget {
 
         int thumbHeight = Math.max(20, (int) ((float) height / (height + maxScroll) * scrollbarHeight));
         int thumbY = y + (int) ((float) scrollOffset / maxScroll * (scrollbarHeight - thumbHeight));
+
+        float trackAlpha = active ? 0.08f : 0.03f;
+        int trackColor = Theme.withAlpha(Theme.TEXT_SECONDARY, trackAlpha);
+        graphics.fill(scrollbarX, y, scrollbarX + scrollbarWidth, y + scrollbarHeight, trackColor);
 
         float alpha = draggingScrollbar ? 0.85f : 0.25f + current * 0.35f;
         int thumbColor = Theme.withAlpha(Theme.TEXT_SECONDARY, alpha);
