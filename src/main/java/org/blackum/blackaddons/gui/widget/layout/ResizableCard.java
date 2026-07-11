@@ -300,7 +300,7 @@ public class ResizableCard extends Card {
         }
 
         if (button == 1) {
-            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+            if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + getHeight()) {
                 setCollapsed(!collapsed);
                 if (onLayoutChange != null)
                     onLayoutChange.run();
@@ -409,7 +409,7 @@ public class ResizableCard extends Card {
             }
 
             targetX = Math.max(minX, Math.min(maxX - width, targetX));
-            targetY = Math.max(minY, Math.min(maxY - height, targetY));
+            targetY = Math.max(minY, Math.min(maxY - getHeight(), targetY));
 
             x = targetX;
             y = targetY;
@@ -461,12 +461,13 @@ public class ResizableCard extends Card {
     }
 
     private ResizeHandle isOverResizeHandle(int mouseX, int mouseY) {
+        int currentHeight = getHeight();
         if (mouseX >= x + width - RESIZE_HANDLE_SIZE && mouseX <= x + width &&
-                mouseY >= y + height - RESIZE_HANDLE_SIZE && mouseY <= y + height) {
+                mouseY >= y + currentHeight - RESIZE_HANDLE_SIZE && mouseY <= y + currentHeight) {
             return ResizeHandle.BOTTOM_RIGHT;
         }
         if (mouseX >= x + width - RESIZE_HANDLE_SIZE && mouseX <= x + width &&
-                mouseY >= y && mouseY <= y + height) {
+                mouseY >= y && mouseY <= y + currentHeight) {
             return ResizeHandle.RIGHT;
         }
         return ResizeHandle.NONE;
@@ -506,7 +507,7 @@ public class ResizableCard extends Card {
 
     @Override
     public int getContentHeight() {
-        return height - (getContentY() - y) - (int) (getPadding() * ((float) width / initialWidth));
+        return getHeight() - (getContentY() - y) - (int) (getPadding() * ((float) width / initialWidth));
     }
 
     public boolean isDragging() {

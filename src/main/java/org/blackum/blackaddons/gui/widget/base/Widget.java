@@ -60,7 +60,7 @@ public abstract class Widget {
     }
 
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
+        return mouseX >= x && mouseX <= x + getWidth() && mouseY >= y && mouseY <= y + getHeight();
     }
 
     public boolean hasActiveOverlay() {
