@@ -117,7 +117,7 @@ public class CheatsTabController extends SimpleTabController {
                     });
             cheatsTab.addWidget(ssDistSlider);
 
-            cheatsTab.addWidget(new Label(contentX, contentY + 360, "Auto Ballista Mechanic", Label.Style.TITLE));
+            cheatsTab.addWidget(new Label(contentX, contentY + 360, "Auto Ballista Mechanic (Kuudra)", Label.Style.TITLE));
 
             ToggleSwitch bmEnableToggle = new ToggleSwitch(contentX, contentY + 390, contentWidth - 20,
                     "Enable AutoBM",
@@ -242,7 +242,7 @@ public class CheatsTabController extends SimpleTabController {
     }
 
     private ResizableCard createAutoSSCard(int x, int y) {
-        autoSSCard = screen.createResizableCard("autoSS", x, y, 300, 310, "AutoSS Solver");
+        autoSSCard = screen.createResizableCard("autoSS", x, y, 300, 310, "AutoSS (only works on p3sim.net)");
 
         int contentX = autoSSCard.getContentX();
         int contentY = autoSSCard.getContentY();
@@ -396,7 +396,7 @@ public class CheatsTabController extends SimpleTabController {
     }
 
     private ResizableCard createAutoBM(int x, int y) {
-        autoBMCard = screen.createResizableCard("autoBM", x, y, 300, 310, "Auto Ballista Mechanic");
+        autoBMCard = screen.createResizableCard("autoBM", x, y, 300, 310, "Auto Ballista Mechanic (Kuudra)");
 
         int contentX = autoBMCard.getContentX();
         int contentY = autoBMCard.getContentY();

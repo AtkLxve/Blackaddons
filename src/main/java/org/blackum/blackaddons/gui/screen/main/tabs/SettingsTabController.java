@@ -65,7 +65,7 @@ public class SettingsTabController extends SimpleTabController {
         listView.addItem(disableTutorialToastsToggle);
 
         ToggleSwitch toggleTabListToggle = new ToggleSwitch(0, 0, width,
-                "Toggle Tab List",
+                "Toggle tab list instead of holding",
                 "Toggles the player tab list visibility when pressing the tab key instead of holding it",
                 ConfigManager.data.toggleTabList, (val) -> {
                     ConfigManager.data.toggleTabList = val;
