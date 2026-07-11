@@ -430,7 +430,9 @@ public class TextField extends Widget {
 
     public void setText(String text) {
         this.text = text;
-        this.cursorPosition = Math.min(cursorPosition, text.length());
+        this.cursorPosition = text.length();
+        this.selectionStart = -1;
+        this.selectionEnd = -1;
         triggerChange();
     }
 
