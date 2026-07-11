@@ -4,7 +4,6 @@ import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTTVertex;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -174,93 +173,28 @@ public class CustomFontManager {
     public SdfGlyphData getSdfGlyphData(int codepoint, float pixelHeight, int padding, int onEdgeValue, float pixelDistScale) {
         float scale = getScaleForPixelHeight(pixelHeight);
         try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer x0 = stack.mallocInt(1);
-            IntBuffer y0 = stack.mallocInt(1);
-            IntBuffer x1 = stack.mallocInt(1);
-            IntBuffer y1 = stack.mallocInt(1);
-            STBTruetype.stbtt_GetCodepointBitmapBox(fontInfo, codepoint, scale, scale, x0, y0, x1, y1);
+            IntBuffer width = stack.mallocInt(1);
+            IntBuffer height = stack.mallocInt(1);
+            IntBuffer xoff = stack.mallocInt(1);
+            IntBuffer yoff = stack.mallocInt(1);
 
-            int w = x1.get(0) - x0.get(0);
-            int h = y1.get(0) - y0.get(0);
+            ByteBuffer sdfBuf = STBTruetype.stbtt_GetCodepointSDF(
+                    fontInfo, scale, codepoint, padding, (byte) onEdgeValue, pixelDistScale,
+                    width, height, xoff, yoff);
+            if (sdfBuf == null) return null;
+
+            int w = width.get(0);
+            int h = height.get(0);
             if (w <= 0 || h <= 0) {
+                STBTruetype.stbtt_FreeSDF(sdfBuf, 0L);
                 return null;
             }
 
-            ByteBuffer bitmap = MemoryUtil.memAlloc(w * h);
-            try {
-                STBTruetype.stbtt_MakeCodepointBitmap(fontInfo, bitmap, w, h, w, scale, scale, codepoint);
-
-                byte[] alpha = new byte[w * h];
-                bitmap.get(alpha);
-
-                int outW = w + padding * 2;
-                int outH = h + padding * 2;
-                byte[] sdf = buildSdf(alpha, w, h, padding, onEdgeValue, pixelDistScale);
-                return new SdfGlyphData(sdf, outW, outH, x0.get(0) - padding, y0.get(0) - padding);
-            } finally {
-                MemoryUtil.memFree(bitmap);
-            }
+            byte[] pixels = new byte[w * h];
+            sdfBuf.get(pixels);
+            sdfBuf.rewind();
+            STBTruetype.stbtt_FreeSDF(sdfBuf, 0L);
+            return new SdfGlyphData(pixels, w, h, xoff.get(0), yoff.get(0));
         }
-    }
-
-    private static byte[] buildSdf(byte[] alpha, int width, int height, int padding, int onEdgeValue, float pixelDistScale) {
-        int outW = width + padding * 2;
-        int outH = height + padding * 2;
-        byte[] out = new byte[outW * outH];
-        float maxDistance = Math.max(1.0f, 255.0f / Math.max(0.001f, pixelDistScale));
-
-        for (int y = 0; y < outH; y++) {
-            int srcY = y - padding;
-            for (int x = 0; x < outW; x++) {
-                int srcX = x - padding;
-                float alphaAtSample = sampleAlpha(alpha, width, height, srcX, srcY);
-                boolean inside = alphaAtSample >= 0.5f;
-                float nearest = maxDistance;
-                int minX = Math.max(0, srcX - (int) Math.ceil(maxDistance));
-                int maxX = Math.min(width - 1, srcX + (int) Math.ceil(maxDistance));
-                int minY = Math.max(0, srcY - (int) Math.ceil(maxDistance));
-                int maxY = Math.min(height - 1, srcY + (int) Math.ceil(maxDistance));
-
-                for (int yy = minY; yy <= maxY; yy++) {
-                    for (int xx = minX; xx <= maxX; xx++) {
-                        float neighborAlpha = sampleAlpha(alpha, width, height, xx, yy);
-                        if ((neighborAlpha >= 0.5f) == inside) {
-                            continue;
-                        }
-                        float dx = (xx + 0.5f) - (srcX + 0.5f);
-                        float dy = (yy + 0.5f) - (srcY + 0.5f);
-                        float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                        if (dist < nearest) {
-                            nearest = dist;
-                        }
-                    }
-                }
-
-                if (nearest > maxDistance) {
-                    nearest = maxDistance;
-                }
-
-                float edgeBias = (alphaAtSample - 0.5f) * 2.0f;
-                float signed = inside ? nearest : -nearest;
-                if (alphaAtSample > 0.0f && alphaAtSample < 1.0f) {
-                    signed = edgeBias;
-                }
-                int value = Math.round(onEdgeValue + signed * pixelDistScale);
-                if (value < 0) {
-                    value = 0;
-                } else if (value > 255) {
-                    value = 255;
-                }
-                out[y * outW + x] = (byte) value;
-            }
-        }
-        return out;
-    }
-
-    private static float sampleAlpha(byte[] alpha, int width, int height, int x, int y) {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            return 0.0f;
-        }
-        return (alpha[y * width + x] & 0xFF) / 255.0f;
     }
 }

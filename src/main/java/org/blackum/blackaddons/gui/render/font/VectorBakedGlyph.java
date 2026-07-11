@@ -16,8 +16,13 @@ import org.joml.Vector4f;
 import net.minecraft.client.renderer.rendertype.RenderType;
 
 public class VectorBakedGlyph implements BakedGlyph {
+    private static final ThreadLocal<Vector4f[]> TMP_VECTORS = ThreadLocal.withInitial(() -> new Vector4f[] {
+        new Vector4f(), new Vector4f(), new Vector4f(), new Vector4f()
+    });
+
     private final int codepoint;
     private final VectorFontManager.GlyphData glyphData;
+
 
     public VectorBakedGlyph(int codepoint, VectorFontManager.GlyphData glyphData) {
         this.codepoint = codepoint;
@@ -95,10 +100,11 @@ public class VectorBakedGlyph implements BakedGlyph {
 
             float bo = style != null && style.isBold() ? boldOffset : 0;
             
-            Vector4f v1 = new Vector4f(x0 + bo, y0, 0, 1).mul(matrix4f);
-            Vector4f v2 = new Vector4f(x0 + bo, y1, 0, 1).mul(matrix4f);
-            Vector4f v3 = new Vector4f(x1 + bo, y1, 0, 1).mul(matrix4f);
-            Vector4f v4 = new Vector4f(x1 + bo, y0, 0, 1).mul(matrix4f);
+            Vector4f[] tmps = TMP_VECTORS.get();
+            Vector4f v1 = tmps[0].set(x0 + bo, y0, 0, 1).mul(matrix4f);
+            Vector4f v2 = tmps[1].set(x0 + bo, y1, 0, 1).mul(matrix4f);
+            Vector4f v3 = tmps[2].set(x1 + bo, y1, 0, 1).mul(matrix4f);
+            Vector4f v4 = tmps[3].set(x1 + bo, y0, 0, 1).mul(matrix4f);
 
             vertexConsumer.addVertex(v1.x(), v1.y(), v1.z()).setColor(color).setUv(0, 0).setLight(light);
             vertexConsumer.addVertex(v2.x(), v2.y(), v2.z()).setColor(color).setUv(0, 1).setLight(light);

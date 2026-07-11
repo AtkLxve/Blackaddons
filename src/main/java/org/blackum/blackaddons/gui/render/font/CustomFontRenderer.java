@@ -36,7 +36,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,9 +85,11 @@ public class CustomFontRenderer {
     private float obfuscatedGlyphBucketScale = -1f;
 
     private record PreparedAtlasEntry(int codepoint, int width, int height, int xoff, int yoff,
-                                      float u0, float v0, float u1, float v1, byte[] pixels) {}
+            float u0, float v0, float u1, float v1, byte[] pixels) {
+    }
 
-    private record PreparedAsciiAtlas(int width, int height, List<PreparedAtlasEntry> entries) {}
+    private record PreparedAsciiAtlas(int width, int height, List<PreparedAtlasEntry> entries) {
+    }
 
     public static final class SdfGlyph {
         public final int width;
@@ -97,7 +102,8 @@ public class CustomFontRenderer {
         public final float v1;
         public final boolean atlasResident;
 
-        private SdfGlyph(int width, int height, int xoff, int yoff, float u0, float v0, float u1, float v1, boolean atlasResident) {
+        private SdfGlyph(int width, int height, int xoff, int yoff, float u0, float v0, float u1, float v1,
+                boolean atlasResident) {
             this.width = width;
             this.height = height;
             this.xoff = xoff;
@@ -185,7 +191,8 @@ public class CustomFontRenderer {
                 if (buffer != null) {
                     CustomFontManager newManager = new CustomFontManager(buffer);
                     PreparedAsciiAtlas atlasData = prepareAsciiAtlas(newManager, onStatus);
-                    if (onStatus != null) onStatus.accept("Uploading to GPU...");
+                    if (onStatus != null)
+                        onStatus.accept("Uploading to GPU...");
                     Minecraft.getInstance().execute(() -> {
                         try {
                             manager = newManager;
@@ -286,6 +293,23 @@ public class CustomFontRenderer {
             return null;
         }
 
+        int total = 126 - 32 + 1;
+        CustomFontManager.SdfGlyphData[] sdfResults = new CustomFontManager.SdfGlyphData[127];
+        AtomicInteger doneCount = new AtomicInteger(0);
+
+        List<CompletableFuture<Void>> futures = new ArrayList<>(total);
+        for (int cp = 32; cp <= 126; cp++) {
+            final int codepoint = cp;
+            futures.add(CompletableFuture.runAsync(() -> {
+                sdfResults[codepoint] = fontManager.getSdfGlyphData(codepoint, SDF_SOURCE_SIZE, SDF_PADDING,
+                        SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
+                int n = doneCount.incrementAndGet();
+                if (onStatus != null)
+                    onStatus.accept("Building glyphs: " + n + " / " + total);
+            }));
+        }
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
         List<AtlasEntry> entries = new ArrayList<>();
         int atlasWidth = 0;
         int atlasHeight = ATLAS_GAP;
@@ -293,12 +317,9 @@ public class CustomFontRenderer {
         int cursorY = ATLAS_GAP;
         int rowHeight = 0;
 
-        int total = 126 - 32 + 1;
-        int done = 0;
         for (int cp = 32; cp <= 126; cp++) {
-            CustomFontManager.SdfGlyphData sdf = fontManager.getSdfGlyphData(cp, SDF_SOURCE_SIZE, SDF_PADDING, SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
-            done++;
-            if (onStatus != null) onStatus.accept("Building glyphs: " + done + " / " + total);
+            CustomFontManager.SdfGlyphData sdf = sdfResults[cp];
+
             if (sdf == null || sdf.width <= 0 || sdf.height <= 0) {
                 continue;
             }
@@ -342,11 +363,12 @@ public class CustomFontRenderer {
     }
 
     private static String formatSize(long bytes) {
-        if (bytes < 1024L) return bytes + " B";
-        if (bytes < 1024L * 1024L) return (bytes / 1024L) + " KB";
-        return String.format(java.util.Locale.ROOT, "%.1f MB", bytes / (1024.0 * 1024.0));
+        if (bytes < 1024L)
+            return bytes + " B";
+        if (bytes < 1024L * 1024L)
+            return (bytes / 1024L) + " KB";
+        return String.format(Locale.ROOT, "%.1f MB", bytes / (1024.0 * 1024.0));
     }
-
 
     private void applyPreparedAsciiAtlas(PreparedAsciiAtlas atlasData) {
         if (atlasData == null) {
@@ -357,7 +379,8 @@ public class CustomFontRenderer {
         NativeImage pixels = atlasTexture.getPixels();
 
         for (PreparedAtlasEntry entry : atlasData.entries()) {
-            copySdfBitmap(pixels, entry.pixels(), (int) (entry.u0() * atlasData.width()), (int) (entry.v0() * atlasData.height()), entry.width(), entry.height());
+            copySdfBitmap(pixels, entry.pixels(), (int) (entry.u0() * atlasData.width()),
+                    (int) (entry.v0() * atlasData.height()), entry.width(), entry.height());
             sdfGlyphCache.put(entry.codepoint(), new SdfGlyph(
                     entry.width(),
                     entry.height(),
@@ -373,8 +396,10 @@ public class CustomFontRenderer {
         McCompat.enableLinearFiltering(atlasTexture);
         atlasTexture.upload();
         atlasId = McCompat.registerTexture(atlasTexture, "blackaddons", "custom_sdf_atlas");
-        atlasRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas", BlackaddonsRenderPipelines.CUSTOM_TEXT, atlasId);
-        atlasDepthRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas_depth", BlackaddonsRenderPipelines.CUSTOM_TEXT_DEPTH, atlasId);
+        atlasRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas",
+                BlackaddonsRenderPipelines.CUSTOM_TEXT, atlasId);
+        atlasDepthRenderType = (RenderType) McCompat.createTextRenderType("custom_text_atlas_depth",
+                BlackaddonsRenderPipelines.CUSTOM_TEXT_DEPTH, atlasId);
         atlasTextureSetup = TextureSetup.singleTexture(atlasTexture.getTextureView(), atlasTexture.getSampler());
     }
 
@@ -395,7 +420,8 @@ public class CustomFontRenderer {
             return null;
         }
 
-        CustomFontManager.SdfGlyphData sdf = manager.getSdfGlyphData(codepoint, SDF_SOURCE_SIZE, SDF_PADDING, SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
+        CustomFontManager.SdfGlyphData sdf = manager.getSdfGlyphData(codepoint, SDF_SOURCE_SIZE, SDF_PADDING,
+                SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
         if (sdf == null || sdf.width <= 0 || sdf.height <= 0) {
             return null;
         }
@@ -466,19 +492,21 @@ public class CustomFontRenderer {
         obfuscatedGlyphBucketScale = scale;
     }
 
-    public float getGlyphVisualLeft(CustomFontManager.GlyphData glyph, boolean bold, boolean italic, boolean shadowed, float shadowOffset) {
+    public float getGlyphVisualLeft(CustomFontManager.GlyphData glyph, boolean bold, boolean italic, boolean shadowed,
+            float shadowOffset) {
         VisualGlyphBounds bounds = getVisualGlyphBounds(glyph, bold, italic, shadowed, shadowOffset);
         return bounds.left();
     }
 
-    public float getGlyphVisualRight(CustomFontManager.GlyphData glyph, boolean bold, boolean italic, boolean shadowed, float shadowOffset) {
+    public float getGlyphVisualRight(CustomFontManager.GlyphData glyph, boolean bold, boolean italic, boolean shadowed,
+            float shadowOffset) {
         VisualGlyphBounds bounds = getVisualGlyphBounds(glyph, bold, italic, shadowed, shadowOffset);
         return bounds.right();
     }
 
     public void drawStringGui(Matrix3x2fc pose, FormattedCharSequence text, float x, float y,
-                              int baseColor, ScreenRectangle scissor, GuiRenderState renderState,
-                              Font font) {
+            int baseColor, ScreenRectangle scissor, GuiRenderState renderState,
+            Font font) {
         if (!initialized) {
             init();
         }
@@ -487,7 +515,7 @@ public class CustomFontRenderer {
         }
 
         float scale = getScale();
-        float[] curX = {x};
+        float[] curX = { x };
         text.accept((idx, style, cp) -> {
             int color = baseColor;
             if (style.getColor() != null) {
@@ -509,7 +537,8 @@ public class CustomFontRenderer {
                         .visit(new Font.GlyphVisitor() {
                             @Override
                             public void acceptGlyph(TextRenderable.Styled styled) {
-                                renderState.addGlyphToCurrentLayer(new GlyphRenderState(new Matrix3x2f(pose), styled, scissor));
+                                renderState.addGlyphToCurrentLayer(
+                                        new GlyphRenderState(new Matrix3x2f(pose), styled, scissor));
                             }
                         });
                 curX[0] += font.width(singleChar);
@@ -519,7 +548,7 @@ public class CustomFontRenderer {
     }
 
     public void drawStringGui(Matrix3x2fc pose, String text, float x, float y,
-                              int color, ScreenRectangle scissor, GuiRenderState renderState) {
+            int color, ScreenRectangle scissor, GuiRenderState renderState) {
         if (!initialized) {
             init();
         }
@@ -531,7 +560,7 @@ public class CustomFontRenderer {
         boolean bold = ConfigManager.data.customFontBold;
         boolean italic = ConfigManager.data.customFontItalic;
         float curX = x;
-        for (int i = 0; i < text.length(); ) {
+        for (int i = 0; i < text.length();) {
             int cp = text.codePointAt(i);
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);
             SdfGlyph sdfGlyph = getSdfGlyph(cp);
@@ -544,8 +573,8 @@ public class CustomFontRenderer {
     }
 
     private void renderGlyphGui(Matrix3x2fc pose, int codepoint, CustomFontManager.GlyphData glyph, SdfGlyph sdfGlyph,
-                                float x, float y, int color, ScreenRectangle scissor,
-                                GuiRenderState renderState, boolean bold, boolean italic) {
+            float x, float y, int color, ScreenRectangle scissor,
+            GuiRenderState renderState, boolean bold, boolean italic) {
         GlyphQuad quad = getGlyphQuad(sdfGlyph, x, y);
         float slant = italic ? ConfigManager.data.customFontItalicSlant : 0f;
         float boldStrength = bold ? ConfigManager.data.customFontBoldStrength : 0f;
@@ -561,7 +590,8 @@ public class CustomFontRenderer {
         if (cfg.customFontOutline) {
             submitGlyphGui(pose, codepoint, sdfGlyph,
                     quad.x0, quad.y0, quad.x1, quad.y1,
-                    slant, -(cfg.customFontOutlineWidth + boldStrength), ensureOpaque(cfg.customFontOutlineColor), scissor, renderState);
+                    slant, -(cfg.customFontOutlineWidth + boldStrength), ensureOpaque(cfg.customFontOutlineColor),
+                    scissor, renderState);
         }
 
         submitGlyphGui(pose, codepoint, sdfGlyph,
@@ -570,9 +600,9 @@ public class CustomFontRenderer {
     }
 
     private void submitGlyphGui(Matrix3x2fc pose, int codepoint, SdfGlyph sdfGlyph,
-                                float sx0, float sy0, float sx1, float sy1,
-                                float italicSlant, float effectZ, int color,
-                                ScreenRectangle scissor, GuiRenderState renderState) {
+            float sx0, float sy0, float sx1, float sy1,
+            float italicSlant, float effectZ, int color,
+            ScreenRectangle scissor, GuiRenderState renderState) {
         TextureSetup textureSetup;
         if (sdfGlyph.atlasResident) {
             textureSetup = atlasTextureSetup;
@@ -606,7 +636,7 @@ public class CustomFontRenderer {
     }
 
     private VisualGlyphBounds getVisualGlyphBounds(CustomFontManager.GlyphData glyph, boolean bold, boolean italic,
-                                                   boolean shadowed, float shadowOffset) {
+            boolean shadowed, float shadowOffset) {
         float glyphScale = getCachedScale();
         float left = glyph.x0 * glyphScale;
         float right = glyph.x1 * glyphScale;
@@ -647,7 +677,7 @@ public class CustomFontRenderer {
         if (manager == null) {
             return false;
         }
-        boolean[] result = {true};
+        boolean[] result = { true };
         text.accept((idx, style, cp) -> {
             if (manager.getGlyphData(cp) == null || getSdfGlyph(cp) == null) {
                 result[0] = false;
@@ -658,13 +688,18 @@ public class CustomFontRenderer {
         return result[0];
     }
 
-//? if <26.2 {
+    //? if <26.2 {
+    private static final ThreadLocal<Vector4f[]> TMP_VECTORS = ThreadLocal.withInitial(() -> new Vector4f[] {
+            new Vector4f(), new Vector4f(), new Vector4f(), new Vector4f()
+    });
 
-    public void drawString(PoseStack poseStack, String text, float x, float y, int color, MultiBufferSource bufferSource) {
+    public void drawString(PoseStack poseStack, String text, float x, float y, int color,
+            MultiBufferSource bufferSource) {
         drawString(poseStack.last().pose(), text, x, y, color, bufferSource);
     }
 
-    public void drawString(Matrix4f matrix, FormattedCharSequence text, float x, float y, int baseColor, MultiBufferSource bufferSource) {
+    public void drawString(Matrix4f matrix, FormattedCharSequence text, float x, float y, int baseColor,
+            MultiBufferSource bufferSource) {
         if (!ConfigManager.data.customTextEnabled) {
             return;
         }
@@ -672,12 +707,13 @@ public class CustomFontRenderer {
             if (!loading) {
                 init();
             }
-            Minecraft.getInstance().font.drawInBatch(text, x, y, baseColor, false, matrix, bufferSource, Font.DisplayMode.NORMAL, 0, 0xF000F0);
+            Minecraft.getInstance().font.drawInBatch(text, x, y, baseColor, false, matrix, bufferSource,
+                    Font.DisplayMode.NORMAL, 0, 0xF000F0);
             return;
         }
 
         float scale = getScale();
-        float[] curX = {x};
+        float[] curX = { x };
         text.accept((idx, style, cp) -> {
             int color = baseColor;
             if (style.getColor() != null) {
@@ -702,13 +738,14 @@ public class CustomFontRenderer {
             if (!loading) {
                 init();
             }
-            Minecraft.getInstance().font.drawInBatch(text, x, y, color, false, matrix, bufferSource, Font.DisplayMode.NORMAL, 0, 0xF000F0);
+            Minecraft.getInstance().font.drawInBatch(text, x, y, color, false, matrix, bufferSource,
+                    Font.DisplayMode.NORMAL, 0, 0xF000F0);
             return;
         }
 
         float scale = getScale();
         float curX = x;
-        for (int i = 0; i < text.length(); ) {
+        for (int i = 0; i < text.length();) {
             int cp = text.codePointAt(i);
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);
             SdfGlyph sdfGlyph = getSdfGlyph(cp);
@@ -721,7 +758,7 @@ public class CustomFontRenderer {
     }
 
     private void renderGlyph3d(Matrix4f matrix, int codepoint, SdfGlyph sdfGlyph,
-                               float x, float y, int color, MultiBufferSource bufferSource) {
+            float x, float y, int color, MultiBufferSource bufferSource) {
         GlyphQuad quad = getGlyphQuad(sdfGlyph, x, y);
 
         RenderType layer;
@@ -737,8 +774,8 @@ public class CustomFontRenderer {
             v1 = sdfGlyph.v1;
         } else {
             DynamicTexture texture = textureCache.computeIfAbsent(codepoint, this::createGlyphTexture);
-            Object textureId = identifierCache.computeIfAbsent(codepoint, cp ->
-                    McCompat.registerTexture(texture, "blackaddons", "custom_sdf/" + codepoint));
+            Object textureId = identifierCache.computeIfAbsent(codepoint,
+                    cp -> McCompat.registerTexture(texture, "blackaddons", "custom_sdf/" + codepoint));
             layer = getPerGlyphLayer(textureId);
             u0 = 0f;
             v0 = 0f;
@@ -750,19 +787,23 @@ public class CustomFontRenderer {
         float effect = ConfigManager.data.customFontBold ? ConfigManager.data.customFontBoldStrength : 0f;
         int effectBits = Float.floatToRawIntBits(packShaderEffect(effect));
 
-        Vector4f v1p = new Vector4f(quad.x0, quad.y0, 0, 1).mul(matrix);
-        Vector4f v2p = new Vector4f(quad.x0, quad.y1, 0, 1).mul(matrix);
-        Vector4f v3p = new Vector4f(quad.x1, quad.y1, 0, 1).mul(matrix);
-        Vector4f v4p = new Vector4f(quad.x1, quad.y0, 0, 1).mul(matrix);
+        Vector4f[] tmps = TMP_VECTORS.get();
+        Vector4f v1p = tmps[0].set(quad.x0, quad.y0, 0, 1).mul(matrix);
+        Vector4f v2p = tmps[1].set(quad.x0, quad.y1, 0, 1).mul(matrix);
+        Vector4f v3p = tmps[2].set(quad.x1, quad.y1, 0, 1).mul(matrix);
+        Vector4f v4p = tmps[3].set(quad.x1, quad.y0, 0, 1).mul(matrix);
 
-        buffer.addVertex(v1p.x(), v1p.y(), v1p.z()).setColor(color).setUv(u0, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
-        buffer.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(color).setUv(u0, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
-        buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(color).setUv(u1, v1).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
-        buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(color).setUv(u1, v0).setUv2(effectBits & 0xFFFF, (effectBits >> 16) & 0xFFFF);
+        buffer.addVertex(v1p.x(), v1p.y(), v1p.z()).setColor(color).setUv(u0, v0).setUv2(effectBits & 0xFFFF,
+                (effectBits >> 16) & 0xFFFF);
+        buffer.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(color).setUv(u0, v1).setUv2(effectBits & 0xFFFF,
+                (effectBits >> 16) & 0xFFFF);
+        buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(color).setUv(u1, v1).setUv2(effectBits & 0xFFFF,
+                (effectBits >> 16) & 0xFFFF);
+        buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(color).setUv(u1, v0).setUv2(effectBits & 0xFFFF,
+                (effectBits >> 16) & 0xFFFF);
     }
 
-//?}
-
+    //?}
 
     public DynamicTexture getTexture(int codepoint, CustomFontManager.GlyphData glyph) {
         SdfGlyph sdfGlyph = getSdfGlyph(codepoint);
@@ -778,8 +819,8 @@ public class CustomFontRenderer {
             return atlasRenderType;
         }
         DynamicTexture texture = textureCache.computeIfAbsent(codepoint, this::createGlyphTexture);
-        Object textureId = identifierCache.computeIfAbsent(codepoint, cp ->
-                McCompat.registerTexture(texture, "blackaddons", "custom_sdf/" + codepoint));
+        Object textureId = identifierCache.computeIfAbsent(codepoint,
+                cp -> McCompat.registerTexture(texture, "blackaddons", "custom_sdf/" + codepoint));
         return getPerGlyphLayer(textureId);
     }
 
@@ -789,20 +830,20 @@ public class CustomFontRenderer {
             return atlasDepthRenderType;
         }
         DynamicTexture texture = textureCache.computeIfAbsent(codepoint, this::createGlyphTexture);
-        Object textureId = identifierCache.computeIfAbsent(codepoint, cp ->
-                McCompat.registerTexture(texture, "blackaddons", "custom_sdf/" + codepoint));
+        Object textureId = identifierCache.computeIfAbsent(codepoint,
+                cp -> McCompat.registerTexture(texture, "blackaddons", "custom_sdf/" + codepoint));
         return getPerGlyphDepthLayer(textureId);
     }
 
     private RenderType getPerGlyphLayer(Object textureId) {
-        return layerCache.computeIfAbsent(textureId, loc ->
-                (RenderType) McCompat.createTextRenderType("custom_text_" + loc.toString().hashCode(),
+        return layerCache.computeIfAbsent(textureId,
+                loc -> (RenderType) McCompat.createTextRenderType("custom_text_" + loc.toString().hashCode(),
                         BlackaddonsRenderPipelines.CUSTOM_TEXT, loc));
     }
 
     private RenderType getPerGlyphDepthLayer(Object textureId) {
-        return depthLayerCache.computeIfAbsent(textureId, loc ->
-                (RenderType) McCompat.createTextRenderType("custom_text_depth_" + loc.toString().hashCode(),
+        return depthLayerCache.computeIfAbsent(textureId,
+                loc -> (RenderType) McCompat.createTextRenderType("custom_text_depth_" + loc.toString().hashCode(),
                         BlackaddonsRenderPipelines.CUSTOM_TEXT_DEPTH, loc));
     }
 
@@ -811,7 +852,8 @@ public class CustomFontRenderer {
             throw new IllegalStateException("Font manager not initialized");
         }
 
-        CustomFontManager.SdfGlyphData sdf = manager.getSdfGlyphData(codepoint, SDF_SOURCE_SIZE, SDF_PADDING, SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
+        CustomFontManager.SdfGlyphData sdf = manager.getSdfGlyphData(codepoint, SDF_SOURCE_SIZE, SDF_PADDING,
+                SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
         if (sdf == null || sdf.width <= 0 || sdf.height <= 0) {
             DynamicTexture fallback = new DynamicTexture("custom_sdf_missing", 1, 1, false);
             fallback.getPixels().setPixelABGR(0, 0, 0);
@@ -857,9 +899,12 @@ public class CustomFontRenderer {
         return out;
     }
 
-    private record GlyphQuad(float x0, float y0, float x1, float y1) {}
+    private record GlyphQuad(float x0, float y0, float x1, float y1) {
+    }
 
-    private record AtlasEntry(int codepoint, CustomFontManager.SdfGlyphData sdf, int x, int y) {}
+    private record AtlasEntry(int codepoint, CustomFontManager.SdfGlyphData sdf, int x, int y) {
+    }
 
-    private record VisualGlyphBounds(float left, float right) {}
+    private record VisualGlyphBounds(float left, float right) {
+    }
 }

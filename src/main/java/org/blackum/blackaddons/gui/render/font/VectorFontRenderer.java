@@ -162,6 +162,9 @@ public class VectorFontRenderer {
     }
 
 //? if <26.2 {
+    private static final ThreadLocal<Vector4f[]> TMP_VECTORS = ThreadLocal.withInitial(() -> new Vector4f[] {
+            new Vector4f(), new Vector4f(), new Vector4f(), new Vector4f()
+    });
 
     public void drawString(PoseStack poseStack, String text, float x, float y, int color, MultiBufferSource bufferSource) {
         drawString(poseStack.last().pose(), text, x, y, color, bufferSource);
@@ -216,10 +219,11 @@ public class VectorFontRenderer {
         float y0 = y + baseline - glyph.y1 * scale;
         float y1 = y + baseline - glyph.y0 * scale;
 
-        Vector4f v1 = new Vector4f(x0, y0, 0, 1).mul(matrix);
-        Vector4f v2 = new Vector4f(x0, y1, 0, 1).mul(matrix);
-        Vector4f v3 = new Vector4f(x1, y1, 0, 1).mul(matrix);
-        Vector4f v4 = new Vector4f(x1, y0, 0, 1).mul(matrix);
+        Vector4f[] tmps = TMP_VECTORS.get();
+        Vector4f v1 = tmps[0].set(x0, y0, 0, 1).mul(matrix);
+        Vector4f v2 = tmps[1].set(x0, y1, 0, 1).mul(matrix);
+        Vector4f v3 = tmps[2].set(x1, y1, 0, 1).mul(matrix);
+        Vector4f v4 = tmps[3].set(x1, y0, 0, 1).mul(matrix);
 
         buffer.addVertex(v1.x(), v1.y(), v1.z()).setUv(0, 0).setColor(color);
         buffer.addVertex(v2.x(), v2.y(), v2.z()).setUv(0, 1).setColor(color);
