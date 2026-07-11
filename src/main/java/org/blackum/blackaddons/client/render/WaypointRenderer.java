@@ -22,13 +22,80 @@ import org.blackum.blackaddons.feature.waypoint.WaypointAnimation;
 import org.blackum.blackaddons.feature.waypoint.WaypointGroup;
 import org.blackum.blackaddons.feature.waypoint.WaypointManager;
 import org.joml.Matrix4f;
-
-import java.awt.Color;
 import org.blackum.blackaddons.feature.waypoint.WaypointShape;
+import org.blackum.blackaddons.common.model.DungeonFloor;
+import org.blackum.blackaddons.common.util.mc.LocationUtils;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class WaypointRenderer {
 
     private static final int CIRCLE_SEGMENTS = 64;
+    private static final float[] COS_TABLE = new float[CIRCLE_SEGMENTS + 1];
+    private static final float[] SIN_TABLE = new float[CIRCLE_SEGMENTS + 1];
+
+    static {
+        for (int i = 0; i <= CIRCLE_SEGMENTS; i++) {
+            double angle = i * 2.0 * Math.PI / CIRCLE_SEGMENTS;
+            COS_TABLE[i] = (float) Math.cos(angle);
+            SIN_TABLE[i] = (float) Math.sin(angle);
+        }
+    }
+
+    private static boolean isGroupActive(WaypointGroup group, Map<UUID, Boolean> cache, Map<UUID, WaypointGroup> groupLookupCache, WaypointManager manager, int depth, boolean inDungeons, DungeonFloor currentFloor, boolean inBoss, int f7Phase) {
+        if (group == null) return false;
+        if (depth > 10) return false;
+
+        Boolean cached = cache.get(group.id);
+        if (cached != null) {
+            return cached;
+        }
+
+        if (!group.enabled) {
+            cache.put(group.id, false);
+            return false;
+        }
+
+        if (group.parentId != null) {
+            WaypointGroup parent = groupLookupCache.computeIfAbsent(group.parentId, manager::getGroup);
+            if (parent != null && !isGroupActive(parent, cache, groupLookupCache, manager, depth + 1, inDungeons, currentFloor, inBoss, f7Phase)) {
+                cache.put(group.id, false);
+                return false;
+            }
+        }
+
+        if (group.inDungeonFilter != null) {
+            if (inDungeons != group.inDungeonFilter) {
+                cache.put(group.id, false);
+                return false;
+            }
+        }
+
+        if (group.floorFilter != null && !group.floorFilter.isEmpty()) {
+            if (currentFloor == null || !currentFloor.getDisplayName().equals(group.floorFilter)) {
+                cache.put(group.id, false);
+                return false;
+            }
+        }
+
+        if (group.inBossFilter != null) {
+            if (inBoss != group.inBossFilter) {
+                cache.put(group.id, false);
+                return false;
+            }
+        }
+
+        if (group.phaseFilter != null && group.phaseFilter > 0) {
+            if (f7Phase != group.phaseFilter) {
+                cache.put(group.id, false);
+                return false;
+            }
+        }
+
+        cache.put(group.id, true);
+        return true;
+    }
 
 //? if >=26.2 {
 
@@ -37,19 +104,29 @@ public class WaypointRenderer {
         if (mc.player == null || mc.level == null) return;
 
         Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
+        String currentDim = McCompat.dimensionId(mc.level.dimension());
+
+        boolean inDungeons = LocationUtils.inDungeons();
+        DungeonFloor currentFloor = LocationUtils.getCurrentFloor();
+        boolean inBoss = LocationUtils.inBoss();
+        int f7Phase = LocationUtils.getF7Phase();
+
+        WaypointManager manager = WaypointManager.getInstance();
+        Map<UUID, Boolean> activeGroups = new HashMap<>();
+        Map<UUID, WaypointGroup> groupLookupCache = new HashMap<>();
 
         int count = 0;
-        for (Waypoint waypoint : WaypointManager.getInstance().getWaypoints()) {
+        for (Waypoint waypoint : manager.getWaypoints()) {
             if (!waypoint.enabled) continue;
             if (waypoint.groupId != null) {
-                WaypointGroup group = WaypointManager.getInstance().getGroup(waypoint.groupId);
-                if (group != null && !group.isActive()) continue;
+                WaypointGroup group = groupLookupCache.computeIfAbsent(waypoint.groupId, manager::getGroup);
+                if (group != null && !isGroupActive(group, activeGroups, groupLookupCache, manager, 0, inDungeons, currentFloor, inBoss, f7Phase)) continue;
             }
             if (waypoint.dimension != null) {
-                String dim = McCompat.dimensionId(mc.level.dimension());
-                if (!waypoint.dimension.equals(dim)) continue;
+                if (!waypoint.dimension.equals(currentDim)) continue;
             }
             renderWaypoint(poseStack, bufferSource, waypoint, camPos);
+            count++;
         }
         if (count > 0 && System.currentTimeMillis() % 5000 < 50) {
             Blackaddons.LOGGER.info("Rendering {} waypoints", count);
@@ -62,19 +139,29 @@ public class WaypointRenderer {
         if (mc.player == null || mc.level == null) return;
 
         Vec3 camPos = mc.gameRenderer.getMainCamera().position();
+        String currentDim = McCompat.dimensionId(mc.level.dimension());
+
+        boolean inDungeons = LocationUtils.inDungeons();
+        DungeonFloor currentFloor = LocationUtils.getCurrentFloor();
+        boolean inBoss = LocationUtils.inBoss();
+        int f7Phase = LocationUtils.getF7Phase();
+
+        WaypointManager manager = WaypointManager.getInstance();
+        Map<UUID, Boolean> activeGroups = new HashMap<>();
+        Map<UUID, WaypointGroup> groupLookupCache = new HashMap<>();
 
         int count = 0;
-        for (Waypoint waypoint : WaypointManager.getInstance().getWaypoints()) {
+        for (Waypoint waypoint : manager.getWaypoints()) {
             if (!waypoint.enabled) continue;
             if (waypoint.groupId != null) {
-                WaypointGroup group = WaypointManager.getInstance().getGroup(waypoint.groupId);
-                if (group != null && !group.isActive()) continue;
+                WaypointGroup group = groupLookupCache.computeIfAbsent(waypoint.groupId, manager::getGroup);
+                if (group != null && !isGroupActive(group, activeGroups, groupLookupCache, manager, 0, inDungeons, currentFloor, inBoss, f7Phase)) continue;
             }
             if (waypoint.dimension != null) {
-                String dim = McCompat.dimensionId(mc.level.dimension());
-                if (!waypoint.dimension.equals(dim)) continue;
+                if (!waypoint.dimension.equals(currentDim)) continue;
             }
             renderWaypoint(matrix, bufferSource, waypoint, camPos);
+            count++;
         }
         if (count > 0 && System.currentTimeMillis() % 5000 < 50) {
             Blackaddons.LOGGER.info("Rendering {} waypoints", count);
@@ -90,10 +177,14 @@ public class WaypointRenderer {
         double z = waypoint.z - camPos.z;
 
         float radius = (float) waypoint.radius;
-        Color color = new Color(waypoint.color, true);
+        int colorVal = waypoint.color;
+        float r = ((colorVal >> 16) & 0xFF) / 255f;
+        float g = ((colorVal >> 8) & 0xFF) / 255f;
+        float b = (colorVal & 0xFF) / 255f;
+        float a = ((colorVal >> 24) & 0xFF) / 255f;
 
         WaypointAnimation anim = waypoint.animation != null ? waypoint.animation : WaypointAnimation.STATIC;
-        renderAnimatedWaypoint(poseStack, bufferSource, x, y, z, radius, color, waypoint.height, waypoint, anim);
+        renderAnimatedWaypoint(poseStack, bufferSource, x, y, z, radius, r, g, b, a, waypoint.height, waypoint, anim);
     }
 
 *///?} else {
@@ -103,21 +194,20 @@ public class WaypointRenderer {
         double z = waypoint.z - camPos.z;
 
         float radius = (float) waypoint.radius;
-        Color color = new Color(waypoint.color, true);
+        int colorVal = waypoint.color;
+        float r = ((colorVal >> 16) & 0xFF) / 255f;
+        float g = ((colorVal >> 8) & 0xFF) / 255f;
+        float b = (colorVal & 0xFF) / 255f;
+        float a = ((colorVal >> 24) & 0xFF) / 255f;
 
         WaypointAnimation anim = waypoint.animation != null ? waypoint.animation : WaypointAnimation.STATIC;
-        renderAnimatedWaypoint(matrix, bufferSource, x, y, z, radius, color, waypoint.height, waypoint, anim);
+        renderAnimatedWaypoint(matrix, bufferSource, x, y, z, radius, r, g, b, a, waypoint.height, waypoint, anim);
     }
 //?}
 
 //? if >=26.2 {
 
-    /*private static void renderAnimatedWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
-        float r = color.getRed() / 255f;
-        float g = color.getGreen() / 255f;
-        float b = color.getBlue() / 255f;
-        float a = color.getAlpha() / 255f;
-
+    /*private static void renderAnimatedWaypoint(PoseStack poseStack, SubmitNodeCollector bufferSource, double x, double y, double z, float radius, float r, float g, float b, float a, double height, Waypoint waypoint, WaypointAnimation animation) {
         float ringHeight = 0.05f;
 
         McCompat.drawGeometry(bufferSource, poseStack, McCompat.getWaypointRenderType(), (pose, buffer) -> {
@@ -184,13 +274,8 @@ public class WaypointRenderer {
     }
 
 *///?} else {
-    private static void renderAnimatedWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, double x, double y, double z, float radius, Color color, double height, Waypoint waypoint, WaypointAnimation animation) {
+    private static void renderAnimatedWaypoint(Matrix4f matrix, MultiBufferSource bufferSource, double x, double y, double z, float radius, float r, float g, float b, float a, double height, Waypoint waypoint, WaypointAnimation animation) {
         VertexConsumer buffer = BlackaddonsRenderTypes.getWaypointBuffer(bufferSource);
-        float r = color.getRed() / 255f;
-        float g = color.getGreen() / 255f;
-        float b = color.getBlue() / 255f;
-        float a = color.getAlpha() / 255f;
-
         float ringHeight = 0.05f;
 
         switch (animation) {
@@ -267,13 +352,10 @@ public class WaypointRenderer {
         float topY = bottomY + (float) height;
 
         for (int i = 0; i < CIRCLE_SEGMENTS; i++) {
-            float angle1 = (float) (i * 2 * Math.PI / CIRCLE_SEGMENTS);
-            float angle2 = (float) ((i + 1) * 2 * Math.PI / CIRCLE_SEGMENTS);
-
-            float cos1 = (float) Math.cos(angle1);
-            float sin1 = (float) Math.sin(angle1);
-            float cos2 = (float) Math.cos(angle2);
-            float sin2 = (float) Math.sin(angle2);
+            float cos1 = COS_TABLE[i];
+            float sin1 = SIN_TABLE[i];
+            float cos2 = COS_TABLE[i + 1];
+            float sin2 = SIN_TABLE[i + 1];
 
             float x1_inner = (float) (x + (radius - thickness) * cos1);
             float z1_inner = (float) (z + (radius - thickness) * sin1);
