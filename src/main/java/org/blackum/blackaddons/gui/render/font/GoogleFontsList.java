@@ -1,5 +1,6 @@
 package org.blackum.blackaddons.gui.render.font;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
@@ -14,14 +15,10 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import com.google.gson.JsonElement;
-import java.io.InputStreamReader;
 
 public class GoogleFontsList {
 
-    private static final String FONT_CONTENTS_BASE = "https://api.github.com/repos/google/fonts/contents/ofl";
+    private static final String FONTS_API = "http://ba.neutrality.cc:8080/v1/fonts";
 
     private static final Path CACHE_FILE = FabricLoader.getInstance().getConfigDir()
             .resolve("blackaddons").resolve("data").resolve("fontnames.txt");
@@ -31,13 +28,13 @@ public class GoogleFontsList {
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
 
-    private static final List<String> nameList     = Collections.synchronizedList(new ArrayList<>());
-    private static final Map<String, String> urlByDir     = new ConcurrentHashMap<>();
-    private static final Map<String, String> dirByDisplay = new ConcurrentHashMap<>();
-    private static final Map<String, String> shaByDir     = new ConcurrentHashMap<>();
+    private static final List<String> nameList = Collections.synchronizedList(new ArrayList<>());
+    private static final Map<String, String> urlByName = new ConcurrentHashMap<>();
+    private static volatile String cachedHash = null;
 
     private static volatile boolean lazyStarted = false;
     private static volatile boolean lazyDone    = false;
+    private static volatile boolean revalidateStarted = false;
     private static final List<Runnable> pendingCallbacks =
             Collections.synchronizedList(new ArrayList<>());
 
@@ -46,22 +43,7 @@ public class GoogleFontsList {
     public static boolean isLazyDone() { return lazyDone; }
 
     public static String getUrl(String displayName) {
-        String dir = dirByDisplay.get(displayName.toLowerCase(Locale.ROOT));
-        return dir != null ? urlByDir.get(dir) : null;
-    }
-
-    public static String getDirName(String displayName) {
-        String dir = dirByDisplay.get(displayName.toLowerCase(Locale.ROOT));
-        return dir != null ? dir : displayName.toLowerCase(Locale.ROOT).replace(" ", "");
-    }
-
-    public static String getSha(String displayName) {
-        String dir = dirByDisplay.get(displayName.toLowerCase(Locale.ROOT));
-        return dir != null ? shaByDir.get(dir) : null;
-    }
-
-    public static void cacheUrl(String displayName, String url) {
-        urlByDir.put(getDirName(displayName), url);
+        return urlByName.get(displayName);
     }
 
     public static void startLazyLoad(Runnable onReady) {
@@ -75,172 +57,148 @@ public class GoogleFontsList {
 
         Thread t = new Thread(() -> {
             try {
-                List<String[]> entries;
+                Map<String, String> entries;
                 if (Files.exists(CACHE_FILE)) {
                     entries = loadFromCache();
                 } else {
-                    entries = loadFromResources();
-                    if (entries.isEmpty()) {
-                        entries = fetchDirNames();
-                    }
-                    saveToCache(entries);
+                    ApiResponse apiResponse = fetchFromApi();
+                    entries = apiResponse.fonts;
+                    saveToCache(apiResponse.hash, entries);
                 }
 
-                if (entries.isEmpty()) {
-                }
-
-                Set<String> existing = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-                synchronized (nameList) { existing.addAll(nameList); }
-
-                List<String> newNames = new ArrayList<>();
-                for (String[] e : entries) {
-                    dirByDisplay.put(e[0].toLowerCase(Locale.ROOT), e[1]);
-                    shaByDir.put(e[1], e[2]);
-                    if (existing.add(e[0])) newNames.add(e[0]);
-                }
-                newNames.sort(String.CASE_INSENSITIVE_ORDER);
-                synchronized (nameList) { nameList.addAll(newNames); }
-
+                applyEntries(entries);
                 lazyDone = true;
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             } finally {
                 lazyStarted = false;
                 if (lazyDone) lazyStarted = true;
                 List<Runnable> cbs = new ArrayList<>(pendingCallbacks);
                 pendingCallbacks.clear();
                 Minecraft.getInstance().execute(() -> cbs.forEach(Runnable::run));
+                revalidateInBackground();
             }
         }, "CustomFont-FontList");
         t.setDaemon(true);
         t.start();
     }
 
+    private static void revalidateInBackground() {
+        if (revalidateStarted) return;
+        revalidateStarted = true;
+        Thread t = new Thread(() -> {
+            try {
+                ApiResponse apiResponse = fetchFromApi();
+                if (apiResponse.hash != null && apiResponse.hash.equals(cachedHash)) {
+                    return;
+                }
+                Map<String, String> oldUrls = new HashMap<>(urlByName);
+                applyEntries(apiResponse.fonts);
+                saveToCache(apiResponse.hash, apiResponse.fonts);
+                FontDownloader.evictStaleEntries(oldUrls, apiResponse.fonts);
+            } catch (Exception ignored) {
+            } finally {
+                revalidateStarted = false;
+            }
+        }, "CustomFont-Revalidate");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private static void applyEntries(Map<String, String> entries) {
+        List<String> newNames = new ArrayList<>(entries.keySet());
+        newNames.sort(String.CASE_INSENSITIVE_ORDER);
+        urlByName.clear();
+        urlByName.putAll(entries);
+        synchronized (nameList) {
+            nameList.clear();
+            nameList.addAll(newNames);
+        }
+    }
+
     public static void invalidateCache() {
-        lazyDone    = false;
-        lazyStarted = false;
+        lazyDone         = false;
+        lazyStarted      = false;
+        revalidateStarted = false;
+        cachedHash       = null;
         synchronized (nameList) { nameList.clear(); }
-        urlByDir.clear();
-        dirByDisplay.clear();
-        shaByDir.clear();
+        urlByName.clear();
         try { Files.deleteIfExists(CACHE_FILE); } catch (Exception ignored) {}
     }
 
-    private static List<String[]> fetchDirNames() throws Exception {
-        String json = httpGet(FONT_CONTENTS_BASE + "?ref=main");
-        List<String[]> result = parseDirEntries(json);
-        return result;
+    private static ApiResponse fetchFromApi() throws Exception {
+        String json = httpGet(FONTS_API);
+        return parseApiResponse(json);
     }
 
-    static List<String[]> parseDirEntries(String json) {
-        List<String[]> result = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        int i = 0, len = json.length();
-
-        while (i < len) {
-            int start = json.indexOf('{', i);
-            if (start < 0) break;
-
-            int depth = 0, end = -1;
-            boolean inStr = false;
-            for (int j = start; j < len; j++) {
-                char c = json.charAt(j);
-                if (c == '"' && (j == 0 || json.charAt(j - 1) != '\\')) inStr = !inStr;
-                if (!inStr) {
-                    if (c == '{') depth++;
-                    else if (c == '}') { depth--; if (depth == 0) { end = j; break; } }
-                }
-            }
-            if (end < 0) break;
-
-            String obj = json.substring(start, end + 1);
-            i = end + 1;
-
-            String type = extractField(obj, "type");
-            if (!"dir".equals(type)) continue;
-
-            String name = extractField(obj, "name");
-            String sha  = extractField(obj, "sha");
-
-            if (name == null || sha == null) {
-                continue;
-            }
-
-            if (!seen.add(name)) continue;
-            result.add(new String[]{dirToDisplayName(name), name, sha});
-        }
-
-        result.sort((a, b) -> String.CASE_INSENSITIVE_ORDER.compare(a[0], b[0]));
-        return result;
-    }
-
-    private static String extractField(String obj, String key) {
-        String search = "\"" + key + "\"";
-        int idx = obj.indexOf(search);
-        if (idx < 0) return null;
-        idx += search.length();
-        while (idx < obj.length() && (obj.charAt(idx) == ' ' || obj.charAt(idx) == '\t' || obj.charAt(idx) == ':')) idx++;
-        if (idx >= obj.length() || obj.charAt(idx) != '"') return null;
-        idx++;
-        int end = obj.indexOf('"', idx);
-        return end < 0 ? null : obj.substring(idx, end);
-    }
-
-    static String dirToDisplayName(String dir) {
-        if (dir.isEmpty()) return dir;
-        return Character.toUpperCase(dir.charAt(0)) + dir.substring(1);
-    }
-
-    private static List<String[]> loadFromCache() throws Exception {
-        List<String[]> result = new ArrayList<>();
-        int skipped = 0;
-        for (String line : Files.readAllLines(CACHE_FILE)) {
-            String[] parts = line.split("\t", 2);
-            if (parts.length == 2 && !parts[0].isBlank() && parts[1].matches("[0-9a-f]{40}")) {
-                result.add(new String[]{dirToDisplayName(parts[0]), parts[0], parts[1]});
-            } else {
-                skipped++;
-            }
-        }
-        if (result.isEmpty()) {
-            Files.deleteIfExists(CACHE_FILE);
-            result = loadFromResources();
-            if (result.isEmpty()) {
-                result = fetchDirNames();
-            }
-            saveToCache(result);
-        }
-        return result;
-    }
-
-    private static List<String[]> loadFromResources() {
-        List<String[]> result = new ArrayList<>();
-        try (InputStream in = GoogleFontsList.class.getResourceAsStream("/assets/blackaddons/fontnames.json")) {
-            if (in != null) {
-                try (InputStreamReader isr = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-                    JsonObject json = JsonParser.parseReader(isr).getAsJsonObject();
-                    for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
-                        String name = entry.getKey();
-                        String sha = entry.getValue().getAsString();
-                        result.add(new String[]{dirToDisplayName(name), name, sha});
+    static ApiResponse parseApiResponse(String json) {
+        Map<String, String> fonts = new LinkedHashMap<>();
+        String hash = null;
+        try {
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            if (root.has("hash")) hash = root.get("hash").getAsString();
+            JsonObject fontsObj = root.getAsJsonObject("fonts");
+            if (fontsObj != null) {
+                for (Map.Entry<String, JsonElement> entry : fontsObj.entrySet()) {
+                    String name = entry.getKey();
+                    String url = entry.getValue().getAsString();
+                    if (name != null && !name.isBlank() && url != null && !url.isBlank()) {
+                        fonts.put(name, url);
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
+        }
+        return new ApiResponse(hash, fonts);
+    }
+
+    private static Map<String, String> loadFromCache() throws Exception {
+        List<String> lines = Files.readAllLines(CACHE_FILE);
+        if (lines.isEmpty()) {
+            return fetchAndRefreshCache();
+        }
+
+        String firstLine = lines.get(0);
+        if (firstLine.startsWith("hash=")) {
+            cachedHash = firstLine.substring(5);
+        } else {
+            return fetchAndRefreshCache();
+        }
+
+        Map<String, String> result = new LinkedHashMap<>();
+        for (int i = 1; i < lines.size(); i++) {
+            String[] parts = lines.get(i).split("\t", 2);
+            if (parts.length == 2 && !parts[0].isBlank() && !parts[1].isBlank()) {
+                result.put(parts[0], parts[1]);
+            }
+        }
+
+        if (result.isEmpty()) {
+            return fetchAndRefreshCache();
         }
         return result;
     }
 
-    private static void saveToCache(List<String[]> entries) throws Exception {
+    private static Map<String, String> fetchAndRefreshCache() throws Exception {
+        ApiResponse apiResponse = fetchFromApi();
+        saveToCache(apiResponse.hash, apiResponse.fonts);
+        return apiResponse.fonts;
+    }
+
+    private static void saveToCache(String hash, Map<String, String> entries) throws Exception {
         Files.createDirectories(CACHE_FILE.getParent());
-        List<String> lines = new ArrayList<>(entries.size());
-        for (String[] e : entries) lines.add(e[1] + "\t" + e[2]);
+        List<String> lines = new ArrayList<>(entries.size() + 1);
+        lines.add("hash=" + (hash != null ? hash : ""));
+        for (Map.Entry<String, String> e : entries.entrySet()) {
+            lines.add(e.getKey() + "\t" + e.getValue());
+        }
         Files.write(CACHE_FILE, lines);
+        cachedHash = hash;
     }
 
     static String httpGet(String url) throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("Accept", "application/vnd.github.v3+json")
+                .header("Accept", "application/json")
                 .header("User-Agent", "blackaddons-minecraft-mod")
                 .GET().timeout(Duration.ofSeconds(30)).build();
         HttpResponse<String> resp = HTTP.send(req, HttpResponse.BodyHandlers.ofString());
@@ -248,4 +206,6 @@ public class GoogleFontsList {
             throw new RuntimeException("HTTP " + resp.statusCode() + ": " + url);
         return resp.body();
     }
+
+    record ApiResponse(String hash, Map<String, String> fonts) {}
 }

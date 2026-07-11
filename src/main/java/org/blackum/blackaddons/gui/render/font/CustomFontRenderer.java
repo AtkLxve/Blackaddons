@@ -57,6 +57,7 @@ public class CustomFontRenderer {
     private CustomFontManager manager;
     private boolean initialized = false;
     private volatile boolean loading = false;
+    private volatile Runnable pendingReload = null;
 
     private DynamicTexture atlasTexture;
     private Object atlasId;
@@ -170,18 +171,21 @@ public class CustomFontRenderer {
         reloadAsync(onDone, null);
     }
 
-    public void reloadAsync(Runnable onDone, Consumer<long[]> onProgress) {
+    public void reloadAsync(Runnable onDone, Consumer<String> onStatus) {
         if (loading) {
+            pendingReload = onDone;
             return;
         }
+        pendingReload = null;
         loading = true;
 
         Thread t = new Thread(() -> {
             try {
-                ByteBuffer buffer = loadFontBuffer(onProgress);
+                ByteBuffer buffer = loadFontBuffer(onStatus);
                 if (buffer != null) {
                     CustomFontManager newManager = new CustomFontManager(buffer);
-                    PreparedAsciiAtlas atlasData = prepareAsciiAtlas(newManager);
+                    PreparedAsciiAtlas atlasData = prepareAsciiAtlas(newManager, onStatus);
+                    if (onStatus != null) onStatus.accept("Uploading to GPU...");
                     Minecraft.getInstance().execute(() -> {
                         try {
                             manager = newManager;
@@ -212,6 +216,11 @@ public class CustomFontRenderer {
                             if (onDone != null) {
                                 onDone.run();
                             }
+                            Runnable pending = pendingReload;
+                            if (pending != null) {
+                                pendingReload = null;
+                                reloadAsync(pending);
+                            }
                         }
                     });
                 } else {
@@ -232,7 +241,7 @@ public class CustomFontRenderer {
         t.start();
     }
 
-    private ByteBuffer loadFontBuffer(Consumer<long[]> onProgress) throws Exception {
+    private ByteBuffer loadFontBuffer(Consumer<String> onStatus) throws Exception {
         String googleName = ConfigManager.data.customFontGoogleName;
 
         if (googleName != null && !googleName.isBlank()) {
@@ -243,7 +252,13 @@ public class CustomFontRenderer {
                 buf.put(bytes).flip();
                 return buf;
             }
-            ByteBuffer downloaded = FontDownloader.download(googleName, onProgress);
+            Consumer<long[]> byteProgress = onStatus == null ? null : progress -> {
+                long dl = progress[0], tot = progress[1];
+                String dlStr = formatSize(dl);
+                String msg = tot > 0 ? "Downloading: " + dlStr + " / " + formatSize(tot) : "Downloading: " + dlStr;
+                onStatus.accept(msg);
+            };
+            ByteBuffer downloaded = FontDownloader.download(googleName, byteProgress);
             if (downloaded != null) {
                 return downloaded;
             }
@@ -266,7 +281,7 @@ public class CustomFontRenderer {
         }
     }
 
-    private PreparedAsciiAtlas prepareAsciiAtlas(CustomFontManager fontManager) {
+    private PreparedAsciiAtlas prepareAsciiAtlas(CustomFontManager fontManager, Consumer<String> onStatus) {
         if (fontManager == null) {
             return null;
         }
@@ -278,8 +293,12 @@ public class CustomFontRenderer {
         int cursorY = ATLAS_GAP;
         int rowHeight = 0;
 
+        int total = 126 - 32 + 1;
+        int done = 0;
         for (int cp = 32; cp <= 126; cp++) {
             CustomFontManager.SdfGlyphData sdf = fontManager.getSdfGlyphData(cp, SDF_SOURCE_SIZE, SDF_PADDING, SDF_ON_EDGE_VALUE, SDF_PIXEL_DIST_SCALE);
+            done++;
+            if (onStatus != null) onStatus.accept("Building glyphs: " + done + " / " + total);
             if (sdf == null || sdf.width <= 0 || sdf.height <= 0) {
                 continue;
             }
@@ -321,6 +340,13 @@ public class CustomFontRenderer {
 
         return new PreparedAsciiAtlas(atlasWidth, atlasHeight, preparedEntries);
     }
+
+    private static String formatSize(long bytes) {
+        if (bytes < 1024L) return bytes + " B";
+        if (bytes < 1024L * 1024L) return (bytes / 1024L) + " KB";
+        return String.format(java.util.Locale.ROOT, "%.1f MB", bytes / (1024.0 * 1024.0));
+    }
+
 
     private void applyPreparedAsciiAtlas(PreparedAsciiAtlas atlasData) {
         if (atlasData == null) {

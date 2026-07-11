@@ -368,10 +368,7 @@ public class LegitTabController extends SimpleTabController {
             fontStatusLabel.setText("Downloading...");
             CustomFontRenderer.getInstance().reloadAsync(
                     () -> updateFontStatus(fontStatusLabel),
-                    progress -> {
-                        String msg = formatDownloadProgress(progress);
-                        Minecraft.getInstance().execute(() -> fontStatusLabel.setText(msg));
-                    });
+                    status -> Minecraft.getInstance().execute(() -> fontStatusLabel.setText(status)));
         });
         listView.addItem(fontField);
         listView.addItem(fontStatusLabel);
@@ -613,20 +610,6 @@ public class LegitTabController extends SimpleTabController {
         return customTextCard;
     }
 
-    private static String formatDownloadProgress(long[] progress) {
-        long dl = progress[0];
-        long tot = progress[1];
-        String dlStr = formatSize(dl);
-        return tot > 0 ? "Downloading: " + dlStr + " / " + formatSize(tot) : "Downloading: " + dlStr;
-    }
-
-    private static String formatSize(long bytes) {
-        if (bytes < 1024L)
-            return bytes + " B";
-        if (bytes < 1024L * 1024L)
-            return (bytes / 1024L) + " KB";
-        return String.format(Locale.ROOT, "%.1f MB", bytes / (1024.0 * 1024.0));
-    }
 
     private void updateFontStatus(Label label) {
         CustomFontRenderer renderer = CustomFontRenderer.getInstance();
@@ -684,10 +667,7 @@ public class LegitTabController extends SimpleTabController {
             flatFontStatus.setText("Downloading...");
             CustomFontRenderer.getInstance().reloadAsync(
                     () -> updateFontStatus(flatFontStatus),
-                    progress -> {
-                        String msg = formatDownloadProgress(progress);
-                        Minecraft.getInstance().execute(() -> flatFontStatus.setText(msg));
-                    });
+                    status -> Minecraft.getInstance().execute(() -> flatFontStatus.setText(status)));
         });
         legitTab.addWidget(flatFontField);
         legitTab.addWidget(flatFontStatus);
