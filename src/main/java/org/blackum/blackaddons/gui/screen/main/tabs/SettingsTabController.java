@@ -55,6 +55,15 @@ public class SettingsTabController extends SimpleTabController {
                 });
         listView.addItem(disableUnsecureChatToastToggle);
 
+        ToggleSwitch disableTutorialToastsToggle = new ToggleSwitch(0, 0, width,
+                "Disable Tutorial Toasts",
+                "Disables Minecraft tutorial toasts (like 'Break a tree')",
+                ConfigManager.data.disableTutorialToasts, (val) -> {
+                    ConfigManager.data.disableTutorialToasts = val;
+                    ConfigManager.save();
+                });
+        listView.addItem(disableTutorialToastsToggle);
+
         ToggleSwitch toggleTabListToggle = new ToggleSwitch(0, 0, width,
                 "Toggle Tab List",
                 "Toggles the player tab list visibility when pressing the tab key instead of holding it",

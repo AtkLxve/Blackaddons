@@ -10,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.components.toasts.TutorialToast;
 import com.google.gson.JsonObject;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.constants.Constants;
@@ -68,6 +69,29 @@ public class TestCommands {
                 .executes(ctx -> {
                     if (Blackaddons.testMenuOpener != null)
                         Blackaddons.testMenuOpener.run();
+                    return 1;
+                }));
+
+        testNode.then(ClientCommands.literal("tutorialtoast")
+                .executes(ctx -> {
+                    //? if >=26.2 {
+                    /*Minecraft.getInstance().gui.toastManager().addToast(new TutorialToast(
+                            Minecraft.getInstance().font,
+                            TutorialToast.Icons.TREE,
+                            Component.literal("Tutorial Toast"),
+                            Component.literal("Test"),
+                            false
+                    ));
+                    *///?} else {
+                    Minecraft.getInstance().getToastManager().addToast(new TutorialToast(
+                            Minecraft.getInstance().font,
+                            TutorialToast.Icons.TREE,
+                            Component.literal("Tutorial Toast"),
+                            Component.literal("Test."),
+                            false
+                    ));
+                    //?}
+                    ctx.getSource().sendFeedback(Component.literal("Triggered test TutorialToast."));
                     return 1;
                 }));
 

@@ -3,6 +3,7 @@ package org.blackum.blackaddons.mixin.gui;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.components.toasts.TutorialToast;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -16,6 +17,11 @@ import net.minecraft.network.chat.Component;
 public class ToastManagerMixin {
     @Inject(method = "addToast", at = @At("HEAD"), cancellable = true)
     private void onAdd(Toast toast, CallbackInfo ci) {
+        if (ConfigManager.data.disableTutorialToasts && toast instanceof TutorialToast) {
+            ci.cancel();
+            return;
+        }
+
         if (ConfigManager.data.disableUnsecureChatToast && toast instanceof SystemToast systemToast) {
             SystemToast.SystemToastId id = ((SystemToastAccessor) systemToast).getId();
             if (id == SystemToast.SystemToastId.UNSECURE_SERVER_WARNING) {
