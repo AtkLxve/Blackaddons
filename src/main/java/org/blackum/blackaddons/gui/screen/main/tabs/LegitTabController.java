@@ -38,21 +38,16 @@ public class LegitTabController extends SimpleTabController {
         int contentWidth = legitTab.getParent().getContentWidth();
 
         if (ConfigManager.data.useCardLayout) {
-            Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-                screen.resetCardStates("legit_visuals", "legit_debuggers", "legit_custom_font");
-            });
-            legitTab.addWidget(resetLayout);
-
-            CardContainer legitCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
+            CardContainer legitCardContainer = new CardContainer(contentX, contentY + 10, contentWidth, 570);
             legitTab.addWidget(legitCardContainer);
 
-            int containerY = contentY + 30;
+            int containerY = contentY + 10;
             int numCols = contentWidth < 680 ? 1 : (contentWidth < 1000 ? 2 : 3);
             int colWidth = 300;
             int spacing = 20;
             int[] colY = new int[numCols];
             for (int i = 0; i < numCols; i++)
-                colY[i] = containerY + 20;
+                colY[i] = containerY;
 
             List<ResizableCard> cards = new ArrayList<>();
             visualsCard = createVisualsCard(0, 0);
@@ -62,16 +57,21 @@ public class LegitTabController extends SimpleTabController {
             customTextCard = createCustomTextCard(0, 0);
             cards.add(customTextCard);
 
-            for (ResizableCard card : cards) {
-                int shortestCol = 0;
-                for (int i = 1; i < numCols; i++) {
-                    if (colY[i] < colY[shortestCol])
-                        shortestCol = i;
-                }
+            boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("legit_visuals")
+                    || ConfigManager.data.lastLoadedCardStates.containsKey("legit_debuggers")
+                    || ConfigManager.data.lastLoadedCardStates.containsKey("legit_custom_font");
+            if (!hasSaved) {
+                for (ResizableCard card : cards) {
+                    int shortestCol = 0;
+                    for (int i = 1; i < numCols; i++) {
+                        if (colY[i] < colY[shortestCol])
+                            shortestCol = i;
+                    }
 
-                card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
-                card.setY(colY[shortestCol]);
-                colY[shortestCol] += card.getHeight() + 10;
+                    card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
+                    card.setY(colY[shortestCol]);
+                    colY[shortestCol] += card.getHeight() + 10;
+                }
             }
 
             legitCardContainer.addCard(visualsCard);
@@ -867,5 +867,15 @@ public class LegitTabController extends SimpleTabController {
                     ConfigManager.save();
                 });
         legitTab.addWidget(outlineWidthSlider);
+    }
+
+    @Override
+    public boolean hasCardLayout() {
+        return ConfigManager.data.useCardLayout;
+    }
+
+    @Override
+    public void resetLayout() {
+        screen.resetCardStates("legit_visuals", "legit_debuggers", "legit_custom_font");
     }
 }

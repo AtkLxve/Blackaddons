@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 public class BlackAddonsGUI extends BaseScreen {
 
     private TabPanel tabPanel;
+    private Button resetLayoutButton;
     private static int lastTabIndex = 0;
     private String currentTooltip = null;
     private final Map<String, Boolean> collapsedGroups = new HashMap<>();
@@ -75,6 +76,7 @@ public class BlackAddonsGUI extends BaseScreen {
             if (index >= 0 && index < controllers.size()) {
                 controllers.get(index).onSelected();
             }
+            updateResetButtonVisibility();
         });
 
         settingsController = new SettingsTabController(this);
@@ -116,6 +118,25 @@ public class BlackAddonsGUI extends BaseScreen {
 
         tabPanel.selectTabInstant(lastTabIndex);
         widgets.add(tabPanel);
+
+        resetLayoutButton = new Button(containerX + containerWidth - 100 - Theme.PADDING, containerY + 10, 100, 20, "Reset Layout", () -> {
+            if (lastTabIndex >= 0 && lastTabIndex < controllers.size()) {
+                controllers.get(lastTabIndex).resetLayout();
+            }
+        }).setFlat(true);
+        widgets.add(resetLayoutButton);
+        updateResetButtonVisibility();
+    }
+
+    private void updateResetButtonVisibility() {
+        if (resetLayoutButton == null) {
+            return;
+        }
+        boolean hasCards = false;
+        if (lastTabIndex >= 0 && lastTabIndex < controllers.size()) {
+            hasCards = controllers.get(lastTabIndex).hasCardLayout();
+        }
+        resetLayoutButton.setVisible(hasCards);
     }
 
     @Override

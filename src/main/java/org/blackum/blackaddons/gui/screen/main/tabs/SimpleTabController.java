@@ -19,4 +19,11 @@ public abstract class SimpleTabController {
 
     public void onSelected() {
     }
+
+    public void resetLayout() {
+    }
+
+    public boolean hasCardLayout() {
+        return false;
+    }
 }

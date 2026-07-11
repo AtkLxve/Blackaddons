@@ -39,6 +39,13 @@ public class Button extends Widget {
         return this;
     }
 
+    private boolean flat = false;
+
+    public Button setFlat(boolean flat) {
+        this.flat = flat;
+        return this;
+    }
+
     public void setText(String text) {
         this.text = text;
     }
@@ -55,6 +62,20 @@ public class Button extends Widget {
         float hoverProgress = hoverAnimation.getValue();
         float pressProgress = pressAnimation.getValue();
         int pressOffset = Math.round(pressProgress * 2.0f);
+
+        if (flat) {
+            if (hoverProgress > 0) {
+                int hoverBgColor = Theme.withAlpha(Theme.CONTROL_BG_HOVER, hoverProgress * 0.5f);
+                RenderHelper.renderRoundedRect(graphics, x, y, width, height, Theme.BORDER_RADIUS_SMALL, hoverBgColor);
+            }
+            int textColor = customTextColor != null ? customTextColor
+                    : (enabled ? Theme.lerpColor(Theme.TEXT_SECONDARY, Theme.ACCENT, hoverProgress) : Theme.TEXT_SECONDARY);
+            int textWidth = Minecraft.getInstance().font.width(text);
+            int textX = x + (width - textWidth) / 2;
+            int textY = y + (height - 8) / 2;
+            graphics.text(Minecraft.getInstance().font, text, textX, textY, textColor);
+            return;
+        }
 
         RenderHelper.renderSurface(graphics, x, y + pressOffset, width, height,
                 Theme.BORDER_RADIUS, pressed || pressProgress > 0);

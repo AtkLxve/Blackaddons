@@ -4,8 +4,8 @@ import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import org.blackum.blackaddons.gui.screen.overlay.OverlayEditScreen;
@@ -113,15 +113,10 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             return;
         }
 
-        Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("puzzleSolvers", "dungeonMap", "keyTimer");
-        });
-        tab.addWidget(resetLayout);
-
-        CardContainer cardContainer = new CardContainer(contentX, contentY + 50, contentWidth, 540);
+        CardContainer cardContainer = new CardContainer(contentX, contentY + 10, contentWidth, 540);
         tab.addWidget(cardContainer);
 
-        int containerY = contentY + 60;
+        int containerY = contentY + 10;
         int numCols = contentWidth < 680 ? 1 : (contentWidth < 1000 ? 2 : 3);
         int colWidth = 300;
         int spacing = 20;
@@ -134,18 +129,26 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         mapCard = createMapCard(0, 0);
         keyTimerCard = createKeyTimerCard(0, 0);
 
-        List<ResizableCard> cards = List.of(solverCard, mapCard, keyTimerCard);
-        for (ResizableCard card : cards) {
-            int shortestCol = 0;
-            for (int i = 1; i < numCols; i++) {
-                if (colY[i] < colY[shortestCol]) {
-                    shortestCol = i;
-                }
-            }
+        List<ResizableCard> cards = new ArrayList<>();
+        cards.add(solverCard);
+        cards.add(mapCard);
+        cards.add(keyTimerCard);
 
-            card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
-            card.setY(colY[shortestCol]);
-            colY[shortestCol] += card.getHeight() + spacing;
+        boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("puzzleSolvers")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("dungeonMap")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("keyTimer");
+        if (!hasSaved) {
+            for (ResizableCard card : cards) {
+                int shortestCol = 0;
+                for (int i = 1; i < numCols; i++) {
+                    if (colY[i] < colY[shortestCol])
+                        shortestCol = i;
+                }
+
+                card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
+                card.setY(colY[shortestCol]);
+                colY[shortestCol] += card.getHeight() + 10;
+            }
         }
 
         cardContainer.addCard(solverCard);
@@ -418,5 +421,15 @@ public class DungeonsSettingsTabController extends SimpleTabController {
             ConfigManager.save();
         }));
         return v;
+    }
+
+    @Override
+    public boolean hasCardLayout() {
+        return ConfigManager.data.useCardLayout;
+    }
+
+    @Override
+    public void resetLayout() {
+        screen.resetCardStates("puzzleSolvers", "dungeonMap", "keyTimer");
     }
 }

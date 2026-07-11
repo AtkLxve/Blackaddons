@@ -131,22 +131,17 @@ public class CheatsTabController extends SimpleTabController {
             return;
         }
 
-        Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("autoTnt", "autoSS", "rotationSet", "autoBM", "freecam", "perspective",
-                    "autoClicker");
-        });
-        cheatsTab.addWidget(resetLayout);
-
-        CardContainer cheatsCardContainer = new CardContainer(contentX, contentY + 50, contentWidth, 540);
+        CardContainer cheatsCardContainer = new CardContainer(contentX, contentY + 10, contentWidth, 540);
         cheatsTab.addWidget(cheatsCardContainer);
 
-        int containerY = contentY + 60;
+        int containerY = contentY + 10;
         int numCols = contentWidth < 680 ? 1 : (contentWidth < 1000 ? 2 : 3);
         int colWidth = 300;
         int spacing = 20;
         int[] colY = new int[numCols];
-        for (int i = 0; i < numCols; i++)
+        for (int i = 0; i < numCols; i++) {
             colY[i] = containerY;
+        }
 
         autoTntCard = createAutoTntCard(0, 0);
         autoSSCard = createAutoSSCard(0, 0);
@@ -158,16 +153,25 @@ public class CheatsTabController extends SimpleTabController {
 
         List<ResizableCard> cards = List.of(autoTntCard, autoSSCard, rotationCard, autoBMCard, freecamCard,
                 perspectiveCard, autoClickerCard);
-        for (ResizableCard card : cards) {
-            int shortestCol = 0;
-            for (int i = 1; i < numCols; i++) {
-                if (colY[i] < colY[shortestCol])
-                    shortestCol = i;
-            }
+        boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("autoTnt")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("autoSS")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("rotationSet")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("autoBM")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("freecam")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("perspective")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("autoClicker");
+        if (!hasSaved) {
+            for (ResizableCard card : cards) {
+                int shortestCol = 0;
+                for (int i = 1; i < numCols; i++) {
+                    if (colY[i] < colY[shortestCol])
+                        shortestCol = i;
+                }
 
-            card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
-            card.setY(colY[shortestCol]);
-            colY[shortestCol] += card.getHeight() + spacing;
+                card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
+                card.setY(colY[shortestCol]);
+                colY[shortestCol] += card.getHeight() + spacing;
+            }
         }
 
         cheatsCardContainer.addCard(autoTntCard);
@@ -1069,4 +1073,14 @@ public class CheatsTabController extends SimpleTabController {
         return base;
     }
 
+    @Override
+    public boolean hasCardLayout() {
+        return ConfigManager.data.useCardLayout;
+    }
+
+    @Override
+    public void resetLayout() {
+        screen.resetCardStates("autoTnt", "autoSS", "rotationSet", "autoBM", "freecam", "perspective",
+                "autoClicker");
+    }
 }

@@ -46,20 +46,15 @@ public class ModHiderTabController extends SimpleTabController {
         int contentY = modHiderTab.getParent().getContentY();
         int contentWidth = modHiderTab.getParent().getContentWidth();
 
-        Button resetLayout = new Button(contentX + 10, contentY, contentWidth - 20, "Reset Layout", () -> {
-            screen.resetCardStates("spoofMode", "hideMods", "disablePayloads", "allowedMods", "customClient", "allowedChannels");
-        });
-        modHiderTab.addWidget(resetLayout);
-
-        CardContainer modHiderCardContainer = new CardContainer(contentX, contentY + 30, contentWidth, 570);
+        CardContainer modHiderCardContainer = new CardContainer(contentX, contentY + 10, contentWidth, 570);
         modHiderTab.addWidget(modHiderCardContainer);
 
-        int containerY = contentY + 30;
+        int containerY = contentY + 10;
         int numCols = contentWidth < 680 ? 1 : (contentWidth < 1000 ? 2 : 3);
         int colWidth = 300;
         int spacing = 20;
         int[] colY = new int[numCols];
-        for (int i = 0; i < numCols; i++) colY[i] = containerY + 20;
+        for (int i = 0; i < numCols; i++) colY[i] = containerY;
 
         List<ResizableCard> cards = new ArrayList<>();
         spoofModeCard = createSpoofModeCard(0, 0);
@@ -75,15 +70,23 @@ public class ModHiderTabController extends SimpleTabController {
         allowedChannelsCard = createPayloadChannelsCard(0, 0);
         cards.add(allowedChannelsCard);
 
-        for (ResizableCard card : cards) {
-            int shortestCol = 0;
-            for (int i = 1; i < numCols; i++) {
-                if (colY[i] < colY[shortestCol]) shortestCol = i;
-            }
+        boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("spoofMode")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("hideMods")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("disablePayloads")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("allowedMods")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("customClient")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("allowedChannels");
+        if (!hasSaved) {
+            for (ResizableCard card : cards) {
+                int shortestCol = 0;
+                for (int i = 1; i < numCols; i++) {
+                    if (colY[i] < colY[shortestCol]) shortestCol = i;
+                }
 
-            card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
-            card.setY(colY[shortestCol]);
-            colY[shortestCol] += card.getHeight() + Theme.CARD_SPACING;
+                card.setX(contentX + spacing + shortestCol * (colWidth + spacing));
+                card.setY(colY[shortestCol]);
+                colY[shortestCol] += card.getHeight() + Theme.CARD_SPACING;
+            }
         }
 
         modHiderCardContainer.addCard(spoofModeCard);
@@ -685,5 +688,15 @@ public class ModHiderTabController extends SimpleTabController {
 
         allowedChannelsCard.updateLayout();
         return allowedChannelsCard;
+    }
+
+    @Override
+    public boolean hasCardLayout() {
+        return ConfigManager.data.useCardLayout;
+    }
+
+    @Override
+    public void resetLayout() {
+        screen.resetCardStates("spoofMode", "hideMods", "disablePayloads", "allowedMods", "customClient", "allowedChannels");
     }
 }
