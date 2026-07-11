@@ -98,6 +98,23 @@ public class BlackaddonsRenderPipelines {
             .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
             .build());
 
+    public static final RenderPipeline PLAIN_TEXTURED = add(RenderPipeline.builder()
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "plain_textured"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/plain_textured"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/plain_textured"))
+            .withBindGroupLayout(BindGroupLayout.builder()
+                    .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+                    .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+                    .withSampler("Sampler0")
+                    .build())
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
+            .withCull(false)
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .build());
+
+
 *///?} else {
     public static final RenderPipeline CUSTOM_TEXT = add(RenderPipeline.builder()
             .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "custom_text"))
@@ -144,6 +161,19 @@ public class BlackaddonsRenderPipelines {
             .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/rounded_fill"))
             .withUniform("Projection", UniformType.UNIFORM_BUFFER)
             .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
+            .withCull(false)
+            .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+            .build());
+
+    public static final RenderPipeline PLAIN_TEXTURED = add(RenderPipeline.builder()
+            .withLocation(Identifier.fromNamespaceAndPath("blackaddons", "plain_textured"))
+            .withVertexShader(Identifier.fromNamespaceAndPath("blackaddons", "core/plain_textured"))
+            .withFragmentShader(Identifier.fromNamespaceAndPath("blackaddons", "core/plain_textured"))
+            .withUniform("Projection", UniformType.UNIFORM_BUFFER)
+            .withUniform("DynamicTransforms", UniformType.UNIFORM_BUFFER)
+            .withSampler("Sampler0")
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP, VertexFormat.Mode.QUADS)
             .withCull(false)

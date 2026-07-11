@@ -10,6 +10,8 @@ import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.customname.CustomNameManager;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.render.font.CustomBakedGlyph;
+import org.blackum.blackaddons.gui.render.font.CustomEmojiBakedGlyph;
+import org.blackum.blackaddons.gui.render.font.EmojiManager;
 import org.blackum.blackaddons.gui.render.font.CustomFontManager;
 import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -45,6 +47,16 @@ public class FontMixin {
                     int nextCp = text.codePointAt(i);
                     i += Character.charCount(nextCp);
                 }
+                continue;
+            }
+            if (CustomFontRenderer.isVariationSelector(cp)) {
+                i += Character.charCount(cp);
+                continue;
+            }
+            if (EmojiManager.isEmoji(cp)) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                cursor += emojiSize + 1.0f;
+                i += Character.charCount(cp);
                 continue;
             }
             CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
@@ -128,6 +140,16 @@ public class FontMixin {
                             }
                             continue;
                         }
+                        if (CustomFontRenderer.isVariationSelector(cp)) {
+                            i += Character.charCount(cp);
+                            continue;
+                        }
+                        if (EmojiManager.isEmoji(cp)) {
+                            float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                            cursor[0] += emojiSize + 1.0f;
+                            i += Character.charCount(cp);
+                            continue;
+                        }
                         CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
                         cursor[0] += data != null ? data.advance * scale : 5.0f;
                         i += Character.charCount(cp);
@@ -154,6 +176,14 @@ public class FontMixin {
                 float scale = renderer.getCachedScale();
                 float[] cursor = {0};
                 text.accept((idx, style, cp) -> {
+                    if (CustomFontRenderer.isVariationSelector(cp)) {
+                        return true;
+                    }
+                    if (EmojiManager.isEmoji(cp)) {
+                        float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                        cursor[0] += emojiSize + 1.0f;
+                        return true;
+                    }
                     CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
                     cursor[0] += data != null ? data.advance * scale : 5.0f;
                     return true;
@@ -193,6 +223,10 @@ public class FontMixin {
         if (isCustomTextActive() && !CustomFontRenderer.inOutlinePass) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
+                if (CustomFontRenderer.isVariationSelector(codepoint) || EmojiManager.isEmoji(codepoint)) {
+                    cir.setReturnValue(new CustomEmojiBakedGlyph(codepoint));
+                    return;
+                }
                 CustomBakedGlyph baked = style.isObfuscated()
                         ? renderer.getOrCreateObfuscatedBakedGlyph(codepoint, this.random)
                         : renderer.getOrCreateBakedGlyph(codepoint);

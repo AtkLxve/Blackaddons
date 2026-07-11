@@ -517,12 +517,31 @@ public class CustomFontRenderer {
         float scale = getScale();
         float[] curX = { x };
         text.accept((idx, style, cp) -> {
+            if (isVariationSelector(cp)) {
+                return true;
+            }
             int color = baseColor;
             if (style.getColor() != null) {
                 int styleRgb = style.getColor().getValue();
                 color = (baseColor & 0xFF000000) | (styleRgb & 0x00FFFFFF);
             }
             int argb = (color & 0xFF000000) == 0 ? (color | 0xFF000000) : color;
+
+            if (EmojiManager.isEmoji(cp)) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
+                float ey1 = y + baseline + emojiSize * 0.1f;
+                float ey0 = ey1 - emojiSize;
+                float ex0 = curX[0];
+                float ex1 = ex0 + emojiSize;
+
+                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                if (emojiTex != null) {
+                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0, ex1, ey1, scissor, renderState);
+                }
+                curX[0] += emojiSize + 1.0f;
+                return true;
+            }
 
             boolean bold = ConfigManager.data.customFontBold || style.isBold();
             boolean italic = ConfigManager.data.customFontItalic || style.isItalic();
@@ -562,6 +581,27 @@ public class CustomFontRenderer {
         float curX = x;
         for (int i = 0; i < text.length();) {
             int cp = text.codePointAt(i);
+            if (isVariationSelector(cp)) {
+                i += Character.charCount(cp);
+                continue;
+            }
+            if (EmojiManager.isEmoji(cp)) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
+                float ey1 = y + baseline + emojiSize * 0.1f;
+                float ey0 = ey1 - emojiSize;
+                float ex0 = curX;
+                float ex1 = ex0 + emojiSize;
+
+                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                if (emojiTex != null) {
+                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0, ex1, ey1, scissor, renderState);
+                }
+                curX += emojiSize + 1.0f;
+                i += Character.charCount(cp);
+                continue;
+            }
+
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);
             SdfGlyph sdfGlyph = getSdfGlyph(cp);
             if (glyph != null && sdfGlyph != null) {
@@ -634,6 +674,21 @@ public class CustomFontRenderer {
     private static int ensureOpaque(int argb) {
         return (argb & 0xFF000000) == 0 ? (argb | 0xFF000000) : argb;
     }
+
+    private void renderEmojiGui(Matrix3x2fc pose, TextureSetup textureSetup,
+                                float x0, float y0, float x1, float y1,
+                                ScreenRectangle scissor, GuiRenderState renderState) {
+        renderState.addGlyphToCurrentLayer(new CustomGlyphRenderState(
+                BlackaddonsRenderPipelines.PLAIN_TEXTURED, textureSetup, new Matrix3x2f(pose),
+                x0, y0, x1, y1,
+                0f, 0f, 1f, 1f,
+                0f, 0f, 0xFFFFFFFF, scissor));
+    }
+
+    public static boolean isVariationSelector(int cp) {
+        return (cp >= 0xFE00 && cp <= 0xFE0F) || (cp >= 0xE0100 && cp <= 0xE01EF);
+    }
+
 
     private VisualGlyphBounds getVisualGlyphBounds(CustomFontManager.GlyphData glyph, boolean bold, boolean italic,
             boolean shadowed, float shadowOffset) {
@@ -715,11 +770,30 @@ public class CustomFontRenderer {
         float scale = getScale();
         float[] curX = { x };
         text.accept((idx, style, cp) -> {
+            if (isVariationSelector(cp)) {
+                return true;
+            }
             int color = baseColor;
             if (style.getColor() != null) {
                 int styleRgb = style.getColor().getValue();
                 color = (baseColor & 0xFF000000) | (styleRgb & 0x00FFFFFF);
             }
+            if (EmojiManager.isEmoji(cp)) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
+                float ey1 = y + baseline + emojiSize * 0.1f;
+                float ey0 = ey1 - emojiSize;
+                float ex0 = curX[0];
+                float ex1 = ex0 + emojiSize;
+
+                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                if (emojiTex != null) {
+                    renderEmoji3d(matrix, emojiTex, ex0, ey0, ex1, ey1, bufferSource);
+                }
+                curX[0] += emojiSize + 1.0f;
+                return true;
+            }
+
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);
             SdfGlyph sdfGlyph = getSdfGlyph(cp);
             if (glyph != null && sdfGlyph != null) {
@@ -747,6 +821,27 @@ public class CustomFontRenderer {
         float curX = x;
         for (int i = 0; i < text.length();) {
             int cp = text.codePointAt(i);
+            if (isVariationSelector(cp)) {
+                i += Character.charCount(cp);
+                continue;
+            }
+            if (EmojiManager.isEmoji(cp)) {
+                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
+                float ey1 = y + baseline + emojiSize * 0.1f;
+                float ey0 = ey1 - emojiSize;
+                float ex0 = curX;
+                float ex1 = ex0 + emojiSize;
+
+                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                if (emojiTex != null) {
+                    renderEmoji3d(matrix, emojiTex, ex0, ey0, ex1, ey1, bufferSource);
+                }
+                curX += emojiSize + 1.0f;
+                i += Character.charCount(cp);
+                continue;
+            }
+
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);
             SdfGlyph sdfGlyph = getSdfGlyph(cp);
             if (glyph != null && sdfGlyph != null) {
@@ -755,6 +850,25 @@ public class CustomFontRenderer {
             curX += glyph != null ? glyph.advance * scale : 0f;
             i += Character.charCount(cp);
         }
+    }
+
+    private void renderEmoji3d(Matrix4f matrix, EmojiManager.EmojiTexture emojiTex,
+                               float x0, float y0, float x1, float y1,
+                               MultiBufferSource bufferSource) {
+        RenderType layer = (RenderType) McCompat.createTextRenderType("emoji_3d",
+                BlackaddonsRenderPipelines.PLAIN_TEXTURED, emojiTex.location);
+        VertexConsumer buffer = bufferSource.getBuffer(layer);
+
+        Vector4f[] tmps = TMP_VECTORS.get();
+        Vector4f v1p = tmps[0].set(x0, y0, 0, 1).mul(matrix);
+        Vector4f v2p = tmps[1].set(x0, y1, 0, 1).mul(matrix);
+        Vector4f v3p = tmps[2].set(x1, y1, 0, 1).mul(matrix);
+        Vector4f v4p = tmps[3].set(x1, y0, 0, 1).mul(matrix);
+
+        buffer.addVertex(v1p.x(), v1p.y(), v1p.z()).setColor(0xFFFFFFFF).setUv(0, 0).setUv2(0, 240);
+        buffer.addVertex(v2p.x(), v2p.y(), v2p.z()).setColor(0xFFFFFFFF).setUv(0, 1).setUv2(0, 240);
+        buffer.addVertex(v3p.x(), v3p.y(), v3p.z()).setColor(0xFFFFFFFF).setUv(1, 1).setUv2(0, 240);
+        buffer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(0xFFFFFFFF).setUv(1, 0).setUv2(0, 240);
     }
 
     private void renderGlyph3d(Matrix4f matrix, int codepoint, SdfGlyph sdfGlyph,
