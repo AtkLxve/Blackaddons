@@ -517,6 +517,20 @@ public class CustomFontRenderer {
 
         float scale = getScale();
         float[] curX = { x };
+
+        boolean textEnabled = ConfigManager.data.customTextEnabled;
+        float textScale = ConfigManager.data.customTextScale;
+        float arrowSize = EmojiManager.getArrowSize();
+        float arrowAdvance = EmojiManager.getArrowAdvance();
+        float baseline = textEnabled ? getBaseline() : 7.0f;
+        float emojiSize = textEnabled ? textScale : 9.0f;
+        float yCenter = y + baseline - emojiSize / 2.0f;
+        float ey0Arrow = yCenter - arrowSize / 2.0f;
+        float ey1Arrow = yCenter + arrowSize / 2.0f;
+        float ey1Emoji = y + baseline + emojiSize * 0.1f;
+        float ey0Emoji = ey1Emoji - emojiSize;
+        float emojiAdvance = emojiSize + 1.0f;
+
         text.accept((idx, style, cp) -> {
             if (isVariationSelector(cp)) {
                 return true;
@@ -530,37 +544,26 @@ public class CustomFontRenderer {
 
             int arrowDir = EmojiManager.getArrowDirection(cp);
             if (arrowDir != -1) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float arrowSize = EmojiManager.getArrowSize();
-                float advance = EmojiManager.getArrowAdvance();
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float yCenter = y + baseline - emojiSize / 2.0f;
-                float ey0 = yCenter - arrowSize / 2.0f;
-                float ey1 = yCenter + arrowSize / 2.0f;
-                float ex0 = curX[0] + (advance - arrowSize) / 2.0f;
+                float ex0 = curX[0] + (arrowAdvance - arrowSize) / 2.0f;
                 float ex1 = ex0 + arrowSize;
 
                 TextureSetup setup = EmojiManager.getArrowSetup();
                 if (setup != null) {
-                    renderArrowGui(pose, setup, arrowDir, ex0, ey0, ex1, ey1, scissor, renderState);
+                    renderArrowGui(pose, setup, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, scissor, renderState);
                 }
-                curX[0] += advance;
+                curX[0] += arrowAdvance;
                 return true;
             }
 
             if (EmojiManager.isEmoji(cp)) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float ey1 = y + baseline + emojiSize * 0.1f;
-                float ey0 = ey1 - emojiSize;
                 float ex0 = curX[0];
                 float ex1 = ex0 + emojiSize;
 
                 EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
                 if (emojiTex != null) {
-                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0, ex1, ey1, scissor, renderState);
+                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0Emoji, ex1, ey1Emoji, scissor, renderState);
                 }
-                curX[0] += emojiSize + 1.0f;
+                curX[0] += emojiAdvance;
                 return true;
             }
 
@@ -601,6 +604,20 @@ public class CustomFontRenderer {
         boolean bold = ConfigManager.data.customFontBold;
         boolean italic = ConfigManager.data.customFontItalic;
         float curX = x;
+
+        boolean textEnabled = ConfigManager.data.customTextEnabled;
+        float textScale = ConfigManager.data.customTextScale;
+        float arrowSize = EmojiManager.getArrowSize();
+        float arrowAdvance = EmojiManager.getArrowAdvance();
+        float baseline = textEnabled ? getBaseline() : 7.0f;
+        float emojiSize = textEnabled ? textScale : 9.0f;
+        float yCenter = y + baseline - emojiSize / 2.0f;
+        float ey0Arrow = yCenter - arrowSize / 2.0f;
+        float ey1Arrow = yCenter + arrowSize / 2.0f;
+        float ey1Emoji = y + baseline + emojiSize * 0.1f;
+        float ey0Emoji = ey1Emoji - emojiSize;
+        float emojiAdvance = emojiSize + 1.0f;
+
         for (int i = 0; i < text.length();) {
             int cp = text.codePointAt(i);
             if (isVariationSelector(cp)) {
@@ -609,38 +626,27 @@ public class CustomFontRenderer {
             }
             int arrowDir = EmojiManager.getArrowDirection(cp);
             if (arrowDir != -1) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float arrowSize = EmojiManager.getArrowSize();
-                float advance = EmojiManager.getArrowAdvance();
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float yCenter = y + baseline - emojiSize / 2.0f;
-                float ey0 = yCenter - arrowSize / 2.0f;
-                float ey1 = yCenter + arrowSize / 2.0f;
-                float ex0 = curX + (advance - arrowSize) / 2.0f;
+                float ex0 = curX + (arrowAdvance - arrowSize) / 2.0f;
                 float ex1 = ex0 + arrowSize;
 
                 TextureSetup setup = EmojiManager.getArrowSetup();
                 if (setup != null) {
-                    renderArrowGui(pose, setup, arrowDir, ex0, ey0, ex1, ey1, scissor, renderState);
+                    renderArrowGui(pose, setup, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, scissor, renderState);
                 }
-                curX += advance;
+                curX += arrowAdvance;
                 i += Character.charCount(cp);
                 continue;
             }
 
             if (EmojiManager.isEmoji(cp)) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float ey1 = y + baseline + emojiSize * 0.1f;
-                float ey0 = ey1 - emojiSize;
                 float ex0 = curX;
                 float ex1 = ex0 + emojiSize;
 
                 EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
                 if (emojiTex != null) {
-                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0, ex1, ey1, scissor, renderState);
+                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0Emoji, ex1, ey1Emoji, scissor, renderState);
                 }
-                curX += emojiSize + 1.0f;
+                curX += emojiAdvance;
                 i += Character.charCount(cp);
                 continue;
             }
@@ -824,6 +830,20 @@ public class CustomFontRenderer {
 
         float scale = getScale();
         float[] curX = { x };
+
+        boolean textEnabled = ConfigManager.data.customTextEnabled;
+        float textScale = ConfigManager.data.customTextScale;
+        float arrowSize = EmojiManager.getArrowSize();
+        float arrowAdvance = EmojiManager.getArrowAdvance();
+        float baseline = textEnabled ? getBaseline() : 7.0f;
+        float emojiSize = textEnabled ? textScale : 9.0f;
+        float yCenter = y + baseline - emojiSize / 2.0f;
+        float ey0Arrow = yCenter - arrowSize / 2.0f;
+        float ey1Arrow = yCenter + arrowSize / 2.0f;
+        float ey1Emoji = y + baseline + emojiSize * 0.1f;
+        float ey0Emoji = ey1Emoji - emojiSize;
+        float emojiAdvance = emojiSize + 1.0f;
+
         text.accept((idx, style, cp) -> {
             if (isVariationSelector(cp)) {
                 return true;
@@ -835,34 +855,23 @@ public class CustomFontRenderer {
             }
             int arrowDir = EmojiManager.getArrowDirection(cp);
             if (arrowDir != -1) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float arrowSize = EmojiManager.getArrowSize();
-                float advance = EmojiManager.getArrowAdvance();
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float yCenter = y + baseline - emojiSize / 2.0f;
-                float ey0 = yCenter - arrowSize / 2.0f;
-                float ey1 = yCenter + arrowSize / 2.0f;
-                float ex0 = curX[0] + (advance - arrowSize) / 2.0f;
+                float ex0 = curX[0] + (arrowAdvance - arrowSize) / 2.0f;
                 float ex1 = ex0 + arrowSize;
 
-                renderArrow3d(matrix, arrowDir, ex0, ey0, ex1, ey1, bufferSource);
-                curX[0] += advance;
+                renderArrow3d(matrix, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, bufferSource);
+                curX[0] += arrowAdvance;
                 return true;
             }
 
             if (EmojiManager.isEmoji(cp)) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float ey1 = y + baseline + emojiSize * 0.1f;
-                float ey0 = ey1 - emojiSize;
                 float ex0 = curX[0];
                 float ex1 = ex0 + emojiSize;
 
                 EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
                 if (emojiTex != null) {
-                    renderEmoji3d(matrix, emojiTex, ex0, ey0, ex1, ey1, bufferSource);
+                    renderEmoji3d(matrix, emojiTex, ex0, ey0Emoji, ex1, ey1Emoji, bufferSource);
                 }
-                curX[0] += emojiSize + 1.0f;
+                curX[0] += emojiAdvance;
                 return true;
             }
 
@@ -892,6 +901,20 @@ public class CustomFontRenderer {
 
         float scale = getScale();
         float curX = x;
+
+        boolean textEnabled = ConfigManager.data.customTextEnabled;
+        float textScale = ConfigManager.data.customTextScale;
+        float arrowSize = EmojiManager.getArrowSize();
+        float arrowAdvance = EmojiManager.getArrowAdvance();
+        float baseline = textEnabled ? getBaseline() : 7.0f;
+        float emojiSize = textEnabled ? textScale : 9.0f;
+        float yCenter = y + baseline - emojiSize / 2.0f;
+        float ey0Arrow = yCenter - arrowSize / 2.0f;
+        float ey1Arrow = yCenter + arrowSize / 2.0f;
+        float ey1Emoji = y + baseline + emojiSize * 0.1f;
+        float ey0Emoji = ey1Emoji - emojiSize;
+        float emojiAdvance = emojiSize + 1.0f;
+
         for (int i = 0; i < text.length();) {
             int cp = text.codePointAt(i);
             if (isVariationSelector(cp)) {
@@ -900,35 +923,24 @@ public class CustomFontRenderer {
             }
             int arrowDir = EmojiManager.getArrowDirection(cp);
             if (arrowDir != -1) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float arrowSize = EmojiManager.getArrowSize();
-                float advance = EmojiManager.getArrowAdvance();
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float yCenter = y + baseline - emojiSize / 2.0f;
-                float ey0 = yCenter - arrowSize / 2.0f;
-                float ey1 = yCenter + arrowSize / 2.0f;
-                float ex0 = curX + (advance - arrowSize) / 2.0f;
+                float ex0 = curX + (arrowAdvance - arrowSize) / 2.0f;
                 float ex1 = ex0 + arrowSize;
 
-                renderArrow3d(matrix, arrowDir, ex0, ey0, ex1, ey1, bufferSource);
-                curX += advance;
+                renderArrow3d(matrix, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, bufferSource);
+                curX += arrowAdvance;
                 i += Character.charCount(cp);
                 continue;
             }
 
             if (EmojiManager.isEmoji(cp)) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                float baseline = ConfigManager.data.customTextEnabled ? getBaseline() : 7.0f;
-                float ey1 = y + baseline + emojiSize * 0.1f;
-                float ey0 = ey1 - emojiSize;
                 float ex0 = curX;
                 float ex1 = ex0 + emojiSize;
 
                 EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
                 if (emojiTex != null) {
-                    renderEmoji3d(matrix, emojiTex, ex0, ey0, ex1, ey1, bufferSource);
+                    renderEmoji3d(matrix, emojiTex, ex0, ey0Emoji, ex1, ey1Emoji, bufferSource);
                 }
-                curX += emojiSize + 1.0f;
+                curX += emojiAdvance;
                 i += Character.charCount(cp);
                 continue;
             }

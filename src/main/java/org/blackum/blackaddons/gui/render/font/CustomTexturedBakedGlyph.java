@@ -62,14 +62,12 @@ public class CustomTexturedBakedGlyph implements BakedGlyph {
     }
 
     public static class Renderable implements TextRenderable.Styled {
-        private final float x;
-        private final float y;
         private final Style style;
-        private final GeometrySupplier geometrySupplier;
-        private final UvSupplier uvSupplier;
         private final Supplier<RenderType> renderTypeSupplier;
         private final Supplier<GpuTextureView> textureViewSupplier;
         private final RenderPipeline guiPipeline;
+        private final float ex0, ey0, ex1, ey1;
+        private final float[] uvs;
 
         public Renderable(float x, float y, Style style,
                           GeometrySupplier geometrySupplier,
@@ -77,14 +75,17 @@ public class CustomTexturedBakedGlyph implements BakedGlyph {
                           Supplier<RenderType> renderTypeSupplier,
                           Supplier<GpuTextureView> textureViewSupplier,
                           RenderPipeline guiPipeline) {
-            this.x = x;
-            this.y = y;
             this.style = style;
-            this.geometrySupplier = geometrySupplier;
-            this.uvSupplier = uvSupplier;
             this.renderTypeSupplier = renderTypeSupplier;
             this.textureViewSupplier = textureViewSupplier;
             this.guiPipeline = guiPipeline;
+
+            float[] bounds = geometrySupplier.getBounds(x, y);
+            this.ex0 = bounds[0];
+            this.ey0 = bounds[1];
+            this.ex1 = bounds[2];
+            this.ey1 = bounds[3];
+            this.uvs = uvSupplier.getUvs();
         }
 
         @Override
@@ -109,13 +110,6 @@ public class CustomTexturedBakedGlyph implements BakedGlyph {
 
         @Override
         public void render(Matrix4fc matrix, VertexConsumer consumer, int light, boolean isGui) {
-            float[] bounds = geometrySupplier.getBounds(x, y);
-            float[] uvs = uvSupplier.getUvs();
-            float ex0 = bounds[0];
-            float ey0 = bounds[1];
-            float ex1 = bounds[2];
-            float ey1 = bounds[3];
-
             Vector4f[] tmps = TMP_VECTORS.get();
             Vector4f v1p = tmps[0].set(ex0, ey0, 0, 1).mul(matrix);
             Vector4f v2p = tmps[1].set(ex0, ey1, 0, 1).mul(matrix);
@@ -128,9 +122,9 @@ public class CustomTexturedBakedGlyph implements BakedGlyph {
             consumer.addVertex(v4p.x(), v4p.y(), v4p.z()).setColor(0xFFFFFFFF).setUv(uvs[6], uvs[7]).setUv2(0, 240);
         }
 
-        @Override public float left() { return geometrySupplier.getBounds(x, y)[0]; }
-        @Override public float top()  { return geometrySupplier.getBounds(x, y)[1]; }
-        @Override public float right() { return geometrySupplier.getBounds(x, y)[2]; }
-        @Override public float bottom() { return geometrySupplier.getBounds(x, y)[3]; }
+        @Override public float left() { return ex0; }
+        @Override public float top()  { return ey0; }
+        @Override public float right() { return ex1; }
+        @Override public float bottom() { return ey1; }
     }
 }

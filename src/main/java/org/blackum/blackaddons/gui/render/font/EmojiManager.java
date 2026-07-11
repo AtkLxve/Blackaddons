@@ -62,10 +62,15 @@ public class EmojiManager {
             {0.0f, 0.0f, 1.0f, 1.0f}
     };
 
+    public static final float[][] PRECOMPUTED_ARROW_UVS = {
+            {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f},
+            {0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f},
+            {1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
+            {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f}
+    };
+
     public static float[] getArrowUvs(int direction) {
-        float[] u = ARROW_U_TABLE[direction];
-        float[] v = ARROW_V_TABLE[direction];
-        return new float[] { u[0], v[0], u[1], v[1], u[2], v[2], u[3], v[3] };
+        return PRECOMPUTED_ARROW_UVS[direction];
     }
 
     public static int getArrowDirection(int cp) {

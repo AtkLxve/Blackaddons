@@ -23,7 +23,11 @@ public class CommandRegistry {
             for (String alias : new String[]{Constants.BASE_COMMAND, "black", "blackaddons"}) {
                 var cmd = ClientCommands.literal(alias).executes(openGui);
 
-                cmd.then(TestCommands.node());
+                var testNode = TestCommands.node();
+                if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+                    testNode.then(FontBenchmarkCommands.fontBenchmarkNode());
+                }
+                cmd.then(testNode);
                 if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
                     cmd.then(ProfileCommands.dailyNode());
                     cmd.then(DungeonCommands.scdebugNode());
