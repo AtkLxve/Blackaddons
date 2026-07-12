@@ -71,7 +71,7 @@ public class FontMixin {
                 continue;
             }
             CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-            cursor += data != null ? data.advance * scale : 5.0f;
+            cursor += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing) : 5.0f;
             i += Character.charCount(cp);
         }
 
@@ -169,7 +169,7 @@ public class FontMixin {
                             continue;
                         }
                         CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-                        cursor[0] += data != null ? data.advance * scale : 5.0f;
+                        cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing) : 5.0f;
                         i += Character.charCount(cp);
                     }
                     return Optional.empty();
@@ -208,7 +208,7 @@ public class FontMixin {
                         return true;
                     }
                     CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-                    cursor[0] += data != null ? data.advance * scale : 5.0f;
+                    cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing) : 5.0f;
                     return true;
                 });
                 int result = Mth.ceil(cursor[0]);

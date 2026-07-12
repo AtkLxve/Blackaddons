@@ -453,7 +453,7 @@ public class CustomFontRenderer {
 
         ensureObfuscatedGlyphBuckets();
         float scale = getCachedScale();
-        int width = Mth.ceil(original.advance * scale);
+        int width = Mth.ceil(original.advance * scale + ConfigManager.data.customFontSpacing);
         List<Integer> matchingGlyphs = obfuscatedGlyphsByWidth.get(width);
         if (matchingGlyphs == null || matchingGlyphs.isEmpty()) {
             return getOrCreateBakedGlyph(codepoint);
@@ -486,7 +486,7 @@ public class CustomFontRenderer {
                 continue;
             }
 
-            int width = Mth.ceil(advance * scale);
+            int width = Mth.ceil(advance * scale + ConfigManager.data.customFontSpacing);
             obfuscatedGlyphsByWidth.computeIfAbsent(width, key -> new ArrayList<>()).add(cp);
         }
         obfuscatedGlyphBucketScale = scale;
@@ -573,7 +573,7 @@ public class CustomFontRenderer {
             SdfGlyph sdfGlyph = getSdfGlyph(cp);
             if (glyph != null && sdfGlyph != null) {
                 renderGlyphGui(pose, cp, glyph, sdfGlyph, curX[0], y, argb, scissor, renderState, bold, italic);
-                curX[0] += glyph.advance * scale;
+                curX[0] += glyph.advance * scale + ConfigManager.data.customFontSpacing;
             } else {
                 FormattedCharSequence singleChar = sink -> sink.accept(0, style, cp);
                 font.prepareText(singleChar, curX[0], y, argb, false, false, 0)
@@ -656,7 +656,7 @@ public class CustomFontRenderer {
             if (glyph != null && sdfGlyph != null) {
                 renderGlyphGui(pose, cp, glyph, sdfGlyph, curX, y, color, scissor, renderState, bold, italic);
             }
-            curX += glyph != null ? glyph.advance * scale : 0f;
+            curX += glyph != null ? (glyph.advance * scale + ConfigManager.data.customFontSpacing) : 0f;
             i += Character.charCount(cp);
         }
     }
@@ -880,7 +880,7 @@ public class CustomFontRenderer {
             if (glyph != null && sdfGlyph != null) {
                 renderGlyph3d(matrix, cp, sdfGlyph, curX[0], y, color, bufferSource);
             }
-            curX[0] += glyph != null ? glyph.advance * scale : 0f;
+            curX[0] += glyph != null ? (glyph.advance * scale + ConfigManager.data.customFontSpacing) : 0f;
             return true;
         });
     }
@@ -950,7 +950,7 @@ public class CustomFontRenderer {
             if (glyph != null && sdfGlyph != null) {
                 renderGlyph3d(matrix, cp, sdfGlyph, curX, y, color, bufferSource);
             }
-            curX += glyph != null ? glyph.advance * scale : 0f;
+            curX += glyph != null ? (glyph.advance * scale + ConfigManager.data.customFontSpacing) : 0f;
             i += Character.charCount(cp);
         }
     }

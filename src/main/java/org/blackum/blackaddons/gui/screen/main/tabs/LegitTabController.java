@@ -605,6 +605,27 @@ public class LegitTabController extends SimpleTabController {
             outlineWidthLabel.setText("Outline Width: 0.5");
         }));
 
+        listView.addItem(new Label(0, 0, "Letter Spacing", Label.Style.SUBTITLE));
+        Label spacingLabel = new Label(0, 0,
+                "Spacing: " + String.format(Locale.ROOT, "%.2f", ConfigManager.data.customFontSpacing) + "px",
+                Label.Style.BODY);
+        listView.addItem(spacingLabel);
+        Slider spacingSlider = new Slider(0, 0, W, -5.0f, 10.0f, ConfigManager.data.customFontSpacing, val -> {
+            float r = Math.round(val * 20.0f) / 20.0f;
+            spacingLabel.setText("Spacing: " + String.format(Locale.ROOT, "%.2f", r) + "px");
+        });
+        spacingSlider.onRelease(val -> {
+            ConfigManager.data.customFontSpacing = Math.round(val * 20.0f) / 20.0f;
+            ConfigManager.save();
+        });
+        listView.addItem(spacingSlider);
+        listView.addItem(new Button(0, 0, W, Theme.BUTTON_HEIGHT, "Reset Spacing", () -> {
+            ConfigManager.data.customFontSpacing = 0.0f;
+            ConfigManager.save();
+            spacingSlider.setValue(0.0f);
+            spacingLabel.setText("Spacing: 0.00px");
+        }));
+
         customTextCard.addChild(listView);
         customTextCard.updateLayout();
         return customTextCard;
@@ -867,6 +888,31 @@ public class LegitTabController extends SimpleTabController {
                     ConfigManager.save();
                 });
         legitTab.addWidget(outlineWidthSlider);
+
+        y += 30;
+        legitTab.addWidget(new Label(x, y, "Letter Spacing", Label.Style.SUBTITLE));
+        y += 14;
+        Label spacingLabel = new Label(x, y,
+                "Spacing: " + String.format(Locale.ROOT, "%.2f", ConfigManager.data.customFontSpacing) + "px",
+                Label.Style.BODY);
+        legitTab.addWidget(spacingLabel);
+        y += 13;
+        Slider spacingSlider = new Slider(x, y, width, -5.0f, 10.0f, ConfigManager.data.customFontSpacing,
+                val -> {
+                    float r = Math.round(val * 20.0f) / 20.0f;
+                    spacingLabel.setText("Spacing: " + String.format(Locale.ROOT, "%.2f", r) + "px");
+                }).onRelease(val -> {
+                    ConfigManager.data.customFontSpacing = Math.round(val * 20.0f) / 20.0f;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(spacingSlider);
+        y += 30;
+        legitTab.addWidget(new Button(x, y, 140, Theme.BUTTON_HEIGHT, "Reset Spacing", () -> {
+            ConfigManager.data.customFontSpacing = 0.0f;
+            ConfigManager.save();
+            spacingSlider.setValue(0.0f);
+            spacingLabel.setText("Spacing: 0.00px");
+        }));
     }
 
     @Override

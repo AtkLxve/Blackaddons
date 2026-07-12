@@ -27,7 +27,7 @@ public class CustomBakedGlyph implements BakedGlyph {
     public CustomBakedGlyph(int codepoint, CustomFontManager.GlyphData glyphData) {
         this.codepoint = codepoint;
         this.glyphData = glyphData;
-        this.glyphInfo = () -> CustomFontRenderer.getInstance().getCachedScale() * glyphData.advance;
+        this.glyphInfo = () -> CustomFontRenderer.getInstance().getCachedScale() * glyphData.advance + ConfigManager.data.customFontSpacing;
     }
 
     @Override

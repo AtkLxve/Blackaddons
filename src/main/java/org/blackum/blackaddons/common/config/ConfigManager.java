@@ -547,6 +547,7 @@ public class ConfigManager {
         public boolean customFontItalic = false;
         public float customFontItalicSlant = 0.25f;
         public String customFontGoogleName = "";
+        public float customFontSpacing = 0.0f;
 
         // Vector Text
         public boolean vectorTextEnabled = false;
@@ -668,7 +669,7 @@ public class ConfigManager {
                 "customFontOutline", "customFontOutlineColor", "customFontOutlineWidth",
                 "customFontBold", "customFontBoldStrength",
                 "customFontItalic", "customFontItalicSlant",
-                "customFontGoogleName"));
+                "customFontGoogleName", "customFontSpacing"));
         GROUP_MAP.put("vectorText", List.of(
                 "vectorTextEnabled", "vectorTextScale"));
         GROUP_MAP.put("dungeonScore", List.of(
