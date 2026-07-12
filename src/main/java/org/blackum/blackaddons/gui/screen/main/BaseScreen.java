@@ -147,6 +147,7 @@ public abstract class BaseScreen extends Screen {
         this.containerY = (virtualHeight - this.containerHeight) / 2;
 
         widgets.clear();
+        managedCards.clear();
         isMovingOverlay = false;
         initWidgets();
 

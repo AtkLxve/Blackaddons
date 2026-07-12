@@ -76,7 +76,7 @@ public class ModHiderTabController extends SimpleTabController {
                 || ConfigManager.data.lastLoadedCardStates.containsKey("allowedMods")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("customClient")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("allowedChannels");
-        if (!hasSaved) {
+        if (!hasSaved || numCols == 1) {
             for (ResizableCard card : cards) {
                 int shortestCol = 0;
                 for (int i = 1; i < numCols; i++) {

@@ -26,6 +26,22 @@ public class CardContainer extends Widget {
     }
 
     public void addCard(ResizableCard card) {
+        int cardX = card.getX();
+        int cardY = card.getY();
+        int minX = x;
+        int maxX = x + width;
+        int minY = y;
+
+        if (cardX < minX) {
+            card.setX(minX);
+        } else if (cardX + card.getWidth() > maxX) {
+            card.setX(Math.max(minX, maxX - card.getWidth()));
+        }
+
+        if (cardY < minY) {
+            card.setY(minY);
+        }
+
         cards.add(card);
         updateDragBounds(card);
         expandHeightToFitCards();

@@ -137,7 +137,7 @@ public class DungeonsSettingsTabController extends SimpleTabController {
         boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("puzzleSolvers")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("dungeonMap")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("keyTimer");
-        if (!hasSaved) {
+        if (!hasSaved || numCols == 1) {
             for (ResizableCard card : cards) {
                 int shortestCol = 0;
                 for (int i = 1; i < numCols; i++) {

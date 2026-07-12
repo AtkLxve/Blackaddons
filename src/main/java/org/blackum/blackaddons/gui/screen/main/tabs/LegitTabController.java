@@ -60,7 +60,7 @@ public class LegitTabController extends SimpleTabController {
             boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("legit_visuals")
                     || ConfigManager.data.lastLoadedCardStates.containsKey("legit_debuggers")
                     || ConfigManager.data.lastLoadedCardStates.containsKey("legit_custom_font");
-            if (!hasSaved) {
+            if (!hasSaved || numCols == 1) {
                 for (ResizableCard card : cards) {
                     int shortestCol = 0;
                     for (int i = 1; i < numCols; i++) {

@@ -160,7 +160,7 @@ public class CheatsTabController extends SimpleTabController {
                 || ConfigManager.data.lastLoadedCardStates.containsKey("freecam")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("perspective")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("autoClicker");
-        if (!hasSaved) {
+        if (!hasSaved || numCols == 1) {
             for (ResizableCard card : cards) {
                 int shortestCol = 0;
                 for (int i = 1; i < numCols; i++) {

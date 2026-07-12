@@ -449,11 +449,7 @@ public class BlackAddonsGUI extends BaseScreen {
 
     @Override
     public void onClose() {
-        if (ConfigManager.data.useCardLayout) {
-            saveCardLayout();
-        } else {
-            ConfigManager.save();
-        }
+        ConfigManager.save();
         super.onClose();
     }
 }
