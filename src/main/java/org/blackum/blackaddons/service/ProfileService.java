@@ -449,7 +449,7 @@ public class ProfileService {
                                         } else {
                                             mappedName = switch (rawName) {
                                                 case "Inventory" -> "inv";
-                                                case "Armor" -> "armor";
+                                                case "Armor" -> "inv_armor";
                                                 case "Equipment" -> "equipment";
                                                 case "Wardrobe" -> "wardrobe";
                                                 case "Personal Vault" -> "personal_vault";
@@ -491,7 +491,7 @@ public class ProfileService {
                                             while (bpContents.has("backpack_" + idx)) idx++;
                                             bpContents.add("backpack_" + idx, wrapper);
                                         } else {
-                                            String finalKey = mappedName + "_contents";
+                                            String finalKey = mappedName.equals("inv_armor") ? "inv_armor" : mappedName + "_contents";
                                             if (inv.has(finalKey)) {
                                                 JsonObject existing = inv.getAsJsonObject(finalKey);
                                                 if (existing.has("skycrypt_items") && wrapper.has("skycrypt_items")) {
@@ -643,23 +643,44 @@ public class ProfileService {
                     }
                 }
 
+                int watcherSummonUndeadKills = 0;
+                if (combined.has("misc") && combined.getAsJsonObject("misc").has("kills")) {
+                    JsonObject miscKillsRoot = combined.getAsJsonObject("misc").getAsJsonObject("kills");
+                    if (miscKillsRoot.has("kills") && miscKillsRoot.get("kills").isJsonArray()) {
+                        JsonArray killsArr = miscKillsRoot.getAsJsonArray("kills");
+                        for (JsonElement el : killsArr) {
+                            if (el.isJsonObject()) {
+                                JsonObject killEntry = el.getAsJsonObject();
+                                if (killEntry.has("name") && killEntry.get("name").getAsString().equalsIgnoreCase("Watcher Summon Undead")) {
+                                    watcherSummonUndeadKills = JsonUtils.getInt(killEntry, "amount");
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (dungeons.has("stats") && dungeons.get("stats").isJsonObject()) {
                     JsonObject statsObj = dungeons.getAsJsonObject("stats");
                     if (statsObj.has("secrets") && statsObj.get("secrets").isJsonObject()) {
                         JsonObject secretsObj = statsObj.getAsJsonObject("secrets");
                         normalizedDungeons.addProperty("secrets", JsonUtils.getInt(secretsObj, "found"));
                     }
-                    if (statsObj.has("bloodMobKills") && !statsObj.get("bloodMobKills").isJsonNull()) {
-                        if (!memberData.has("player_stats")) {
-                            memberData.add("player_stats", new JsonObject());
-                        }
-                        JsonObject playerStats = memberData.getAsJsonObject("player_stats");
-                        JsonObject kills = playerStats.has("kills") ? playerStats.getAsJsonObject("kills")
-                                : new JsonObject();
-                        kills.addProperty("watcher_summon_undead", JsonUtils.getInt(statsObj, "bloodMobKills"));
-                        if (!playerStats.has("kills")) {
-                            playerStats.add("kills", kills);
-                        }
+                    if (watcherSummonUndeadKills == 0 && statsObj.has("bloodMobKills") && !statsObj.get("bloodMobKills").isJsonNull()) {
+                        watcherSummonUndeadKills = JsonUtils.getInt(statsObj, "bloodMobKills");
+                    }
+                }
+
+                if (watcherSummonUndeadKills > 0) {
+                    if (!memberData.has("player_stats")) {
+                        memberData.add("player_stats", new JsonObject());
+                    }
+                    JsonObject playerStats = memberData.getAsJsonObject("player_stats");
+                    JsonObject kills = playerStats.has("kills") ? playerStats.getAsJsonObject("kills")
+                            : new JsonObject();
+                    kills.addProperty("watcher_summon_undead", watcherSummonUndeadKills);
+                    if (!playerStats.has("kills")) {
+                        playerStats.add("kills", kills);
                     }
                 }
 
@@ -694,15 +715,26 @@ public class ProfileService {
                 }
                 JsonObject inv = memberData.getAsJsonObject("inventory");
 
-                if (gear.has("wardrobe")) {
+                if (gear.has("wardrobe") && gear.get("wardrobe").isJsonArray()) {
+                    JsonArray rawWardrobe = gear.getAsJsonArray("wardrobe");
+                    JsonArray flatWardrobe = new JsonArray();
+                    for (JsonElement setEl : rawWardrobe) {
+                        if (setEl.isJsonArray()) {
+                            for (JsonElement itemEl : setEl.getAsJsonArray()) {
+                                flatWardrobe.add(itemEl);
+                            }
+                        } else {
+                            flatWardrobe.add(setEl);
+                        }
+                    }
                     JsonObject wardrobe = new JsonObject();
-                    wardrobe.add("skycrypt_items", gear.get("wardrobe"));
+                    wardrobe.add("skycrypt_items", flatWardrobe);
                     inv.add("wardrobe_contents", wardrobe);
                 }
                 if (gear.has("armor") && gear.getAsJsonObject("armor").has("armor")) {
                     JsonObject armor = new JsonObject();
                     armor.add("skycrypt_items", gear.getAsJsonObject("armor").get("armor"));
-                    inv.add("armor_contents", armor);
+                    inv.add("inv_armor", armor);
                 }
                 if (gear.has("equipment") && gear.getAsJsonObject("equipment").has("equipment")) {
                     JsonObject equipment = new JsonObject();

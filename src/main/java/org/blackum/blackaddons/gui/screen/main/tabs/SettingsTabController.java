@@ -119,7 +119,7 @@ public class SettingsTabController extends SimpleTabController {
         List<String> apiOptions = List.of(
                 "PlainDawn (Full stats)",
                 "Adjectils (Full stats)",
-                "SkyCrypt (No blood mobs/MP, bugged inventory, won't fix)",
+                "SkyCrypt (Bugged inventory, slow, won't fix)",
                 "Soopy (No secrets/score/inventory)");
 
         String[] tierLabels = {
@@ -236,7 +236,7 @@ public class SettingsTabController extends SimpleTabController {
             case ADJECTILS:
                 return "Adjectils (Full stats)";
             case SKYCRYPT:
-                return "SkyCrypt (No blood mobs/MP, bugged inventory, won't fix)";
+                return "SkyCrypt (Bugged inventory, slow, won't fix)";
             case SOOPY:
                 return "Soopy (No secrets/score/inventory)";
             default:

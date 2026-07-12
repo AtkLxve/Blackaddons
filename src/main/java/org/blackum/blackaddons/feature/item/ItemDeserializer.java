@@ -365,6 +365,31 @@ public class ItemDeserializer {
         }
 
         String skyblockId = obj.has("id") && !obj.get("id").isJsonNull() ? obj.get("id").getAsString() : null;
+        if (skyblockId == null && obj.has("texture_path") && !obj.get("texture_path").isJsonNull()) {
+            String path = obj.get("texture_path").getAsString();
+            if (path.contains("skyblock=")) {
+                int start = path.indexOf("skyblock=") + 9;
+                int end = path.indexOf("__", start);
+                if (end != -1) {
+                    skyblockId = path.substring(start, end);
+                } else {
+                    skyblockId = path.substring(start);
+                }
+            } else if (path.contains("mc=")) {
+                int start = path.indexOf("mc=") + 3;
+                int end = path.indexOf("__", start);
+                if (end != -1) {
+                    skyblockId = path.substring(start, end).toUpperCase();
+                } else {
+                    skyblockId = path.substring(start).toUpperCase();
+                }
+            }
+        }
+        if (skyblockId == null) {
+            skyblockId = obj.has("display_name") && !obj.get("display_name").isJsonNull()
+                    ? obj.get("display_name").getAsString() : null;
+        }
+
         String displayName = obj.has("display_name") && !obj.get("display_name").isJsonNull()
                 ? obj.get("display_name").getAsString()
                 : null;
@@ -375,7 +400,7 @@ public class ItemDeserializer {
                 ? obj.get("texture_path").getAsString()
                 : null;
 
-        Item baseItem = (texturePath != null && texturePath.contains("/head/")) ? Items.PLAYER_HEAD : Items.STONE;
+        Item baseItem = (texturePath != null && (texturePath.contains("/head/") || texturePath.contains("headiso") || texturePath.contains("player_head"))) ? Items.PLAYER_HEAD : Items.STONE;
         if (skyblockId == null || skyblockId.isEmpty()) {
             return new SkyblockItem(ItemStack.EMPTY, "EMPTY", "COMMON");
         }
@@ -399,8 +424,11 @@ public class ItemDeserializer {
         extra.putString("id", skyblockId);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(extra));
 
-        if (texturePath != null && texturePath.contains("/head/")) {
-            String hash = texturePath.substring(texturePath.lastIndexOf("/") + 1);
+        if (texturePath != null && (texturePath.contains("/head/") || texturePath.contains("headiso") || texturePath.contains("player_head"))) {
+            String hash = "";
+            if (texturePath.contains("/head/")) {
+                hash = texturePath.substring(texturePath.lastIndexOf("/") + 1);
+            }
             if (hash.contains("."))
                 hash = hash.substring(0, hash.indexOf("."));
             if (!hash.isEmpty()) {

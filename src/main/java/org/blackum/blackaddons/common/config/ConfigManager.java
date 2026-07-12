@@ -365,7 +365,7 @@ public class ConfigManager {
         public String botUrl = Constants.DEFAULT_BOT_URL;
         public DataSource dataSource = DataSource.LOCAL;
         public List<ApiPriority> apiPriorityList = new ArrayList<>(
-                List.of(ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT));
+                List.of(ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT, ApiPriority.PLAIN_DAWN));
         public boolean rngTrackerEnabled = true;
         public String developerKey = "";
         public boolean partyFinderAutoInvite = true;
@@ -793,7 +793,7 @@ public class ConfigManager {
                 }
                 if (loadedData.apiPriorityList == null) {
                     loadedData.apiPriorityList = new ArrayList<>(List.of(
-                            ApiPriority.PLAIN_DAWN, ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT));
+                            ApiPriority.ADJECTILS, ApiPriority.SKYCRYPT, ApiPriority.PLAIN_DAWN));
                 } else {
                     while (loadedData.apiPriorityList.size() < API_PRIORITY_SLOTS) {
                         ApiPriority fallback = ApiPriority.PLAIN_DAWN;
