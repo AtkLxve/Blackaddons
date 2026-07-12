@@ -29,6 +29,7 @@ public class ProfileService {
     private static String skyCryptRjsonHeader = "__skrao";
     private static long rjsonHeaderExpiry = 0;
     private static final Pattern BUILD_ID_PATTERN = Pattern.compile("([a-z0-9]+)/get[A-Za-z]+");
+    private static final Pattern STATS_BUILD_ID_PATTERN = Pattern.compile("([a-z0-9]+)/get(?:ProfileStats|Combined|Inventories)");
     private static final Pattern RJSON_HEADER_PATTERN = Pattern.compile("\"(__[a-z0-9_]{4,10})\"");
     private static final long PRIMARY_SOURCE_FAILURE_NOTIFICATION_COOLDOWN_MS = 60_000L;
     private static long lastPrimarySourceFailureNotificationAt = 0L;
@@ -179,80 +180,81 @@ public class ProfileService {
     }
 
     private static CompletableFuture<JsonObject> fetchSkyCryptShiiyuProfile(String uuid, String profileName) {
-        return getName(uuid).thenCompose(name -> {
-            if (name == null) {
-                Blackaddons.LOGGER.warn("SkyCrypt Fetch: Failed to get username for UUID " + uuid);
+        return getSkyCryptBuildId().thenCompose(buildId -> {
+            if (buildId == null) {
+                Blackaddons.LOGGER.warn("SkyCrypt Fetch: Failed to get buildId from sky.shiiyu.moe");
                 return CompletableFuture.completedFuture(null);
             }
-            return getSkyCryptBuildId().thenCompose(buildId -> {
-                if (buildId == null) {
-                    Blackaddons.LOGGER.warn("SkyCrypt Fetch: Failed to get buildId from sky.shiiyu.moe");
+            return fetchSkyCryptRemote("getProfileStats", buildId, uuid, "").thenCompose(statsEl -> {
+                if (statsEl == null || !statsEl.isJsonObject()) {
+                    Blackaddons.LOGGER
+                            .warn("SkyCrypt Fetch: Stats API returned no profiles or invalid format for " + uuid);
                     return CompletableFuture.completedFuture(null);
                 }
-                return fetchSkyCryptStats(name, profileName).thenCompose(stats -> {
-                    if (stats == null || !stats.has("profiles") || !stats.get("profiles").isJsonArray()) {
-                        Blackaddons.LOGGER
-                                .warn("SkyCrypt Fetch: Stats API returned no profiles or invalid format for " + name);
-                        return CompletableFuture.completedFuture(null);
-                    }
+                JsonObject stats = statsEl.getAsJsonObject();
+                if (!stats.has("profiles") || !stats.get("profiles").isJsonArray()) {
+                    Blackaddons.LOGGER
+                            .warn("SkyCrypt Fetch: Stats API returned no profiles or invalid format for " + uuid);
+                    return CompletableFuture.completedFuture(null);
+                }
 
-                    JsonArray profilesArr = stats.getAsJsonArray("profiles");
-                    JsonObject selectedProfile = null;
+                String name = stats.has("username") ? stats.get("username").getAsString() : uuid;
+                JsonArray profilesArr = stats.getAsJsonArray("profiles");
+                JsonObject selectedProfile = null;
 
-                    if (profileName != null) {
-                        for (JsonElement el : profilesArr) {
-                            if (el.isJsonObject()) {
-                                JsonObject p = el.getAsJsonObject();
-                                if (p.has("cute_name")
-                                        && p.get("cute_name").getAsString().equalsIgnoreCase(profileName)) {
-                                    selectedProfile = p;
-                                    break;
-                                }
+                if (profileName != null) {
+                    for (JsonElement el : profilesArr) {
+                        if (el.isJsonObject()) {
+                            JsonObject p = el.getAsJsonObject();
+                            if (p.has("cute_name")
+                                    && p.get("cute_name").getAsString().equalsIgnoreCase(profileName)) {
+                                selectedProfile = p;
+                                break;
                             }
                         }
                     }
+                }
 
-                    if (selectedProfile == null) {
-                        for (JsonElement el : profilesArr) {
-                            if (el.isJsonObject()) {
-                                JsonObject p = el.getAsJsonObject();
-                                if (p.has("selected") && !p.get("selected").isJsonNull()
-                                        && p.get("selected").getAsBoolean()) {
-                                    selectedProfile = p;
-                                    break;
-                                }
+                if (selectedProfile == null) {
+                    for (JsonElement el : profilesArr) {
+                        if (el.isJsonObject()) {
+                            JsonObject p = el.getAsJsonObject();
+                            if (p.has("selected") && !p.get("selected").isJsonNull()
+                                    && p.get("selected").getAsBoolean()) {
+                                selectedProfile = p;
+                                break;
                             }
                         }
                     }
+                }
 
-                    if (selectedProfile == null && !profilesArr.isEmpty()) {
-                        selectedProfile = profilesArr.get(0).getAsJsonObject();
-                        Blackaddons.LOGGER.info("SkyCrypt Fetch: No 'selected' profile found, using the first one");
-                    }
-                    if (selectedProfile == null) {
-                        Blackaddons.LOGGER.warn("SkyCrypt Fetch: Profiles array is empty for " + name);
-                        return CompletableFuture.completedFuture(null);
-                    }
+                if (selectedProfile == null && !profilesArr.isEmpty()) {
+                    selectedProfile = profilesArr.get(0).getAsJsonObject();
+                    Blackaddons.LOGGER.info("SkyCrypt Fetch: No 'selected' profile found, using the first one");
+                }
+                if (selectedProfile == null) {
+                    Blackaddons.LOGGER.warn("SkyCrypt Fetch: Profiles array is empty for " + name);
+                    return CompletableFuture.completedFuture(null);
+                }
 
-                    String finalSelectedId = selectedProfile.get("profile_id").getAsString();
-                    return fetchSkyCryptRemote("getCombined", buildId, uuid, finalSelectedId).thenCompose(combined -> {
-                        return fetchSkyCryptRemote("getInventories", buildId, uuid, finalSelectedId).thenApply(inventories -> {
-                            if (combined == null) {
-                                Blackaddons.LOGGER.warn("SkyCrypt Fetch: Failed to get combined data for " + name);
-                                return null;
-                            }
-                            Blackaddons.LOGGER.info(
-                                    "SkyCrypt Fetch: Successfully scraped data and inventories for " + name + " (" + finalSelectedId
-                                            + ")");
-                            JsonObject normalized = normalizeSkyCryptScrapedData(stats, finalSelectedId, combined, uuid);
-                            if (normalized != null) {
-                                if (inventories != null && inventories.isJsonArray()) {
-                                    mergeSkyCryptInventories(normalized, inventories.getAsJsonArray(), uuid);
-                                }
-                            }
-                            return normalized;
-                        });
-                    });
+                String finalSelectedId = selectedProfile.get("profile_id").getAsString();
+                CompletableFuture<JsonElement> combinedFuture = fetchSkyCryptRemote("getCombined", buildId, uuid, finalSelectedId);
+                CompletableFuture<JsonElement> inventoriesFuture = fetchSkyCryptRemote("getInventories", buildId, uuid, finalSelectedId);
+                return combinedFuture.thenCombine(inventoriesFuture, (combined, inventories) -> {
+                    if (combined == null) {
+                        Blackaddons.LOGGER.warn("SkyCrypt Fetch: Failed to get combined data for " + name);
+                        return null;
+                    }
+                    Blackaddons.LOGGER.info(
+                            "SkyCrypt Fetch: Successfully scraped data and inventories for " + name + " (" + finalSelectedId
+                                    + ")");
+                    JsonObject normalized = normalizeSkyCryptScrapedData(stats, finalSelectedId, combined, uuid);
+                    if (normalized != null) {
+                        if (inventories != null && inventories.isJsonArray()) {
+                            mergeSkyCryptInventories(normalized, inventories.getAsJsonArray(), uuid);
+                        }
+                    }
+                    return normalized;
                 });
             });
         });
@@ -319,6 +321,15 @@ public class ProfileService {
             }
 
             String html = res.body();
+            Matcher htmlIdMatcher = STATS_BUILD_ID_PATTERN.matcher(html);
+            if (htmlIdMatcher.find()) {
+                skyCryptBuildId = htmlIdMatcher.group(1);
+                buildIdExpiry = System.currentTimeMillis() + 3600000;
+                if (skyCryptRjsonHeader != null) {
+                    Blackaddons.LOGGER.info("SkyCrypt Discovery: Found BuildID=" + skyCryptBuildId + ", Header=" + skyCryptRjsonHeader);
+                    return CompletableFuture.completedFuture(skyCryptBuildId);
+                }
+            }
             Pattern appJsPattern = Pattern.compile("/_app/immutable/entry/app\\.([a-zA-Z0-9_-]+)\\.js");
             Matcher appMatcher = appJsPattern.matcher(html);
             if (!appMatcher.find()) {
@@ -404,19 +415,6 @@ public class ProfileService {
                     });
                 });
             });
-        });
-    }
-
-    private static CompletableFuture<JsonObject> fetchSkyCryptStats(String name, String profile) {
-        String url = Constants.SKYCRYPT_STATS_API + name + (profile != null ? "/" + profile : "");
-        return HttpUtils.sendGetRequest(url).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
-                try {
-                    return JsonParser.parseString(res.body()).getAsJsonObject();
-                } catch (Exception e) {
-                }
-            }
-            return null;
         });
     }
 
@@ -515,20 +513,7 @@ public class ProfileService {
         }
     }
 
-    private static CompletableFuture<String> getName(String uuid) {
-        String url = Constants.PLAYER_DB_API + uuid;
-        return HttpUtils.sendGetRequest(url).thenApply(res -> {
-            if (res != null && res.statusCode() == 200) {
-                try {
-                    JsonObject json = JsonParser.parseString(res.body()).getAsJsonObject();
-                    return json.get("data").getAsJsonObject().get("player").getAsJsonObject().get("username")
-                            .getAsString();
-                } catch (Exception e) {
-                }
-            }
-            return null;
-        });
-    }
+
 
     private static JsonObject normalizeSkyCryptScrapedData(JsonObject stats, String profileId, JsonElement combinedEl,
             String uuid) {
