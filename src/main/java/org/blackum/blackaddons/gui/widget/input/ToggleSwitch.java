@@ -105,13 +105,6 @@ public class ToggleSwitch extends Widget {
         }
 
         renderSwitch(graphics, mouseX, mouseY);
-    }
-
-    @Override
-    public void renderOverlay(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int rawMouseX, int rawMouseY,
-            float partialTick) {
-        if (!visible)
-            return;
         renderDescription(graphics);
     }
 
@@ -128,14 +121,19 @@ public class ToggleSwitch extends Widget {
         StringBuilder line = new StringBuilder();
 
         for (String word : words) {
-            if (Minecraft.getInstance().font.width(line + word) > width - 20 && !line.isEmpty()) {
+            int currentLength = line.length();
+            line.append(word);
+            if (currentLength > 0 && Minecraft.getInstance().font.width(line.toString()) > width - 20) {
+                line.setLength(currentLength);
                 graphics.text(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
                 descY += 10;
-                line = new StringBuilder();
+                line.setLength(0);
+            } else {
+                line.setLength(currentLength);
             }
             line.append(word).append(" ");
         }
-        if (!line.isEmpty()) {
+        if (line.length() > 0) {
             graphics.text(Minecraft.getInstance().font, line.toString().trim(), x + 10, descY, descColor);
         }
     }
