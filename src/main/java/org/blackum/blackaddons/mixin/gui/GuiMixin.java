@@ -26,6 +26,13 @@ public class GuiMixin {
         }
     }
 
+    @Inject(method = "extractScoreboardSidebar", at = @At("HEAD"), cancellable = true)
+    private void onExtractScoreboardSidebar(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (!ConfigManager.data.scoreboardEnabled) {
+            ci.cancel();
+        }
+    }
+
     @Redirect(method = "extractTabList", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;isDown()Z"))
     private boolean onPlayerListKeyIsDown(KeyMapping keyMapping) {
         return TabListToggleHandler.shouldShowTabList(keyMapping);
@@ -39,6 +46,13 @@ public class GuiMixin {
     @Inject(method = "extractEffects", at = @At("HEAD"), cancellable = true)
     private void onRenderEffects(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         if (ConfigManager.data.hideStatusEffects) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "extractScoreboardSidebar", at = @At("HEAD"), cancellable = true)
+    private void onExtractScoreboardSidebar(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (!ConfigManager.data.scoreboardEnabled) {
             ci.cancel();
         }
     }

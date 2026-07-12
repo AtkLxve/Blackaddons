@@ -273,38 +273,29 @@ public class FontMixin {
                     ));
                     return;
                 }
-                if (CustomFontRenderer.isVariationSelector(codepoint) || EmojiManager.isEmoji(codepoint)) {
-                    final int cp = codepoint;
-                    cir.setReturnValue(new CustomTexturedBakedGlyph(
-                            () -> {
-                                if (CustomFontRenderer.isVariationSelector(cp)) return 0.0f;
-                                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                                return emojiSize + 1.0f;
-                            },
-                            (x, y) -> {
-                                if (CustomFontRenderer.isVariationSelector(cp)) return new float[] { x, y, x, y };
-                                EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(cp);
-                                if (tex == null) return new float[] { x, y, x, y };
-                                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                                float baseline = ConfigManager.data.customTextEnabled ? renderer.getCachedBaseline() : 7.0f;
-                                float ey1 = y + baseline + emojiSize * 0.1f;
-                                float ey0 = ey1 - emojiSize;
-                                return new float[] { x, ey0, x + emojiSize, ey1 };
-                            },
-                            () -> new float[] { 0f, 0f, 0f, 1f, 1f, 1f, 1f, 0f },
-                            () -> {
-                                EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(cp);
-                                if (tex == null) return null;
-                                return (RenderType) McCompat.createTextRenderType("emoji_3d",
-                                        BlackaddonsRenderPipelines.PLAIN_TEXTURED, tex.location);
-                            },
-                            () -> {
-                                EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(cp);
-                                return tex != null ? tex.textureView : null;
-                            },
-                            BlackaddonsRenderPipelines.PLAIN_TEXTURED
-                    ));
-                    return;
+                if (EmojiManager.isEmoji(codepoint)) {
+                    EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(codepoint);
+                    if (tex != null) {
+                        cir.setReturnValue(new CustomTexturedBakedGlyph(
+                                () -> {
+                                    float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                    return emojiSize + 1.0f;
+                                },
+                                (x, y) -> {
+                                    float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                    float baseline = ConfigManager.data.customTextEnabled ? renderer.getCachedBaseline() : 7.0f;
+                                    float ey1 = y + baseline + emojiSize * 0.1f;
+                                    float ey0 = ey1 - emojiSize;
+                                    return new float[] { x, ey0, x + emojiSize, ey1 };
+                                },
+                                () -> new float[] { 0f, 0f, 0f, 1f, 1f, 1f, 1f, 0f },
+                                () -> (RenderType) McCompat.createTextRenderType("emoji_3d",
+                                        BlackaddonsRenderPipelines.PLAIN_TEXTURED, tex.location),
+                                () -> tex.textureView,
+                                BlackaddonsRenderPipelines.PLAIN_TEXTURED
+                        ));
+                        return;
+                    }
                 }
                 CustomBakedGlyph baked = style.isObfuscated()
                         ? renderer.getOrCreateObfuscatedBakedGlyph(codepoint, this.random)

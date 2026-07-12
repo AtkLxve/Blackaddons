@@ -2,7 +2,6 @@ package org.blackum.blackaddons.feature.cheat;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.resources.ResourceKey;
@@ -16,10 +15,8 @@ import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.HashSet;
-import java.util.Set;
 import net.minecraft.client.KeyMapping;
-import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.mc.KeybindManager;
 
 @AutoModule(order = 105)
 public final class Freecam {
@@ -29,7 +26,6 @@ public final class Freecam {
 
     private final Vector3d pos = new Vector3d();
     private final Vector3d prevPos = new Vector3d();
-    private final Set<Integer> pressedMouseButtons = new HashSet<>();
 
     private float yaw;
     private float pitch;
@@ -55,13 +51,6 @@ public final class Freecam {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> getInstance().deactivate());
     }
 
-    public void setMouseButtonState(int button, boolean pressed) {
-        if (pressed) {
-            pressedMouseButtons.add(button);
-        } else {
-            pressedMouseButtons.remove(button);
-        }
-    }
 
     public void toggle() {
         if (active) {
@@ -211,10 +200,7 @@ public final class Freecam {
     }
 
     private boolean isBindPressed(Minecraft mc, int keyCode) {
-        if (keyCode >= Constants.MOUSE_BIND_OFFSET) {
-            return pressedMouseButtons.contains(keyCode - Constants.MOUSE_BIND_OFFSET);
-        }
-        return InputConstants.isKeyDown(mc.getWindow(), keyCode);
+        return KeybindManager.isKeyPressed(keyCode);
     }
 
     private void unpressKeys() {

@@ -1,6 +1,5 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
-
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.gui.screen.main.BaseScreen;
 import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
@@ -34,44 +33,6 @@ public class SettingsTabController extends SimpleTabController {
 
         ListView listView = new ListView(contentX, contentY + Theme.PADDING_MEDIUM, width, height);
         settingsTab.addWidget(listView);
-
-        listView.addItem(new Label(0, 0, "General Settings", Label.Style.TITLE));
-
-        ToggleSwitch disableCmdConfirmToggle = new ToggleSwitch(0, 0, width,
-                "Disable Command Confirmation",
-                "Disables the 'Confirm Command Execution' warning screen for chat links",
-                ConfigManager.data.disableCommandConfirmation, (val) -> {
-                    ConfigManager.data.disableCommandConfirmation = val;
-                    ConfigManager.save();
-                });
-        listView.addItem(disableCmdConfirmToggle);
-
-        ToggleSwitch disableUnsecureChatToastToggle = new ToggleSwitch(0, 0, width,
-                "Disable Unsecure Chat Toast",
-                "Disables the 'Chat messages can't be verified' warning toast",
-                ConfigManager.data.disableUnsecureChatToast, (val) -> {
-                    ConfigManager.data.disableUnsecureChatToast = val;
-                    ConfigManager.save();
-                });
-        listView.addItem(disableUnsecureChatToastToggle);
-
-        ToggleSwitch disableTutorialToastsToggle = new ToggleSwitch(0, 0, width,
-                "Disable Tutorial Toasts",
-                "Disables Minecraft tutorial toasts (like 'Break a tree')",
-                ConfigManager.data.disableTutorialToasts, (val) -> {
-                    ConfigManager.data.disableTutorialToasts = val;
-                    ConfigManager.save();
-                });
-        listView.addItem(disableTutorialToastsToggle);
-
-        ToggleSwitch toggleTabListToggle = new ToggleSwitch(0, 0, width,
-                "Toggle tab list instead of holding",
-                "Toggles the player tab list visibility when pressing the tab key instead of holding it",
-                ConfigManager.data.toggleTabList, (val) -> {
-                    ConfigManager.data.toggleTabList = val;
-                    ConfigManager.save();
-                });
-        listView.addItem(toggleTabListToggle);
 
         listView.addItem(new Label(0, 0, "Party Finder", Label.Style.TITLE));
 
@@ -244,7 +205,8 @@ public class SettingsTabController extends SimpleTabController {
 
     private void updatePriority(int index, String selected) {
         ConfigManager.ApiPriority priority = parseApiName(selected);
-        if (priority == null) return;
+        if (priority == null)
+            return;
         if (ConfigManager.data.apiPriorityList.size() > index) {
             ConfigManager.data.apiPriorityList.set(index, priority);
             ConfigManager.save();
@@ -254,21 +216,31 @@ public class SettingsTabController extends SimpleTabController {
     private ConfigManager.ApiPriority parseApiName(String selected) {
         String first = selected.split(" ")[0];
         switch (first) {
-            case "PlainDawn": return ConfigManager.ApiPriority.PLAIN_DAWN;
-            case "Adjectils": return ConfigManager.ApiPriority.ADJECTILS;
-            case "SkyCrypt": return ConfigManager.ApiPriority.SKYCRYPT;
-            case "Soopy": return ConfigManager.ApiPriority.SOOPY;
-            default: return null;
+            case "PlainDawn":
+                return ConfigManager.ApiPriority.PLAIN_DAWN;
+            case "Adjectils":
+                return ConfigManager.ApiPriority.ADJECTILS;
+            case "SkyCrypt":
+                return ConfigManager.ApiPriority.SKYCRYPT;
+            case "Soopy":
+                return ConfigManager.ApiPriority.SOOPY;
+            default:
+                return null;
         }
     }
 
     private String formatApiName(ConfigManager.ApiPriority priority) {
         switch (priority) {
-            case PLAIN_DAWN: return "PlainDawn (Full stats)";
-            case ADJECTILS: return "Adjectils (Full stats)";
-            case SKYCRYPT: return "SkyCrypt (No blood mobs/MP, bugged inventory, won't fix)";
-            case SOOPY: return "Soopy (No secrets/score/inventory)";
-            default: return priority.name();
+            case PLAIN_DAWN:
+                return "PlainDawn (Full stats)";
+            case ADJECTILS:
+                return "Adjectils (Full stats)";
+            case SKYCRYPT:
+                return "SkyCrypt (No blood mobs/MP, bugged inventory, won't fix)";
+            case SOOPY:
+                return "Soopy (No secrets/score/inventory)";
+            default:
+                return priority.name();
         }
     }
 

@@ -2,7 +2,6 @@ package org.blackum.blackaddons.feature.cheat;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -11,16 +10,14 @@ import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.blackum.blackaddons.common.constants.Constants;
+import org.blackum.blackaddons.common.util.mc.KeybindManager;
 
 @AutoModule(order = 106)
 public final class Perspective {
     private static final Perspective INSTANCE = new Perspective();
 
 
-    private final Set<Integer> pressedMouseButtons = new HashSet<>();
+
 
     private float yaw;
     private float pitch;
@@ -45,13 +42,6 @@ public final class Perspective {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> getInstance().deactivate());
     }
 
-    public void setMouseButtonState(int button, boolean pressed) {
-        if (pressed) {
-            pressedMouseButtons.add(button);
-        } else {
-            pressedMouseButtons.remove(button);
-        }
-    }
 
     public void toggle() {
         if (active) {
@@ -132,10 +122,7 @@ public final class Perspective {
     }
 
     private boolean isBindPressed(Minecraft mc, int keyCode) {
-        if (keyCode >= Constants.MOUSE_BIND_OFFSET) {
-            return pressedMouseButtons.contains(keyCode - Constants.MOUSE_BIND_OFFSET);
-        }
-        return InputConstants.isKeyDown(mc.getWindow(), keyCode);
+        return KeybindManager.isKeyPressed(keyCode);
     }
 
     public void changeLookDirection(double deltaX, double deltaY) {

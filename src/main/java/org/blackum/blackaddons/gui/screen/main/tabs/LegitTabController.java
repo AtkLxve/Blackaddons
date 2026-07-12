@@ -100,16 +100,7 @@ public class LegitTabController extends SimpleTabController {
                 });
         legitTab.addWidget(fireOverlayToggle);
 
-        ToggleSwitch hideStatusEffectsToggle = new ToggleSwitch(contentX, contentY + 90, contentWidth - 20,
-                "Hide Status Effects",
-                "Hides status effect icons from the HUD and inventory",
-                ConfigManager.data.hideStatusEffects, value -> {
-                    ConfigManager.data.hideStatusEffects = value;
-                    ConfigManager.save();
-                });
-        legitTab.addWidget(hideStatusEffectsToggle);
-
-        ToggleSwitch disableNearbyParticlesToggle = new ToggleSwitch(contentX, contentY + 120, contentWidth - 20,
+        ToggleSwitch disableNearbyParticlesToggle = new ToggleSwitch(contentX, contentY + 90, contentWidth - 20,
                 "Disable Nearby Particles",
                 "Visually disables particles within 3 blocks of the player",
                 ConfigManager.data.disableNearbyParticles, value -> {
@@ -118,7 +109,7 @@ public class LegitTabController extends SimpleTabController {
                 });
         legitTab.addWidget(disableNearbyParticlesToggle);
 
-        ToggleSwitch customNicknamesToggle = new ToggleSwitch(contentX, contentY + 150, contentWidth - 20,
+        ToggleSwitch customNicknamesToggle = new ToggleSwitch(contentX, contentY + 120, contentWidth - 20,
                 "Custom Nicknames",
                 "Displays custom nicknames for players",
                 ConfigManager.data.customNicknames, value -> {
@@ -127,9 +118,72 @@ public class LegitTabController extends SimpleTabController {
                 });
         legitTab.addWidget(customNicknamesToggle);
 
-        legitTab.addWidget(new Label(contentX, contentY + 180, "Debuggers", Label.Style.TITLE));
+        ToggleSwitch hideStatusEffectsToggle = new ToggleSwitch(contentX, contentY + 150, contentWidth - 20,
+                "Hide Status Effects",
+                "Hides status effect icons from the HUD and inventory",
+                ConfigManager.data.hideStatusEffects, value -> {
+                    ConfigManager.data.hideStatusEffects = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(hideStatusEffectsToggle);
 
-        int debugY = contentY + 210;
+        ToggleSwitch toggleScoreboardToggle = new ToggleSwitch(contentX, contentY + 180, contentWidth - 20,
+                "Toggle Scoreboard",
+                "Toggles the visibility of the scoreboard sidebar",
+                ConfigManager.data.scoreboardEnabled, value -> {
+                    ConfigManager.data.scoreboardEnabled = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(toggleScoreboardToggle);
+
+        KeybindButton scoreboardKeybind = new KeybindButton(contentX, contentY + 210, contentWidth - 20,
+                "Scoreboard Keybind",
+                ConfigManager.data.toggleScoreboardKeyCode,
+                keyCode -> {
+                    ConfigManager.data.toggleScoreboardKeyCode = keyCode;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(scoreboardKeybind);
+
+        ToggleSwitch toggleTabListToggle = new ToggleSwitch(contentX, contentY + 240, contentWidth - 20,
+                "Toggle tab list instead of holding",
+                "Toggles the player tab list visibility when pressing the tab key instead of holding it",
+                ConfigManager.data.toggleTabList, value -> {
+                    ConfigManager.data.toggleTabList = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(toggleTabListToggle);
+
+        ToggleSwitch disableCmdConfirmToggle = new ToggleSwitch(contentX, contentY + 270, contentWidth - 20,
+                "Disable Command Confirmation",
+                "Disables the 'Confirm Command Execution' warning screen for chat links",
+                ConfigManager.data.disableCommandConfirmation, value -> {
+                    ConfigManager.data.disableCommandConfirmation = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(disableCmdConfirmToggle);
+
+        ToggleSwitch disableTutorialToastsToggle = new ToggleSwitch(contentX, contentY + 300, contentWidth - 20,
+                "Disable Tutorial Toasts",
+                "Disables Minecraft tutorial toasts (like 'Break a tree')",
+                ConfigManager.data.disableTutorialToasts, value -> {
+                    ConfigManager.data.disableTutorialToasts = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(disableTutorialToastsToggle);
+
+        ToggleSwitch disableUnsecureChatToastToggle = new ToggleSwitch(contentX, contentY + 330, contentWidth - 20,
+                "Disable Unsecure Chat Toast",
+                "Disables the 'Chat messages can't be verified' warning toast",
+                ConfigManager.data.disableUnsecureChatToast, value -> {
+                    ConfigManager.data.disableUnsecureChatToast = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(disableUnsecureChatToastToggle);
+
+        legitTab.addWidget(new Label(contentX, contentY + 360, "Debuggers", Label.Style.TITLE));
+
+        int debugY = contentY + 390;
         addDebuggerWidgets(legitTab, contentX, debugY, contentWidth - 20);
 
         legitTab.addWidget(new Label(contentX, debugY + 150, "Custom Font", Label.Style.TITLE));
@@ -159,16 +213,7 @@ public class LegitTabController extends SimpleTabController {
                 });
         visualsCard.addChild(fireOverlayToggle);
 
-        ToggleSwitch hideStatusEffectsToggle = new ToggleSwitch(contentX, contentY + 60, 260,
-                "Hide Status Effects",
-                "Hides status effect icons from the HUD and inventory",
-                ConfigManager.data.hideStatusEffects, value -> {
-                    ConfigManager.data.hideStatusEffects = value;
-                    ConfigManager.save();
-                });
-        visualsCard.addChild(hideStatusEffectsToggle);
-
-        ToggleSwitch disableNearbyParticlesToggle = new ToggleSwitch(contentX, contentY + 90, 260,
+        ToggleSwitch disableNearbyParticlesToggle = new ToggleSwitch(contentX, contentY + 60, 260,
                 "Disable Nearby Particles",
                 "Visually disables particles within 2 blocks of the player",
                 ConfigManager.data.disableNearbyParticles, value -> {
@@ -177,7 +222,7 @@ public class LegitTabController extends SimpleTabController {
                 });
         visualsCard.addChild(disableNearbyParticlesToggle);
 
-        ToggleSwitch customNicknamesToggle = new ToggleSwitch(contentX, contentY + 120, 260,
+        ToggleSwitch customNicknamesToggle = new ToggleSwitch(contentX, contentY + 90, 260,
                 "Custom Nicknames",
                 "Displays custom nicknames for players",
                 ConfigManager.data.customNicknames, value -> {
@@ -185,6 +230,69 @@ public class LegitTabController extends SimpleTabController {
                     ConfigManager.save();
                 });
         visualsCard.addChild(customNicknamesToggle);
+
+        ToggleSwitch hideStatusEffectsToggle = new ToggleSwitch(contentX, contentY + 120, 260,
+                "Hide Status Effects",
+                "Hides status effect icons from the HUD and inventory",
+                ConfigManager.data.hideStatusEffects, value -> {
+                    ConfigManager.data.hideStatusEffects = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(hideStatusEffectsToggle);
+
+        ToggleSwitch toggleScoreboardToggle = new ToggleSwitch(contentX, contentY + 150, 260,
+                "Toggle Scoreboard",
+                "Toggles the visibility of the scoreboard sidebar",
+                ConfigManager.data.scoreboardEnabled, value -> {
+                    ConfigManager.data.scoreboardEnabled = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(toggleScoreboardToggle);
+
+        KeybindButton scoreboardKeybind = new KeybindButton(contentX, contentY + 180, 260,
+                "Scoreboard Keybind",
+                ConfigManager.data.toggleScoreboardKeyCode,
+                keyCode -> {
+                    ConfigManager.data.toggleScoreboardKeyCode = keyCode;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(scoreboardKeybind);
+
+        ToggleSwitch toggleTabListToggle = new ToggleSwitch(contentX, contentY + 210, 260,
+                "Toggle tab list instead of holding",
+                "Toggles the player tab list visibility when pressing the tab key instead of holding it",
+                ConfigManager.data.toggleTabList, value -> {
+                    ConfigManager.data.toggleTabList = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(toggleTabListToggle);
+
+        ToggleSwitch disableCmdConfirmToggle = new ToggleSwitch(contentX, contentY + 240, 260,
+                "Disable Command Confirmation",
+                "Disables the 'Confirm Command Execution' warning screen for chat links",
+                ConfigManager.data.disableCommandConfirmation, value -> {
+                    ConfigManager.data.disableCommandConfirmation = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(disableCmdConfirmToggle);
+
+        ToggleSwitch disableTutorialToastsToggle = new ToggleSwitch(contentX, contentY + 270, 260,
+                "Disable Tutorial Toasts",
+                "Disables Minecraft tutorial toasts (like 'Break a tree')",
+                ConfigManager.data.disableTutorialToasts, value -> {
+                    ConfigManager.data.disableTutorialToasts = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(disableTutorialToastsToggle);
+
+        ToggleSwitch disableUnsecureChatToastToggle = new ToggleSwitch(contentX, contentY + 300, 260,
+                "Disable Unsecure Chat Toast",
+                "Disables the 'Chat messages can't be verified' warning toast",
+                ConfigManager.data.disableUnsecureChatToast, value -> {
+                    ConfigManager.data.disableUnsecureChatToast = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(disableUnsecureChatToastToggle);
 
         visualsCard.updateLayout();
         return visualsCard;

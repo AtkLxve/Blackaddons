@@ -518,6 +518,8 @@ public class ConfigManager {
         public boolean hideStatusEffects = false;
         public boolean disableNearbyParticles = false;
         public boolean customNicknames = true;
+        public boolean scoreboardEnabled = false;
+        public int toggleScoreboardKeyCode = -1;
 
         // Settings
         public int notificationDuration = 4000;
@@ -654,11 +656,11 @@ public class ConfigManager {
         GROUP_MAP.put("visuals", List.of(
                 "legitFullbrightEnabled", "removeFireOverlay",
                 "hideStatusEffects", "disableNearbyParticles",
-                "customNicknames"));
+                "customNicknames", "scoreboardEnabled", "toggleScoreboardKeyCode",
+                "toggleTabList", "disableCommandConfirmation", "disableTutorialToasts",
+                "disableUnsecureChatToast"));
         GROUP_MAP.put("chat", List.of(
                 "notificationDuration", "cacheDurationMinutes",
-                "disableCommandConfirmation", "disableUnsecureChatToast", "disableTutorialToasts",
-                "toggleTabList",
                 "chatVisualFiltersEnabled", "actionTriggersEnabled",
                 "chatVisualFilters", "chatActions", "knownAliases"));
         GROUP_MAP.put("customText", List.of(
