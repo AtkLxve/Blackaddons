@@ -17,15 +17,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import org.blackum.blackaddons.common.util.io.HttpUtils;
+
 public class FontDownloader {
 
     private static final Path CACHE_DIR = FabricLoader.getInstance().getConfigDir().resolve("blackaddons")
             .resolve("cache").resolve("fonts");
 
-    private static final HttpClient HTTP = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(8))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final HttpClient HTTP = HttpUtils.client;
 
     private static final ConcurrentHashMap<String, ByteBuffer> memoryCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Object> downloadLocks = new ConcurrentHashMap<>();

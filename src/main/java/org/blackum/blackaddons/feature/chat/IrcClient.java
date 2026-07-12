@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.io.HttpUtils;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -44,9 +45,7 @@ public class IrcClient implements WebSocket.Listener {
     private static final int BUFFER_SIZE = 50;
 
     private IrcClient() {
-        this.client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
+        this.client = HttpUtils.client;
     }
 
     public static IrcClient getInstance() {

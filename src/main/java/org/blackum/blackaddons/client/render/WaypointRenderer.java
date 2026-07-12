@@ -115,7 +115,6 @@ public class WaypointRenderer {
         Map<UUID, Boolean> activeGroups = new HashMap<>();
         Map<UUID, WaypointGroup> groupLookupCache = new HashMap<>();
 
-        int count = 0;
         for (Waypoint waypoint : manager.getWaypoints()) {
             if (!waypoint.enabled) continue;
             if (waypoint.groupId != null) {
@@ -126,10 +125,6 @@ public class WaypointRenderer {
                 if (!waypoint.dimension.equals(currentDim)) continue;
             }
             renderWaypoint(poseStack, bufferSource, waypoint, camPos);
-            count++;
-        }
-        if (count > 0 && System.currentTimeMillis() % 5000 < 50) {
-            Blackaddons.LOGGER.info("Rendering {} waypoints", count);
         }
     }
 
@@ -150,7 +145,6 @@ public class WaypointRenderer {
         Map<UUID, Boolean> activeGroups = new HashMap<>();
         Map<UUID, WaypointGroup> groupLookupCache = new HashMap<>();
 
-        int count = 0;
         for (Waypoint waypoint : manager.getWaypoints()) {
             if (!waypoint.enabled) continue;
             if (waypoint.groupId != null) {
@@ -161,10 +155,6 @@ public class WaypointRenderer {
                 if (!waypoint.dimension.equals(currentDim)) continue;
             }
             renderWaypoint(matrix, bufferSource, waypoint, camPos);
-            count++;
-        }
-        if (count > 0 && System.currentTimeMillis() % 5000 < 50) {
-            Blackaddons.LOGGER.info("Rendering {} waypoints", count);
         }
     }
 //?}

@@ -8,6 +8,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.util.mc.McCompat;
+import org.blackum.blackaddons.common.util.io.HttpUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -25,14 +26,15 @@ import net.minecraft.resources.Identifier;
 
 public class EmojiManager {
 
-    public static final Identifier ARROW_LOCATION = Identifier.fromNamespaceAndPath("blackaddons", "textures/gui/arrow.png");
+    public static final Identifier ARROW_LOCATION = Identifier.fromNamespaceAndPath("blackaddons",
+            "textures/gui/arrow.png");
     private static TextureSetup arrowSetup;
     private static GpuTextureView arrowTextureView;
 
     public static TextureSetup getArrowSetup() {
         if (arrowSetup == null) {
-            net.minecraft.client.renderer.texture.AbstractTexture tex =
-                    Minecraft.getInstance().getTextureManager().getTexture(ARROW_LOCATION);
+            net.minecraft.client.renderer.texture.AbstractTexture tex = Minecraft.getInstance().getTextureManager()
+                    .getTexture(ARROW_LOCATION);
             if (tex != null) {
                 arrowSetup = TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler());
                 arrowTextureView = tex.getTextureView();
@@ -49,24 +51,24 @@ public class EmojiManager {
     }
 
     public static final float[][] ARROW_U_TABLE = {
-            {0.0f, 0.0f, 1.0f, 1.0f},
-            {0.0f, 1.0f, 1.0f, 0.0f},
-            {1.0f, 1.0f, 0.0f, 0.0f},
-            {1.0f, 0.0f, 0.0f, 1.0f}
+            { 0.0f, 0.0f, 1.0f, 1.0f },
+            { 0.0f, 1.0f, 1.0f, 0.0f },
+            { 1.0f, 1.0f, 0.0f, 0.0f },
+            { 1.0f, 0.0f, 0.0f, 1.0f }
     };
 
     public static final float[][] ARROW_V_TABLE = {
-            {0.0f, 1.0f, 1.0f, 0.0f},
-            {1.0f, 1.0f, 0.0f, 0.0f},
-            {1.0f, 0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f, 1.0f}
+            { 0.0f, 1.0f, 1.0f, 0.0f },
+            { 1.0f, 1.0f, 0.0f, 0.0f },
+            { 1.0f, 0.0f, 0.0f, 1.0f },
+            { 0.0f, 0.0f, 1.0f, 1.0f }
     };
 
     public static final float[][] PRECOMPUTED_ARROW_UVS = {
-            {0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f},
-            {0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f},
-            {1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f},
-            {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f}
+            { 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f },
+            { 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f },
+            { 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f },
+            { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f }
     };
 
     public static float[] getArrowUvs(int direction) {
@@ -74,10 +76,14 @@ public class EmojiManager {
     }
 
     public static int getArrowDirection(int cp) {
-        if (cp == 0x25B6 || cp == 0x25BA || cp == 0x2192) return 0; // RIGHT: ▶, ►, →
-        if (cp == 0x25BC || cp == 0x25BD || cp == 0x2193) return 1; // DOWN: ▼, ▽, ↓
-        if (cp == 0x25C0 || cp == 0x25C4 || cp == 0x2190) return 2; // LEFT: ◀, ◄, ←
-        if (cp == 0x25B2 || cp == 0x25B3 || cp == 0x2191) return 3; // UP: ▲, △, ↑
+        if (cp == 0x25B6 || cp == 0x25BA || cp == 0x2192)
+            return 0; // RIGHT: ▶, ►, →
+        if (cp == 0x25BC || cp == 0x25BD || cp == 0x2193)
+            return 1; // DOWN: ▼, ▽, ↓
+        if (cp == 0x25C0 || cp == 0x25C4 || cp == 0x2190)
+            return 2; // LEFT: ◀, ◄, ←
+        if (cp == 0x25B2 || cp == 0x25B3 || cp == 0x2191)
+            return 3; // UP: ▲, △, ↑
         return -1;
     }
 
@@ -95,10 +101,7 @@ public class EmojiManager {
     private static final Path CACHE_DIR = FabricLoader.getInstance().getConfigDir()
             .resolve("blackaddons").resolve("cache").resolve("emojis");
 
-    private static final HttpClient HTTP = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final HttpClient HTTP = HttpUtils.client;
 
     public static class EmojiTexture {
         public final TextureSetup setup;
@@ -114,7 +117,8 @@ public class EmojiManager {
 
     private static final Map<String, Integer> sequenceToPua = new ConcurrentHashMap<>();
     private static final Map<Integer, String> puaToSequence = new ConcurrentHashMap<>();
-    private static final java.util.concurrent.atomic.AtomicInteger nextPua = new java.util.concurrent.atomic.AtomicInteger(0xF0000);
+    private static final java.util.concurrent.atomic.AtomicInteger nextPua = new java.util.concurrent.atomic.AtomicInteger(
+            0xF0000);
 
     public static int getOrCreateSequenceCodepoint(String hexSeq) {
         return sequenceToPua.computeIfAbsent(hexSeq, key -> {
@@ -127,7 +131,8 @@ public class EmojiManager {
     public static String getEmojiHexName(int codepoint) {
         if (codepoint >= 0xF0000 && codepoint <= 0xFFFFF) {
             String seq = puaToSequence.get(codepoint);
-            if (seq != null) return seq;
+            if (seq != null)
+                return seq;
         }
         return Integer.toHexString(codepoint);
     }
@@ -140,10 +145,11 @@ public class EmojiManager {
     }
 
     public static String preprocessString(String text) {
-        if (text == null || text.isEmpty()) return text;
+        if (text == null || text.isEmpty())
+            return text;
         StringBuilder sb = new StringBuilder();
         int len = text.length();
-        for (int i = 0; i < len; ) {
+        for (int i = 0; i < len;) {
             int cp = text.codePointAt(i);
             int cpCount = Character.charCount(cp);
 
@@ -156,8 +162,7 @@ public class EmojiManager {
                             int next2 = text.codePointAt(i + cpCount + nextCount);
                             if (next2 == 0x20E3) {
                                 int pua = getOrCreateSequenceCodepoint(
-                                        Integer.toHexString(cp) + "-20e3"
-                                );
+                                        Integer.toHexString(cp) + "-20e3");
                                 sb.appendCodePoint(pua);
                                 i += cpCount + nextCount + Character.charCount(next2);
                                 continue;
@@ -165,8 +170,7 @@ public class EmojiManager {
                         }
                     } else if (next == 0x20E3) {
                         int pua = getOrCreateSequenceCodepoint(
-                                Integer.toHexString(cp) + "-20e3"
-                        );
+                                Integer.toHexString(cp) + "-20e3");
                         sb.appendCodePoint(pua);
                         i += cpCount + nextCount;
                         continue;
@@ -179,8 +183,7 @@ public class EmojiManager {
                     int next = text.codePointAt(i + cpCount);
                     if (next >= 0x1F1E6 && next <= 0x1F1FF) {
                         int pua = getOrCreateSequenceCodepoint(
-                                Integer.toHexString(cp) + "-" + Integer.toHexString(next)
-                        );
+                                Integer.toHexString(cp) + "-" + Integer.toHexString(next));
                         sb.appendCodePoint(pua);
                         i += cpCount + Character.charCount(next);
                         continue;

@@ -35,6 +35,7 @@ import org.blackum.blackaddons.gui.notification.NotificationManager;
 import org.blackum.blackaddons.gui.notification.NotificationType;
 import org.blackum.blackaddons.service.BotIntegration;
 import org.blackum.blackaddons.service.MojangAuthService;
+import org.blackum.blackaddons.common.util.io.HttpUtils;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.HoverEvent;
 import java.net.URI;
@@ -109,6 +110,14 @@ public class TestCommands {
                     for (String line : TabListUtils.getTabListLines()) {
                         ctx.getSource().sendFeedback(Component.literal("§7- " + line));
                     }
+                    return 1;
+                }));
+
+        testNode.then(ClientCommands.literal("httpcheck")
+                .executes(ctx -> {
+                    FabricClientCommandSource source = ctx.getSource();
+                    source.sendFeedback(Component.literal("§e[HttpCheck] Starting connectivity test..."));
+                    runHttpCheck(source);
                     return 1;
                 }));
 
@@ -463,6 +472,31 @@ public class TestCommands {
             return (mins * 60L + secs) * 1000L;
         } catch (Exception e) {
             return 0L;
+        }
+    }
+
+    private static void runHttpCheck(FabricClientCommandSource source) {
+        String[] urls = {
+            "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/main/data/custom_names.json",
+            "https://playerdb.co/api/player/minecraft/069a79f4-44e9-4726-a5be-fca90e38aaf5",
+            "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f600.png",
+            "http://ba.neutrality.cc:8080/v1/fonts"
+        };
+        String[] labels = { "GitHub Names", "PlayerDB API", "Twemoji CDN", "Fonts API" };
+
+        for (int i = 0; i < urls.length; i++) {
+            final String label = labels[i];
+            HttpUtils.sendGetRequest(urls[i])
+                .thenAccept(response -> {
+                    Minecraft.getInstance().execute(() -> {
+                        if (response != null && response.statusCode() == 200) {
+                            source.sendFeedback(Component.literal("§a[HttpCheck] " + label + ": SUCCESS (200)"));
+                        } else {
+                            int code = response != null ? response.statusCode() : -1;
+                            source.sendFeedback(Component.literal("§c[HttpCheck] " + label + ": FAILED (" + code + ")"));
+                        }
+                    });
+                });
         }
     }
 }

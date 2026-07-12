@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.google.gson.JsonElement;
 
+import org.blackum.blackaddons.common.util.io.HttpUtils;
+
 public class PlayerProfileManager {
 
     private static final String PLAYER_PROFILES_FILE = "player_profiles.json";
@@ -49,9 +51,7 @@ public class PlayerProfileManager {
     private File cacheFile;
 
     private PlayerProfileManager() {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
-                .build();
+        this.httpClient = HttpUtils.client;
         this.cacheFile = FabricLoader.getInstance().getConfigDir()
                 .resolve(Constants.CONFIG_DIR_NAME)
                 .resolve(Constants.DATA_DIR_NAME)

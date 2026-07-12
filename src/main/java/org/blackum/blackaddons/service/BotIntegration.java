@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.blackum.blackaddons.Blackaddons;
 import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.common.util.io.HttpUtils;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -19,10 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import org.blackum.blackaddons.common.util.io.EncryptionUtils;
 public class BotIntegration {
-    static final HttpClient client = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_1_1)
-            .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
-            .build();
+    static final HttpClient client = HttpUtils.client;
 
     public static void sendRngDrop(String player, String item, String rarity, String floor, String category) {
         if (ConfigManager.data.botUrl.isEmpty())

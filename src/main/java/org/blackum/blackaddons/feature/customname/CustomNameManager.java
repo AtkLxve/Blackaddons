@@ -32,6 +32,8 @@ import org.blackum.blackaddons.feature.profile.PlayerProfileManager;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.locale.Language;
 
+import org.blackum.blackaddons.common.util.io.HttpUtils;
+
 public class CustomNameManager {
 
     private static final Pattern UUID_PATTERN = Pattern.compile(
@@ -44,9 +46,7 @@ public class CustomNameManager {
     private final HttpClient httpClient;
 
     private CustomNameManager() {
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(Constants.HTTP_TIMEOUT_SECONDS))
-                .build();
+        this.httpClient = HttpUtils.client;
     }
 
     public static CustomNameManager getInstance() {

@@ -16,6 +16,8 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.blackum.blackaddons.common.util.io.HttpUtils;
+
 public class GoogleFontsList {
 
     private static final String FONTS_API = "http://ba.neutrality.cc:8080/v1/fonts";
@@ -23,10 +25,7 @@ public class GoogleFontsList {
     private static final Path CACHE_FILE = FabricLoader.getInstance().getConfigDir()
             .resolve("blackaddons").resolve("data").resolve("fontnames.txt");
 
-    private static final HttpClient HTTP = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final HttpClient HTTP = HttpUtils.client;
 
     private static final List<String> nameList = Collections.synchronizedList(new ArrayList<>());
     private static final Map<String, String> urlByName = new ConcurrentHashMap<>();
