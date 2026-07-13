@@ -43,6 +43,7 @@ public class FontMixin {
     private static int measureVisualWidth(CustomFontRenderer renderer, CustomFontManager mgr, String text, boolean boldOverride) {
         float scale = renderer.getCachedScale();
         float cursor = 0.0f;
+        boolean bold = boldOverride;
 
         for (int i = 0; i < text.length(); ) {
             int cp = text.codePointAt(i);
@@ -50,6 +51,12 @@ public class FontMixin {
                 i += Character.charCount(cp);
                 if (i < text.length()) {
                     int nextCp = text.codePointAt(i);
+                    char code = Character.toLowerCase((char) nextCp);
+                    if (code == 'l') {
+                        bold = true;
+                    } else if (code == 'r' || (code >= '0' && code <= '9') || (code >= 'a' && code <= 'f')) {
+                        bold = boldOverride;
+                    }
                     i += Character.charCount(nextCp);
                 }
                 continue;
@@ -71,7 +78,8 @@ public class FontMixin {
                 continue;
             }
             CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-            cursor += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing) : 5.0f;
+            float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0.0f;
+            cursor += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing + boldPad) : (5.0f + boldPad);
             i += Character.charCount(cp);
         }
 
@@ -142,6 +150,8 @@ public class FontMixin {
                 float[] cursor = {0};
                 text.visit((style, string) -> {
                     String preprocessed = EmojiManager.preprocessString(string);
+                    boolean bold = ConfigManager.data.customFontBold || style.isBold();
+                    float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0f;
                     for (int i = 0; i < preprocessed.length(); ) {
                         int cp = preprocessed.codePointAt(i);
                         if (cp == 167) { // '§'
@@ -169,7 +179,7 @@ public class FontMixin {
                             continue;
                         }
                         CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-                        cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing) : 5.0f;
+                        cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing + boldPad) : (5.0f + boldPad);
                         i += Character.charCount(cp);
                     }
                     return Optional.empty();
@@ -207,8 +217,10 @@ public class FontMixin {
                         cursor[0] += emojiSize + 1.0f;
                         return true;
                     }
+                    boolean bold = ConfigManager.data.customFontBold || style.isBold();
+                    float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0f;
                     CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-                    cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing) : 5.0f;
+                    cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing + boldPad) : (5.0f + boldPad);
                     return true;
                 });
                 int result = Mth.ceil(cursor[0]);

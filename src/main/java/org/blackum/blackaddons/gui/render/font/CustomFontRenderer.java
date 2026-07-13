@@ -573,7 +573,8 @@ public class CustomFontRenderer {
             SdfGlyph sdfGlyph = getSdfGlyph(cp);
             if (glyph != null && sdfGlyph != null) {
                 renderGlyphGui(pose, cp, glyph, sdfGlyph, curX[0], y, argb, scissor, renderState, bold, italic);
-                curX[0] += glyph.advance * scale + ConfigManager.data.customFontSpacing;
+                float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0f;
+                curX[0] += glyph.advance * scale + ConfigManager.data.customFontSpacing + boldPad;
             } else {
                 FormattedCharSequence singleChar = sink -> sink.accept(0, style, cp);
                 font.prepareText(singleChar, curX[0], y, argb, false, false, 0)
@@ -656,7 +657,8 @@ public class CustomFontRenderer {
             if (glyph != null && sdfGlyph != null) {
                 renderGlyphGui(pose, cp, glyph, sdfGlyph, curX, y, color, scissor, renderState, bold, italic);
             }
-            curX += glyph != null ? (glyph.advance * scale + ConfigManager.data.customFontSpacing) : 0f;
+            float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0f;
+            curX += glyph != null ? (glyph.advance * scale + ConfigManager.data.customFontSpacing + boldPad) : 0f;
             i += Character.charCount(cp);
         }
     }
