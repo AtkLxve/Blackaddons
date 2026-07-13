@@ -35,13 +35,15 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 
 @Mixin(value = Font.class, priority = 10000)
-public class FontMixin {
+public abstract class FontMixin {
     @Shadow
     @Final
     private RandomSource random;
 
-    private static int measureVisualWidth(CustomFontRenderer renderer, CustomFontManager mgr, String text, boolean boldOverride) {
-        float scale = renderer.getCachedScale();
+    @Shadow
+    public abstract BakedGlyph getGlyph(int codepoint, Style style);
+
+    private static int measureVisualWidth(FontMixin font, CustomFontRenderer renderer, CustomFontManager mgr, String text, boolean boldOverride) {
         float cursor = 0.0f;
         boolean bold = boldOverride;
 
@@ -65,21 +67,9 @@ public class FontMixin {
                 i += Character.charCount(cp);
                 continue;
             }
-            int arrowDir = EmojiManager.getArrowDirection(cp);
-            if (arrowDir != -1) {
-                cursor += EmojiManager.getArrowAdvance();
-                i += Character.charCount(cp);
-                continue;
-            }
-            if (EmojiManager.isEmoji(cp)) {
-                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                cursor += emojiSize + 1.0f;
-                i += Character.charCount(cp);
-                continue;
-            }
-            CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-            float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0.0f;
-            cursor += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing + boldPad) : (5.0f + boldPad);
+            Style style = bold ? Style.EMPTY.withBold(true) : Style.EMPTY;
+            BakedGlyph glyph = font.getGlyph(cp, style);
+            cursor += glyph.info().getAdvance(bold);
             i += Character.charCount(cp);
         }
 
@@ -123,7 +113,7 @@ public class FontMixin {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
                 CustomFontManager mgr = renderer.getManager();
-                int result = measureVisualWidth(renderer, mgr, text, ConfigManager.data.customFontBold);
+                int result = measureVisualWidth(this, renderer, mgr, text, ConfigManager.data.customFontBold);
                 cir.setReturnValue(result);
             }
         }
@@ -145,13 +135,10 @@ public class FontMixin {
         if (isCustomTextActive() && text != null) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
-                CustomFontManager mgr = renderer.getManager();
-                float scale = renderer.getCachedScale();
                 float[] cursor = {0};
                 text.visit((style, string) -> {
                     String preprocessed = EmojiManager.preprocessString(string);
                     boolean bold = ConfigManager.data.customFontBold || style.isBold();
-                    float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0f;
                     for (int i = 0; i < preprocessed.length(); ) {
                         int cp = preprocessed.codePointAt(i);
                         if (cp == 167) { // '§'
@@ -166,20 +153,8 @@ public class FontMixin {
                             i += Character.charCount(cp);
                             continue;
                         }
-                        int arrowDir = EmojiManager.getArrowDirection(cp);
-                        if (arrowDir != -1) {
-                            cursor[0] += EmojiManager.getArrowAdvance();
-                            i += Character.charCount(cp);
-                            continue;
-                        }
-                        if (EmojiManager.isEmoji(cp)) {
-                            float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                            cursor[0] += emojiSize + 1.0f;
-                            i += Character.charCount(cp);
-                            continue;
-                        }
-                        CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-                        cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing + boldPad) : (5.0f + boldPad);
+                        BakedGlyph glyph = getGlyph(cp, style);
+                        cursor[0] += glyph.info().getAdvance(bold);
                         i += Character.charCount(cp);
                     }
                     return Optional.empty();
@@ -200,27 +175,14 @@ public class FontMixin {
         if (isCustomTextActive() && text != null) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
-                CustomFontManager mgr = renderer.getManager();
-                float scale = renderer.getCachedScale();
                 float[] cursor = {0};
                 text.accept((idx, style, cp) -> {
                     if (CustomFontRenderer.isVariationSelector(cp)) {
                         return true;
                     }
-                    int arrowDir = EmojiManager.getArrowDirection(cp);
-                    if (arrowDir != -1) {
-                        cursor[0] += EmojiManager.getArrowAdvance();
-                        return true;
-                    }
-                    if (EmojiManager.isEmoji(cp)) {
-                        float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                        cursor[0] += emojiSize + 1.0f;
-                        return true;
-                    }
                     boolean bold = ConfigManager.data.customFontBold || style.isBold();
-                    float boldPad = bold ? ConfigManager.data.customFontBoldStrength : 0f;
-                    CustomFontManager.GlyphData data = mgr != null ? mgr.getGlyphData(cp) : null;
-                    cursor[0] += data != null ? (data.advance * scale + ConfigManager.data.customFontSpacing + boldPad) : (5.0f + boldPad);
+                    BakedGlyph glyph = getGlyph(cp, style);
+                    cursor[0] += glyph.info().getAdvance(bold);
                     return true;
                 });
                 int result = Mth.ceil(cursor[0]);
