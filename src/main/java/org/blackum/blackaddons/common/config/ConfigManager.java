@@ -527,7 +527,7 @@ public class ConfigManager {
         public boolean disableCommandConfirmation = true;
         public boolean disableUnsecureChatToast = true;
         public boolean disableTutorialToasts = true;
-        public boolean toggleTabList = false;
+        public boolean toggleTabList = true;
         public boolean chatVisualFiltersEnabled = false;
         public boolean actionTriggersEnabled = true;
 

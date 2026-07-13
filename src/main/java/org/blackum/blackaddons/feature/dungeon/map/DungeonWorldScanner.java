@@ -74,32 +74,31 @@ public class DungeonWorldScanner {
                 Vec2i place = new Vec2i(x, z);
                 int tileIdx = place.roomListIndex();
 
-                synchronized (rooms) {
-                    Room existing = (tileGrid[tileIdx] != null) ? tileGrid[tileIdx].owner : null;
+                Room existing = (tileGrid[tileIdx] != null) ? tileGrid[tileIdx].owner : null;
 
-                    if (existing != null) {
-                        if (existing.data == null || !existing.data.name.equals(roomData.name)) {
-                            existing.data = roomData;
-                            existing.type = roomData.type;
-                            existing.shape = roomData.shape;
-                            existing.height = height;
-                        }
-                        updateRotationOffShape(existing);
-                    } else {
-                        Room found = null;
-                        for (Room r : rooms) {
-                            if (r.data != null && r.data.name.equals(roomData.name)) { found = r; break; }
-                        }
-                        if (found == null) {
-                            found = new Room(roomData, height);
-                            rooms.add(found);
-                        }
-                        Vec2i worldPos = new Vec2i(wx, wz);
-                        Integer rs = DungeonMap.getRoomSize();
-                        found.roomTile(worldPos, rs != null ? rs : 16);
-                        updateRotationOffShape(found);
+                if (existing != null) {
+                    if (existing.data == null || !existing.data.name.equals(roomData.name)) {
+                        existing.data = roomData;
+                        existing.type = roomData.type;
+                        existing.shape = roomData.shape;
+                        existing.height = height;
                     }
+                    updateRotationOffShape(existing);
+                } else {
+                    Room found = null;
+                    for (Room r : rooms) {
+                        if (r.data != null && r.data.name.equals(roomData.name)) { found = r; break; }
+                    }
+                    if (found == null) {
+                        found = new Room(roomData, height);
+                        rooms.add(found);
+                    }
+                    Vec2i worldPos = new Vec2i(wx, wz);
+                    Integer rs = DungeonMap.getRoomSize();
+                    found.roomTile(worldPos, rs != null ? rs : 16);
+                    updateRotationOffShape(found);
                 }
+
             }
         }
         scanWorldDoors(level, tileGrid);

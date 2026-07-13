@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.module.AutoModule;
 import org.blackum.blackaddons.common.util.mc.LocationUtils;
@@ -287,7 +288,8 @@ public class DungeonScoreboard {
     }
 
     private static boolean isPlayerMarker(MapDecoration decor) {
-        return true;
+        return decor.type().equals(MapDecorationTypes.PLAYER)
+                || decor.type().equals(MapDecorationTypes.PLAYER_OFF_MAP);
     }
 
     private static void parseTabList() {

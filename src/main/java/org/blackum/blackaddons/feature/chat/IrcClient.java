@@ -66,48 +66,84 @@ public class IrcClient implements WebSocket.Listener {
             return;
         }
 
-        String wsUrl = botUrl.replace("http://", "ws://").replace("https://", "wss://") + "/v1/irc";
-        if (!ConfigManager.data.developerKey.isEmpty()) {
-            wsUrl += "?key=" + URLEncoder.encode(ConfigManager.data.developerKey, StandardCharsets.UTF_8);
-        }
-
-        synchronized (messageBuffer) {
-            messageBuffer.clear();
-        }
-        for (IrcMessageListener listener : listeners) {
-            listener.onMessageReceived(null);
-        }
-
         connecting = true;
         lastMessageTime = System.currentTimeMillis();
 
-        client.newWebSocketBuilder()
-                .buildAsync(URI.create(wsUrl), this)
-                .whenComplete((ws, ex) -> {
-                    connecting = false;
-                    if (ex != null) {
-                        Blackaddons.LOGGER.error("Failed to connect to IRC: " + ex.getMessage());
-                        if (!intentionalDisconnect) {
-                            scheduleReconnect();
-                        }
-                    } else {
-                        if (intentionalDisconnect) {
-                            try {
-                                ws.sendClose(WebSocket.NORMAL_CLOSURE, "Disconnecting");
-                            } catch (Exception ignored) {
+        CompletableFuture<String> serverIdFuture;
+        if (!ConfigManager.data.developerKey.isEmpty()) {
+            serverIdFuture = CompletableFuture.completedFuture(null);
+        } else if (MinecraftInstance.mc.getUser() != null) {
+            String serverId = org.blackum.blackaddons.service.MojangAuthService.generateServerId();
+            serverIdFuture = org.blackum.blackaddons.service.MojangAuthService.joinServer(serverId)
+                    .thenApply(joined -> joined ? serverId : null);
+        } else {
+            serverIdFuture = CompletableFuture.completedFuture(null);
+        }
+
+        serverIdFuture.thenAccept(mojangServerId -> {
+            String wsUrl = botUrl.replace("http://", "ws://").replace("https://", "wss://") + "/v1/irc";
+            List<String> params = new ArrayList<>();
+            if (!ConfigManager.data.developerKey.isEmpty()) {
+                params.add("key=" + URLEncoder.encode(ConfigManager.data.developerKey, StandardCharsets.UTF_8));
+            }
+
+            if (MinecraftInstance.mc.getUser() != null) {
+                String uuidStr = MinecraftInstance.mc.getUser().getProfileId().toString();
+                String username = MinecraftInstance.mc.getUser().getName();
+                params.add("uuid=" + URLEncoder.encode(uuidStr, StandardCharsets.UTF_8));
+                params.add("user=" + URLEncoder.encode(username, StandardCharsets.UTF_8));
+
+                if (mojangServerId != null) {
+                    params.add("mojang_server_id=" + URLEncoder.encode(mojangServerId, StandardCharsets.UTF_8));
+                }
+            }
+
+            if (!params.isEmpty()) {
+                wsUrl += "?" + String.join("&", params);
+            }
+
+            synchronized (messageBuffer) {
+                messageBuffer.clear();
+            }
+            for (IrcMessageListener listener : listeners) {
+                listener.onMessageReceived(null);
+            }
+
+            client.newWebSocketBuilder()
+                    .buildAsync(URI.create(wsUrl), this)
+                    .whenComplete((ws, ex) -> {
+                        connecting = false;
+                        if (ex != null) {
+                            Blackaddons.LOGGER.error("Failed to connect to IRC: " + ex.getMessage());
+                            if (!intentionalDisconnect) {
+                                scheduleReconnect();
                             }
-                            return;
-                        }
-                        this.webSocket = ws;
-                        Blackaddons.LOGGER.info("Connected to IRC");
-                        startKeepAlive();
-                        CompletableFuture.delayedExecutor(30, TimeUnit.SECONDS).execute(() -> {
-                            if (this.webSocket == ws) {
-                                this.reconnectAttempts = 0;
+                        } else {
+                            if (intentionalDisconnect) {
+                                try {
+                                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "Disconnecting");
+                                } catch (Exception ignored) {
+                                }
+                                return;
                             }
-                        });
-                    }
-                });
+                            this.webSocket = ws;
+                            Blackaddons.LOGGER.info("Connected to IRC");
+                            startKeepAlive();
+                            CompletableFuture.delayedExecutor(30, TimeUnit.SECONDS).execute(() -> {
+                                if (this.webSocket == ws) {
+                                    this.reconnectAttempts = 0;
+                                }
+                            });
+                        }
+                    });
+        }).exceptionally(ex -> {
+            connecting = false;
+            Blackaddons.LOGGER.error("Failed to authenticate Mojang session for IRC: " + ex.getMessage());
+            if (!intentionalDisconnect) {
+                scheduleReconnect();
+            }
+            return null;
+        });
     }
 
     public void disconnect() {
@@ -208,10 +244,18 @@ public class IrcClient implements WebSocket.Listener {
 
             JsonObject json = new JsonObject();
             json.addProperty("user", username);
-            json.addProperty("uuid", MinecraftInstance.mc.getUser().getProfileId().toString());
+            String uuidStr = MinecraftInstance.mc.getUser().getProfileId().toString();
+            json.addProperty("uuid", uuidStr);
             json.addProperty("message", processedMessage);
             json.addProperty("channel", channel);
             json.addProperty("timestamp", ircMsg.timestamp());
+
+            if (org.blackum.blackaddons.common.util.io.EncryptionUtils.isKeySet()) {
+                String encryptedId = org.blackum.blackaddons.common.util.io.EncryptionUtils.encryptIdentity(uuidStr);
+                if (encryptedId != null) {
+                    json.addProperty("encrypted_identity", encryptedId);
+                }
+            }
 
             webSocket.sendText(json.toString(), true).exceptionally(ex -> {
                 Blackaddons.LOGGER.error("Failed to send IRC message", ex);
