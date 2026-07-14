@@ -294,6 +294,15 @@ public class LegitTabController extends SimpleTabController {
                 });
         visualsCard.addChild(disableUnsecureChatToastToggle);
 
+        ToggleSwitch chinaHatToggle = new ToggleSwitch(contentX, contentY + 330, 260,
+                "China Hat",
+                "Renders a beautiful rotating rainbow China Hat on your head. This hat doesn't know what happened on Tiananmen Square in 1989.",
+                ConfigManager.data.chinaHatEnabled, value -> {
+                    ConfigManager.data.chinaHatEnabled = value;
+                    ConfigManager.save();
+                });
+        visualsCard.addChild(chinaHatToggle);
+
         visualsCard.updateLayout();
         return visualsCard;
     }
@@ -738,7 +747,6 @@ public class LegitTabController extends SimpleTabController {
         customTextCard.updateLayout();
         return customTextCard;
     }
-
 
     private void updateFontStatus(Label label) {
         CustomFontRenderer renderer = CustomFontRenderer.getInstance();

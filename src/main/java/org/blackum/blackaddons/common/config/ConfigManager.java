@@ -520,6 +520,7 @@ public class ConfigManager {
         public boolean customNicknames = true;
         public boolean scoreboardEnabled = false;
         public int toggleScoreboardKeyCode = -1;
+        public boolean chinaHatEnabled = false;
 
         // Settings
         public int notificationDuration = 4000;
@@ -658,7 +659,7 @@ public class ConfigManager {
                 "hideStatusEffects", "disableNearbyParticles",
                 "customNicknames", "scoreboardEnabled", "toggleScoreboardKeyCode",
                 "toggleTabList", "disableCommandConfirmation", "disableTutorialToasts",
-                "disableUnsecureChatToast"));
+                "disableUnsecureChatToast", "chinaHatEnabled"));
         GROUP_MAP.put("chat", List.of(
                 "notificationDuration", "cacheDurationMinutes",
                 "chatVisualFiltersEnabled", "actionTriggersEnabled",
