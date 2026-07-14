@@ -14,7 +14,6 @@ import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.cheat.Freecam;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-import java.awt.Color;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
 //? if >=26.2 {
@@ -25,14 +24,30 @@ import net.minecraft.client.renderer.MultiBufferSource;
 
 @AutoModule(order = 410)
 public class ChinaHatRenderer {
+    private static final int SEGMENTS = 64;
+    private static final float RADIUS = 0.6f;
+    private static final float[] COS_RADIUS_TABLE = new float[SEGMENTS + 1];
+    private static final float[] SIN_RADIUS_TABLE = new float[SEGMENTS + 1];
+    private static final float[] HUE_OFFSET_TABLE = new float[SEGMENTS];
+    private static final Quaternionf ROTATION = new Quaternionf();
+
+    static {
+        for (int i = 0; i <= SEGMENTS; i++) {
+            float angle = (float) (i * 2.0 * Math.PI / SEGMENTS);
+            COS_RADIUS_TABLE[i] = (float) Math.cos(angle) * RADIUS;
+            SIN_RADIUS_TABLE[i] = (float) Math.sin(angle) * RADIUS;
+        }
+        for (int i = 0; i < SEGMENTS; i++) {
+            HUE_OFFSET_TABLE[i] = i * 0.09375f;
+        }
+    }
 
     public static void register() {
 //? if >=26.2 {
         /*LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
             if (!ConfigManager.data.chinaHatEnabled) return;
             float partialTicks = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
-            RenderContext ctx = new RenderContext(context.poseStack(), context.submitNodeCollector(), partialTicks);
-            render(ctx);
+            render(context.poseStack(), context.submitNodeCollector(), partialTicks);
         });
 *///?} else {
         LevelRenderEvents.BEFORE_TRANSLUCENT_TERRAIN.register(context -> {
@@ -45,13 +60,16 @@ public class ChinaHatRenderer {
             }
 
             float partialTicks = Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(false);
-            RenderContext ctx = new RenderContext(context.poseStack(), bufSource, partialTicks);
-            render(ctx);
+            render(context.poseStack(), bufSource, partialTicks);
         });
 //?}
     }
 
-    private static void render(RenderContext ctx) {
+//? if >=26.2 {
+    /*private static void render(PoseStack poseStack, SubmitNodeCollector bufferSource, float partialTicks) {
+*///?} else {
+    private static void render(PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, float partialTicks) {
+//?}
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
         if (player == null || mc.level == null || mc.gameRenderer == null) return;
@@ -62,7 +80,6 @@ public class ChinaHatRenderer {
         }
 
         Vec3 camPos = McCompat.getCamera(mc.gameRenderer).position();
-        float partialTicks = ctx.getPartialTicks();
 
         double px = Mth.lerp(partialTicks, player.xo, player.getX()) - camPos.x;
         double py = Mth.lerp(partialTicks, player.yo, player.getY()) - camPos.y;
@@ -84,42 +101,48 @@ public class ChinaHatRenderer {
             headZ += Math.cos(bodyYawRad) * 0.15;
         }
 
-        PoseStack poseStack = ctx.getPoseStack();
         poseStack.pushPose();
         poseStack.translate(headX, headY, headZ);
 
         float headYaw = Mth.lerp(partialTicks, player.yHeadRotO, player.yHeadRot);
-        poseStack.mulPose(new Quaternionf().rotationY((float) Math.toRadians(-headYaw)));
+        poseStack.mulPose(ROTATION.rotationY((float) Math.toRadians(-headYaw)));
 
-        float radius = 0.6f;
         float peak = 0.3f;
-        int segments = 64;
+        float timeFactor6 = ((float) (System.currentTimeMillis() % 4000) * 0.00025f) * 6.0f;
 
-        McCompat.drawGeometry(ctx.getBufferSource(), poseStack, McCompat.getWaypointRenderType(), (pose, buffer) -> {
+        McCompat.drawGeometry(bufferSource, poseStack, McCompat.getWaypointRenderType(), (pose, buffer) -> {
             Matrix4f matrix = pose.pose();
-            for (int i = 0; i < segments; i++) {
-                float angle = (float) (i * 2.0 * Math.PI / segments);
-                float nextAngle = (float) ((i + 1) * 2.0 * Math.PI / segments);
+            for (int i = 0; i < SEGMENTS; i++) {
+                float cosR = COS_RADIUS_TABLE[i];
+                float sinR = SIN_RADIUS_TABLE[i];
+                float nextCosR = COS_RADIUS_TABLE[i + 1];
+                float nextSineR = SIN_RADIUS_TABLE[i + 1];
 
-                float cos = (float) Math.cos(angle);
-                float sin = (float) Math.sin(angle);
-                float nextCos = (float) Math.cos(nextAngle);
-                float nextSine = (float) Math.sin(nextAngle);
-
-                float hue = (float) ((System.currentTimeMillis() % 4000) / 4000.0 + (double) i / segments);
-                int rgb = Color.HSBtoRGB(hue, 0.8f, 1.0f);
-                float r = ((rgb >> 16) & 0xFF) / 255.0f;
-                float g = ((rgb >> 8) & 0xFF) / 255.0f;
-                float b = (rgb & 0xFF) / 255.0f;
+                float h = timeFactor6 + HUE_OFFSET_TABLE[i];
+                int h_int = (int) h;
+                float f = h - h_int;
+                float p = 0.2f;
+                float q = 1.0f - 0.8f * f;
+                float t = 0.2f + 0.8f * f;
+                float r, g, b;
+                int selector = h_int >= 6 ? h_int - 6 : h_int;
+                switch (selector) {
+                    case 0:  r = 1.0f; g = t;    b = p;    break;
+                    case 1:  r = q;    g = 1.0f; b = p;    break;
+                    case 2:  r = p;    g = 1.0f; b = t;    break;
+                    case 3:  r = p;    g = q;    b = 1.0f; break;
+                    case 4:  r = t;    g = p;    b = 1.0f; break;
+                    default: r = 1.0f; g = p;    b = q;    break;
+                }
                 float a = 0.6f;
 
-                buffer.addVertex(matrix, cos * radius, 0, sin * radius).setColor(r, g, b, a).setUv(0, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, -1, 0);
-                buffer.addVertex(matrix, nextCos * radius, 0, nextSine * radius).setColor(r, g, b, a).setUv(1, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, -1, 0);
+                buffer.addVertex(matrix, cosR, 0, sinR).setColor(r, g, b, a).setUv(0, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, -1, 0);
+                buffer.addVertex(matrix, nextCosR, 0, nextSineR).setColor(r, g, b, a).setUv(1, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, -1, 0);
                 buffer.addVertex(matrix, 0, peak, 0).setColor(r, g, b, a).setUv(1, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, -1, 0);
                 buffer.addVertex(matrix, 0, peak, 0).setColor(r, g, b, a).setUv(0, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, -1, 0);
 
-                buffer.addVertex(matrix, nextCos * radius, 0, nextSine * radius).setColor(r, g, b, a).setUv(1, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, 1, 0);
-                buffer.addVertex(matrix, cos * radius, 0, sin * radius).setColor(r, g, b, a).setUv(0, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, 1, 0);
+                buffer.addVertex(matrix, nextCosR, 0, nextSineR).setColor(r, g, b, a).setUv(1, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, 1, 0);
+                buffer.addVertex(matrix, cosR, 0, sinR).setColor(r, g, b, a).setUv(0, 0).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, 1, 0);
                 buffer.addVertex(matrix, 0, peak, 0).setColor(r, g, b, a).setUv(0, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, 1, 0);
                 buffer.addVertex(matrix, 0, peak, 0).setColor(r, g, b, a).setUv(1, 1).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(0, 1, 0);
             }
