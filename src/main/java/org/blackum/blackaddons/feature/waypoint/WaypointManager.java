@@ -218,8 +218,14 @@ public class WaypointManager {
                 groups.clear();
                 groups.addAll(loaded);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             Blackaddons.LOGGER.error("Failed to load legacy groups", e);
+            try {
+                File backupFile = new File(groupsFile.getParentFile(), groupsFile.getName() + ".corrupted");
+                groupsFile.renameTo(backupFile);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

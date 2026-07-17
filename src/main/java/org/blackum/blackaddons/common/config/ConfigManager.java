@@ -825,8 +825,15 @@ public class ConfigManager {
                 Theme.refreshColors();
                 syncOverlayState();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            try {
+                File backupFile = new File(configFile.getParentFile(), configFile.getName() + ".corrupted");
+                configFile.renameTo(backupFile);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            save();
         }
     }
 

@@ -49,8 +49,15 @@ public class LocalRngManager {
             if (parsed != null && parsed.isJsonObject()) {
                 data = parsed.getAsJsonObject();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             Blackaddons.LOGGER.error("Failed to load local RNG data", e);
+            try {
+                File backupFile = new File(DATA_FILE.getParentFile(), DATA_FILE.getName() + ".corrupted");
+                DATA_FILE.renameTo(backupFile);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            save();
         }
     }
 

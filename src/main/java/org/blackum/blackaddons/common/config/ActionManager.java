@@ -105,8 +105,15 @@ public class ActionManager {
                     ConfigManager.normalizeActionSteps(action.actions);
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            try {
+                File backupFile = new File(chatActionsFile.getParentFile(), chatActionsFile.getName() + ".corrupted");
+                chatActionsFile.renameTo(backupFile);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            save();
         }
     }
 
@@ -166,8 +173,14 @@ public class ActionManager {
                 }
                 save();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            try {
+                File backupFile = new File(OLD_ACTIONS_FILE.getParentFile(), OLD_ACTIONS_FILE.getName() + ".corrupted");
+                OLD_ACTIONS_FILE.renameTo(backupFile);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
