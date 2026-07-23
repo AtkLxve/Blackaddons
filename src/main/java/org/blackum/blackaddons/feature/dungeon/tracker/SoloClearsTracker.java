@@ -100,13 +100,14 @@ public class SoloClearsTracker {
         List<String> tabListLines = new ArrayList<>(tabLinesOnly);
         tabListLines.addAll(footerLines);
 
-        boolean isSolo = false;
+        boolean soloInScoreboard = false;
+        boolean soloInTab = false;
         String time = "Unknown";
 
         for (String line : scoreboardLines) {
             String cleanLine = line.trim();
             if (cleanLine.contains(SOLO_TEXT) || cleanLine.contains(PARTY_ONE_TEXT))
-                isSolo = true;
+                soloInScoreboard = true;
             Matcher timeMatcher = TIME_PATTERN.matcher(cleanLine);
             if (timeMatcher.find()) {
                 time = timeMatcher.group(1).trim();
@@ -116,7 +117,7 @@ public class SoloClearsTracker {
         for (String line : tabListLines) {
             String cleanLine = line.trim();
             if (cleanLine.contains(SOLO_TEXT) || cleanLine.contains(PARTY_ONE_TEXT))
-                isSolo = true;
+                soloInTab = true;
             if (time.equals("Unknown")) {
                 Matcher timeMatcher = TABLIST_TIME_PATTERN.matcher(cleanLine);
                 if (timeMatcher.find()) {
@@ -125,6 +126,7 @@ public class SoloClearsTracker {
             }
         }
 
+        boolean isSolo = soloInScoreboard && soloInTab;
         if (isSolo) {
             isSoloThisRun = true;
         }
@@ -328,29 +330,32 @@ public class SoloClearsTracker {
         DungeonFloor floor = LocationUtils.getCurrentFloor();
         String floorName = floor != null ? floor.getDisplayName() : "null";
 
-        boolean isSolo = false;
+        boolean soloInScoreboard = false;
         String time = "Unknown";
         for (String line : scoreboardLines) {
             String cl = line.trim();
             if (cl.contains(SOLO_TEXT) || cl.contains(PARTY_ONE_TEXT))
-                isSolo = true;
+                soloInScoreboard = true;
             Matcher tm = TIME_PATTERN.matcher(cl);
             if (tm.find())
                 time = tm.group(1).trim();
         }
 
+        boolean soloInTab = false;
         List<String> tabListLines = new ArrayList<>(TabListUtils.getTabListLines());
         tabListLines.addAll(TabListUtils.getFooterLines());
         for (String line : tabListLines) {
             String cl = line.trim();
             if (cl.contains(SOLO_TEXT) || cl.contains(PARTY_ONE_TEXT))
-                isSolo = true;
+                soloInTab = true;
             if (time.equals("Unknown")) {
                 Matcher tm = TABLIST_TIME_PATTERN.matcher(cl);
                 if (tm.find())
                     time = tm.group(1).trim();
             }
         }
+
+        boolean isSolo = soloInScoreboard && soloInTab;
 
         int finalScore = DungeonScore.getScore();
 
