@@ -968,8 +968,8 @@ public class CustomFontRenderer {
     private void renderEmoji3d(Matrix4f matrix, EmojiManager.EmojiTexture emojiTex,
                                float x0, float y0, float x1, float y1,
                                MultiBufferSource bufferSource) {
-        RenderType layer = (RenderType) McCompat.createTextRenderType("emoji_3d",
-                BlackaddonsRenderPipelines.PLAIN_TEXTURED, emojiTex.location);
+        RenderType layer = (RenderType) McCompat.createTextRenderType("emoji_3d_depth",
+                BlackaddonsRenderPipelines.PLAIN_TEXTURED_DEPTH, emojiTex.location);
         VertexConsumer buffer = bufferSource.getBuffer(layer);
 
         Vector4f[] tmps = TMP_VECTORS.get();
@@ -987,8 +987,8 @@ public class CustomFontRenderer {
     private void renderArrow3d(Matrix4f matrix, int direction,
                                float x0, float y0, float x1, float y1,
                                MultiBufferSource bufferSource) {
-        RenderType layer = (RenderType) McCompat.createTextRenderType("arrow_3d",
-                BlackaddonsRenderPipelines.PLAIN_TEXTURED, EmojiManager.ARROW_LOCATION);
+        RenderType layer = (RenderType) McCompat.createTextRenderType("arrow_3d_depth",
+                BlackaddonsRenderPipelines.PLAIN_TEXTURED_DEPTH, EmojiManager.ARROW_LOCATION);
         VertexConsumer buffer = bufferSource.getBuffer(layer);
 
         Vector4f[] tmps = TMP_VECTORS.get();
