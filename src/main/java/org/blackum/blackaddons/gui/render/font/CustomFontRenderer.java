@@ -542,29 +542,31 @@ public class CustomFontRenderer {
             }
             int argb = (color & 0xFF000000) == 0 ? (color | 0xFF000000) : color;
 
-            int arrowDir = EmojiManager.getArrowDirection(cp);
-            if (arrowDir != -1) {
-                float ex0 = curX[0] + (arrowAdvance - arrowSize) / 2.0f;
-                float ex1 = ex0 + arrowSize;
+            if (ConfigManager.data.customFontEmoji) {
+                int arrowDir = EmojiManager.getArrowDirection(cp);
+                if (arrowDir != -1) {
+                    float ex0 = curX[0] + (arrowAdvance - arrowSize) / 2.0f;
+                    float ex1 = ex0 + arrowSize;
 
-                TextureSetup setup = EmojiManager.getArrowSetup();
-                if (setup != null) {
-                    renderArrowGui(pose, setup, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, scissor, renderState);
+                    TextureSetup setup = EmojiManager.getArrowSetup();
+                    if (setup != null) {
+                        renderArrowGui(pose, setup, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, scissor, renderState);
+                    }
+                    curX[0] += arrowAdvance;
+                    return true;
                 }
-                curX[0] += arrowAdvance;
-                return true;
-            }
 
-            if (EmojiManager.isEmoji(cp)) {
-                float ex0 = curX[0];
-                float ex1 = ex0 + emojiSize;
+                if (EmojiManager.isEmoji(cp)) {
+                    float ex0 = curX[0];
+                    float ex1 = ex0 + emojiSize;
 
-                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
-                if (emojiTex != null) {
-                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0Emoji, ex1, ey1Emoji, scissor, renderState);
+                    EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                    if (emojiTex != null) {
+                        renderEmojiGui(pose, emojiTex.setup, ex0, ey0Emoji, ex1, ey1Emoji, scissor, renderState);
+                    }
+                    curX[0] += emojiAdvance;
+                    return true;
                 }
-                curX[0] += emojiAdvance;
-                return true;
             }
 
             boolean bold = ConfigManager.data.customFontBold || style.isBold();
@@ -625,31 +627,33 @@ public class CustomFontRenderer {
                 i += Character.charCount(cp);
                 continue;
             }
-            int arrowDir = EmojiManager.getArrowDirection(cp);
-            if (arrowDir != -1) {
-                float ex0 = curX + (arrowAdvance - arrowSize) / 2.0f;
-                float ex1 = ex0 + arrowSize;
+            if (ConfigManager.data.customFontEmoji) {
+                int arrowDir = EmojiManager.getArrowDirection(cp);
+                if (arrowDir != -1) {
+                    float ex0 = curX + (arrowAdvance - arrowSize) / 2.0f;
+                    float ex1 = ex0 + arrowSize;
 
-                TextureSetup setup = EmojiManager.getArrowSetup();
-                if (setup != null) {
-                    renderArrowGui(pose, setup, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, scissor, renderState);
+                    TextureSetup setup = EmojiManager.getArrowSetup();
+                    if (setup != null) {
+                        renderArrowGui(pose, setup, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, scissor, renderState);
+                    }
+                    curX += arrowAdvance;
+                    i += Character.charCount(cp);
+                    continue;
                 }
-                curX += arrowAdvance;
-                i += Character.charCount(cp);
-                continue;
-            }
 
-            if (EmojiManager.isEmoji(cp)) {
-                float ex0 = curX;
-                float ex1 = ex0 + emojiSize;
+                if (EmojiManager.isEmoji(cp)) {
+                    float ex0 = curX;
+                    float ex1 = ex0 + emojiSize;
 
-                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
-                if (emojiTex != null) {
-                    renderEmojiGui(pose, emojiTex.setup, ex0, ey0Emoji, ex1, ey1Emoji, scissor, renderState);
+                    EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                    if (emojiTex != null) {
+                        renderEmojiGui(pose, emojiTex.setup, ex0, ey0Emoji, ex1, ey1Emoji, scissor, renderState);
+                    }
+                    curX += emojiAdvance;
+                    i += Character.charCount(cp);
+                    continue;
                 }
-                curX += emojiAdvance;
-                i += Character.charCount(cp);
-                continue;
             }
 
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);
@@ -855,26 +859,28 @@ public class CustomFontRenderer {
                 int styleRgb = style.getColor().getValue();
                 color = (baseColor & 0xFF000000) | (styleRgb & 0x00FFFFFF);
             }
-            int arrowDir = EmojiManager.getArrowDirection(cp);
-            if (arrowDir != -1) {
-                float ex0 = curX[0] + (arrowAdvance - arrowSize) / 2.0f;
-                float ex1 = ex0 + arrowSize;
+            if (ConfigManager.data.customFontEmoji) {
+                int arrowDir = EmojiManager.getArrowDirection(cp);
+                if (arrowDir != -1) {
+                    float ex0 = curX[0] + (arrowAdvance - arrowSize) / 2.0f;
+                    float ex1 = ex0 + arrowSize;
 
-                renderArrow3d(matrix, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, bufferSource);
-                curX[0] += arrowAdvance;
-                return true;
-            }
-
-            if (EmojiManager.isEmoji(cp)) {
-                float ex0 = curX[0];
-                float ex1 = ex0 + emojiSize;
-
-                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
-                if (emojiTex != null) {
-                    renderEmoji3d(matrix, emojiTex, ex0, ey0Emoji, ex1, ey1Emoji, bufferSource);
+                    renderArrow3d(matrix, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, bufferSource);
+                    curX[0] += arrowAdvance;
+                    return true;
                 }
-                curX[0] += emojiAdvance;
-                return true;
+
+                if (EmojiManager.isEmoji(cp)) {
+                    float ex0 = curX[0];
+                    float ex1 = ex0 + emojiSize;
+
+                    EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                    if (emojiTex != null) {
+                        renderEmoji3d(matrix, emojiTex, ex0, ey0Emoji, ex1, ey1Emoji, bufferSource);
+                    }
+                    curX[0] += emojiAdvance;
+                    return true;
+                }
             }
 
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);
@@ -923,28 +929,30 @@ public class CustomFontRenderer {
                 i += Character.charCount(cp);
                 continue;
             }
-            int arrowDir = EmojiManager.getArrowDirection(cp);
-            if (arrowDir != -1) {
-                float ex0 = curX + (arrowAdvance - arrowSize) / 2.0f;
-                float ex1 = ex0 + arrowSize;
+            if (ConfigManager.data.customFontEmoji) {
+                int arrowDir = EmojiManager.getArrowDirection(cp);
+                if (arrowDir != -1) {
+                    float ex0 = curX + (arrowAdvance - arrowSize) / 2.0f;
+                    float ex1 = ex0 + arrowSize;
 
-                renderArrow3d(matrix, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, bufferSource);
-                curX += arrowAdvance;
-                i += Character.charCount(cp);
-                continue;
-            }
-
-            if (EmojiManager.isEmoji(cp)) {
-                float ex0 = curX;
-                float ex1 = ex0 + emojiSize;
-
-                EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
-                if (emojiTex != null) {
-                    renderEmoji3d(matrix, emojiTex, ex0, ey0Emoji, ex1, ey1Emoji, bufferSource);
+                    renderArrow3d(matrix, arrowDir, ex0, ey0Arrow, ex1, ey1Arrow, bufferSource);
+                    curX += arrowAdvance;
+                    i += Character.charCount(cp);
+                    continue;
                 }
-                curX += emojiAdvance;
-                i += Character.charCount(cp);
-                continue;
+
+                if (EmojiManager.isEmoji(cp)) {
+                    float ex0 = curX;
+                    float ex1 = ex0 + emojiSize;
+
+                    EmojiManager.EmojiTexture emojiTex = EmojiManager.getEmojiTexture(cp);
+                    if (emojiTex != null) {
+                        renderEmoji3d(matrix, emojiTex, ex0, ey0Emoji, ex1, ey1Emoji, bufferSource);
+                    }
+                    curX += emojiAdvance;
+                    i += Character.charCount(cp);
+                    continue;
+                }
             }
 
             CustomFontManager.GlyphData glyph = manager.getGlyphData(cp);

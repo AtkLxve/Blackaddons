@@ -222,53 +222,55 @@ public abstract class FontMixin {
         if (isCustomTextActive() && !CustomFontRenderer.inOutlinePass) {
             CustomFontRenderer renderer = CustomFontRenderer.getInstance();
             if (blackaddons$ensureCustomRendererReady(renderer)) {
-                int arrowDir = EmojiManager.getArrowDirection(codepoint);
-                if (arrowDir != -1) {
-                    final int dir = arrowDir;
-                    cir.setReturnValue(new CustomTexturedBakedGlyph(
-                            EmojiManager::getArrowAdvance,
-                            (x, y) -> {
-                                float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                                float arrowSize = EmojiManager.getArrowSize();
-                                float advance = EmojiManager.getArrowAdvance();
-                                float baseline = ConfigManager.data.customTextEnabled ? renderer.getCachedBaseline() : 7.0f;
-                                float yCenter = y + baseline - emojiSize / 2.0f;
-                                float ey0 = yCenter - arrowSize / 2.0f;
-                                float ey1 = yCenter + arrowSize / 2.0f;
-                                float ex0 = x + (advance - arrowSize) / 2.0f;
-                                float ex1 = ex0 + arrowSize;
-                                return new float[] { ex0, ey0, ex1, ey1 };
-                            },
-                            () -> EmojiManager.getArrowUvs(dir),
-                            () -> (RenderType) McCompat.createTextRenderType("arrow_3d",
-                                    BlackaddonsRenderPipelines.PLAIN_TEXTURED, EmojiManager.ARROW_LOCATION),
-                            EmojiManager::getArrowTextureView,
-                            BlackaddonsRenderPipelines.PLAIN_TEXTURED
-                    ));
-                    return;
-                }
-                if (EmojiManager.isEmoji(codepoint)) {
-                    EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(codepoint);
-                    if (tex != null) {
+                if (ConfigManager.data.customFontEmoji) {
+                    int arrowDir = EmojiManager.getArrowDirection(codepoint);
+                    if (arrowDir != -1) {
+                        final int dir = arrowDir;
                         cir.setReturnValue(new CustomTexturedBakedGlyph(
-                                () -> {
-                                    float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
-                                    return emojiSize + 1.0f;
-                                },
+                                EmojiManager::getArrowAdvance,
                                 (x, y) -> {
                                     float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                    float arrowSize = EmojiManager.getArrowSize();
+                                    float advance = EmojiManager.getArrowAdvance();
                                     float baseline = ConfigManager.data.customTextEnabled ? renderer.getCachedBaseline() : 7.0f;
-                                    float ey1 = y + baseline + emojiSize * 0.1f;
-                                    float ey0 = ey1 - emojiSize;
-                                    return new float[] { x, ey0, x + emojiSize, ey1 };
+                                    float yCenter = y + baseline - emojiSize / 2.0f;
+                                    float ey0 = yCenter - arrowSize / 2.0f;
+                                    float ey1 = yCenter + arrowSize / 2.0f;
+                                    float ex0 = x + (advance - arrowSize) / 2.0f;
+                                    float ex1 = ex0 + arrowSize;
+                                    return new float[] { ex0, ey0, ex1, ey1 };
                                 },
-                                () -> new float[] { 0f, 0f, 0f, 1f, 1f, 1f, 1f, 0f },
-                                () -> (RenderType) McCompat.createTextRenderType("emoji_3d",
-                                        BlackaddonsRenderPipelines.PLAIN_TEXTURED, tex.location),
-                                () -> tex.textureView,
+                                () -> EmojiManager.getArrowUvs(dir),
+                                () -> (RenderType) McCompat.createTextRenderType("arrow_3d",
+                                        BlackaddonsRenderPipelines.PLAIN_TEXTURED, EmojiManager.ARROW_LOCATION),
+                                EmojiManager::getArrowTextureView,
                                 BlackaddonsRenderPipelines.PLAIN_TEXTURED
                         ));
                         return;
+                    }
+                    if (EmojiManager.isEmoji(codepoint)) {
+                        EmojiManager.EmojiTexture tex = EmojiManager.getEmojiTexture(codepoint);
+                        if (tex != null) {
+                            cir.setReturnValue(new CustomTexturedBakedGlyph(
+                                    () -> {
+                                        float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                        return emojiSize + 1.0f;
+                                    },
+                                    (x, y) -> {
+                                        float emojiSize = ConfigManager.data.customTextEnabled ? ConfigManager.data.customTextScale : 9.0f;
+                                        float baseline = ConfigManager.data.customTextEnabled ? renderer.getCachedBaseline() : 7.0f;
+                                        float ey1 = y + baseline + emojiSize * 0.1f;
+                                        float ey0 = ey1 - emojiSize;
+                                        return new float[] { x, ey0, x + emojiSize, ey1 };
+                                    },
+                                    () -> new float[] { 0f, 0f, 0f, 1f, 1f, 1f, 1f, 0f },
+                                    () -> (RenderType) McCompat.createTextRenderType("emoji_3d",
+                                            BlackaddonsRenderPipelines.PLAIN_TEXTURED, tex.location),
+                                    () -> tex.textureView,
+                                    BlackaddonsRenderPipelines.PLAIN_TEXTURED
+                            ));
+                            return;
+                        }
                     }
                 }
                 CustomBakedGlyph baked = style.isObfuscated()

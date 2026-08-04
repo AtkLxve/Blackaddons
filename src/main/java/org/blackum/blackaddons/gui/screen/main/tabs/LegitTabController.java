@@ -457,6 +457,14 @@ public class LegitTabController extends SimpleTabController {
                     ConfigManager.save();
                 }));
 
+        listView.addItem(new ToggleSwitch(0, 0, W, "Emoji Rendering",
+                "Enable custom emoji and icon rendering in text.",
+                ConfigManager.data.customFontEmoji,
+                val -> {
+                    ConfigManager.data.customFontEmoji = val;
+                    ConfigManager.save();
+                }));
+
         listView.addItem(new Label(0, 0, "Custom Font (Google Fonts):", Label.Style.SUBTITLE));
 
         Label fontStatusLabel = new Label(0, 0, "", Label.Style.BODY);
@@ -775,6 +783,14 @@ public class LegitTabController extends SimpleTabController {
                 "Restrict custom font rendering to BlackAddons GUI screens only.", ConfigManager.data.customTextGuiOnly,
                 val -> {
                     ConfigManager.data.customTextGuiOnly = val;
+                    ConfigManager.save();
+                }));
+        y += 30;
+
+        legitTab.addWidget(new ToggleSwitch(x, y, width, "Emoji Rendering",
+                "Enable custom emoji and icon rendering in text.", ConfigManager.data.customFontEmoji,
+                val -> {
+                    ConfigManager.data.customFontEmoji = val;
                     ConfigManager.save();
                 }));
         y += 30;

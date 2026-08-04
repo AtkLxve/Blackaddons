@@ -145,7 +145,7 @@ public class EmojiManager {
     }
 
     public static String preprocessString(String text) {
-        if (text == null || text.isEmpty())
+        if (!ConfigManager.data.customFontEmoji || text == null || text.isEmpty())
             return text;
         StringBuilder sb = new StringBuilder();
         int len = text.length();

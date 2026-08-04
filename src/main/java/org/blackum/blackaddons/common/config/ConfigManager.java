@@ -518,7 +518,7 @@ public class ConfigManager {
         public boolean hideStatusEffects = false;
         public boolean disableNearbyParticles = false;
         public boolean customNicknames = true;
-        public boolean scoreboardEnabled = false;
+        public boolean scoreboardEnabled = true;
         public int toggleScoreboardKeyCode = -1;
         public boolean chinaHatEnabled = false;
 
@@ -536,6 +536,7 @@ public class ConfigManager {
         public boolean customTextEnabled = true;
         public float customTextScale = 12.5f;
         public boolean customTextGuiOnly = true;
+        public boolean customFontEmoji = false;
         public boolean customFontAntiAliasing = true;
         public float customFontAntiAliasingWidth = 0.5f;
         public boolean customFontShadow = false;
@@ -665,7 +666,7 @@ public class ConfigManager {
                 "chatVisualFiltersEnabled", "actionTriggersEnabled",
                 "chatVisualFilters", "chatActions", "knownAliases"));
         GROUP_MAP.put("customText", List.of(
-                "customTextEnabled", "customTextScale", "customTextGuiOnly",
+                "customTextEnabled", "customTextScale", "customTextGuiOnly", "customFontEmoji",
                 "customFontAntiAliasing", "customFontAntiAliasingWidth",
                 "customFontShadow", "customFontShadowColor",
                 "customFontShadowOffsetX", "customFontShadowOffsetY",

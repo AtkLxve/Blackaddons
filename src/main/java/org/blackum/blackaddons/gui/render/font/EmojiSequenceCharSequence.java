@@ -3,6 +3,7 @@ package org.blackum.blackaddons.gui.render.font;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
+import org.blackum.blackaddons.common.config.ConfigManager;
 
 public class EmojiSequenceCharSequence implements FormattedCharSequence {
     private final FormattedCharSequence original;
@@ -40,6 +41,9 @@ public class EmojiSequenceCharSequence implements FormattedCharSequence {
 
     @Override
     public boolean accept(FormattedCharSink sink) {
+        if (!ConfigManager.data.customFontEmoji) {
+            return original.accept(sink);
+        }
         int[] size = SIZE_HOLDER.get();
         size[0] = 0;
 
