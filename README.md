@@ -85,7 +85,7 @@ A global chat system that lets you communicate with other mod users across diffe
 ## Credits
 
 - **Blackum**: Erm that's me hello
-- **AtkLxve**: Cheats
+- **AtkLxve**: Solo clears (Bad boy)
 - **Autismo**: Helped me with rewriting, understanding java and a lot more stuff
 - **noamm**: Helping out and other stuff
 - **NotYukimii**: Helped out atk with coding his features
