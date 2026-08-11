@@ -16,11 +16,12 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.util.io.HttpUtils;
 
 public class GoogleFontsList {
 
-    private static final String FONTS_API = "http://ba.neutrality.cc:8080/v1/fonts";
+    private static final String FONTS_API = Constants.DEFAULT_BOT_URL + "/v1/fonts";
 
     private static final Path CACHE_FILE = FabricLoader.getInstance().getConfigDir()
             .resolve("blackaddons").resolve("data").resolve("fontnames.txt");

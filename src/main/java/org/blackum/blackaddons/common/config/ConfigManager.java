@@ -813,7 +813,8 @@ public class ConfigManager {
                     }
                 }
                 boolean shouldSave = false;
-                if ("http://hypixel-skyblock-socket.pegle.com:8080".equals(loadedData.botUrl)) {
+                if ("http://hypixel-skyblock-socket.pegle.com:8080".equals(loadedData.botUrl)
+                        || "http://ba.neutrality.cc:8080".equals(loadedData.botUrl)) {
                     loadedData.botUrl = Constants.DEFAULT_BOT_URL;
                     shouldSave = true;
                 }

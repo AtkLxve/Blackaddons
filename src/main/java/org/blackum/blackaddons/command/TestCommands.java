@@ -480,7 +480,7 @@ public class TestCommands {
             "https://raw.githubusercontent.com/BLACKUM/rtca-bot-hypixel/main/data/custom_names.json",
             "https://playerdb.co/api/player/minecraft/069a79f4-44e9-4726-a5be-fca90e38aaf5",
             "https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/1f600.png",
-            "http://ba.neutrality.cc:8080/v1/fonts"
+            Constants.DEFAULT_BOT_URL + "/v1/fonts"
         };
         String[] labels = { "GitHub Names", "PlayerDB API", "Twemoji CDN", "Fonts API" };
 

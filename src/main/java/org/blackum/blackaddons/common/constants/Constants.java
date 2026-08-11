@@ -41,7 +41,7 @@ public final class Constants {
         public static final int MOUSE_BIND_OFFSET = 1000;
 
         // APIs
-        public static final String DEFAULT_BOT_URL = "http://ba.neutrality.cc:8080";
+        public static final String DEFAULT_BOT_URL = "https://legacy.blackaddons.com";
         public static final String HYPIXEL_BAZAAR_API = "https://api.hypixel.net/skyblock/bazaar";
         public static final String MOULBERRY_AH_API = "https://moulberry.codes/auction_averages_lbin/3day.json";
         public static final String PLAYER_DB_API = "https://playerdb.co/api/player/minecraft/";
