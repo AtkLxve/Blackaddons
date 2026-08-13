@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class Constants {
 
@@ -159,4 +160,32 @@ public final class Constants {
         public static final String DUNGEON_NO = "Not in Dungeon";
         public static final String BOSS_YES = "In Boss";
         public static final String BOSS_NO = "Not in Boss";
+
+        public static final Set<String> CRITTER_NAMES = Set.of(
+                        "cavernfish", "flitter", "shyworm", "driftling", "chuckwalla", "rockmite", "scrappy",
+                        "snoozle", "bluebird", "fluffling", "foxtrot", "hideonfloor", "honeybug", "macaw",
+                        "parakeet", "treefrog", "woodchucker", "areita", "bloodbat", "doomspiral", "duplico",
+                        "gazer", "gimmiegold", "hideonwall", "hideyho", "litterbug", "solsnatcher", "billygoat",
+                        "mantis shrimp", "mantis_shrimp", "nozzlenose", "polaris", "shuddersquid", "strongarm",
+                        "tepid", "troodon", "wumpa"
+        );
+        public static final String SHINY_KEYWORD_SPARKLING = "sparkling";
+        public static final String SHINY_KEYWORD_SHINY = "shiny";
+        public static final Set<String> SHINY_CRITTER_KEYWORDS = Set.of(SHINY_KEYWORD_SPARKLING, SHINY_KEYWORD_SHINY);
+        public static final int DEFAULT_CRITTER_ESP_RADIUS = 40;
+        public static final int DEFAULT_CRITTER_ESP_COLOR = 0xFFFF0000;
+        public static final float DEFAULT_CRITTER_TRACER_THICKNESS = 0.2f;
+        public static final String SHINY_CRITTER_HUD_ID = "shiny_critter_alert";
+        public static final String SHINY_CRITTER_HUD_NAME = "Critter Alert";
+        public static final String SHINY_CRITTER_ALERT_TITLE = "§6§l✨ SPARKLING CRITTER ✨";
+        public static final String CRITTER_ALERT_TITLE = "§a§l🐾 CRITTERS NEARBY 🐾";
+        public static final String SHINY_CRITTER_ALERT_PREVIEW = "§6§l✨ SPARKLING Flitter §7(14.2m)";
+        public static final String CRITTER_ALERT_PREVIEW_NORMAL = "§aCavernfish §7(8.5m)";
+        public static final int CRITTER_ALERT_BORDER_NORMAL = 0xAA00AA00;
+        public static final int CRITTER_ALERT_TITLE_COLOR_NORMAL = 0xFF55FF55;
+        public static final int SHINY_CRITTER_HUD_DEFAULT_Y = 100;
+        public static final int SHINY_CRITTER_HUD_BASE_WIDTH = 160;
+        public static final int SHINY_CRITTER_HUD_BASE_HEIGHT = 28;
 }
+
+
