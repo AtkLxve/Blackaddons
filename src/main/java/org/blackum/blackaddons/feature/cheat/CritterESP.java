@@ -17,6 +17,7 @@ import org.blackum.blackaddons.client.render.RenderContext;
 import org.blackum.blackaddons.common.config.ConfigManager;
 import org.blackum.blackaddons.common.constants.Constants;
 import org.blackum.blackaddons.common.module.AutoModule;
+import org.blackum.blackaddons.common.util.mc.McCompat;
 import org.blackum.blackaddons.feature.chat.ChatUtils;
 
 import java.util.ArrayList;
@@ -119,14 +120,14 @@ public class CritterESP {
             /*DebugBoxRenderer.render(
                     ctx.getPoseStack(),
                     ctx.getBufferSource(),
-                    mc.gameRenderer.getMainCamera().position(),
+                    McCompat.getCamera(mc.gameRenderer).position(),
                     boxes
             );
 *///?} else {
             DebugBoxRenderer.render(
                     ctx.getMatrix(),
                     ctx.getBufferSource(),
-                    mc.gameRenderer.getMainCamera().position(),
+                    McCompat.getCamera(mc.gameRenderer).position(),
                     boxes
             );
 //?}
