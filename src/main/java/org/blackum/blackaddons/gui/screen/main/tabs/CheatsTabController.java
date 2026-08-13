@@ -37,6 +37,7 @@ public class CheatsTabController extends SimpleTabController {
     private ResizableCard freecamCard;
     private ResizableCard perspectiveCard;
     private ResizableCard autoClickerCard;
+    private ResizableCard critterEbugCard;
     private Label startDelayLabel;
     private Slider startDelaySlider;
 
@@ -128,8 +129,126 @@ public class CheatsTabController extends SimpleTabController {
                     });
             cheatsTab.addWidget(bmEnableToggle);
 
-            return;
+                        cheatsTab.addWidget(new Label(contentX, contentY + 430, "Critters", Label.Style.TITLE));
+
+                        cheatsTab.addWidget(new Label(contentX, contentY + 460, "Critter Ebug", Label.Style.TITLE));
+
+                        ToggleSwitch critterEnable = new ToggleSwitch(contentX, contentY + 490, contentWidth - 20,
+                                        "Enable Critter Ebug",
+                                        "Announces nearby Critter Safari mobs to chat",
+                                        ConfigManager.data.CritterEbugEnabled, value -> {
+                                                ConfigManager.data.CritterEbugEnabled = value;
+                                                ConfigManager.save();
+                                        });
+                        cheatsTab.addWidget(critterEnable);
+
+                        Label radiusLabel = new Label(contentX, contentY + 540,
+                                        "Radius: " + ConfigManager.data.CritterEbugRadius + " blocks", Label.Style.BODY);
+                        cheatsTab.addWidget(radiusLabel);
+
+                        Slider radiusSlider = new Slider(contentX, contentY + 560, contentWidth - 20, 1, 64,
+                                        ConfigManager.data.CritterEbugRadius, val -> {
+                                                int v = Math.round(val);
+                                                if (v != ConfigManager.data.CritterEbugRadius) {
+                                                        ConfigManager.data.CritterEbugRadius = v;
+                                                        radiusLabel.setText("Radius: " + v + " blocks");
+                                                        ConfigManager.save();
+                                                }
+                                        });
+                        cheatsTab.addWidget(radiusSlider);
+
+                        Label intervalLabel = new Label(contentX, contentY + 610,
+                                        "Update Interval: " + ConfigManager.data.CritterEbugIntervalTicks + " ticks", Label.Style.BODY);
+                        cheatsTab.addWidget(intervalLabel);
+
+                        Slider intervalSlider = new Slider(contentX, contentY + 630, contentWidth - 20, 1, 200,
+                                        ConfigManager.data.CritterEbugIntervalTicks, val -> {
+                                                int v = Math.round(val);
+                                                if (v != ConfigManager.data.CritterEbugIntervalTicks) {
+                                                        ConfigManager.data.CritterEbugIntervalTicks = v;
+                                                        intervalLabel.setText("Update Interval: " + v + " ticks");
+                                                        ConfigManager.save();
+                                                }
+                                        });
+                        cheatsTab.addWidget(intervalSlider);
+
+                        ToggleSwitch critterDebug = new ToggleSwitch(contentX, contentY + 670, contentWidth - 20,
+                                        "Debug Mode",
+                                        "Show debug when no critters found",
+                                        ConfigManager.data.CritterEbugDebug, value -> {
+                                                ConfigManager.data.CritterEbugDebug = value;
+                                                ConfigManager.save();
+                                        });
+                        cheatsTab.addWidget(critterDebug);
+
+                        cheatsTab.addWidget(new Label(contentX, contentY + 720, "Critter ESP", Label.Style.TITLE));
+
+                        ToggleSwitch espEnable = new ToggleSwitch(contentX, contentY + 750, contentWidth - 20,
+                                        "Enable Critter ESP",
+                                        "Highlights nearby Critter Safari mobs in world",
+                                        ConfigManager.data.CritterEspEnabled, value -> {
+                                                ConfigManager.data.CritterEspEnabled = value;
+                                                ConfigManager.save();
+                                        });
+                        cheatsTab.addWidget(espEnable);
+
+                        Label espRadiusLabel = new Label(contentX, contentY + 800,
+                                        String.format(Locale.ROOT, "ESP Radius: %d blocks", ConfigManager.data.CritterEspRadius),
+                                        Label.Style.BODY);
+                        cheatsTab.addWidget(espRadiusLabel);
+
+                        Slider espRadiusSlider = new Slider(contentX, contentY + 820, contentWidth - 20, 10, 100,
+                                        ConfigManager.data.CritterEspRadius, val -> {
+                                                int v = Math.round(val);
+                                                if (v != ConfigManager.data.CritterEspRadius) {
+                                                        ConfigManager.data.CritterEspRadius = v;
+                                                        espRadiusLabel.setText(String.format(Locale.ROOT, "ESP Radius: %d blocks", v));
+                                                        ConfigManager.save();
+                                                }
+                                        });
+                        cheatsTab.addWidget(espRadiusSlider);
+
+                        ToggleSwitch espBox = new ToggleSwitch(contentX, contentY + 870, contentWidth - 20,
+                                        "Draw Bounding Box",
+                                        "Render a box outline around detected critters",
+                                        ConfigManager.data.CritterEspBox, value -> {
+                                                ConfigManager.data.CritterEspBox = value;
+                                                ConfigManager.save();
+                                        });
+                        cheatsTab.addWidget(espBox);
+
+                        ToggleSwitch espTracers = new ToggleSwitch(contentX, contentY + 920, contentWidth - 20,
+                                        "Draw Tracers",
+                                        "Render a tracer line to detected critters",
+                                        ConfigManager.data.CritterEspTracers, value -> {
+                                                ConfigManager.data.CritterEspTracers = value;
+                                                ConfigManager.save();
+                                        });
+                        cheatsTab.addWidget(espTracers);
+
+                        ToggleSwitch espNametag = new ToggleSwitch(contentX, contentY + 970, contentWidth - 20,
+                                        "Draw Nametags",
+                                        "Render nametags above detected critters",
+                                        ConfigManager.data.CritterEspNametag, value -> {
+                                                ConfigManager.data.CritterEspNametag = value;
+                                                ConfigManager.save();
+                                        });
+                        cheatsTab.addWidget(espNametag);
+
+                        ToggleSwitch shinyAlert = new ToggleSwitch(contentX, contentY + 1020, contentWidth - 20,
+                                        "Critter Alert HUD",
+                                        "Show on-screen UI when critters are nearby (highlights shiny)",
+                                        ConfigManager.data.shinyCritterAlert, value -> {
+                                                ConfigManager.data.shinyCritterAlert = value;
+                                                ConfigManager.save();
+                                        });
+                        cheatsTab.addWidget(shinyAlert);
+
+
+                        return;
         }
+
+
 
         CardContainer cheatsCardContainer = new CardContainer(contentX, contentY + 10, contentWidth, 540);
         cheatsTab.addWidget(cheatsCardContainer);
@@ -150,16 +269,18 @@ public class CheatsTabController extends SimpleTabController {
         freecamCard = createFreecamCard(0, 0);
         perspectiveCard = createPerspectiveCard(0, 0);
         autoClickerCard = createAutoClickerCard(0, 0);
+        critterEbugCard = createCritterEbugCard(0, 0);
 
         List<ResizableCard> cards = List.of(autoTntCard, autoSSCard, rotationCard, autoBMCard, freecamCard,
-                perspectiveCard, autoClickerCard);
+                perspectiveCard, autoClickerCard, critterEbugCard);
         boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("autoTnt")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("autoSS")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("rotationSet")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("autoBM")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("freecam")
                 || ConfigManager.data.lastLoadedCardStates.containsKey("perspective")
-                || ConfigManager.data.lastLoadedCardStates.containsKey("autoClicker");
+                || ConfigManager.data.lastLoadedCardStates.containsKey("autoClicker")
+                || ConfigManager.data.lastLoadedCardStates.containsKey("critterEbug");
         if (!hasSaved || numCols == 1) {
             for (ResizableCard card : cards) {
                 int shortestCol = 0;
@@ -181,7 +302,145 @@ public class CheatsTabController extends SimpleTabController {
         cheatsCardContainer.addCard(freecamCard);
         cheatsCardContainer.addCard(perspectiveCard);
         cheatsCardContainer.addCard(autoClickerCard);
+                cheatsCardContainer.addCard(critterEbugCard);
     }
+
+        private ResizableCard createCritterEbugCard(int x, int y) {
+                critterEbugCard = screen.createResizableCard("critterEbug", x, y, 300, 200, "Critters");
+
+                int contentX = critterEbugCard.getContentX();
+                int contentY = critterEbugCard.getContentY();
+
+                ListView listView = new ListView(contentX, contentY, 260, 150);
+
+                listView.addItem(new Label(0, 0, "Critter Ebug", Label.Style.TITLE));
+
+                ToggleSwitch enableToggle = new ToggleSwitch(0, 0, 260,
+                                "Enable Critter Ebug",
+                                "Announces nearby Critter Safari mobs to chat",
+                                ConfigManager.data.CritterEbugEnabled, value -> {
+                                        ConfigManager.data.CritterEbugEnabled = value;
+                                        ConfigManager.save();
+                                });
+                listView.addItem(enableToggle);
+
+                Label radiusLabel = new Label(0, 0,
+                                String.format(Locale.ROOT, "Radius: %d blocks", ConfigManager.data.CritterEbugRadius),
+                                Label.Style.BODY);
+                listView.addItem(radiusLabel);
+
+                Slider radiusSlider = new Slider(0, 0, 260, 1, 64,
+                                ConfigManager.data.CritterEbugRadius, val -> {
+                                        int v = Math.round(val);
+                                        if (v != ConfigManager.data.CritterEbugRadius) {
+                                                ConfigManager.data.CritterEbugRadius = v;
+                                                radiusLabel.setText(String.format(Locale.ROOT, "Radius: %d blocks", v));
+                                                ConfigManager.save();
+                                        }
+                                });
+                listView.addItem(radiusSlider);
+
+                Label intervalLabel = new Label(0, 0,
+                                "Update Interval: " + ConfigManager.data.CritterEbugIntervalTicks + " ticks", Label.Style.BODY);
+                listView.addItem(intervalLabel);
+
+                Slider intervalSlider = new Slider(0, 0, 260, 1, 200,
+                                ConfigManager.data.CritterEbugIntervalTicks, val -> {
+                                        int v = Math.round(val);
+                                        if (v != ConfigManager.data.CritterEbugIntervalTicks) {
+                                                ConfigManager.data.CritterEbugIntervalTicks = v;
+                                                intervalLabel.setText("Update Interval: " + v + " ticks");
+                                                ConfigManager.save();
+                                        }
+                                });
+                listView.addItem(intervalSlider);
+
+                ToggleSwitch debugToggle = new ToggleSwitch(0, 0, 260,
+                                "Debug Mode",
+                                "Show debug when no critters found",
+                                ConfigManager.data.CritterEbugDebug, value -> {
+                                        ConfigManager.data.CritterEbugDebug = value;
+                                        ConfigManager.save();
+                                });
+                listView.addItem(debugToggle);
+
+                listView.addItem(new Label(0, 0, "Critter ESP", Label.Style.TITLE));
+
+                ToggleSwitch espToggle = new ToggleSwitch(0, 0, 260,
+                                "Enable Critter ESP",
+                                "Highlights nearby Critter Safari mobs in world",
+                                ConfigManager.data.CritterEspEnabled, value -> {
+                                        ConfigManager.data.CritterEspEnabled = value;
+                                        ConfigManager.save();
+                                });
+                listView.addItem(espToggle);
+
+                Label espRadiusLabel = new Label(0, 0,
+                                String.format(Locale.ROOT, "ESP Radius: %d blocks", ConfigManager.data.CritterEspRadius),
+                                Label.Style.BODY);
+                listView.addItem(espRadiusLabel);
+
+                Slider espRadiusSlider = new Slider(0, 0, 260, 10, 100,
+                                ConfigManager.data.CritterEspRadius, val -> {
+                                        int v = Math.round(val);
+                                        if (v != ConfigManager.data.CritterEspRadius) {
+                                                ConfigManager.data.CritterEspRadius = v;
+                                                espRadiusLabel.setText(String.format(Locale.ROOT, "ESP Radius: %d blocks", v));
+                                                ConfigManager.save();
+                                        }
+                                });
+                listView.addItem(espRadiusSlider);
+
+                listView.addItem(new Label(0, 0, "ESP Color", Label.Style.BODY));
+                ColorPicker espColorPicker = new ColorPicker(0, 0, ConfigManager.data.CritterEspColor, color -> {
+                        ConfigManager.data.CritterEspColor = color;
+                        ConfigManager.save();
+                });
+                listView.addItem(espColorPicker);
+
+                ToggleSwitch boxToggle = new ToggleSwitch(0, 0, 260,
+                                "Draw Bounding Box",
+                                "Render a box outline around detected critters",
+                                ConfigManager.data.CritterEspBox, value -> {
+                                        ConfigManager.data.CritterEspBox = value;
+                                        ConfigManager.save();
+                                });
+                listView.addItem(boxToggle);
+
+                ToggleSwitch tracerToggle = new ToggleSwitch(0, 0, 260,
+                                "Draw Tracers",
+                                "Render a tracer line to detected critters",
+                                ConfigManager.data.CritterEspTracers, value -> {
+                                        ConfigManager.data.CritterEspTracers = value;
+                                        ConfigManager.save();
+                                });
+                listView.addItem(tracerToggle);
+
+                ToggleSwitch nametagToggle = new ToggleSwitch(0, 0, 260,
+                                "Draw Nametags",
+                                "Render nametags above detected critters",
+                                ConfigManager.data.CritterEspNametag, value -> {
+                                        ConfigManager.data.CritterEspNametag = value;
+                                        ConfigManager.save();
+                                });
+                listView.addItem(nametagToggle);
+
+                ToggleSwitch shinyAlertToggle = new ToggleSwitch(0, 0, 260,
+                                "Critter Alert HUD",
+                                "Show on-screen UI when critters are nearby (highlights shiny)",
+                                ConfigManager.data.shinyCritterAlert, value -> {
+                                        ConfigManager.data.shinyCritterAlert = value;
+                                        ConfigManager.save();
+                                });
+                listView.addItem(shinyAlertToggle);
+
+
+                critterEbugCard.addChild(listView);
+                critterEbugCard.updateLayout();
+                return critterEbugCard;
+        }
+
+
 
     private ResizableCard createAutoTntCard(int x, int y) {
         autoTntCard = screen.createResizableCard("autoTnt", x, y, 300, 260, "AutoTnt");
@@ -1081,6 +1340,6 @@ public class CheatsTabController extends SimpleTabController {
     @Override
     public void resetLayout() {
         screen.resetCardStates("autoTnt", "autoSS", "rotationSet", "autoBM", "freecam", "perspective",
-                "autoClicker");
+                "autoClicker", "critterEbug");
     }
 }

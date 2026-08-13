@@ -48,6 +48,7 @@ public class CommandRegistry {
             }
 
             ChatCommands.registerStandaloneIrc(dispatcher);
+            CritterCommands.registerStandalone(dispatcher);
             DungeonCommands.registerStandaloneLeaderboards(dispatcher);
             CommandUtils.register(dispatcher);
         });
