@@ -426,6 +426,24 @@ public class ConfigManager {
         public boolean RelicLookEnabled = false;
         public boolean RelicLookDebug = false;
 
+        // Critter Ebug: report nearby Critter Safari mobs to chat
+        public boolean CritterEbugEnabled = false;
+        public int CritterEbugRadius = 20;
+        public int CritterEbugIntervalTicks = 40;
+        public boolean CritterEbugDebug = false;
+
+        public boolean CritterEspEnabled = false;
+        public int CritterEspRadius = Constants.DEFAULT_CRITTER_ESP_RADIUS;
+        public int CritterEspColor = Constants.DEFAULT_CRITTER_ESP_COLOR;
+        public boolean CritterEspBox = true;
+        public boolean CritterEspTracers = false;
+        public boolean CritterEspNametag = true;
+        public boolean shinyCritterAlert = true;
+        public int shinyCritterAlertX = -1;
+        public int shinyCritterAlertY = Constants.SHINY_CRITTER_HUD_DEFAULT_Y;
+        public float shinyCritterAlertScale = 1.0f;
+
+
         public boolean showRotationDebug = false;
         public int rotationOverlayX = -1;
         public int rotationOverlayY = 5;
@@ -624,6 +642,11 @@ public class ConfigManager {
         GROUP_MAP.put("autoClicker", List.of("autoClickerConfig"));
         GROUP_MAP.put("relicLook", List.of(
                 "RelicLookEnabled", "RelicLookDebug"));
+        GROUP_MAP.put("critterEbug", List.of(
+            "CritterEbugEnabled", "CritterEbugRadius", "CritterEbugIntervalTicks", "CritterEbugDebug",
+            "CritterEspEnabled", "CritterEspRadius", "CritterEspColor", "CritterEspBox", "CritterEspTracers", "CritterEspNametag",
+            "shinyCritterAlert", "shinyCritterAlertX", "shinyCritterAlertY", "shinyCritterAlertScale"));
+
         GROUP_MAP.put("rotation", List.of(
                 "rotationHumanizerEnabled", "rotationVariance", "rotationTargetRandomness",
                 "rotationSmoothness", "rotationSpeed",
