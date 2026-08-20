@@ -1,8 +1,10 @@
 package org.blackum.blackaddons.feature.dungeon.util;
 
+import org.blackum.blackaddons.feature.dungeon.score.DungeonScore;
+
 import java.util.ArrayList;
-import java.util.regex.Matcher;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DungeonUtils {
@@ -35,6 +37,7 @@ public class DungeonUtils {
         public int expectedPuzzles = 0;
         public boolean mimicKilled = false;
         public boolean princeKilled = false;
+        public boolean batKilled = false;
         public List<String> completedPuzzles = new ArrayList<>();
 
         public int calculateScore() {
@@ -45,7 +48,7 @@ public class DungeonUtils {
             int deathPenalty = Math.max(0, (deaths > 0) ? (deaths * 2 - 1) : 0);
             
             double skill = Math.max(20, 20.0 + 80.0 * roomCompletion - puzzlePenalty - deathPenalty);
-            int bonus = Math.min(5, crypts) + (mimicKilled ? 2 : 0) + (princeKilled ? 1 : 0);
+            int bonus = Math.min(5, crypts) + (mimicKilled ? 2 : 0) + (princeKilled ? 1 : 0) + (batKilled ? 1 : 0);
             
             return 100 + (int)Math.floor(exploration) + (int)Math.floor(skill) + bonus;
         }
@@ -123,6 +126,7 @@ public class DungeonUtils {
             }
         }
         
+        stats.batKilled = DungeonScore.isBatKilled();
         return stats;
     }
 }

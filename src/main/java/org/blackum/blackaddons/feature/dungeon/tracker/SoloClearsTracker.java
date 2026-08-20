@@ -291,6 +291,14 @@ public class SoloClearsTracker {
         return ticks;
     }
 
+    public static boolean isSoloThisRun() {
+        return isSoloThisRun;
+    }
+
+    public static boolean isRunRecorded() {
+        return runRecorded;
+    }
+
     public static void onChatMessage(Component message) {
         String cleanText = ChatFormatting.stripFormatting(message.getString());
         if (cleanText == null) return;

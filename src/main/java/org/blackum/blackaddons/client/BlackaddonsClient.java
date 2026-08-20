@@ -32,6 +32,7 @@ import org.blackum.blackaddons.feature.TabListToggleHandler;
 import org.blackum.blackaddons.feature.waypoint.AlignUtils;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonJoinHandler;
 import org.blackum.blackaddons.feature.dungeon.listener.DungeonListener;
+import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearTimer;
 import org.blackum.blackaddons.feature.dungeon.tracker.SoloClearsTracker;
 import org.blackum.blackaddons.feature.dungeon.map.DungeonMap;
 import org.blackum.blackaddons.feature.dungeon.solver.puzzle.waterboard.WaterBoardSolver;
@@ -79,6 +80,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             WaterBoardSolver.reset();
             TpMazeSolver.reset();
             DungeonListener.resetKeyTimer();
+            SoloClearTimer.reset();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
@@ -89,6 +91,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             WaterBoardSolver.reset();
             TpMazeSolver.reset();
             DungeonListener.resetKeyTimer();
+            SoloClearTimer.reset();
         });
 
         Blackaddons.guiOpener = () -> {
@@ -159,6 +162,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             DungeonListener.tick();
             NotificationManager.getInstance().tick();
             SoloClearsTracker.tick();
+            SoloClearTimer.tick();
             TabListToggleHandler.tick();
             if (pendingScreen != null) {
                 McCompat.setScreen(client, pendingScreen);
@@ -206,6 +210,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
             SoloClearsTracker.onChatMessage(handled);
+            SoloClearTimer.onChatMessage(handled);
             DungeonListener.onChatMessage(handled);
         });
 
@@ -218,6 +223,7 @@ public class BlackaddonsClient implements ClientModInitializer {
             PartyFinderManager.getInstance().onChatMessage(handled);
             ChatActionManager.getInstance().onChatMessage(handled);
             SoloClearsTracker.onChatMessage(handled);
+            SoloClearTimer.onChatMessage(handled);
             DungeonListener.onChatMessage(handled);
         });
 

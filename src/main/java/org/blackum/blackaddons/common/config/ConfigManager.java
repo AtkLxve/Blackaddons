@@ -540,6 +540,15 @@ public class ConfigManager {
         public int toggleScoreboardKeyCode = -1;
         public boolean chinaHatEnabled = false;
 
+        // Solo Clear Timer
+        public boolean soloClearTimerEnabled = false;
+        public int soloClearTimerX = 10;
+        public int soloClearTimerY = 100;
+        public float soloClearTimerScale = 1.0f;
+        public int soloClearTimerRtaColor = 0xFF55FFFF;
+        public int soloClearTimerIgtColor = 0xFF55FFFF;
+        public int soloClearTimerDesyncColor = 0xFFFFFFFF;
+
         // Settings
         public int notificationDuration = 4000;
         public int cacheDurationMinutes = 5;
