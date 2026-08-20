@@ -1,29 +1,34 @@
 package org.blackum.blackaddons.gui.screen.main.tabs;
 
-import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import net.minecraft.client.Minecraft;
-import org.blackum.blackaddons.common.config.ConfigManager;
-import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
 import org.blackum.blackaddons.Blackaddons;
-import org.blackum.blackaddons.gui.screen.main.BaseScreen;
-import org.blackum.blackaddons.gui.screen.overlay.OverlayEditScreen;
+import org.blackum.blackaddons.common.config.ConfigManager;
+import org.blackum.blackaddons.feature.cheat.AutoSS;
 import org.blackum.blackaddons.gui.render.Theme;
-import org.blackum.blackaddons.gui.widget.base.*;
-import org.blackum.blackaddons.gui.widget.input.*;
-import org.blackum.blackaddons.gui.widget.layout.*;
-import org.blackum.blackaddons.gui.widget.row.*;
-import org.blackum.blackaddons.gui.widget.editor.*;
+import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
+import org.blackum.blackaddons.gui.render.font.GoogleFontsList;
+import org.blackum.blackaddons.gui.screen.main.BaseScreen;
+import org.blackum.blackaddons.gui.screen.main.BlackAddonsGUI;
+import org.blackum.blackaddons.gui.screen.overlay.OverlayEditScreen;
+import org.blackum.blackaddons.gui.widget.base.Button;
+import org.blackum.blackaddons.gui.widget.base.KeybindButton;
+import org.blackum.blackaddons.gui.widget.base.Label;
+import org.blackum.blackaddons.gui.widget.input.AutocompleteTextField;
+import org.blackum.blackaddons.gui.widget.input.Slider;
+import org.blackum.blackaddons.gui.widget.input.SmallColorPicker;
+import org.blackum.blackaddons.gui.widget.input.ToggleSwitch;
+import org.blackum.blackaddons.gui.widget.layout.CardContainer;
+import org.blackum.blackaddons.gui.widget.layout.ListView;
+import org.blackum.blackaddons.gui.widget.layout.ResizableCard;
+import org.blackum.blackaddons.gui.widget.layout.TabPanel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import org.blackum.blackaddons.gui.render.font.CustomFontRenderer;
-import org.blackum.blackaddons.gui.render.font.GoogleFontsList;
-import org.blackum.blackaddons.feature.cheat.AutoSS;
 
 public class LegitTabController extends SimpleTabController {
     private ResizableCard visualsCard;
+    private ResizableCard soloClearTimerCard;
     private ResizableCard debuggersCard;
     private ResizableCard customTextCard;
 
@@ -52,12 +57,15 @@ public class LegitTabController extends SimpleTabController {
             List<ResizableCard> cards = new ArrayList<>();
             visualsCard = createVisualsCard(0, 0);
             cards.add(visualsCard);
+            soloClearTimerCard = createSoloClearTimerCard(0, 0);
+            cards.add(soloClearTimerCard);
             debuggersCard = createDebuggersCard(0, 0);
             cards.add(debuggersCard);
             customTextCard = createCustomTextCard(0, 0);
             cards.add(customTextCard);
 
             boolean hasSaved = ConfigManager.data.lastLoadedCardStates.containsKey("legit_visuals")
+                    || ConfigManager.data.lastLoadedCardStates.containsKey("legit_solo_clear_timer")
                     || ConfigManager.data.lastLoadedCardStates.containsKey("legit_debuggers")
                     || ConfigManager.data.lastLoadedCardStates.containsKey("legit_custom_font");
             if (!hasSaved || numCols == 1) {
@@ -75,6 +83,7 @@ public class LegitTabController extends SimpleTabController {
             }
 
             legitCardContainer.addCard(visualsCard);
+            legitCardContainer.addCard(soloClearTimerCard);
             legitCardContainer.addCard(debuggersCard);
             legitCardContainer.addCard(customTextCard);
             return;
@@ -181,13 +190,49 @@ public class LegitTabController extends SimpleTabController {
                 });
         legitTab.addWidget(disableUnsecureChatToastToggle);
 
-        legitTab.addWidget(new Label(contentX, contentY + 360, "Debuggers", Label.Style.TITLE));
+        legitTab.addWidget(new Label(contentX, contentY + 360, "Solo Clear Timer", Label.Style.TITLE));
 
-        int debugY = contentY + 390;
-        addDebuggerWidgets(legitTab, contentX, debugY, contentWidth - 20);
+        int soloY = contentY + 390;
+        ToggleSwitch soloClearTimerToggle = new ToggleSwitch(contentX, soloY, contentWidth - 20,
+                "Solo Clear Timer",
+                "Displays RTA, IGT and Lag timer for solo dungeon clears",
+                ConfigManager.data.soloClearTimerEnabled, value -> {
+                    ConfigManager.data.soloClearTimerEnabled = value;
+                    ConfigManager.save();
+                });
+        legitTab.addWidget(soloClearTimerToggle);
 
-        legitTab.addWidget(new Label(contentX, debugY + 150, "Custom Font", Label.Style.TITLE));
-        addCustomTextWidgets(legitTab, contentX, debugY + 180, contentWidth - 20);
+        Button editSoloTimerBtn = new Button(contentX, soloY + 30, contentWidth - 20, 20, "Edit Timer HUD Position", () -> {
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new OverlayEditScreen(screen, "solo_clear_timer"));
+            }
+        });
+        legitTab.addWidget(editSoloTimerBtn);
+
+        legitTab.addWidget(new Label(contentX, soloY + 55, "RTA Color", Label.Style.BODY));
+        legitTab.addWidget(new SmallColorPicker(contentX, soloY + 67, ConfigManager.data.soloClearTimerRtaColor, color -> {
+            ConfigManager.data.soloClearTimerRtaColor = color;
+            ConfigManager.save();
+        }));
+
+        legitTab.addWidget(new Label(contentX, soloY + 97, "IGT Color", Label.Style.BODY));
+        legitTab.addWidget(new SmallColorPicker(contentX, soloY + 109, ConfigManager.data.soloClearTimerIgtColor, color -> {
+            ConfigManager.data.soloClearTimerIgtColor = color;
+            ConfigManager.save();
+        }));
+
+        legitTab.addWidget(new Label(contentX, soloY + 139, "Lag Color", Label.Style.BODY));
+        legitTab.addWidget(new SmallColorPicker(contentX, soloY + 151, ConfigManager.data.soloClearTimerDesyncColor, color -> {
+            ConfigManager.data.soloClearTimerDesyncColor = color;
+            ConfigManager.save();
+        }));
+
+        int debugY = soloY + 185;
+        legitTab.addWidget(new Label(contentX, debugY, "Debuggers", Label.Style.TITLE));
+        addDebuggerWidgets(legitTab, contentX, debugY + 30, contentWidth - 20);
+
+        legitTab.addWidget(new Label(contentX, debugY + 180, "Custom Font", Label.Style.TITLE));
+        addCustomTextWidgets(legitTab, contentX, debugY + 210, contentWidth - 20);
     }
 
     private ResizableCard createVisualsCard(int x, int y) {
@@ -305,6 +350,51 @@ public class LegitTabController extends SimpleTabController {
 
         visualsCard.updateLayout();
         return visualsCard;
+    }
+
+    private ResizableCard createSoloClearTimerCard(int x, int y) {
+        soloClearTimerCard = screen.createResizableCard("legit_solo_clear_timer", x, y, 300, 240, "Solo Clear Timer");
+        int contentX = soloClearTimerCard.getContentX();
+        int contentY = soloClearTimerCard.getContentY();
+
+        ListView listView = new ListView(contentX, contentY, 260, 200);
+        listView.setItemSpacing(6);
+
+        listView.addItem(new ToggleSwitch(0, 0, 260,
+                "Solo Clear Timer",
+                "Displays RTA, IGT and Lag timer for solo dungeon clears",
+                ConfigManager.data.soloClearTimerEnabled, value -> {
+                    ConfigManager.data.soloClearTimerEnabled = value;
+                    ConfigManager.save();
+                }));
+
+        listView.addItem(new Button(0, 0, 260, 20, "Edit Timer HUD Position", () -> {
+            if (Blackaddons.screenOpener != null) {
+                Blackaddons.screenOpener.accept(new OverlayEditScreen(screen, "solo_clear_timer"));
+            }
+        }));
+
+        listView.addItem(new Label(0, 0, "RTA Color", Label.Style.BODY));
+        listView.addItem(new SmallColorPicker(0, 0, ConfigManager.data.soloClearTimerRtaColor, color -> {
+            ConfigManager.data.soloClearTimerRtaColor = color;
+            ConfigManager.save();
+        }));
+
+        listView.addItem(new Label(0, 0, "IGT Color", Label.Style.BODY));
+        listView.addItem(new SmallColorPicker(0, 0, ConfigManager.data.soloClearTimerIgtColor, color -> {
+            ConfigManager.data.soloClearTimerIgtColor = color;
+            ConfigManager.save();
+        }));
+
+        listView.addItem(new Label(0, 0, "Lag Color", Label.Style.BODY));
+        listView.addItem(new SmallColorPicker(0, 0, ConfigManager.data.soloClearTimerDesyncColor, color -> {
+            ConfigManager.data.soloClearTimerDesyncColor = color;
+            ConfigManager.save();
+        }));
+
+        soloClearTimerCard.addChild(listView);
+        soloClearTimerCard.updateLayout();
+        return soloClearTimerCard;
     }
 
     private ResizableCard createDebuggersCard(int x, int y) {
@@ -1054,6 +1144,6 @@ public class LegitTabController extends SimpleTabController {
 
     @Override
     public void resetLayout() {
-        screen.resetCardStates("legit_visuals", "legit_debuggers", "legit_custom_font");
+        screen.resetCardStates("legit_visuals", "legit_solo_clear_timer", "legit_debuggers", "legit_custom_font");
     }
 }

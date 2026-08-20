@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import org.blackum.blackaddons.common.model.DungeonFloor;
@@ -30,13 +31,6 @@ public class ClientPacketListenerMixin {
         if (!LocationUtils.inDungeons())
             return;
 
-        DungeonFloor floor = LocationUtils.getCurrentFloor();
-        if (floor == null)
-            return;
-
-        String floorName = floor.getDisplayName();
-        if (!floorName.equals("F6") && !floorName.equals("M6") && !floorName.equals("F7") && !floorName.equals("M7"))
-            return;
         if (LocationUtils.inBoss())
             return;
 
@@ -47,7 +41,15 @@ public class ClientPacketListenerMixin {
 
             Entity entity = packet.getEntity(mc.level);
             if (entity instanceof Zombie zombie && zombie.isBaby()) {
-                DungeonScore.onMimicKill();
+                DungeonFloor floor = LocationUtils.getCurrentFloor();
+                if (floor != null) {
+                    String floorName = floor.getDisplayName();
+                    if (floorName.equals("F6") || floorName.equals("M6") || floorName.equals("F7") || floorName.equals("M7")) {
+                        DungeonScore.onMimicKill();
+                    }
+                }
+            } else if (entity instanceof Bat) {
+                DungeonScore.onBatKill();
             }
         }
     }

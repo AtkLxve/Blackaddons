@@ -38,6 +38,7 @@ public class DungeonScore {
 
     private static boolean mimicKilled;
     private static boolean princeKilled;
+    private static boolean batKilled;
     private static boolean dungeonStarted;
     private static boolean bloodRoomCompleted;
     private static long startingTime;
@@ -97,6 +98,7 @@ public class DungeonScore {
         floorHasMimics = false;
         mimicKilled = false;
         princeKilled = false;
+        batKilled = false;
         dungeonStarted = false;
         bloodRoomCompleted = false;
         startingTime = 0L;
@@ -198,6 +200,8 @@ public class DungeonScore {
         if (mimicKilled || (getSecretsPercentage() >= 100 && floorHasMimics))
             bonus += 2;
         if (princeKilled)
+            bonus += 1;
+        if (batKilled)
             bonus += 1;
         if (isQuizCompleted())
             bonus += 5;
@@ -333,6 +337,12 @@ public class DungeonScore {
         }
     }
 
+    public static void onBatKill() {
+        if (batKilled)
+            return;
+        batKilled = true;
+    }
+
     public static void onBloodRoomPassed() {
         bloodRoomCompleted = true;
     }
@@ -368,6 +378,7 @@ public class DungeonScore {
                 + floorRequirement.percentage + "%)");
         lines.add("§7- Mimic: " + (mimicKilled ? "§aKilled" : "§cNot Killed"));
         lines.add("§7- Prince: " + (princeKilled ? "§aKilled" : "§cNot Killed"));
+        lines.add("§7- Bat: " + (batKilled ? "§aKilled" : "§cNot Killed"));
         lines.add("§7- Crypts: §a" + getCrypts() + " §8/ 5");
 
         return lines;
@@ -396,6 +407,10 @@ public class DungeonScore {
 
     public static boolean isPrinceKilled() {
         return princeKilled;
+    }
+
+    public static boolean isBatKilled() {
+        return batKilled;
     }
 
     public static boolean isDungeonStarted() {

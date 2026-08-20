@@ -76,6 +76,7 @@ public class SoloClearSampler {
         sample.addProperty("prince_killed", princeFromChat || stats.princeKilled);
         sample.addProperty("prince_killed_from_chat", princeFromChat);
         sample.addProperty("prince_killed_from_tablist", stats.princeKilled);
+        sample.addProperty("bat_killed", DungeonScore.isBatKilled() || stats.batKilled);
 
         sample.add("scoreboard_lines", toJsonArray(rawScoreboard));
         sample.add("tablist_lines", toJsonArray(rawTablist));
